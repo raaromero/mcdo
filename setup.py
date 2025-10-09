@@ -4,14 +4,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="monte_carlo",
+    name="mcdo",
     version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="A Python package for Monte Carlo simulations",
+    author="Roland Albert Romero",
+    author_email="romero.rolandalbert@gmail.com",
+    description="Monte Carlo Diffraction Optics - Simulation methods for optical diffraction",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/monte_carlo",
+    url="https://github.com/romeroraa/mcdo",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
