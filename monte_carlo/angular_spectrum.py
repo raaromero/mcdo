@@ -74,6 +74,8 @@ class AngularSpectrumSimulator:
         Creates a 2D grid representing the circular aperture in real space,
         computes its FFT to get the angular spectrum, and stores the intensity
         distribution for sampling.
+
+        Applies smoothing to reduce discretization noise.
         """
         # Create real-space grid for aperture
         # We need fine k-space resolution to properly sample within k_max
@@ -97,7 +99,13 @@ class AngularSpectrumSimulator:
         fft_aperture = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(aperture)))
 
         # Angular spectrum intensity
-        self.angular_spectrum_2d = np.abs(fft_aperture)**2
+        angular_spectrum_raw = np.abs(fft_aperture)**2
+
+        # Apply Gaussian smoothing to reduce FFT discretization noise
+        from scipy.ndimage import gaussian_filter
+        # Smooth with sigma ~ 2-3 pixels to reduce comb structure while preserving shape
+        sigma = 2.5
+        self.angular_spectrum_2d = gaussian_filter(angular_spectrum_raw, sigma=sigma)
 
         # Create k-space grid and save as instance attributes for visualization
         # Frequency spacing
@@ -279,14 +287,15 @@ class AngularSpectrumSimulator:
         # Calculate kz for output
         kz = np.sqrt(self.k**2 - kx**2 - ky**2)
 
-        # Thin lens focusing formula
-        # For a plane wave with wave vector (kx, ky, kz), the lens focuses it to:
-        # x_focal = f * (kx / kz)
-        # y_focal = f * (ky / kz)
-        # This accounts for the exact angle of incidence
+        # Fraunhofer diffraction formula
+        # Maps k-space to real-space at focal plane
+        # x = (λf / 2π) × kx
+        # y = (λf / 2π) × ky
+        # Wavelength is a crucial factor - diffraction is wavelength-dependent!
 
-        x_focal = self.focal_length * (kx / kz)
-        y_focal = self.focal_length * (ky / kz)
+        scale_factor = (self.wavelength * self.focal_length) / (2 * np.pi)
+        x_focal = scale_factor * kx
+        y_focal = scale_factor * ky
         z_focal = np.full(self.n_photons, self.focal_length)
 
         return {
