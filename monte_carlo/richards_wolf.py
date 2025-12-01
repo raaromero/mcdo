@@ -36,12 +36,35 @@ class RichardsWolfSimulator:
         wavelength: float = 0.532,
         numerical_aperture: float = 0.9,
         n_medium: float = 1.0,
-        polarization: str = 'x'
+        polarization: str = 'x',
+        input_field: str = 'uniform',
+        fill_factor: float = 0.9
     ):
+        """
+        Initialize Richards-Wolf simulator.
+
+        Parameters
+        ----------
+        wavelength : float
+            Wavelength in microns
+        numerical_aperture : float
+            Numerical aperture of the objective
+        n_medium : float
+            Refractive index of the medium
+        polarization : str
+            'x', 'y', or 'circular'
+        input_field : str
+            'uniform' or 'gaussian' - type of input field
+        fill_factor : float
+            For Gaussian: ratio of 1/e² radius to aperture radius
+            fill_factor = w_0 / r_aperture (typically 0.3-0.9)
+        """
         self.wavelength = wavelength
         self.numerical_aperture = numerical_aperture
         self.n_medium = n_medium
         self.polarization = polarization
+        self.input_field = input_field
+        self.fill_factor = fill_factor
 
         # Wave number k = 2π/λ
         self.k = 2 * np.pi / wavelength
@@ -53,6 +76,30 @@ class RichardsWolfSimulator:
 
         # Airy radius for reference
         self.airy_radius = 0.61 * wavelength / numerical_aperture
+
+    def _apodization(self, theta: float) -> float:
+        """
+        Compute amplitude apodization function for input field.
+
+        Parameters
+        ----------
+        theta : float
+            Angle from optical axis
+
+        Returns
+        -------
+        float
+            Amplitude (not intensity) at this angle
+        """
+        if self.input_field == 'uniform':
+            return 1.0
+        elif self.input_field == 'gaussian':
+            # Gaussian beam amplitude: A(θ) = exp(-sin²(θ) / (2*sin²(θ_w)))
+            # where sin(θ_w) = fill_factor * sin(α)
+            sin_theta_w = self.fill_factor * self.sin_alpha
+            return np.exp(-np.sin(theta)**2 / (2 * sin_theta_w**2))
+        else:
+            raise ValueError(f"Unknown input_field: {self.input_field}")
 
     def _compute_integrals(
         self,
@@ -83,7 +130,8 @@ class RichardsWolfSimulator:
             geo = sin_t * (1 + cos_t)
             bessel = jv(0, v * sin_t / self.sin_alpha)
             phase = np.exp(1j * u * cos_t / self.sin2_alpha)
-            return apod * geo * bessel * phase
+            field_apod = self._apodization(theta)  # Gaussian or uniform
+            return apod * geo * bessel * phase * field_apod
 
         def I1_integrand(theta):
             if abs(np.sin(theta)) < 1e-15:
@@ -94,7 +142,8 @@ class RichardsWolfSimulator:
             geo = sin_t ** 2
             bessel = jv(1, v * sin_t / self.sin_alpha)
             phase = np.exp(1j * u * cos_t / self.sin2_alpha)
-            return apod * geo * bessel * phase
+            field_apod = self._apodization(theta)  # Gaussian or uniform
+            return apod * geo * bessel * phase * field_apod
 
         def I2_integrand(theta):
             if abs(np.sin(theta)) < 1e-15:
@@ -105,7 +154,8 @@ class RichardsWolfSimulator:
             geo = sin_t * (1 - cos_t)
             bessel = jv(2, v * sin_t / self.sin_alpha)
             phase = np.exp(1j * u * cos_t / self.sin2_alpha)
-            return apod * geo * bessel * phase
+            field_apod = self._apodization(theta)  # Gaussian or uniform
+            return apod * geo * bessel * phase * field_apod
 
         # Integrate
         I0, _ = integrate.quad(I0_integrand, 0, self.angular_aperture,
