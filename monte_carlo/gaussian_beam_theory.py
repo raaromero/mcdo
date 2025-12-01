@@ -9,7 +9,7 @@ Ported from gbp-mc repository with refactoring for mcdo structure.
 """
 
 import numpy as np
-from scipy.special import expit, jv
+from scipy.special import jv
 from scipy.integrate import quad
 from typing import Tuple, Union
 
@@ -73,15 +73,15 @@ class FocusedGaussianBeamTheory:
         # Wave number
         self.k = 2 * np.pi / self.wavelength
 
-        # Beam waist calculation (depends on truncation)
-        if truncation_coeff >= 4:
-            # Untruncated beam
-            self.w_incident = (self.aperture / 2) / np.sqrt(truncation_coeff)
-            Nw = self.w_incident**2 / (self.wavelength * self.f)
-            self.w0 = self.w_incident / np.sqrt(1 + (np.pi * Nw)**2)
-        else:
-            # Truncated beam
-            self.w0 = (2 / np.pi) * (self.wavelength * self.f / self.aperture)
+        # Beam waist calculation
+        # w_incident: 1/e² radius of Gaussian at aperture plane
+        # For Gaussian amplitude A(r) = exp(-r²/w_incident²) = exp(-α*(r/r_ap)²)
+        # we need w_incident = r_aperture / sqrt(α) = (aperture/2) / sqrt(α)
+        self.w_incident = (self.aperture / 2) / np.sqrt(truncation_coeff)
+
+        # Focused beam waist using Gaussian beam propagation
+        Nw = self.w_incident**2 / (self.wavelength * self.f)
+        self.w0 = self.w_incident / np.sqrt(1 + (np.pi * Nw)**2)
 
         # Rayleigh range
         self.z_R = np.pi * self.w0**2 / self.wavelength
@@ -170,7 +170,7 @@ class FocusedGaussianBeamTheory:
         s2 = -alpha**2 / (1 + eps**2)
 
         f1 = P**2 * alpha**4 / (4 * Z**2 * (s1**2 + s2**2))
-        f2 = 1 + expit(2*s2) - 2*expit(s2)*np.cos(s1)
+        f2 = 1 + np.exp(2*s2) - 2*np.exp(s2)*np.cos(s1)
         intensity = f1 * f2
 
         # Handle z = 0 case
@@ -223,11 +223,11 @@ class FocusedGaussianBeamTheory:
         # Define integrands
         def f1_integrand(r0, R_val):
             return r0 * jv(0, P * alpha * R_val / Z * r0) * \
-                   expit(-alpha**2 * r0**2 / (1 + eps**2)) * np.cos(s1 * r0**2)
+                   np.exp(-alpha**2 * r0**2 / (1 + eps**2)) * np.cos(s1 * r0**2)
 
         def f2_integrand(r0, R_val):
             return r0 * jv(0, P * alpha * R_val / Z * r0) * \
-                   expit(-alpha**2 * r0**2 / (1 + eps**2)) * np.sin(s1 * r0**2)
+                   np.exp(-alpha**2 * r0**2 / (1 + eps**2)) * np.sin(s1 * r0**2)
 
         # Compute intensity for each r value
         intensity = np.zeros_like(r, dtype=float)
