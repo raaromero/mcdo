@@ -38,7 +38,7 @@ class RichardsWolfSimulator:
         n_medium: float = 1.0,
         polarization: str = 'x',
         input_field: str = 'uniform',
-        fill_factor: float = 0.9
+        truncation_coeff: float = 1.0
     ):
         """
         Initialize Richards-Wolf simulator.
@@ -55,16 +55,19 @@ class RichardsWolfSimulator:
             'x', 'y', or 'circular'
         input_field : str
             'uniform' or 'gaussian' - type of input field
-        fill_factor : float
-            For Gaussian: ratio of 1/e² radius to aperture radius
-            fill_factor = w_0 / r_aperture (typically 0.3-0.9)
+        truncation_coeff : float
+            Truncation coefficient (Horvath & Bor, 2003)
+            - truncation_coeff >= 4: untruncated Gaussian beam
+            - truncation_coeff < 4: truncated beam
+            - truncation_coeff = 0: spherical beam (uniform aperture illumination)
+            Default: 1.0 (moderately truncated)
         """
         self.wavelength = wavelength
         self.numerical_aperture = numerical_aperture
         self.n_medium = n_medium
         self.polarization = polarization
         self.input_field = input_field
-        self.fill_factor = fill_factor
+        self.truncation_coeff = truncation_coeff
 
         # Wave number k = 2π/λ
         self.k = 2 * np.pi / wavelength
@@ -94,10 +97,12 @@ class RichardsWolfSimulator:
         if self.input_field == 'uniform':
             return 1.0
         elif self.input_field == 'gaussian':
-            # Gaussian beam amplitude: A(θ) = exp(-sin²(θ) / (2*sin²(θ_w)))
-            # where sin(θ_w) = fill_factor * sin(α)
-            sin_theta_w = self.fill_factor * self.sin_alpha
-            return np.exp(-np.sin(theta)**2 / (2 * sin_theta_w**2))
+            # Gaussian beam amplitude apodization
+            # Following gbp-mc: w_incident = f*sin(α) / sqrt(trunc_coeff)
+            # Field amplitude: A(r) = exp(-r²/w_incident²)
+            # In angular coords: r = f*sin(θ), so:
+            # A(θ) = exp(-f²sin²(θ)/w_incident²) = exp(-trunc_coeff * sin²(θ)/sin²(α))
+            return np.exp(-self.truncation_coeff * np.sin(theta)**2 / self.sin2_alpha)
         else:
             raise ValueError(f"Unknown input_field: {self.input_field}")
 
@@ -226,7 +231,8 @@ class RichardsWolfSimulator:
     def focal_plane_intensity_pattern(
         self,
         x_focal: np.ndarray,
-        y_focal: np.ndarray
+        y_focal: np.ndarray,
+        component: str = 'total'
     ) -> np.ndarray:
         """
         Calculate intensity pattern at focal plane (z=0).
@@ -239,17 +245,36 @@ class RichardsWolfSimulator:
             x coordinates at focal plane in microns
         y_focal : np.ndarray
             y coordinates at focal plane in microns
+        component : str
+            Which field component(s) to use for intensity:
+            - 'total': |Ex|² + |Ey|² + |Ez|² (default)
+            - 'x': |Ex|² only
+            - 'y': |Ey|² only
+            - 'z': |Ez|² only
+            - 'transverse': |Ex|² + |Ey|²
 
         Returns
         -------
         intensity : np.ndarray
-            Total intensity |Ex|² + |Ey|² + |Ez|²
+            Intensity based on selected component(s)
         """
         r = np.sqrt(x_focal**2 + y_focal**2)
         z = np.zeros_like(r)
 
         Ex, Ey, Ez = self.compute_field(r, z)
-        intensity = np.abs(Ex)**2 + np.abs(Ey)**2 + np.abs(Ez)**2
+
+        if component == 'total':
+            intensity = np.abs(Ex)**2 + np.abs(Ey)**2 + np.abs(Ez)**2
+        elif component == 'x':
+            intensity = np.abs(Ex)**2
+        elif component == 'y':
+            intensity = np.abs(Ey)**2
+        elif component == 'z':
+            intensity = np.abs(Ez)**2
+        elif component == 'transverse':
+            intensity = np.abs(Ex)**2 + np.abs(Ey)**2
+        else:
+            raise ValueError(f"Unknown component: {component}. Use 'total', 'x', 'y', 'z', or 'transverse'")
 
         # Normalize to peak intensity
         intensity = intensity / np.max(intensity)
