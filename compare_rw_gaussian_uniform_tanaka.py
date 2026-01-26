@@ -25,8 +25,9 @@ n_medium = 1.0
 polarization = 'x'
 NA = 0.1  # Low NA for paraxial regime where Tanaka is valid
 
-# Fill factor for Gaussian beam
-fill_factor = 0.95  # High fill factor for best agreement with theory
+# Truncation coefficient for Gaussian beam (Horvath & Bor, 2003)
+# truncation_coeff ~1.1 corresponds to high fill factor (~0.95) for best agreement with theory
+truncation_coeff = 1.108  # Equivalent to fill_factor=0.95
 
 # Focal length (needed for Tanaka)
 aperture_default = 1500.0
@@ -38,9 +39,9 @@ print(f"  Wavelength (λ):      {wavelength} μm")
 print(f"  Numerical aperture:  {NA}")
 print(f"  Refractive index:    {n_medium}")
 print(f"  Polarization:        {polarization}")
-print(f"  Fill factor:         {fill_factor}")
+print(f"  Truncation coeff:    {truncation_coeff:.3f}")
 print(f"  Focal length:        {focal_length:.1f} μm")
-print(f"  Truncation coeff:    {1/(fill_factor**2):.3f}")
+print(f"  Equiv. fill factor:  {1/np.sqrt(truncation_coeff):.3f}")
 
 # Create simulators
 
@@ -52,12 +53,11 @@ rw_gaussian = RichardsWolfSimulator(
     n_medium=n_medium,
     polarization=polarization,
     input_field='gaussian',
-    fill_factor=fill_factor
+    truncation_coeff=truncation_coeff
 )
 
 # 2. Tanaka analytical theory
 print("2. Creating Tanaka (analytical Gaussian beam theory)...")
-truncation_coeff = 1.0 / (fill_factor**2)
 tanaka = FocusedGaussianBeamTheory(
     numerical_aperture=NA,
     wavelength=wavelength,
@@ -75,7 +75,7 @@ rw_uniform = RichardsWolfSimulator(
     n_medium=n_medium,
     polarization=polarization,
     input_field='uniform',
-    fill_factor=1.0  # Not used for uniform, but set to 1.0
+    truncation_coeff=1.0  # Not used for uniform, but set to 1.0
 )
 
 # Compute intensity profiles

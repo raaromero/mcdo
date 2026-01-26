@@ -38,7 +38,8 @@ class RichardsWolfSimulator:
         n_medium: float = 1.0,
         polarization: str = 'x',
         input_field: str = 'uniform',
-        truncation_coeff: float = 1.0
+        truncation_coeff: float = 1.0,
+        gaussian_reference_na: float = None
     ):
         """
         Initialize Richards-Wolf simulator.
@@ -61,6 +62,11 @@ class RichardsWolfSimulator:
             - truncation_coeff < 4: truncated beam
             - truncation_coeff = 0: spherical beam (uniform aperture illumination)
             Default: 1.0 (moderately truncated)
+        gaussian_reference_na : float, optional
+            Reference NA for Gaussian apodization normalization.
+            For annular apertures using Babinet's principle, set this to the
+            OUTER NA so that both inner and outer disks sample the same
+            physical Gaussian beam. If None (default), uses numerical_aperture.
         """
         self.wavelength = wavelength
         self.numerical_aperture = numerical_aperture
@@ -76,6 +82,13 @@ class RichardsWolfSimulator:
         self.angular_aperture = np.arcsin(numerical_aperture / n_medium)
         self.sin_alpha = np.sin(self.angular_aperture)
         self.sin2_alpha = self.sin_alpha ** 2
+
+        # Gaussian reference: for annular apertures, use outer NA
+        if gaussian_reference_na is not None:
+            ref_angle = np.arcsin(gaussian_reference_na / n_medium)
+            self.gaussian_sin2_alpha = np.sin(ref_angle) ** 2
+        else:
+            self.gaussian_sin2_alpha = self.sin2_alpha
 
         # Airy radius for reference
         self.airy_radius = 0.61 * wavelength / numerical_aperture
@@ -98,11 +111,14 @@ class RichardsWolfSimulator:
             return 1.0
         elif self.input_field == 'gaussian':
             # Gaussian beam amplitude apodization
-            # Following gbp-mc: w_incident = f*sin(α) / sqrt(trunc_coeff)
+            # Following gbp-mc: w_incident = f*sin(α_ref) / sqrt(trunc_coeff)
             # Field amplitude: A(r) = exp(-r²/w_incident²)
             # In angular coords: r = f*sin(θ), so:
-            # A(θ) = exp(-f²sin²(θ)/w_incident²) = exp(-trunc_coeff * sin²(θ)/sin²(α))
-            return np.exp(-self.truncation_coeff * np.sin(theta)**2 / self.sin2_alpha)
+            # A(θ) = exp(-f²sin²(θ)/w_incident²) = exp(-trunc_coeff * sin²(θ)/sin²(α_ref))
+            #
+            # For annular apertures: α_ref = outer aperture angle (via gaussian_reference_na)
+            # This ensures inner and outer disks sample the SAME physical Gaussian beam
+            return np.exp(-self.truncation_coeff * np.sin(theta)**2 / self.gaussian_sin2_alpha)
         else:
             raise ValueError(f"Unknown input_field: {self.input_field}")
 

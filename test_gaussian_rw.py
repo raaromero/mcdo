@@ -18,14 +18,14 @@ print("="*70)
 wavelength = 0.532  # microns
 n_medium = 1.0
 polarization = 'x'
-fill_factor = 0.6
+truncation_coeff = 2.778  # Equivalent to fill_factor=0.6
 
 NA_low = 0.1
 NA_high = 0.9
 
 print(f"\nParameters:")
 print(f"  Wavelength: {wavelength} μm")
-print(f"  Fill factor: {fill_factor}")
+print(f"  Truncation coeff: {truncation_coeff:.3f} (equiv. fill factor: {1/np.sqrt(truncation_coeff):.3f})")
 print(f"  Polarization: {polarization}")
 
 # Create simulators
@@ -39,13 +39,13 @@ sims = {
                                          input_field='uniform'),
     'low_gaussian': RichardsWolfSimulator(wavelength=wavelength, numerical_aperture=NA_low,
                                           n_medium=n_medium, polarization=polarization,
-                                          input_field='gaussian', fill_factor=fill_factor),
+                                          input_field='gaussian', truncation_coeff=truncation_coeff),
     'high_uniform': RichardsWolfSimulator(wavelength=wavelength, numerical_aperture=NA_high,
                                           n_medium=n_medium, polarization=polarization,
                                           input_field='uniform'),
     'high_gaussian': RichardsWolfSimulator(wavelength=wavelength, numerical_aperture=NA_high,
                                            n_medium=n_medium, polarization=polarization,
-                                           input_field='gaussian', fill_factor=fill_factor),
+                                           input_field='gaussian', truncation_coeff=truncation_coeff),
 }
 
 print(f"\n✓ Low NA={NA_low}:")
