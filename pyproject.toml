@@ -1,0 +1,15 @@
+# Tooling config for mcdo (Monte Carlo Diffraction Optics).
+# The package is imported via the repo root on sys.path (tests + scripts), so
+# this file only configures the linter — it keeps ruff to *substantive* checks
+# and accepts the project's compact scientific-script style.
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# Deliberate style for numerical/plotting code, not defects:
+#   E702  compact `a; b` statements       E741  domain single letters (I = intensity)
+#   E401  grouped `import os, sys`         E731  small inline lambdas
+#   E402  imports after sys.path.insert    E501  long plotting / format strings
+# Real problems still flag: unused imports/vars (F401/F841), undefined names, etc.
+ignore = ["E702", "E741", "E401", "E731", "E402", "E501"]

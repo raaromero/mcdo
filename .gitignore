@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+
+# LaTeX / tectonic intermediates (the compiled review_NN.pdf are kept)
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Held back from this PUBLIC repo pending the author's OK — it critiques a
+# named external project (gbp-mc). Remove this line to include it.
+docs/gbp_mc_external_review.md

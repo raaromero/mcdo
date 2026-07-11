@@ -1,0 +1,352 @@
+% Paper 1 — deterministic (Phases 1–5). DRAFT v0.1 (2026-07-08).
+% Build: cd paper/draft && tectonic main.tex
+% NOTE: written in plain article class for drafting; port to the target
+% journal template (JOSA A / Opt. Express / PRA) at submission.
+% Citations marked [V] are verified against the source (paper/literature/
+% LITERATURE_SWEEP.md); those marked TODO-verify must be checked before
+% submission (see docs/LITERATURE.md caveats).
+\documentclass[11pt]{article}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{graphicx,amsmath,amssymb,booktabs,xcolor}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../../output/05_pulsed_pupils/}{../../output/03_annular/}%
+{../../output/04_axicon/}{../../output/02_na_apodization/}{../../output/00_overview/}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\setlength{\parskip}{2pt}
+
+\title{Few-cycle pulses focused through annular and conical pupils at high
+numerical aperture: bandwidth-invariant depth-of-focus extension and the
+erosion of transverse structure}
+\author{R.~A.~Romero\\ \small National Institute of Physics, University of the
+Philippines Diliman\\ \small \todo{author list / affiliations to confirm}}
+\date{Draft v0.1 --- \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Structured pupils --- annular apertures and conical (axicon) phases --- extend
+the depth of focus (DOF) of a tightly focused beam, while few-cycle pulses
+carry an octave-scale bandwidth that smears the fine structure of the focal
+field. What happens when the two are combined at high numerical aperture (NA),
+where the field is fully vectorial, has not been reported. Using
+Richards--Wolf vector diffraction with full-spectrum temporal integration, we
+show that the fractional DOF extension produced by an annular pupil,
+$\mathrm{DOF}(\varepsilon)/\mathrm{DOF}(0)$, is \emph{invariant to few-cycle
+bandwidth} --- constant to three digits from continuous wave down to a 1-fs
+pulse ($44.35\!\to\!44.33$ at obstruction $\varepsilon=0.99$, $\mathrm{NA}=0.8$,
+$\lambda_c=750$\,nm) and across apertures $\mathrm{NA}=0.6$--$1.0$ --- while the
+transverse Bessel ring structure erodes \emph{non-monotonically} in pulse
+width: the Linfoot structural content first dips below unity (moderate pulses
+wash out the rings) before rising above it (few-cycle broadening of the central
+lobe). A core/ring decomposition explains the non-monotonicity quantitatively.
+Supporting results sharpen the deterministic toolkit: scalar-validity
+thresholds at high NA are shown to be strongly anisotropic (dependent on
+polarization, observation cut, and direction --- a single ``NA threshold'' is
+ill-posed); Gaussian apodization \emph{extends} scalar validity; the
+thin-annulus Bessel core is vector-deformed at high NA while the axicon's
+apparent deviation from the Durnin $J_0^2$ profile is shown to be
+stationary-phase error, vanishing as $1/\beta$. All results are validated
+against analytic limits, published anchors, and first-principles
+Maxwell/Helmholtz residual checks. The bandwidth-invariant DOF extension
+identifies pulsed annular/Bessel illumination as a robust route to extended-
+depth nonlinear microscopy with few-cycle sources.
+\end{abstract}
+
+\section{Introduction}
+
+Tight focusing of ultrashort pulses underlies multiphoton microscopy,
+micromachining, and strong-field light--matter interaction. At high numerical
+aperture the focal field must be treated vectorially; the Richards--Wolf (RW)
+diffraction integrals~\cite{Wolf1959,RichardsWolf1959} remain the standard
+description, and their extension to broadband pulses --- summing monochromatic
+vector fields incoherently over the pulse power spectrum --- was analyzed for
+unstructured (clear circular) pupils by Romallosa, Bantang and
+Saloma~\cite{Romallosa2003} [V], who quantified the smearing of the focal
+structure of a 750-nm beam at pulse widths down to 1\,fs via Linfoot's image
+criteria [V].
+
+Independently, \emph{pupil structuring} is a mature route to focal
+engineering. Annular apertures narrow the central lobe and extend the depth of
+focus~\cite{SheppardWilson1978,Sheppard1988}; in the thin-ring limit the focal
+field approaches Durnin's nondiffracting Bessel beam~\cite{Durnin1987}; conical
+(axicon) phases produce an extended focal segment with a position-dependent
+Bessel profile~\cite{McLeod1954,Durnin1987}. At high NA these structured foci
+acquire vector character: double-ring and cylindrical-vector illumination
+produce sub-wavelength needles of controlled polarization over many
+wavelengths~\cite{Wang2010needle,Guo2014needle} [V]. On the application side,
+axicon-generated Bessel--Gauss beams extend the two-photon depth of field by an
+order of magnitude or more~\cite{Betzig2014Bessel} [V-mechanism], and Bessel
+light sheets image deep into scattering tissue~\cite{Zhao2014BesselSIM}
+\todo{verify exact numbers before submission}.
+
+What is missing between these two literatures is their \emph{combination}: how
+do structured-pupil foci respond to few-cycle bandwidth at high NA? The
+bandwidth couples to the pupil geometry nontrivially --- every spectral
+component sees the same geometric pupil but produces a focal pattern whose
+scale is proportional to its wavelength, so spectral summation washes out
+wavelength-scale structure (the Romallosa effect~\cite{Romallosa2003}) while
+potentially preserving geometric ratios. To our knowledge no published work
+reports the pulsed behavior of annular or axicon foci in the vectorial,
+few-cycle regime (Sec.~\ref{sec:lit} discusses the closest prior art).
+
+Here we answer that question with a validated deterministic toolkit
+(Sec.~\ref{sec:methods}) and report four results (Sec.~\ref{sec:results}):
+(i)~scalar-validity thresholds at high NA are strongly \emph{anisotropic} ---
+they depend on input polarization, on the observation cut, and on direction
+(transverse vs axial), so a single scalar-breakdown NA is ill-posed; Gaussian
+apodization systematically \emph{extends} scalar validity;
+(ii)~the annular DOF law $\mathrm{DOF}(\varepsilon)/\mathrm{DOF}(0)
+=1/(1-\varepsilon^2)$ holds to three digits paraxially but falls ${\sim}40\%$
+short at $\sin\alpha=0.9$, and the thin-annulus Bessel core is genuinely
+vector-deformed at high NA (deviation 0.163 from $J_0^2$ vs 0.004 at low NA);
+(iii)~the axicon's transverse profile deviation from the predicted local
+$J_0^2$ is a stationary-phase artifact that decays as $1/\beta$ (0.134 at
+$\beta{=}5$ to 0.006 at $\beta{=}2560$), not a vector effect --- with practical
+validity ceilings; and
+(iv)~\emph{the headline}: the fractional annular DOF extension is invariant to
+few-cycle bandwidth across $\mathrm{NA}=0.6$--$1.0$, while the transverse ring
+contrast erodes non-monotonically in pulse width, an effect we explain
+quantitatively by decomposing the pattern into its Bessel core and rings.
+
+\section{Theory and methods}\label{sec:methods}
+
+\subsection{Vector focal fields}
+For an aplanatic system of semi-aperture $\alpha$ ($\sin\alpha=\mathrm{NA}/n$)
+illuminated by an $x$-polarized beam with pupil amplitude $A(\theta)$, the
+focal field is given by the RW integrals~\cite{RichardsWolf1959}
+\begin{equation}
+I_m(r,z;k)=\int_0^{\alpha}\! A(\theta)\sqrt{\cos\theta}\,
+K_m(\theta)\, J_m(kr\sin\theta)\, e^{\mathrm{i}kz\cos\theta}\,\mathrm{d}\theta,
+\qquad m=0,1,2,
+\label{eq:rw}
+\end{equation}
+with kernels $K_0=\sin\theta(1{+}\cos\theta)$, $K_1=\sin^2\theta$,
+$K_2=\sin\theta(1{-}\cos\theta)$, and field components
+$\mathbf{E}\propto\big(I_0+I_2\cos2\phi,\; I_2\sin2\phi,\;
+-2\mathrm{i}I_1\cos\phi\big)$. Following Ref.~\cite{Romallosa2003} we quote the
+meridional cut with true zeros, $|I_0-I_2|^2$ (the $y$--$z$ plane), and verify
+key results on the orthogonal cut $|I_0{+}I_2|^2{+}4|I_1|^2$ and the azimuthal
+average.
+
+Annular pupils of obstruction $\varepsilon$ are treated by field-level Babinet
+subtraction, $I_m^{\mathrm{ann}}=I_m(\alpha)-I_m(\alpha_{\mathrm{in}})$ with
+$\sin\alpha_{\mathrm{in}}=\varepsilon\sin\alpha$; apodization uses the
+truncated-Gaussian $A(\theta)=\exp(-\alpha_t\sin^2\theta/\sin^2\alpha)$ of
+Horv\'ath and Bor~\cite{HorvathBor2003}; the axicon is the conical pupil phase
+$A(\theta)=\exp(\mathrm{i}\beta\sin\theta/\sin\alpha)$.
+
+\subsection{Few-cycle pulses}
+An unchirped Gaussian pulse of intensity FWHM $\tau$ has power spectrum
+$|E(\omega)|^2\propto\exp[-(\omega-\omega_c)^2/2a]$ with $a=2\ln2/\tau^2$
+(spectral FWHM $4\ln2/\tau$; the transform-limited product
+$\Delta\nu\,\Delta t=2\ln2/\pi$). The time-integrated focal intensity is the
+incoherent spectral sum~\cite{Romallosa2003}
+\begin{equation}
+I(\mathbf{r})=\int_0^{2\omega_c}\! |E(\omega)|^2\,
+\big|\mathbf{E}(\mathbf{r};\omega)\big|^2\,\mathrm{d}\omega .
+\label{eq:eq10}
+\end{equation}
+The integration window matters: we find (Appendix~\ref{app:window}) that
+Ref.~\cite{Romallosa2003}'s published anchors are reproduced only when
+Eq.~\eqref{eq:eq10} is evaluated over the \emph{full positive spectral support}
+$\omega\in(0,2\omega_c)$; restricting to the FWHM band quoted in the text
+discards 24\% of the spectral weight and fails every anchor.
+
+\subsection{Metrics and validation}
+Pulsed-vs-cw pattern change is quantified by Linfoot's criteria (fidelity $F$,
+structural content $S$, correlation quality $Q$; $2Q-S=F$) on peak-normalized
+profiles~\cite{Romallosa2003,Linfoot}. DOF denotes the axial FWHM of the
+on-axis intensity in optical units $u=k\sin^2\!\alpha\,z$.
+
+Every layer of the computation is validated before reuse: low-NA limits
+reproduce the Airy and Durnin $J_0^2$ patterns to $5\times10^{-3}$; Babinet at
+$\varepsilon{=}0$ is exact to $10^{-12}$; the published anchors of
+Ref.~\cite{Romallosa2003} (axial $S=1.058$ vs.\ 1.057; transverse FWHM
+472.8\,nm; zero rings at 0.555 and 3.05\,$\mu$m) and the annular closed forms
+of Ref.~\cite{SheppardWilson1978} (0.8\%) are reproduced. Beyond benchmark
+matching, the implementation passes \emph{first-principles} residual checks:
+the scalar field satisfies the Helmholtz equation and the vector field
+satisfies $\nabla\!\cdot\!\mathbf{E}=0$ at the finite-difference floor
+($\sim\!10^{-4}$), with deliberately broken controls (wrong $k$; $E_z$ kernel
+factor) failing at the $10^{-1}$ level --- pinning the kernels of
+Eq.~\eqref{eq:rw} to Maxwell's equations independently of any literature
+anchor. A 40-test regression suite locks these results.
+\todo{cite code/data repository (Zenodo DOI) at submission}
+
+\section{Results}\label{sec:results}
+
+\subsection{Anisotropic scalar-validity thresholds; apodization extends
+scalar validity}\label{sec:thresholds}
+Comparing vector and scalar predictions of the focal FWHM as NA grows shows
+that the scalar-breakdown threshold is not a single number
+(Table~\ref{tab:thresh}): at the 1\% level the worst case (transverse,
+linear-$x$ input, cut parallel to the polarization) fails at
+$\mathrm{NA}\approx0.30$, while the perpendicular cut holds to ${\approx}0.85$
+and the axial profile to ${\approx}1.15$. The anisotropy \emph{is} the
+longitudinal field: $E_z$ fills the parallel-cut zeros and elongates the spot
+along the polarization axis. Gaussian underfilling ($\alpha_t{=}4$) de-weights
+marginal rays and \emph{extends} the worst-case 1\%/5\% thresholds from
+0.30/0.60 to 0.40/0.85.
+
+\begin{table}[htb]\centering\small
+\caption{NA at which the scalar prediction of the focal FWHM deviates by
+1\%/5\% (uniform pupil, $\lambda_c=750$\,nm, $n=1.3$).}
+\label{tab:thresh}
+\begin{tabular}{lcc}\toprule
+quantity & 1\% & 5\% \\ \midrule
+transverse, linear-$x$, $\parallel$ cut (worst) & 0.30 & 0.60\\
+transverse, circular input & 0.45 & 0.90\\
+transverse, linear-$x$, $\perp$ cut & 0.85 & ---\\
+axial (any polarization) & 1.15 & ---\\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Annular apertures: DOF law and the vector Bessel core}
+The paraxial law $\mathrm{DOF}(\varepsilon)/\mathrm{DOF}(0)=1/(1-\varepsilon^2)$
+holds to three digits at low NA (50.13 vs.\ 50.25 at $\varepsilon=0.99$) and
+falls ${\sim}40\%$ short at $\sin\alpha=0.9$ (30.4). The Strehl cost follows
+$(1-\varepsilon^2)^2$. In the thin-ring limit the transverse profile approaches
+$J_0^2(v)$ with deviation 0.004 at low NA but \textbf{0.163} at
+$\sin\alpha=0.9$ --- a clean, isolated \emph{vector} deformation of the Bessel
+core (the single-cone geometry isolates the $(1\pm\cos\theta)$ kernels at one
+angle).
+
+\subsection{The axicon deviation is stationary phase, not vector}
+The axicon focal segment carries a local Bessel profile
+$J_0^2(v\sin\theta^*/\sin\alpha)$ at the stationary cone angle
+$\theta^*(u)$. Its 4--8\% deviation from this prediction is \emph{equal} at low
+and high NA, and a $\beta$-scan shows it decays as $1/\beta$ (0.134 at
+$\beta{=}5$ to 0.006 at $\beta{=}2560$): it is the stationary-phase
+approximation error of the analytic model, not a failure of the field
+computation (which matches the full Debye integral to $10^{-3}$ throughout).
+Practical validity ceilings: the pupil-phase sampling resolves
+$\beta\gtrsim2500$, but for a physical objective ($f\approx2$\,mm) the focal
+segment leaves the Debye focal region at $\beta\approx160$.
+
+\subsection{Headline: pulsed annular pupils --- invariant DOF, eroding
+rings}\label{sec:headline}
+Figure~\ref{fig:headline} combines the validated spectral sum
+[Eq.~\eqref{eq:eq10}] with the validated annular fields. Two phenomena
+coexist:
+
+\textbf{(a) The DOF extension is bandwidth-invariant.} At $\mathrm{NA}=0.8$,
+$\mathrm{DOF}(\varepsilon)/\mathrm{DOF}(0)$ changes from 44.35 (cw) to 44.33
+(1\,fs) at $\varepsilon=0.99$ --- invariance to three digits at a bandwidth
+where the transverse pattern is strongly smeared. The robustness map
+(Fig.~\ref{fig:robust}) shows the same invariance across apertures: over
+$\varepsilon=0.5$--$0.99$ and $\mathrm{NA}=0.6$--$1.0$ the cw$\to$1-fs spread
+of the ratio never exceeds \textbf{0.10\%} (e.g.\ $47.30\!\to\!47.30$ at
+$\mathrm{NA}{=}0.6$, $44.35\!\to\!44.33$ at $0.8$, $39.16\!\to\!39.12$ at
+$1.0$, all at $\varepsilon=0.99$), with the largest spreads at the highest
+aperture --- consistent with the weak residual NA-dependence of the ratio
+itself.
+The mechanism is geometric: each spectral component produces the same annular
+cone geometry, so its \emph{fractional} DOF extension is
+wavelength-independent; the spectral sum then averages nearly identical
+ratios. The absolute DOF of each configuration lengthens only ${\sim}1\%$ from
+cw to 1\,fs.
+
+\textbf{(b) The transverse ring structure erodes non-monotonically.} The
+Linfoot structural content of the transverse pattern (pulsed vs.\ cw at the
+same $\varepsilon$) dips \emph{below} unity at moderate pulse widths
+($S=0.988/0.987$ at 5/2\,fs, $\varepsilon=0.9$) before rising above it at
+1\,fs ($S=1.058$). A core/ring decomposition at the first cw zero explains
+this quantitatively: the Bessel-like central lobe is robust
+($S_{\mathrm{core}}$ rises slowly, $1.00\!\to\!1.04$) while the rings first
+wash out ($S_{\mathrm{ring}}$ dips to 0.72 --- rings of different spectral
+components sit at different radii and average destructively) and are then
+overfilled by the broadened central skirt at 1\,fs
+($S_{\mathrm{ring}}=1.37$). The rings carry only 7\% of the pattern weight,
+but with $S_{\mathrm{core}}\approx1$ the small ring deficit controls the sign
+of $S-1$. The effect is robust: it is smooth on a dense $\tau$ grid, flat
+against spectral sampling ($N_{\mathrm{freq}}=51$--$801$), and present in the
+$\parallel$ cut, the $\perp$ cut, and the full azimuthally averaged vector
+intensity.
+
+\begin{figure}[htb]\centering
+\includegraphics[width=0.95\textwidth]{verify_pulsed_annular.png}
+\caption{Pulsed annular focusing at $\mathrm{NA}=0.8$: transverse ring filling
+vs.\ $\tau$ at $\varepsilon=0.99$; full-disk reference; persistence of the
+extended axial focus at 1\,fs; and the DOF ratio following the paraxial law
+for all $\tau$. \todo{replace with publication-quality re-render}}
+\label{fig:headline}
+\end{figure}
+
+\begin{figure}[htb]\centering
+\includegraphics[width=0.95\textwidth]{paper_robustness.png}
+\caption{Robustness of the headline: the normalized DOF ratio
+$[\mathrm{DOF}(\varepsilon)/\mathrm{DOF}(0)](\tau)$ relative to its cw value,
+for $\varepsilon=0.5,0.9,0.99$ at $\mathrm{NA}=0.6,0.8,1.0$.}
+\label{fig:robust}
+\end{figure}
+
+\section{Relation to prior work}\label{sec:lit}
+Ref.~\cite{Romallosa2003} treats few-cycle tight focusing for the clear
+pupil; the annular/Bessel DOF literature
+\cite{SheppardWilson1978,Durnin1987,Betzig2014Bessel} is monochromatic or
+narrowband; high-NA vector needle work
+\cite{Wang2010needle,Guo2014needle} is cw. Broadband extensions of Debye
+focusing theory exist \cite{Botcherby2006matrix} [V] but do not address
+structured pupils' pulsed response. We are not aware of a prior report of the
+bandwidth-invariance of the annular DOF extension or of the non-monotonic ring
+erosion. \todo{final targeted search (``pulsed annular depth of focus'',
+``few-cycle Bessel focus'') before submission}
+
+\section{Discussion and outlook}
+For applications, the message is enabling: the axial benefit of
+annular/Bessel illumination survives the broadest usable bandwidths, so
+extended-DOF nonlinear microscopy \cite{Betzig2014Bessel} can employ few-cycle
+sources without sacrificing the depth advantage --- what is traded is
+transverse ring contrast, and in two-photon operation the rings are already
+suppressed by the intensity-squared response. The anisotropic thresholds
+(Sec.~\ref{sec:thresholds}) give practitioners a lookup for when scalar
+modeling suffices, per polarization and per observable. The validated
+deterministic fields constructed here are the source terms for a companion
+study of these structured pulsed foci propagating through scattering media
+(in preparation), where the wavelength dependence of scattering couples the
+spectral and spatial degrees of freedom.
+
+\appendix
+\section{The spectral integration window of Ref.~[Romallosa 2003]}
+\label{app:window}
+Integrating Eq.~\eqref{eq:eq10} over the FWHM band
+(483\,nm--1.67\,$\mu$m as quoted in the text of Ref.~\cite{Romallosa2003})
+discards 24\% of the spectral weight at $\tau=1$\,fs and yields transverse
+$S=1.020$, inconsistent with the published 1.062. Integrating the full
+positive support $\omega\in(0,2\omega_c)$ reproduces every anchor (axial
+$S=1.058$ vs.\ published 1.057; $F\approx0.96$; the pulsed pedestal
+${\approx}0.05$ at $r=1\,\mu$m of their Fig.~2). We conclude the published
+band describes the FWHM, not the integration window, and recommend the full
+window for reproducibility.
+
+\begin{thebibliography}{99}\small
+\bibitem{Wolf1959} E. Wolf, Proc. R. Soc. Lond. A \textbf{253}, 349 (1959).
+\bibitem{RichardsWolf1959} B. Richards and E. Wolf, Proc. R. Soc. Lond. A
+\textbf{253}, 358 (1959).
+\bibitem{Romallosa2003} K. M. Romallosa, J. Bantang, and C. Saloma, Phys. Rev.
+A \textbf{68}, 033812 (2003). [V]
+\bibitem{SheppardWilson1978} C. J. R. Sheppard and T. Wilson, Microwaves Opt.
+Acoust. \textbf{2}, 105 (1978). \todo{verify}
+\bibitem{Sheppard1988} C. J. R. Sheppard, annular-pupil DOF literature.
+\todo{complete citation}
+\bibitem{Durnin1987} J. Durnin, J. Opt. Soc. Am. A \textbf{4}, 651 (1987).
+\bibitem{McLeod1954} J. H. McLeod, J. Opt. Soc. Am. \textbf{44}, 592 (1954).
+\todo{verify}
+\bibitem{Wang2010needle} double-ring radially polarized needle, Opt. Commun.
+(2010), doi:S003039921000280X. [V]
+\bibitem{Guo2014needle} double-ring azimuthally polarized needle, Opt. Lasers
+Eng. \textbf{59}, 93 (2014). [V]
+\bibitem{Betzig2014Bessel} axicon Bessel--Gauss two-photon microscopy
+(Betzig group), PMC4032997. [V-mechanism] \todo{formal citation}
+\bibitem{Zhao2014BesselSIM} two-photon Bessel light-sheet SIM, PMC4026892.
+\todo{verify + formal citation}
+\bibitem{HorvathBor2003} Z. L. Horv\'ath and Z. Bor, Opt. Commun. \textbf{222},
+51 (2003). \todo{verify}
+\bibitem{Botcherby2006matrix} matrix Debye integral for broadband focusing,
+arXiv:physics/0609030 (2006). [V]
+\bibitem{Linfoot} E. H. Linfoot, \emph{Fourier Methods in Optical Image
+Evaluation} (Focal Press, 1964). \todo{verify}
+\end{thebibliography}
+
+\end{document}
