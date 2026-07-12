@@ -77,7 +77,7 @@ canvas{display:block;width:100%;border-radius:10px}
 <div class="wrap">
 <header class="hd">
   <h1>Focus Through Scatter</h1>
-  <span class="sub">the research coupling — vector focus as the source of photon transport (mcdo Phase 6, live)</span>
+  <span class="sub">the focused beam meets the medium</span>
 </header>
 
 <div class="card">
@@ -100,8 +100,7 @@ canvas{display:block;width:100%;border-radius:10px}
     <input type="range" id="sTau" min="0" max="6" step="0.1" value="2" aria-label="optical depth">
     <div class="row"><span class="lbl">Anisotropy g</span><span class="val" id="vG"></span></div>
     <input type="range" id="sG" min="0" max="0.95" step="0.01" value="0.9" aria-label="anisotropy">
-    <p class="note" style="margin:12px 0 0">λ 750 nm · n 1.3 · slab d = 20 µm ending at the focal
-    plane · vector model · CW. Halo: 10 MC trials × 20 000 photons (mean ± SD band).</p>
+    <p class="note" style="margin:12px 0 0">λ 750 nm · n 1.3 · slab d = 20 µm · 10 trials ± SD.</p>
   </div>
 
   <div>
@@ -115,7 +114,7 @@ canvas{display:block;width:100%;border-radius:10px}
       </div>
     </div>
     <div class="card">
-      <h2>The physics, measured live</h2>
+      <h2>Measured live</h2>
       <span class="chip"><span class="k">Ballistic power (MC)</span><br><span class="v" id="cBallMC"></span></span>
       <span class="chip"><span class="k">⟨e<sup>−µ<sub>s</sub>d/cosθ</sup>⟩ (quadrature)</span><br><span class="v" id="cBallQ"></span></span>
       <span class="chip"><span class="k">Agreement</span><br><span class="v ok" id="cAgree"></span></span>
@@ -125,10 +124,11 @@ canvas{display:block;width:100%;border-radius:10px}
     </div>
   </div>
 </div>
-<p class="note">Companions: <b>Focal Field Explorer</b> (deterministic, pre-MC) · <b>Monte Carlo Slab</b>
-(transport starter). This page couples them: the attenuated core is computed coherently inside the
-Debye integral — amplitude ×e<sup>−µ<sub>s</sub>L(θ)/2</sup> per ray, never photon-killing — and the
-halo rides on top incoherently, exactly the validated mcdo treatment.</p>
+<div class="card"><details><summary style="list-style:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">How this is computed</summary>
+<p class="note" style="margin:10px 0 0">The ballistic core is computed coherently inside the Debye
+integral — each ray's amplitude ×e<sup>−µ<sub>s</sub>L(θ)/2</sup>, never photon-killing — and the
+Monte-Carlo halo rides on top incoherently: the validated mcdo treatment. Companions:
+<b>Focal Field Explorer</b> · <b>Monte Carlo Slab</b>.</p></details></div>
 </div>
 
 <script>

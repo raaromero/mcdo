@@ -101,22 +101,28 @@ table.ec td:first-child,table.ec th:first-child{text-align:left}
   padding:5px 14px;font-size:12px;color:var(--ink2)}
 .mapwrap{position:relative}
 .scroller{overflow-x:auto}
+details.disc summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+details.disc summary::-webkit-details-marker{display:none}
+details.disc summary::after{content:'›';font-size:15px;font-weight:400;color:var(--ink2);
+  transform:rotate(90deg);transition:transform .2s ease}
+details.disc[open] summary::after{transform:rotate(-90deg)}
+details.disc>*:not(summary){margin-top:12px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <div class="wrap">
 <header class="hd">
   <h1>Focal Field Explorer</h1>
-  <span class="sub">vector Richards–Wolf · few-cycle pulses · structured pupils — live, pre-Monte-Carlo</span>
+  <span class="sub">live vector diffraction</span>
 </header>
 
 <!-- ================= BENCH: full-width row, sets where to measure ================= -->
 <div class="card" style="margin-bottom:16px">
-  <h2>Optical bench — set where to measure</h2>
+  <h2>Optical bench</h2>
   <svg id="bench" viewBox="0 0 760 250" width="100%" aria-label="Optical setup schematic"></svg>
-  <div class="note">Drag the <b style="color:var(--zmark)">orange plane</b> to choose the z of the x–y cut and
-  transverse profile · drag the <b style="color:var(--rmark)">teal line</b> to choose the r-offset of the axial
-  profile. Both also draggable on the x–z map below.</div>
+  <div class="note">Drag the <b style="color:var(--zmark)">orange</b> and
+  <b style="color:var(--rmark)">teal</b> lines to set where you measure.</div>
 </div>
 
 <div class="lay">
@@ -133,23 +139,26 @@ table.ec td:first-child,table.ec th:first-child{text-align:left}
       <input type="range" id="sNA" min="0.30" max="1.25" step="0.01" value="0.80" aria-label="NA">
       <div class="row"><span class="lbl">Wavelength λ</span><span class="val" id="vLam"></span></div>
       <input type="range" id="sLam" min="0.40" max="1.60" step="0.01" value="0.75" aria-label="wavelength">
-      <div class="row"><span class="lbl">Index n</span><span class="val" id="vN"></span></div>
-      <input type="range" id="sN" min="1.00" max="1.60" step="0.01" value="1.30" aria-label="refractive index">
       <div class="row" id="rowEps" hidden><span class="lbl">Obstruction ε</span><span class="val" id="vEps"></span></div>
       <input type="range" id="sEps" min="0" max="0.97" step="0.01" value="0.90" aria-label="epsilon" hidden>
       <div class="row" id="rowAt" hidden><span class="lbl">Truncation α<sub>t</sub></span><span class="val" id="vAt"></span></div>
       <input type="range" id="sAt" min="0.2" max="4" step="0.05" value="1.0" aria-label="alpha t" hidden>
-      <div class="row"><span class="lbl">Conical phase β (axicon)</span><span class="val" id="vBeta"></span></div>
-      <input type="range" id="sBeta" min="0" max="30" step="0.5" value="0" aria-label="beta">
-      <div class="row"><span class="lbl">Pulse duration (FWHM)</span><span class="val" id="vTau"></span></div>
+      <div class="row"><span class="lbl">Pulse duration</span><span class="val" id="vTau"></span></div>
       <input type="range" id="sTau" min="0" max="20" step="0.5" value="0" aria-label="tau (0 = CW)">
-      <hr class="hair">
-      <div class="row"><span class="lbl">Field model</span>
-        <div class="seg" style="flex:0 0 148px" id="segModel">
-          <button data-v="vector" aria-pressed="true">Vector</button>
-          <button data-v="scalar" aria-pressed="false">Scalar</button>
+      <details class="disc">
+        <summary>Advanced</summary>
+        <div class="row" style="margin-top:0"><span class="lbl">Index n</span><span class="val" id="vN"></span></div>
+        <input type="range" id="sN" min="1.00" max="1.60" step="0.01" value="1.30" aria-label="refractive index">
+        <div class="row"><span class="lbl">Axicon phase β</span><span class="val" id="vBeta"></span></div>
+        <input type="range" id="sBeta" min="0" max="30" step="0.5" value="0" aria-label="beta">
+        <div class="row"><span class="lbl">Field model</span>
+          <div class="seg" style="flex:0 0 148px" id="segModel">
+            <button data-v="vector" aria-pressed="true">Vector</button>
+            <button data-v="scalar" aria-pressed="false">Scalar</button>
+          </div>
         </div>
-      </div>
+      </details>
+      <hr class="hair">
       <div class="row" style="justify-content:flex-start;gap:8px">
         <button class="btn" id="btnPin">Pin config</button>
         <button class="btn ghost" id="btnReset">Reset to defaults</button>
@@ -161,41 +170,43 @@ table.ec td:first-child,table.ec th:first-child{text-align:left}
   <!-- ================= MAIN ================= -->
   <div class="main">
     <div class="card">
-      <h2>Metrics — at the sampling lines</h2>
+      <h2>Measurements</h2>
       <div class="chips" id="chips"></div>
+      <div class="note" style="margin-top:10px">Transverse at the orange plane · axial along the teal line.</div>
     </div>
     <div class="card mapwrap">
-      <h2>Meridional slice · x–z <span class="note" style="text-transform:none;letter-spacing:0">
-        (iso-contours ½ · ⅒ · 1⁄100 — orange: z-plane, teal: r-offset)</span></h2>
+      <h2>Cross-section · x–z</h2>
       <div class="scroller"><canvas id="cxz" width="820" height="330" style="cursor:crosshair"></canvas></div>
+      <div class="note" style="margin-top:8px">Contours at ½, ⅒, 1⁄100 of peak. Drag the lines here too.</div>
       <div class="busy" id="busy"><span>Computing…</span></div>
     </div>
     <div class="grid2">
       <div class="card">
-        <h2>Transverse cut · x–y at z = <span id="zLab">0.00</span> µm</h2>
+        <h2>Focal-plane cut · z = <span id="zLab">0.00</span> µm</h2>
         <canvas id="cxy" width="380" height="380"></canvas>
       </div>
       <div class="card">
-        <h2>Profiles at the sampling lines</h2>
-        <div class="note" style="margin-bottom:6px">x-profile at z-plane — solid: x-cut (φ=0) · dashed: y-cut (φ=90°)</div>
-        <canvas id="cpx" width="380" height="170"></canvas>
-        <hr class="hair">
-        <div class="note" style="margin-bottom:6px">z-profile at r = <span id="rLab">0.00</span> µm · thin lines: pinned configs</div>
-        <canvas id="cpz" width="380" height="170"></canvas>
-        <div class="row" style="margin-top:10px"><span class="lbl">Intensity scale</span>
-          <div class="seg" style="flex:0 0 148px" id="segLog">
+        <div class="row" style="margin:0 0 10px">
+          <h2 style="margin:0">Profiles</h2>
+          <div class="seg" style="flex:0 0 132px" id="segLog">
             <button data-v="lin" aria-pressed="true">Linear</button>
             <button data-v="log" aria-pressed="false">Log</button>
           </div>
         </div>
+        <canvas id="cpx" width="380" height="170"></canvas>
+        <hr class="hair">
+        <canvas id="cpz" width="380" height="170"></canvas>
+        <div class="note" style="margin-top:8px">Top: transverse (solid x-cut, dashed y-cut) ·
+        bottom: axial at r = <span id="rLab">0.00</span> µm · thin lines: pinned.</div>
       </div>
     </div>
     <div class="card">
-      <h2>Engine check — this page vs mcdo (N<sub>θ</sub>=1201 reference)</h2>
-      <table class="ec" id="ecTab"><tr><td class="note">running…</td></tr></table>
-      <p class="note" style="margin:10px 0 0">References from the validated <code>mcdo</code> engine
-      (vector RW; NA 0.8, n 1.3, λ 750 nm, CW). The page recomputes them on load with its own integrator
-      at those settings, whatever the sliders say.</p>
+      <details class="disc">
+        <summary>Engine check — matches the validated mcdo engine</summary>
+        <table class="ec" id="ecTab"><tr><td class="note">running…</td></tr></table>
+        <p class="note" style="margin:10px 0 0">References: mcdo vector Richards–Wolf at N<sub>θ</sub>=1201
+        (NA 0.8, n 1.3, λ 750 nm, CW). Recomputed on load by this page's own integrator.</p>
+      </details>
     </div>
   </div>
 </div>
@@ -545,11 +556,9 @@ function drawProfiles(){
 function drawChips(){
   const f=(v,d)=>Number.isFinite(v)?v.toFixed(d):'—';
   const items=[
-    ['FWHM x @ z-plane', f(M.fwx,1), 'nm'],
-    ['FWHM y @ z-plane', f(M.fwy,1), 'nm'],
-    ['Axial FWHM @ r', f(M.dof,2), 'µm'],
-    ['z-plane', S.z0.toFixed(2), 'µm'],
-    ['r-offset', S.r0.toFixed(2), 'µm'],
+    ['FWHM x', f(M.fwx,1), 'nm'],
+    ['FWHM y', f(M.fwy,1), 'nm'],
+    ['Axial FWHM', f(M.dof,2), 'µm'],
   ];
   el('chips').innerHTML=items.map(([k,v,u])=>
     `<div class="chip"><div class="k">${k}</div><div class="v">${v}<small> ${u}</small></div></div>`).join('');

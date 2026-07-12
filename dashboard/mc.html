@@ -75,7 +75,7 @@ canvas{display:block;width:100%;border-radius:10px}
 <div class="wrap">
 <header class="hd">
   <h1>Monte Carlo Slab</h1>
-  <span class="sub">analog photon transport · Henyey–Greenstein · 10 trials, mean ± SD — simple starter</span>
+  <span class="sub">live photon transport</span>
 </header>
 
 <div class="card">
@@ -98,8 +98,7 @@ canvas{display:block;width:100%;border-radius:10px}
       <input type="range" id="sA" min="0" max="0.5" step="0.01" value="0" aria-label="absorption ratio">
       <div class="row"><span class="lbl">Photons / trial</span><span class="val" id="vN"></span></div>
       <input type="range" id="sN" min="3" max="5" step="0.5" value="4" aria-label="log10 photons">
-      <p class="note" style="margin:12px 0 0">Slab thickness d = 20 µm. Pencil beam,
-      normal incidence. 10 independent trials per setting; all numbers mean ± SD.</p>
+      <p class="note" style="margin:12px 0 0">Slab d = 20 µm · pencil beam · 10 trials, mean ± SD.</p>
     </div>
     <div class="card">
       <h2>Slab</h2>
@@ -117,8 +116,7 @@ canvas{display:block;width:100%;border-radius:10px}
         <span class="chip"><span class="k">Beer–Lambert e<sup>−(µ<sub>s</sub>+µ<sub>a</sub>)d</sup></span><br><span class="v" id="cBL"></span></span>
         <span class="chip"><span class="k">Agreement</span><br><span class="v ok" id="cOK"></span></span>
       </div>
-      <p class="note" style="margin:10px 0 0">The ballistic check is validation rung 2 of the mcdo
-      ladder, running live: unscattered survival must match exp(−µ<sub>t</sub>d) within its error bar.</p>
+      <p class="note" style="margin:10px 0 0">Live validation: unscattered survival must match Beer–Lambert within its error bar.</p>
     </div>
     <div class="card">
       <h2>Transmitted diffuse halo — radial profile (mean ± SD band)</h2>
@@ -127,9 +125,7 @@ canvas{display:block;width:100%;border-radius:10px}
     </div>
   </div>
 </div>
-<p class="note">Companion page: the deterministic <b>Focal Field Explorer</b> covers everything
-before scattering. This starter treats the medium only; coupling the focused vector field to the
-slab (the full mcdo Phase 6) is the next build.</p>
+<p class="note">Companion pages: <b>Focal Field Explorer</b> (before the medium) · <b>Focus Through Scatter</b> (the coupling).</p>
 </div>
 
 <script>
@@ -372,7 +368,7 @@ function startPaths(){
   const names={ball:'ballistic',fwd:'forward diffuse',back:'backscattered',abs:'absorbed (·)'};
   el('pathLeg').innerHTML=Object.keys(names).map(k=>
     `<span><i style="background:${css('--c-'+k)}"></i>${names[k]}</span>`).join('')+
-    `<span style="margin-left:auto">140 sample paths (2-D projection) — statistics below use the full 3-D engine</span>`;
+    `<span style="margin-left:auto">140 sample paths — statistics use the full 3-D engine</span>`;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduced){ drawPathsFrame(1); return; }
   PATHS.t0=performance.now();
