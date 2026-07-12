@@ -115,7 +115,7 @@ table.ec td:first-child,table.ec th:first-child{text-align:left}
   <div class="rail">
     <div class="card">
       <h2>Optical bench</h2>
-      <svg id="bench" viewBox="0 0 288 210" width="100%" aria-label="Optical setup schematic"></svg>
+      <svg id="bench" viewBox="0 0 288 268" width="100%" aria-label="Optical setup schematic"></svg>
       <div class="note">Drag the orange plane (here or on the map) for the x–y cut; drag the teal
       line on the map to sample the axial profile off-axis.</div>
     </div>
@@ -558,7 +558,11 @@ function drawBench(){
   const alpha=Math.asin(Math.min(S.NA/S.n,0.999));
   const ink=css('--ink'), ink2=css('--ink2'), hair=css('--hair'), acc=css('--accent');
   const eps=S.pupil==='annular'?S.eps:0;
-  const cx=52,cy=62,rp=40, lx=132, fx=252, axY=62;
+  // face-on pupil (top) + large side view (bottom) so the shadow is legible
+  const cx=42,cy=44,rp=30;
+  const x0=22, lx=118, fx=250, axY=168;             // stop plane, lens, focus, axis
+  const H=Math.min(72, 26+58*Math.sin(alpha));      // lens aperture half-height
+  const ih=H*eps;                                   // stop shadow half-height
   let grad='';
   if(S.pupil==='gaussian'){
     grad=`<radialGradient id="gg"><stop offset="0%" stop-color="${acc}" stop-opacity=".8"/>
@@ -566,33 +570,46 @@ function drawBench(){
     <stop offset="100%" stop-color="${acc}" stop-opacity=".05"/></radialGradient>`;
   }
   const pupFill=S.pupil==='gaussian'?'url(#gg)':`${acc}33`;
-  const hh=Math.max(12, 46*Math.sin(alpha)), ih=hh*eps;
-  const zx=fx + (R? (S.z0/R.zMax)*30 : 0);
-  const cone=(y1,y2,op)=>`<path d="M ${lx} ${axY-y1} L ${fx} ${axY} L ${lx} ${axY-y2} Z" fill="${acc}" opacity="${op}"/>
-  <path d="M ${lx} ${axY+y1} L ${fx} ${axY} L ${lx} ${axY+y2} Z" fill="${acc}" opacity="${op}"/>`;
+  const zx=fx + (R? (S.z0/R.zMax)*26 : 0);
+  // post-lens: illuminated annular cone = area between outer rays and shadow cone
+  const litCone = eps>0
+   ? `<path d="M ${lx} ${axY-H} L ${fx} ${axY} L ${lx} ${axY-ih} Z" fill="${acc}" opacity=".30"/>
+      <path d="M ${lx} ${axY+H} L ${fx} ${axY} L ${lx} ${axY+ih} Z" fill="${acc}" opacity=".30"/>`
+   : `<path d="M ${lx} ${axY-H} L ${fx} ${axY} L ${lx} ${axY+H} Z" fill="${acc}" opacity=".24"/>`;
+  const reopen=18;                                   // hollow reopens past focus
   svg.innerHTML=`
   <defs>${grad}</defs>
-  <text x="${cx}" y="12" text-anchor="middle" fill="${ink2}" font-size="9" letter-spacing=".08em">PUPIL</text>
+  <text x="${cx}" y="11" text-anchor="middle" fill="${ink2}" font-size="9" letter-spacing=".08em">PUPIL</text>
   <circle cx="${cx}" cy="${cy}" r="${rp}" fill="${pupFill}" stroke="${hair}"/>
-  ${eps>0?`<circle cx="${cx}" cy="${cy}" r="${rp*eps}" fill="${ink}" opacity=".82"/>
-  <text x="${cx}" y="${cy+3}" text-anchor="middle" fill="${ink2}" font-size="8">stop</text>`:''}
+  ${eps>0?`<circle cx="${cx}" cy="${cy}" r="${rp*eps}" fill="#000" opacity=".88" stroke="${hair}"/>`:''}
   ${S.beta>0?`<circle cx="${cx}" cy="${cy}" r="${rp*.55}" fill="none" stroke="${acc}" stroke-opacity=".5" stroke-dasharray="3 3"/>
   <circle cx="${cx}" cy="${cy}" r="${rp*.8}" fill="none" stroke="${acc}" stroke-opacity=".5" stroke-dasharray="3 3"/>`:''}
-  <text x="${(lx+fx)/2+10}" y="12" text-anchor="middle" fill="${ink2}" font-size="9" letter-spacing=".08em">SIDE VIEW</text>
-  <line x1="${lx-14}" y1="${axY}" x2="${fx+30}" y2="${axY}" stroke="${hair}" stroke-dasharray="3 3"/>
-  <path d="M ${lx} ${axY-hh-6} Q ${lx+10} ${axY} ${lx} ${axY+hh+6} Q ${lx-10} ${axY} ${lx} ${axY-hh-6} Z"
+  <text x="150" y="${axY-H-14}" text-anchor="middle" fill="${ink2}" font-size="9" letter-spacing=".08em">SIDE VIEW</text>
+  <line x1="${x0-8}" y1="${axY}" x2="${fx+34}" y2="${axY}" stroke="${hair}" stroke-dasharray="3 3"/>
+  <!-- incoming beam band, pupil/stop plane -->
+  <rect x="${x0}" y="${axY-H}" width="${lx-x0}" height="${2*H}" fill="${acc}" opacity="${eps>0?'.18':'.20'}"/>
+  ${eps>0?`
+  <!-- geometric shadow of the stop: band before the lens, cone after it -->
+  <rect x="${x0}" y="${axY-ih}" width="${lx-x0}" height="${2*ih}" fill="#000" opacity=".48"/>
+  <rect x="${x0-3}" y="${axY-ih}" width="5" height="${2*ih}" rx="2" fill="#000" stroke="${hair}"/>
+  <text x="${(x0+lx)/2}" y="${axY+4}" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" opacity=".92">shadow</text>`:''}
+  <!-- lens -->
+  <path d="M ${lx} ${axY-H-8} Q ${lx+13} ${axY} ${lx} ${axY+H+8} Q ${lx-13} ${axY} ${lx} ${axY-H-8} Z"
         fill="${acc}22" stroke="${acc}" stroke-width="1"/>
-  ${eps>0? cone(hh, ih, .30)+`
-    <path d="M ${lx} ${axY-ih} L ${fx} ${axY} L ${lx} ${axY+ih} Z" fill="${ink}" opacity=".14"/>
-    <text x="${lx+34}" y="${axY+4}" fill="${ink2}" font-size="8">shadow</text>`
-   : cone(hh, 0, .26)}
-  <ellipse cx="${fx}" cy="${axY}" rx="${Math.min(26, 3+(M?M.dof:2.4)*1.4)}" ry="3.4" fill="${acc}" opacity=".55"/>
-  <line id="zplane" x1="${zx}" y1="${axY-26}" x2="${zx}" y2="${axY+26}" stroke="${css('--zmark')}" stroke-width="3"
+  ${litCone}
+  ${eps>0?`
+  <path d="M ${lx} ${axY-ih} L ${fx} ${axY} L ${lx} ${axY+ih} Z" fill="#000" opacity=".42"/>
+  <path d="M ${fx} ${axY} L ${fx+reopen} ${axY-ih*reopen/(fx-lx)*6} L ${fx+reopen} ${axY+ih*reopen/(fx-lx)*6} Z"
+        fill="#000" opacity=".22"/>
+  <text x="${(lx+fx)/2-6}" y="${axY-Math.max(10,ih*0.35)-4}" fill="${ink2}" font-size="9">shadow cone closes at focus</text>`:''}
+  <ellipse cx="${fx}" cy="${axY}" rx="${Math.min(26, 3+(M?M.dof:2.4)*1.4)}" ry="3.4" fill="${acc}" opacity=".6"/>
+  <line id="zplane" x1="${zx}" y1="${axY-34}" x2="${zx}" y2="${axY+34}" stroke="${css('--zmark')}" stroke-width="3"
         stroke-linecap="round" style="cursor:ew-resize"/>
-  <text x="${lx}" y="${axY+hh+22}" text-anchor="middle" fill="${ink2}" font-size="9">α=${(alpha*180/Math.PI).toFixed(0)}°</text>
-  <text x="${fx}" y="${axY+44}" text-anchor="middle" fill="${ink2}" font-size="9">focal region</text>
-  <text x="12" y="200" fill="${ink2}" font-size="9">NA ${S.NA.toFixed(2)} · n ${S.n.toFixed(2)} · λ ${(S.lam*1e3).toFixed(0)} nm ·
-    ${S.tau>0? S.tau+' fs':'CW'}${S.beta>0?' · β '+S.beta:''} · ${S.model}</text>`;
+  <text x="${lx}" y="${axY+H+22}" text-anchor="middle" fill="${ink2}" font-size="9">α=${(alpha*180/Math.PI).toFixed(0)}°</text>
+  <text x="${fx}" y="${axY+H+22}" text-anchor="middle" fill="${ink2}" font-size="9">focal region</text>
+  <text x="86" y="${cy-8}" fill="${ink2}" font-size="9">NA ${S.NA.toFixed(2)} · n ${S.n.toFixed(2)} · λ ${(S.lam*1e3).toFixed(0)} nm</text>
+  <text x="86" y="${cy+6}" fill="${ink2}" font-size="9">${S.tau>0? S.tau+' fs pulse':'CW'}${S.beta>0?' · β '+S.beta:''} · ${S.model}</text>
+  ${eps>0?`<text x="86" y="${cy+20}" fill="${ink2}" font-size="9">stop ε=${S.eps.toFixed(2)} → hollow cone</text>`:''}`;
   const zp=svg.querySelector('#zplane');
   zp.addEventListener('pointerdown', e=>{
     e.preventDefault();
