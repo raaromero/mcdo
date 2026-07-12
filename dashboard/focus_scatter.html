@@ -1,0 +1,407 @@
+<title>mcdo — Focus Through Scatter</title>
+<!-- ============================================================
+  mcdo "Focus Through Scatter" — the research coupling, live.
+  Ballistic core: vector Richards–Wolf with coherent Beer–Lambert
+  AMPLITUDE attenuation inside the Debye integral, exp(−µs L(θ)/2)
+  (the validated mcdo Phase-6 treatment — never photon-killing).
+  Diffuse halo: Monte-Carlo photon transport of the focusing cone
+  through the slab (Henyey–Greenstein), 10 trials → error band.
+  Slab: thickness d = 20 µm ending at the focal plane.
+============================================================= -->
+<style>
+:root{
+  --ground:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --ink2:#86868B;
+  --hair:rgba(0,0,0,.10); --accent:#0071E3; --accent-ink:#FFFFFF;
+  --knob:#FFFFFF; --track:rgba(0,0,0,.14); --seg:#E9E9EB; --ok:#34C759;
+  --halo:#FF9F0A; --clear:#8E8E93;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){:root{
+  --ground:#000; --card:#1C1C1E; --ink:#F5F5F7; --ink2:#98989D;
+  --hair:rgba(255,255,255,.14); --accent:#0A84FF; --seg:#2C2C2E;
+  --track:rgba(255,255,255,.22); --ok:#30D158;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --ground:#000; --card:#1C1C1E; --ink:#F5F5F7; --ink2:#98989D;
+  --hair:rgba(255,255,255,.14); --accent:#0A84FF; --seg:#2C2C2E;
+  --track:rgba(255,255,255,.22); --ok:#30D158;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+}
+:root[data-theme="light"]{
+  --ground:#F5F5F7; --card:#FFF; --ink:#1D1D1F; --ink2:#86868B;
+  --hair:rgba(0,0,0,.10); --accent:#0071E3; --seg:#E9E9EB;
+  --track:rgba(0,0,0,.14); --ok:#34C759;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0}
+.sub{color:var(--ink2);font-size:14px}
+header.hd{display:flex;align-items:baseline;gap:14px;margin:4px 2px 22px;flex-wrap:wrap}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+@media (max-width:780px){.grid{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 4px}
+.lbl{font-size:13px;font-weight:500}
+.val{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.seg{display:flex;background:var(--seg);border-radius:9px;padding:2px;gap:2px;margin-bottom:4px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;font-weight:500;
+  padding:5px 4px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.seg button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--track)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;
+  background:var(--knob);box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 2px 5px rgba(0,0,0,.3);margin-top:-7.5px}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border:0;border-radius:50%;background:var(--knob);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 2px 5px rgba(0,0,0,.3)}
+canvas{display:block;width:100%;border-radius:10px}
+.chip{background:var(--seg);border-radius:12px;padding:9px 13px;display:inline-block;margin:4px 8px 2px 0}
+.chip .k{font-size:11px;color:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.chip .v{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.ok{color:var(--ok)}
+.leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink2);margin-top:8px}
+.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.note{font-size:12px;color:var(--ink2)}
+.busy{opacity:.45;pointer-events:none}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header class="hd">
+  <h1>Focus Through Scatter</h1>
+  <span class="sub">the research coupling — vector focus as the source of photon transport (mcdo Phase 6, live)</span>
+</header>
+
+<div class="card">
+  <h2>Setup</h2>
+  <svg id="bench" viewBox="0 0 900 190" width="100%" aria-label="Focused beam entering a scattering slab"></svg>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Configuration</h2>
+    <div class="seg" id="segPupil">
+      <button data-v="uniform" aria-pressed="true">Uniform</button>
+      <button data-v="annular" aria-pressed="false">Annular</button>
+    </div>
+    <div class="row" id="rowEps" hidden><span class="lbl">Obstruction ε</span><span class="val" id="vEps"></span></div>
+    <input type="range" id="sEps" min="0" max="0.95" step="0.01" value="0.9" hidden aria-label="epsilon">
+    <div class="row"><span class="lbl">Numerical aperture</span><span class="val" id="vNA"></span></div>
+    <input type="range" id="sNA" min="0.3" max="1.25" step="0.01" value="0.8" aria-label="NA">
+    <div class="row"><span class="lbl">Scattering depth µ<sub>s</sub>d</span><span class="val" id="vTau"></span></div>
+    <input type="range" id="sTau" min="0" max="6" step="0.1" value="2" aria-label="optical depth">
+    <div class="row"><span class="lbl">Anisotropy g</span><span class="val" id="vG"></span></div>
+    <input type="range" id="sG" min="0" max="0.95" step="0.01" value="0.9" aria-label="anisotropy">
+    <p class="note" style="margin:12px 0 0">λ 750 nm · n 1.3 · slab d = 20 µm ending at the focal
+    plane · vector model · CW. Halo: 10 MC trials × 20 000 photons (mean ± SD band).</p>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Focal-plane radial profile — azimuth-averaged, log scale</h2>
+      <canvas id="prof" width="620" height="300"></canvas>
+      <div class="leg">
+        <span><i style="background:var(--clear)"></i>clear focus (µ<sub>s</sub>=0, dashed)</span>
+        <span><i style="background:var(--accent)"></i>ballistic core (coherent, attenuated)</span>
+        <span><i style="background:var(--halo)"></i>diffuse halo (MC ± SD)</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>The physics, measured live</h2>
+      <span class="chip"><span class="k">Ballistic power (MC)</span><br><span class="v" id="cBallMC"></span></span>
+      <span class="chip"><span class="k">⟨e<sup>−µ<sub>s</sub>d/cosθ</sup>⟩ (quadrature)</span><br><span class="v" id="cBallQ"></span></span>
+      <span class="chip"><span class="k">Agreement</span><br><span class="v ok" id="cAgree"></span></span>
+      <span class="chip"><span class="k">Core FWHM / clear</span><br><span class="v" id="cFWHM"></span></span>
+      <span class="chip"><span class="k">Halo ⁄ ballistic power</span><br><span class="v" id="cRatio"></span></span>
+      <p class="note" style="margin:10px 0 0" id="story"></p>
+    </div>
+  </div>
+</div>
+<p class="note">Companions: <b>Focal Field Explorer</b> (deterministic, pre-MC) · <b>Monte Carlo Slab</b>
+(transport starter). This page couples them: the attenuated core is computed coherently inside the
+Debye integral — amplitude ×e<sup>−µ<sub>s</sub>L(θ)/2</sup> per ray, never photon-killing — and the
+halo rides on top incoherently, exactly the validated mcdo treatment.</p>
+</div>
+
+<script>
+'use strict';
+/* ================= CONFIG ================= */
+const CONFIG = { lam:0.75, n:1.3, D:20, nTheta:181, nR:161, RPLOT:12, RMAX:16,
+                 NBINS:32, TRIALS:10, NPH:20000 };
+const S = { pupil:'uniform', eps:0.9, NA:0.8, tau:2, g:0.9 };
+const el=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+
+/* ---- Bessel (Numerical-Recipes rational approximations) ---- */
+function besselJ0(x){
+  const ax=Math.abs(x);
+  if(ax<8){const y=x*x;
+    const p=57568490574.0+y*(-13362590354.0+y*(651619640.7+y*(-11214424.18+y*(77392.33017+y*(-184.9052456)))));
+    const q=57568490411.0+y*(1029532985.0+y*(9494680.718+y*(59272.64853+y*(267.8532712+y))));
+    return p/q;}
+  const z=8/ax,y=z*z,x1=ax-0.785398164;
+  const p=1+y*(-0.1098628627e-2+y*(0.2734510407e-4+y*(-0.2073370639e-5+y*0.2093887211e-6)));
+  const q=-0.1562499995e-1+y*(0.1430488765e-3+y*(-0.6911147651e-5+y*(0.7621095161e-6+y*(-0.934935152e-7))));
+  return Math.sqrt(0.636619772/ax)*(Math.cos(x1)*p-z*Math.sin(x1)*q);
+}
+function besselJ1(x){
+  const ax=Math.abs(x);
+  if(ax<8){const y=x*x;
+    const p=x*(72362614232.0+y*(-7895059235.0+y*(242396853.1+y*(-2972611.439+y*(15704.48260+y*(-30.16036606))))));
+    const q=144725228442.0+y*(2300535178.0+y*(18583304.74+y*(99447.43394+y*(376.9991397+y))));
+    return p/q;}
+  const z=8/ax,y=z*z,x1=ax-2.356194491;
+  const p=1+y*(0.183105e-2+y*(-0.3516396496e-4+y*(0.2457520174e-5+y*(-0.240337019e-6))));
+  const q=0.04687499995+y*(-0.2002690873e-3+y*(0.8449199096e-5+y*(-0.88228987e-6+y*0.105787412e-6)));
+  const r=Math.sqrt(0.636619772/ax)*(Math.cos(x1)*p-z*Math.sin(x1)*q);
+  return x<0?-r:r;
+}
+function besselJ2(x){ return Math.abs(x)<1e-8 ? x*x/8 : 2*besselJ1(x)/x - besselJ0(x); }
+
+function pupilA(th, alpha){
+  if(S.pupil==='annular' && Math.sin(th)<S.eps*Math.sin(alpha)) return 0;
+  return 1;
+}
+
+/* ---- coherent core at the focal plane: A_eff = A(θ)·e^{−µs L(θ)/2} ---- */
+function coreProfile(mus){
+  const alpha=Math.asin(Math.min(S.NA/CONFIG.n,0.999));
+  const k=2*Math.PI*CONFIG.n/CONFIG.lam, nT=CONFIG.nTheta, nR=CONFIG.nR;
+  const rG=new Float64Array(nR);
+  for(let i=0;i<nR;i++) rG[i]=CONFIG.RPLOT*i/(nR-1);
+  const re=[new Float64Array(nR),new Float64Array(nR),new Float64Array(nR)];
+  // z=0 plane: e^{ikz cosθ}=1 → integrals are real
+  for(let t=0;t<nT;t++){
+    const th=alpha*t/(nT-1);
+    const simp=(t===0||t===nT-1)?1:(t%2?4:2);
+    const A=pupilA(th,alpha)*Math.exp(-mus*(CONFIG.D/Math.cos(th))/2);
+    const base=simp*(alpha/(nT-1))/3*Math.sqrt(Math.cos(th))*Math.sin(th)*A;
+    const w=[base*(1+Math.cos(th)), base*Math.sin(th), base*(1-Math.cos(th))];
+    const ks=k*Math.sin(th);
+    for(let r=0;r<nR;r++){
+      const x=ks*rG[r];
+      re[0][r]+=w[0]*besselJ0(x); re[1][r]+=w[1]*besselJ1(x); re[2][r]+=w[2]*besselJ2(x);
+    }
+  }
+  // azimuth-averaged vector intensity: |I0|²+2|I1|²+|I2|²
+  const I=new Float64Array(nR);
+  for(let r=0;r<nR;r++) I[r]=re[0][r]**2+2*re[1][r]**2+re[2][r]**2;
+  return {rG,I};
+}
+/* power-weighted ballistic fraction by quadrature (for the live check) */
+function ballisticQuad(mus){
+  const alpha=Math.asin(Math.min(S.NA/CONFIG.n,0.999));
+  const nT=CONFIG.nTheta;
+  let num=0,den=0;
+  for(let t=0;t<nT;t++){
+    const th=alpha*t/(nT-1);
+    const simp=(t===0||t===nT-1)?1:(t%2?4:2);
+    const w=simp*pupilA(th,alpha)**2*Math.cos(th)*Math.sin(th);   // power density
+    num+=w*Math.exp(-mus*CONFIG.D/Math.cos(th)); den+=w;
+  }
+  return num/den;
+}
+
+/* ---- MC halo: focusing cone through the slab ---- */
+function rng(seed){ let s=seed>>>0||1; return ()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return ((s>>>0)/4294967296);};}
+function hgCos(g,u){ if(g<1e-6)return 2*u-1; const f=(1-g*g)/(1-g+2*g*u); return (1+g*g-f*f)/(2*g); }
+function haloTrial(seed){
+  const rand=rng(seed);
+  const alpha=Math.asin(Math.min(S.NA/CONFIG.n,0.999));
+  const d=CONFIG.D, mus=S.tau/d;
+  const sinIn=S.pupil==='annular'?S.eps*Math.sin(alpha):0;
+  const halo=new Float64Array(CONFIG.NBINS);
+  let ball=0;
+  const N=CONFIG.NPH;
+  for(let p=0;p<N;p++){
+    // aplanatic power density dP ∝ sinθcosθ dθ = s·ds → sample s² uniformly
+    const s2=sinIn*sinIn + (Math.sin(alpha)**2 - sinIn*sinIn)*rand();
+    const th=Math.asin(Math.sqrt(s2));
+    const ph0=2*Math.PI*rand();
+    // converging ray: starts at slab entrance (z=−d, radius d·tanθ) aimed at the focus
+    let ux=-Math.sin(th)*Math.cos(ph0), uy=-Math.sin(th)*Math.sin(ph0), uz=Math.cos(th);
+    let x=d*Math.tan(th)*Math.cos(ph0), y=d*Math.tan(th)*Math.sin(ph0), z=-d;
+    let scat=0;
+    for(let step=0;step<500;step++){
+      const s=-Math.log(rand()+1e-12)/mus;
+      x+=ux*s; y+=uy*s; z+=uz*s;
+      if(z>=0){                                    // reached the focal plane
+        if(scat>0){
+          const t=(0-(z-uz*s))/uz;
+          const ex=x-ux*s+ux*t, ey=y-uy*s+uy*t;
+          const r=Math.hypot(ex,ey);
+          const b=Math.floor(r/CONFIG.RMAX*CONFIG.NBINS);
+          if(b<CONFIG.NBINS) halo[b]++;
+        } else ball++;
+        break;
+      }
+      if(z<-d) break;                              // backscattered out
+      scat++;
+      const ct=hgCos(S.g,rand()), st=Math.sqrt(Math.max(0,1-ct*ct));
+      const phs=2*Math.PI*rand(), cp=Math.cos(phs), sp=Math.sin(phs);
+      if(Math.abs(uz)>0.99999){ ux=st*cp; uy=st*sp; uz=ct*Math.sign(uz); }
+      else{
+        const den=Math.sqrt(1-uz*uz);
+        const nx=(st*(ux*uz*cp-uy*sp))/den+ux*ct;
+        const ny=(st*(uy*uz*cp+ux*sp))/den+uy*ct;
+        const nz=-st*cp*den+uz*ct;
+        ux=nx;uy=ny;uz=nz;
+      }
+    }
+  }
+  return {halo, ball:ball/N};
+}
+function runHalo(){
+  const hm=new Float64Array(CONFIG.NBINS), h2=new Float64Array(CONFIG.NBINS);
+  let bm=0,b2=0;
+  for(let t=0;t<CONFIG.TRIALS;t++){
+    const r=haloTrial(777+t*7919+Math.round(S.tau*100)*13+Math.round(S.g*100)*101+Math.round(S.NA*100)*7+(S.pupil==='annular'?Math.round(S.eps*100)*3:0));
+    bm+=r.ball; b2+=r.ball*r.ball;
+    for(let b=0;b<CONFIG.NBINS;b++){ const v=r.halo[b]/CONFIG.NPH; hm[b]+=v; h2[b]+=v*v; }
+  }
+  bm/=CONFIG.TRIALS;
+  const bsd=Math.sqrt(Math.max(0,b2/CONFIG.TRIALS-bm*bm));
+  const mean=new Float64Array(CONFIG.NBINS), sd=new Float64Array(CONFIG.NBINS);
+  for(let b=0;b<CONFIG.NBINS;b++){
+    const m=hm[b]/CONFIG.TRIALS;
+    const r1=b*CONFIG.RMAX/CONFIG.NBINS, r2=(b+1)*CONFIG.RMAX/CONFIG.NBINS;
+    const area=Math.PI*(r2*r2-r1*r1);
+    mean[b]=m/area; sd[b]=Math.sqrt(Math.max(0,h2[b]/CONFIG.TRIALS-(hm[b]/CONFIG.TRIALS)**2))/area;
+  }
+  return {mean, sd, ball:bm, ballSd:bsd};
+}
+
+/* ================= metrics + render ================= */
+function fwhm(rG,I){
+  let m=0,c=0; for(let i=0;i<I.length;i++) if(I[i]>m){m=I[i];c=i;}
+  for(let i=c;i<I.length-1;i++)
+    if(I[i]>=m/2&&I[i+1]<m/2)
+      return 2*(rG[i]+(rG[i+1]-rG[i])*(I[i]-m/2)/(I[i]-I[i+1]))*1e3;
+  return NaN;
+}
+let OUT=null;
+function compute(){
+  const mus=S.tau/CONFIG.D;
+  const clear=coreProfile(0), att=coreProfile(mus);
+  const H=runHalo(), bq=ballisticQuad(mus);
+  // radiometric scale: 2-D integral of displayed core = ballistic power fraction
+  const s2d=(rG,I)=>{let s=0; for(let i=1;i<I.length;i++) s+=0.5*(I[i]*rG[i]+I[i-1]*rG[i-1])*2*Math.PI*(rG[i]-rG[i-1]); return s;};
+  const cl2=s2d(clear.rG,clear.I), at2=s2d(att.rG,att.I);
+  const clearD=Array.from(clear.I, v=>v/cl2);        // 2-D integral = 1 (unit power)
+  const attD=Array.from(att.I, v=>v/at2*bq);         // 2-D integral = ballistic fraction
+  OUT={rG:clear.rG, clearD, attD, halo:H, bq,
+       fwClear:fwhm(clear.rG,clear.I), fwAtt:fwhm(att.rG,att.I)};
+}
+function render(){
+  compute();
+  const cv=el('prof'), ctx=cv.getContext('2d'), W=cv.width, Hh=cv.height;
+  ctx.clearRect(0,0,W,Hh);
+  const L=48,Rm=10,T=10,B=26;
+  let vmax=Math.max(...OUT.clearD);
+  const lmax=Math.ceil(Math.log10(vmax)), lmin=lmax-7;
+  const tx=r=>L+(W-L-Rm)*r/CONFIG.RPLOT;
+  const ty=v=>T+(Hh-T-B)*(1-(Math.log10(Math.max(v,10**lmin))-lmin)/(lmax-lmin));
+  ctx.strokeStyle=css('--hair'); ctx.fillStyle=css('--ink2'); ctx.font='10px ui-monospace,Menlo';
+  for(let e=lmin;e<=lmax;e+=1){ if((e-lmin)%2)continue;
+    ctx.beginPath();ctx.moveTo(L,ty(10**e));ctx.lineTo(W-Rm,ty(10**e));ctx.stroke();
+    ctx.fillText('1e'+e,4,ty(10**e)+3);}
+  // halo band + mean (bin centers)
+  const bc=b=>(b+0.5)*CONFIG.RMAX/CONFIG.NBINS;
+  ctx.fillStyle=css('--halo')+'44'; ctx.beginPath();
+  let started=false;
+  for(let b=0;b<CONFIG.NBINS;b++){ if(bc(b)>CONFIG.RPLOT)break;
+    const px=tx(bc(b)),py=ty(OUT.halo.mean[b]+OUT.halo.sd[b]);
+    started?ctx.lineTo(px,py):ctx.moveTo(px,py); started=true;}
+  for(let b=CONFIG.NBINS-1;b>=0;b--){ if(bc(b)>CONFIG.RPLOT)continue;
+    ctx.lineTo(tx(bc(b)),ty(Math.max(OUT.halo.mean[b]-OUT.halo.sd[b],10**lmin)));}
+  ctx.closePath(); ctx.fill();
+  const line=(X,Y,color,wd,dash)=>{ctx.strokeStyle=color;ctx.lineWidth=wd;ctx.setLineDash(dash||[]);
+    ctx.beginPath(); let st=false;
+    for(let i=0;i<X.length;i++){ if(X[i]>CONFIG.RPLOT)break;
+      const px=tx(X[i]),py=ty(Y[i]); st?ctx.lineTo(px,py):ctx.moveTo(px,py); st=true;}
+    ctx.stroke();ctx.setLineDash([]);};
+  line(Array.from({length:CONFIG.NBINS},(_,b)=>bc(b)), Array.from(OUT.halo.mean), css('--halo'), 2);
+  line(Array.from(OUT.rG), OUT.clearD, css('--clear'), 1.6, [5,4]);
+  line(Array.from(OUT.rG), OUT.attD, css('--accent'), 2.2);
+  ctx.fillStyle=css('--ink2'); ctx.font='11px -apple-system,system-ui';
+  ctx.fillText('r (µm), 0 – '+CONFIG.RPLOT, W-110, Hh-8);
+  // chips
+  const H=OUT.halo;
+  el('cBallMC').textContent=(100*H.ball).toFixed(2)+' ± '+(100*H.ballSd).toFixed(2)+'%';
+  el('cBallQ').textContent=(100*OUT.bq).toFixed(2)+'%';
+  const dev=Math.abs(H.ball-OUT.bq);
+  el('cAgree').textContent= dev<=Math.max(3*H.ballSd,0.004) ? '✓ within 3σ' : 'Δ '+(100*dev).toFixed(2)+'%';
+  el('cFWHM').textContent=(OUT.fwAtt/OUT.fwClear).toFixed(3)+'×';
+  let hp=0; for(let b=0;b<CONFIG.NBINS;b++){const r1=b*CONFIG.RMAX/CONFIG.NBINS,r2=(b+1)*CONFIG.RMAX/CONFIG.NBINS;
+    hp+=H.mean[b]*Math.PI*(r2*r2-r1*r1);}
+  el('cRatio').textContent=(hp/Math.max(OUT.bq,1e-9)).toFixed(2);
+  el('story').textContent =
+   `At µsd = ${S.tau.toFixed(1)} the ballistic core keeps its SHAPE (FWHM ratio ${(OUT.fwAtt/OUT.fwClear).toFixed(3)}) `+
+   `while losing power to the halo — Beer–Lambert dims, it does not blur. That shape-preservation is why the `+
+   `descattering inverse problem is about separating core from halo, not deconvolving the core.`;
+  drawBench();
+}
+function drawBench(){
+  const svg=el('bench');
+  const alpha=Math.asin(Math.min(S.NA/CONFIG.n,0.999));
+  const ink2=css('--ink2'), hair=css('--hair'), acc=css('--accent'), halo=css('--halo');
+  const eps=S.pupil==='annular'?S.eps:0;
+  const lx=140, fx=700, axY=95, H=Math.min(74,26+58*Math.sin(alpha)), ih=H*eps;
+  const sx=fx-260;                                  // slab entrance x (d before focus)
+  const litCone= eps>0
+   ?`<path d="M ${lx} ${axY-H} L ${fx} ${axY} L ${lx} ${axY-ih} Z" fill="${acc}" opacity=".28"/>
+     <path d="M ${lx} ${axY+H} L ${fx} ${axY} L ${lx} ${axY+ih} Z" fill="${acc}" opacity=".28"/>
+     <path d="M ${lx} ${axY-ih} L ${fx} ${axY} L ${lx} ${axY+ih} Z" fill="#000" opacity=".34"/>`
+   :`<path d="M ${lx} ${axY-H} L ${fx} ${axY} L ${lx} ${axY+H} Z" fill="${acc}" opacity=".22"/>`;
+  // scatter squiggles in slab
+  const r=rng(11); let sc='';
+  for(let i=0;i<Math.min(46,Math.round(S.tau*10));i++)
+    sc+=`<circle cx="${sx+6+r()*(fx-sx-12)}" cy="${axY-H+8+r()*(2*H-16)}" r="1.7" fill="${ink2}" opacity=".65"/>`;
+  svg.innerHTML=`
+  <path d="M ${lx} ${axY-H-9} Q ${lx+15} ${axY} ${lx} ${axY+H+9} Q ${lx-15} ${axY} ${lx} ${axY-H-9} Z"
+        fill="${acc}22" stroke="${acc}" stroke-width="1"/>
+  ${litCone}
+  <rect x="${sx}" y="${axY-H-14}" width="${fx-sx}" height="${2*H+28}" rx="8" fill="${halo}18" stroke="${hair}"/>
+  ${sc}
+  <line x1="${fx}" y1="${axY-H-14}" x2="${fx}" y2="${axY+H+14}" stroke="${css('--ok')}" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M ${fx-80} ${axY-30} q 30 -18 60 -10" fill="none" stroke="${halo}" stroke-width="2" opacity=".85"/>
+  <path d="M ${fx-100} ${axY+22} q 40 20 70 26" fill="none" stroke="${halo}" stroke-width="2" opacity=".85"/>
+  <text x="${lx}" y="${axY+H+34}" text-anchor="middle" fill="${ink2}" font-size="11">lens · α=${(alpha*180/Math.PI).toFixed(0)}°${eps>0?' · stop ε='+S.eps.toFixed(2):''}</text>
+  <text x="${(sx+fx)/2}" y="${axY-H-22}" text-anchor="middle" fill="${ink2}" font-size="11">scattering slab · d=${CONFIG.D} µm · µ<tspan font-size="9" dy="2">s</tspan><tspan dy="-2">d=${S.tau.toFixed(1)}</tspan> · g=${S.g.toFixed(2)}</text>
+  <text x="${fx+8}" y="${axY-H-2}" fill="${ink2}" font-size="11">focal plane</text>
+  <text x="${fx+8}" y="${axY-H+14}" fill="${ink2}" font-size="11">(measured)</text>`;
+}
+
+/* ================= UI ================= */
+let timer=null;
+function queue(){
+  document.querySelector('.wrap').classList.add('busy');
+  clearTimeout(timer);
+  timer=setTimeout(()=>{ render(); document.querySelector('.wrap').classList.remove('busy'); }, 120);
+}
+el('segPupil').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  el('segPupil').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true'); S.pupil=b.dataset.v;
+  el('rowEps').hidden=el('sEps').hidden=(S.pupil!=='annular'); queue();
+}));
+function bind(sl,key,fmt,lab){
+  el(sl).addEventListener('input',e=>{S[key]=+e.target.value; el(lab).textContent=fmt(S[key]); queue();});
+  el(lab).textContent=fmt(S[key]);
+}
+bind('sEps','eps',v=>v.toFixed(2),'vEps');
+bind('sNA','NA',v=>v.toFixed(2),'vNA');
+bind('sTau','tau',v=>v.toFixed(1),'vTau');
+bind('sG','g',v=>v.toFixed(2),'vG');
+new MutationObserver(()=>{if(OUT)render();})
+  .observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(OUT)render();});
+render();
+</script>
