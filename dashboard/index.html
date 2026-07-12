@@ -201,6 +201,17 @@ details.disc>*:not(summary){margin-top:12px}
       </div>
     </div>
     <div class="card">
+      <details class="disc" id="discConv">
+        <summary>Why pulses are cheap — spectral convergence</summary>
+        <p class="note" style="margin:0">A pulse is an incoherent sum of CW solutions over frequency
+        (Eq. 10). The plot shows the focal-metric error versus the number of spectral samples, against a
+        dense 51-node reference — it flattens to &lt;0.1% by ~11 nodes, so a femtosecond pulse costs only
+        ~11 CW evaluations, not thousands.</p>
+        <canvas id="cConv" width="720" height="300"></canvas>
+        <div class="note" id="convNote">open to compute…</div>
+      </details>
+    </div>
+    <div class="card">
       <details class="disc">
         <summary>Engine check — matches the validated mcdo engine</summary>
         <table class="ec" id="ecTab"><tr><td class="note">running…</td></tr></table>
@@ -650,6 +661,72 @@ function drawBench(){
   });
 }
 
+/* ================= spectral convergence proof ================= */
+let convDone=false;
+function convergence(){
+  if(convDone) return; convDone=true;
+  el('convNote').textContent='computing…';
+  const save={...S}, saveF=CONFIG.nFreq;
+  // fixed demo config: annular ε=0.9 (the stressing case), three pulse durations
+  Object.assign(S,{pupil:'annular',NA:.8,lam:.75,n:1.3,eps:.9,at:1,beta:0,model:'vector'});
+  const nodes=[3,5,7,9,11,15,21,31];
+  const taus=[{t:5,c:'#30D158'},{t:2,c:'#0A84FF'},{t:1,c:'#FF375F'}];
+  const series=[];
+  for(const {t,c} of taus){
+    S.tau=t;
+    CONFIG.nFreq=51;
+    const ref=metricsAt(computeAll(101),0,0);           // dense reference
+    const errs=nodes.map(nf=>{
+      CONFIG.nFreq=nf;
+      const m=metricsAt(computeAll(101),0,0);
+      return Math.max(1e-6, Math.abs(m.fwy-ref.fwy)/ref.fwy);
+    });
+    series.push({t,c,errs});
+  }
+  Object.assign(S,save); CONFIG.nFreq=saveF;
+  drawConv(nodes, series);
+  el('convNote').textContent='FWHM error vs a dense 51-node reference · config: annular ε=0.9, NA 0.8. Dashboard uses 11 nodes (dashed).';
+}
+function drawConv(nodes, series){
+  const cv=el('cConv'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const L=54,Rm=76,T=12,B=30;
+  const x0=nodes[0], x1=nodes[nodes.length-1];
+  const tx=n=>L+(W-L-Rm)*(n-x0)/(x1-x0);
+  const lmax=0, lmin=-5;                                  // 100% … 0.001%
+  const ty=e=>T+(H-T-B)*(1-(Math.log10(e)-lmin)/(lmax-lmin));
+  ctx.strokeStyle=css('--hair'); ctx.fillStyle=css('--ink2'); ctx.font='10px ui-monospace,Menlo';
+  for(let p=lmin;p<=lmax;p++){
+    ctx.beginPath();ctx.moveTo(L,ty(10**p));ctx.lineTo(W-Rm,ty(10**p));ctx.stroke();
+    ctx.fillText((10**(p+2)).toString().replace('0.','.')+'%',6,ty(10**p)+3);
+  }
+  // 0.1% target line
+  ctx.strokeStyle=css('--ok'); ctx.setLineDash([2,3]); ctx.beginPath();
+  ctx.moveTo(L,ty(1e-3));ctx.lineTo(W-Rm,ty(1e-3));ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=css('--ok'); ctx.fillText('0.1% target',W-Rm+4,ty(1e-3)+3);
+  // dashboard's 11-node marker
+  ctx.strokeStyle=css('--ink2'); ctx.setLineDash([4,4]); ctx.globalAlpha=.6; ctx.beginPath();
+  ctx.moveTo(tx(11),T);ctx.lineTo(tx(11),H-B);ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+  ctx.fillStyle=css('--ink2'); ctx.fillText('11 (used)',tx(11)-2,H-B+16);
+  // x ticks
+  for(const n of nodes){ ctx.fillStyle=css('--ink2'); ctx.textAlign='center';
+    ctx.fillText(n, tx(n), H-B+16); }
+  ctx.textAlign='left';
+  // curves + points
+  for(const s of series){
+    ctx.strokeStyle=s.c; ctx.lineWidth=2; ctx.beginPath();
+    s.errs.forEach((e,i)=>{const px=tx(nodes[i]),py=ty(e); i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+    ctx.stroke();
+    s.errs.forEach((e,i)=>{ctx.fillStyle=s.c;ctx.beginPath();ctx.arc(tx(nodes[i]),ty(e),2.6,0,7);ctx.fill();});
+    // right-edge label
+    const ey=ty(s.errs[s.errs.length-1]);
+    ctx.fillStyle=s.c; ctx.font='11px -apple-system,system-ui';
+    ctx.fillText(s.t+' fs', W-Rm+6, ey+4);
+  }
+  ctx.fillStyle=css('--ink2'); ctx.font='11px -apple-system,system-ui';
+  ctx.textAlign='center'; ctx.fillText('number of spectral nodes', L+(W-L-Rm)/2, H-4); ctx.textAlign='left';
+}
+
 /* ================= engine check ================= */
 function engineCheck(){
   const save={...S};
@@ -774,6 +851,7 @@ new MutationObserver(()=>{if(R)paintAll();})
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(R)paintAll();});
 
 /* ================= boot ================= */
+el('discConv').addEventListener('toggle',e=>{ if(e.target.open) setTimeout(convergence,30); });
 syncVis();
 refresh(true);
 setTimeout(engineCheck, 80);
