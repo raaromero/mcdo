@@ -7,11 +7,26 @@ independent re-verification vote was rate-limited (treat as a strong lead;
 confirm the exact numbers before citing).** The synthesis step was rate-limited,
 so this write-up is assembled by hand from the verified + extracted claims.*
 
+## Update 2026-07-12 (targeted re-sweep, web search)
+Confirmed verbatim this pass: **Blanca & Saloma, Appl. Opt. 37(34), 8092–8102
+(1998)** ✓ (was [L] → now [V]); **Monterola & Saloma, Opt. Express 9(2), 72–84
+(2001)** ✓ (proto-PINN, NN-idea heritage). Hayakawa BOE 2,278 (2011) full text
+located at chem.uci.edu/~potma/carole_boe11.pdf (was [L] → source verified).
+
+**NEW must-read prior art (pulsed-focus-in-scatter) — closest to our MC angle:**
+**"Excitation with a focused, pulsed optical beam in scattering media:
+diffraction effects," Appl. Opt. 39(28), 5244 (2000).** Pulsed + focused + in a
+scattering medium — read this before framing the MC paper's novelty. Plus the
+two-photon-in-turbid family (AO 39,1194 / 39,509 / 39,1575 / 42,3321) as
+context. None combine STRUCTURED pupils + few-cycle spectra + scattering (our
+gap), but the pulsed-focus-in-scatter framing is partly occupied — position
+carefully.
+
 ## 0. THE headline finding — read this first (novelty)
 
 **Hayakawa, Potma & Venugopalan, "Electric field Monte Carlo simulations of
 focal field distributions produced by tightly focused laser beams in tissues,"
-Biomed. Opt. Express 2, 278 (2011).** [L]
+Biomed. Opt. Express 2, 278 (2011).** [V — full text located 2026-07-12]
 `https://opg.optica.org/boe/fulltext.cfm?uri=boe-2-2-278` (also
 `chem.uci.edu/~potma/carole_boe11.pdf`)
 - Combines an **Electric-Field Monte Carlo (EMC)** scheme (tracks the full
