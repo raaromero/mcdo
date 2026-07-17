@@ -7,18 +7,28 @@ it lives in mcdo**. Complements the other two docs — `LITERATURE.md` §0 tells
 *which book to buy*; `theory/FIELD_HISTORY.md` gives the *chronological story*;
 this is the *topic-by-topic learning path*.*
 
-**Chapter numbers**: confident ones are given plainly; where an edition may
-differ the section is named so you can find it. Books by short name:
-- **Griffiths** = *Introduction to Electrodynamics* (4th ed.) — EM at quals level.
-- **Hecht** = Eugene Hecht, *Optics* (5th ed.) — gentlest optics.
-- **Goodman** = *Introduction to Fourier Optics* (4th ed.) — scalar diffraction.
-- **N&H** = Novotny & (Bert) Hecht, *Principles of Nano-Optics* (2nd ed.) — the
-  high-NA focusing bible; **the single most important book for this thesis.**
-- **B&W** = Born & Wolf, *Principles of Optics* — the reference.
-- **Gu** = Min Gu, *Advanced Optical Imaging Theory* — closest single text to
-  the Romallosa toolkit (vector Debye + apodization + ultrashort-pulse focusing).
-- **S&T** = Saleh & Teich, *Fundamentals of Photonics*; **Ishimaru** = *Wave
-  Propagation and Scattering in Random Media* (transport).
+> ⚠️ **Chapter numbers are edition-specific.** Every number below assumes the
+> **exact edition listed in the table**. Chapter-*level* pointers (e.g. "N&H
+> Ch 3", "Goodman Ch 3", "B&W §8.8") are stable and verified; finer *sub-section*
+> numbers can shift between editions, so those are given as **named sections**
+> you can find in any printing. If you own a different edition, match by the
+> **chapter/section title**, not the number — and tell me your editions and I'll
+> pin every number exactly.
+
+**Editions assumed (verify yours matches):**
+
+| short name | full title | **edition assumed** | verified anchor |
+|---|---|---|---|
+| **Griffiths** | *Introduction to Electrodynamics* | **4th (2013)** | Ch 9 = "Electromagnetic Waves" |
+| **Hecht** | Eugene Hecht, *Optics* | **5th (2017)** | Ch 10 Diffraction, Ch 11 Fourier optics |
+| **Goodman** | *Introduction to Fourier Optics* | **4th (2017)** | Ch 3 "Foundations of Scalar Diffraction Theory" ✓ |
+| **N&H** | Novotny & Bert Hecht, *Principles of Nano-Optics* | **2nd (2012)** | Ch 3 "Propagation and Focusing of Optical Fields," pp. 45–85 ✓ |
+| **B&W** | Born & Wolf, *Principles of Optics* | **7th (expanded, 1999)** | §8.8 "Three-dimensional light distribution near focus" |
+| **Gu** | Min Gu, *Advanced Optical Imaging Theory* | **1st (Springer, 2000)** | — |
+| **S&T** | Saleh & Teich, *Fundamentals of Photonics* | **3rd (2019)** | beam optics (Bessel), Fourier optics chapters |
+| **Ishimaru** | *Wave Propagation and Scattering in Random Media* | **1978 / IEEE 1997 reissue** | single scattering, RTE, diffusion |
+
+N&H is **the single most important book for this thesis** (Pillar 3).
 
 **Mastery test** (not "I read it" but): can you re-derive the boxed equation of
 each pillar on a blank page, and say in one sentence why each term is there?
@@ -35,9 +45,10 @@ plane waves.
 $$\nabla^2\mathbf{E} - \frac{n^2}{c^2}\frac{\partial^2\mathbf{E}}{\partial t^2}=0,\qquad \mathbf{E}=\mathbf{E}_0\,e^{i(\mathbf{k}\cdot\mathbf{r}-\omega t)},\ \ |\mathbf{k}|=nk_0,\ \ \mathbf{k}\cdot\mathbf{E}_0=0.$$
 Derive the wave equation from ∇×E and ∇×B; get the transversality
 (k·E₀=0), the polarization states, and the Poynting vector S = E×H.
-**Learn it.** Griffiths Ch 9 (9.2 waves in vacuum, 9.3 in matter, polarization
-9.2 end, energy/Poynting 9.2.3) — start here. Then **N&H Ch 2** (same content,
-compressed to exactly what focusing needs). Rigorous: Jackson Ch 7.
+**Learn it.** Griffiths Ch 9 "Electromagnetic Waves" (§ "EM waves in vacuum,"
+"…in matter," and the "Energy and momentum / Poynting" section) — start here.
+Then **N&H Ch 2** "Theoretical foundations" (same content, compressed to what
+focusing needs). Rigorous: Jackson Ch 7 "Plane EM waves and wave propagation."
 **In mcdo.** The ∇·E = 0 and Helmholtz residual checks in
 `scripts/audit_first_principles.py` — the audit literally tests this pillar.
 
@@ -50,9 +61,11 @@ apart.
 $$U(x,y,z)=\iint \tilde U(k_x,k_y;0)\,e^{i k_z z}\,e^{i(k_x x+k_y y)}\,dk_x\,dk_y,\quad k_z=\sqrt{k^2-k_x^2-k_y^2}.$$
 Know how this reduces to Fresnel (paraxial e^{ik_z z}≈e^{ikz}e^{-i(k_x^2+k_y^2)z/2k})
 and Fraunhofer (far-field = Fourier transform of the aperture).
-**Learn it.** **Goodman Ch 3** (Huygens–Fresnel, Rayleigh–Sommerfeld; angular
-spectrum in §3.10) then Ch 4 (Fresnel/Fraunhofer). Gentle first pass: Hecht
-Ch 10. Rigorous: B&W Ch 8.
+**Learn it.** **Goodman Ch 3** "Foundations of scalar diffraction theory"
+(Huygens–Fresnel, Rayleigh–Sommerfeld; the **angular-spectrum section** near the
+end of Ch 3) then Ch 4 "Fresnel and Fraunhofer diffraction." Gentle first pass:
+Hecht Ch 10 "Diffraction." Rigorous: B&W Ch 8 "Elements of the theory of
+diffraction."
 **In mcdo.** The conceptual substrate of the whole Debye picture; the low-NA
 limit your engine reproduces (Airy pattern, `check1_lowNA_convergence`).
 
@@ -80,9 +93,10 @@ $$I_n(r,z)=\int_0^\alpha A(\theta)\sqrt{\cos\theta}\,\sin\theta\,g_n(\theta)\,J_
 with g₀=(1+cosθ), g₁=sinθ, g₂=(1−cosθ); then
 E ∝ (I₀+I₂cos2φ, I₂sin2φ, −2iI₁cosφ). Know where √cosθ (aplanatic/energy) and
 each g_n come from.
-**Learn it.** **N&H Ch 3 (§3.5–3.6)** — the cleanest modern derivation, *read
-this one*. Original: Richards & Wolf, Proc. R. Soc. A 253, 358 (1959). Also Gu
-(vector Debye chapter).
+**Learn it.** **N&H Ch 3 "Propagation and Focusing of Optical Fields"
+(pp. 45–85; the "Focusing of fields" / "Focal fields" sections)** — the cleanest
+modern derivation, *read this one*. Original: Richards & Wolf, Proc. R. Soc. A
+253, 358 (1959). Also Gu (vector Debye chapter).
 **In mcdo.** `mcdo/rw_integrals.py` — this pillar *is* the engine. Phase 2.
 
 ## Pillar 4 — Pupil engineering: apodization, annulus, axicon, Bessel
