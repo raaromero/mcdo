@@ -1,0 +1,400 @@
+<title>mcdo — Monte Carlo Slab (simple)</title>
+<!-- ============================================================
+  mcdo Monte-Carlo dashboard, deliberately minimal starter version.
+  Real analog photon transport in JS: Henyey–Greenstein scattering
+  through a slab; 10 independent trials → error bars (project standard);
+  live Beer–Lambert check on the ballistic fraction (validation rung 2).
+  Companion to index.html (the deterministic Focal Field Explorer).
+============================================================= -->
+<style>
+:root{
+  --ground:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --ink2:#86868B;
+  --hair:rgba(0,0,0,.10); --accent:#0071E3; --accent-ink:#FFFFFF;
+  --knob:#FFFFFF; --track:rgba(0,0,0,.14); --seg:#E9E9EB; --ok:#34C759;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --c-ball:#0071E3; --c-fwd:#64D2FF; --c-back:#FF9F0A; --c-abs:#8E8E93;
+}
+@media (prefers-color-scheme: dark){:root{
+  --ground:#000; --card:#1C1C1E; --ink:#F5F5F7; --ink2:#98989D;
+  --hair:rgba(255,255,255,.14); --accent:#0A84FF; --seg:#2C2C2E;
+  --track:rgba(255,255,255,.22); --ok:#30D158;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+  --c-ball:#0A84FF;
+}}
+:root[data-theme="dark"]{
+  --ground:#000; --card:#1C1C1E; --ink:#F5F5F7; --ink2:#98989D;
+  --hair:rgba(255,255,255,.14); --accent:#0A84FF; --seg:#2C2C2E;
+  --track:rgba(255,255,255,.22); --ok:#30D158;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.5);
+  --c-ball:#0A84FF;
+}
+:root[data-theme="light"]{
+  --ground:#F5F5F7; --card:#FFF; --ink:#1D1D1F; --ink2:#86868B;
+  --hair:rgba(0,0,0,.10); --accent:#0071E3; --seg:#E9E9EB;
+  --track:rgba(0,0,0,.14); --ok:#34C759;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --c-ball:#0071E3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0}
+.sub{color:var(--ink2);font-size:14px}
+header.hd{display:flex;align-items:baseline;gap:14px;margin:4px 2px 22px;flex-wrap:wrap}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin:0 0 12px}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 4px}
+.lbl{font-size:13px;font-weight:500}
+.val{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--track)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;
+  background:var(--knob);box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 2px 5px rgba(0,0,0,.3);margin-top:-7.5px}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border:0;border-radius:50%;background:var(--knob);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 2px 5px rgba(0,0,0,.3)}
+input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+canvas{display:block;width:100%;border-radius:10px}
+.bars{display:flex;height:26px;border-radius:8px;overflow:hidden;margin:6px 0 10px}
+.bars div{transition:width .25s ease}
+.leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink2)}
+.leg span{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chip{background:var(--seg);border-radius:12px;padding:9px 13px;display:inline-block;margin-right:10px;margin-top:6px}
+.chip .k{font-size:11px;color:var(--ink2);letter-spacing:.04em;text-transform:uppercase}
+.chip .v{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.ok{color:var(--ok);font-weight:600}
+.note{font-size:12px;color:var(--ink2)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header class="hd">
+  <h1>Monte Carlo Slab</h1>
+  <span class="sub">live photon transport</span>
+</header>
+
+<div class="card">
+  <h2>Watch the walk — live photon trajectories
+    <button id="btnReplay" style="float:right;border:0;border-radius:980px;background:var(--seg);color:var(--ink);
+      font:inherit;font-size:12px;font-weight:500;padding:4px 14px;cursor:pointer">Replay</button></h2>
+  <canvas id="paths" width="900" height="300"></canvas>
+  <div class="leg" style="margin-top:8px" id="pathLeg"></div>
+</div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h2>Medium</h2>
+      <div class="row"><span class="lbl">Scattering depth τ<sub>s</sub> = µ<sub>s</sub>·d</span><span class="val" id="vTau"></span></div>
+      <input type="range" id="sTau" min="0.1" max="8" step="0.1" value="1.0" aria-label="optical depth">
+      <div class="row"><span class="lbl">Anisotropy g</span><span class="val" id="vG"></span></div>
+      <input type="range" id="sG" min="0" max="0.95" step="0.01" value="0.9" aria-label="anisotropy">
+      <div class="row"><span class="lbl">Absorption µ<sub>a</sub>/µ<sub>s</sub></span><span class="val" id="vA"></span></div>
+      <input type="range" id="sA" min="0" max="0.5" step="0.01" value="0" aria-label="absorption ratio">
+      <div class="row"><span class="lbl">Photons / trial</span><span class="val" id="vN"></span></div>
+      <input type="range" id="sN" min="3" max="5" step="0.5" value="4" aria-label="log10 photons">
+      <p class="note" style="margin:12px 0 0">Slab d = 20 µm · pencil beam · 10 trials, mean ± SD.</p>
+    </div>
+    <div class="card">
+      <h2>Slab</h2>
+      <svg id="slab" viewBox="0 0 248 150" width="100%" aria-label="Slab schematic"></svg>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Where the light goes</h2>
+      <div class="bars" id="bars"></div>
+      <div class="leg" id="leg"></div>
+      <div style="margin-top:8px">
+        <span class="chip"><span class="k">Ballistic (measured)</span><br><span class="v" id="cBall"></span></span>
+        <span class="chip"><span class="k">Beer–Lambert e<sup>−(µ<sub>s</sub>+µ<sub>a</sub>)d</sup></span><br><span class="v" id="cBL"></span></span>
+        <span class="chip"><span class="k">Agreement</span><br><span class="v ok" id="cOK"></span></span>
+      </div>
+      <p class="note" style="margin:10px 0 0">Live validation: unscattered survival must match Beer–Lambert within its error bar.</p>
+    </div>
+    <div class="card">
+      <h2>Transmitted diffuse halo — radial profile (mean ± SD band)</h2>
+      <canvas id="halo" width="560" height="240"></canvas>
+      <div class="row" style="margin-top:6px"><span class="note" id="haloNote"></span></div>
+    </div>
+  </div>
+</div>
+<p class="note">Companion pages: <b>Focal Field Explorer</b> (before the medium) · <b>Focus Through Scatter</b> (the coupling).</p>
+</div>
+
+<script>
+'use strict';
+const CONFIG = { D:20, TRIALS:10, NBINS:24, RMAX:60 };   // µm, trials, halo bins
+const S = { tau:1.0, g:0.9, aRatio:0, logN:4 };
+const el=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+
+/* xorshift RNG (seedable → reproducible trials) */
+function rng(seed){ let s=seed>>>0||1; return ()=>{ s^=s<<13; s^=s>>>17; s^=s<<5; return ((s>>>0)/4294967296); }; }
+
+/* Henyey–Greenstein cosθ sample */
+function hgCos(g, u){
+  if (g < 1e-6) return 2*u-1;
+  const f=(1-g*g)/(1-g+2*g*u);
+  return (1+g*g-f*f)/(2*g);
+}
+
+/* one trial: N photons through the slab; returns partition + halo histogram */
+function trial(N, seed){
+  const rand=rng(seed);
+  const d=CONFIG.D, mus=S.tau/d, mua=mus*S.aRatio, mut=mus+mua;
+  const pAbs=mut>0?mua/mut:0;
+  const halo=new Float64Array(CONFIG.NBINS);
+  let ball=0, fwd=0, back=0, abs_=0;
+  for(let p=0;p<N;p++){
+    let x=0,y=0,z=0, ux=0,uy=0,uz=1, scat=0, alive=true;
+    while(alive){
+      const s=-Math.log(rand()+1e-12)/mut;
+      x+=ux*s; y+=uy*s; z+=uz*s;
+      if(z>=d){                                  // transmitted
+        const t=(d-(z-uz*s))/uz, ex=x-ux*s+ux*t, ey=y-uy*s+uy*t;
+        const r=Math.hypot(ex,ey);
+        if(scat===0) ball++;
+        else { fwd++; const b=Math.min(CONFIG.NBINS-1, Math.floor(r/CONFIG.RMAX*CONFIG.NBINS)); halo[b]++; }
+        break;
+      }
+      if(z<0){ back++; break; }                  // reflected out the front
+      if(rand()<pAbs){ abs_++; break; }          // absorbed at this event
+      // Henyey–Greenstein scatter: rotate direction in local frame (MCML)
+      scat++;
+      const ct=hgCos(S.g, rand()), st=Math.sqrt(Math.max(0,1-ct*ct));
+      const ph=2*Math.PI*rand(), cp=Math.cos(ph), sp=Math.sin(ph);
+      if(Math.abs(uz)>0.99999){ ux=st*cp; uy=st*sp; uz=ct*Math.sign(uz); }
+      else{
+        const den=Math.sqrt(1-uz*uz);
+        const nx=(st*(ux*uz*cp-uy*sp))/den + ux*ct;
+        const ny=(st*(uy*uz*cp+ux*sp))/den + uy*ct;
+        const nz=-st*cp*den + uz*ct;
+        ux=nx; uy=ny; uz=nz;
+      }
+      if(scat>4000){ abs_++; break; }            // runaway guard
+    }
+  }
+  return {ball:ball/N, fwd:fwd/N, back:back/N, abs:abs_/N, halo};
+}
+
+/* run all trials, aggregate mean ± SD */
+function runAll(){
+  const N=Math.round(Math.pow(10,S.logN));
+  const keys=['ball','fwd','back','abs'];
+  const acc={}, acc2={};
+  keys.forEach(k=>{acc[k]=0;acc2[k]=0;});
+  const halos=[];
+  for(let t=0;t<CONFIG.TRIALS;t++){
+    const r=trial(N, 1234567+t*7919+Math.round(S.tau*1000)*13+Math.round(S.g*100)*101+Math.round(S.aRatio*100)*211+N);
+    keys.forEach(k=>{acc[k]+=r[k]; acc2[k]+=r[k]*r[k];});
+    halos.push(r.halo);
+  }
+  const out={N};
+  keys.forEach(k=>{
+    const m=acc[k]/CONFIG.TRIALS;
+    out[k]=m; out[k+'_sd']=Math.sqrt(Math.max(0,acc2[k]/CONFIG.TRIALS-m*m));
+  });
+  // halo mean ± sd per bin (per-photon, per-µm² areal density)
+  const hm=new Float64Array(CONFIG.NBINS), hs=new Float64Array(CONFIG.NBINS);
+  for(let b=0;b<CONFIG.NBINS;b++){
+    let s1=0,s2=0;
+    for(const h of halos){ const v=h[b]/N; s1+=v; s2+=v*v; }
+    const m=s1/CONFIG.TRIALS;
+    const r1=b*CONFIG.RMAX/CONFIG.NBINS, r2=(b+1)*CONFIG.RMAX/CONFIG.NBINS;
+    const area=Math.PI*(r2*r2-r1*r1);
+    hm[b]=m/area; hs[b]=Math.sqrt(Math.max(0,s2/CONFIG.TRIALS-m*m))/area;
+  }
+  out.hm=hm; out.hs=hs;
+  return out;
+}
+
+/* ================= render ================= */
+function fmtPct(v,sd){ return (100*v).toFixed(2)+' ± '+(100*sd).toFixed(2)+'%'; }
+let RES=null;
+function render(){
+  RES=runAll();
+  const c={ball:css('--c-ball'),fwd:css('--c-fwd'),back:css('--c-back'),abs:css('--c-abs')};
+  const names={ball:'ballistic',fwd:'forward diffuse',back:'backscattered',abs:'absorbed'};
+  el('bars').innerHTML=['ball','fwd','back','abs'].map(k=>
+    `<div style="width:${(100*RES[k]).toFixed(2)}%;background:${c[k]}" title="${names[k]}"></div>`).join('');
+  el('leg').innerHTML=['ball','fwd','back','abs'].map(k=>
+    `<span><i style="background:${c[k]}"></i>${names[k]} ${fmtPct(RES[k],RES[k+'_sd'])}</span>`).join('');
+  const d=CONFIG.D, mut=S.tau/d*(1+S.aRatio);
+  const bl=Math.exp(-mut*d);
+  el('cBall').textContent=fmtPct(RES.ball,RES.ball_sd);
+  el('cBL').textContent=(100*bl).toFixed(2)+'%';
+  const dev=Math.abs(RES.ball-bl), pass=dev<=Math.max(3*RES.ball_sd,0.003);
+  el('cOK').textContent=pass?'✓ within 3σ':'Δ '+(100*dev).toFixed(2)+'%';
+  drawHalo(); drawSlab();
+  el('haloNote').textContent=`transmitted diffuse fraction ${fmtPct(RES.fwd,RES.fwd_sd)} · ${CONFIG.TRIALS} trials × ${RES.N.toLocaleString()} photons`;
+}
+function drawHalo(){
+  const cv=el('halo'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const L=46,Rm=8,T=10,B=26;
+  const hm=RES.hm, hs=RES.hs, nB=CONFIG.NBINS;
+  let vmax=0; for(let b=0;b<nB;b++) vmax=Math.max(vmax,hm[b]+hs[b]);
+  if(vmax<=0){ ctx.fillStyle=css('--ink2'); ctx.font='12px -apple-system';
+    ctx.fillText('no diffuse transmission at these settings',L,H/2); return; }
+  const lmax=Math.log10(vmax), lmin=lmax-4;
+  const tx=b=>L+(W-L-Rm)*(b+0.5)/nB;
+  const ty=v=>T+(H-T-B)*(1-(Math.log10(Math.max(v,Math.pow(10,lmin)))-lmin)/(lmax-lmin));
+  ctx.strokeStyle=css('--hair'); ctx.fillStyle=css('--ink2'); ctx.font='10px ui-monospace,Menlo';
+  for(let e=Math.ceil(lmin);e<=Math.floor(lmax);e++){
+    ctx.beginPath();ctx.moveTo(L,ty(Math.pow(10,e)));ctx.lineTo(W-Rm,ty(Math.pow(10,e)));ctx.stroke();
+    ctx.fillText('1e'+e,4,ty(Math.pow(10,e))+3);
+  }
+  // ±SD band
+  ctx.fillStyle=css('--accent')+'33'; ctx.beginPath();
+  for(let b=0;b<nB;b++){const px=tx(b),py=ty(hm[b]+hs[b]); b?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+  for(let b=nB-1;b>=0;b--) ctx.lineTo(tx(b),ty(Math.max(hm[b]-hs[b],1e-300)));
+  ctx.closePath(); ctx.fill();
+  // mean
+  ctx.strokeStyle=css('--accent'); ctx.lineWidth=2; ctx.beginPath();
+  for(let b=0;b<nB;b++){const px=tx(b),py=ty(hm[b]); b?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+  ctx.stroke();
+  ctx.fillStyle=css('--ink2'); ctx.font='11px -apple-system,system-ui';
+  ctx.fillText('exit radius r (0 – '+CONFIG.RMAX+' µm)', W-190, H-8);
+  ctx.fillText('photons / µm² (log)', L, T);
+}
+function drawSlab(){
+  const svg=el('slab');
+  const ink2=css('--ink2'), hair=css('--hair'), acc=css('--accent');
+  const sx=104, sw=40, top=14, bot=136, ay=75;
+  const dots=Math.min(60, Math.round(S.tau*14));
+  let sc='';
+  const r=rng(42);
+  for(let i=0;i<dots;i++){
+    sc+=`<circle cx="${sx+4+r()*(sw-8)}" cy="${top+6+r()*(bot-top-12)}" r="1.6" fill="${ink2}" opacity=".7"/>`;
+  }
+  const bw=Math.max(1.2, 26*(RES?RES.ball:0.4));   // transmitted ballistic arrow weight
+  svg.innerHTML=`
+  <rect x="${sx}" y="${top}" width="${sw}" height="${bot-top}" rx="6" fill="${acc}14" stroke="${hair}"/>
+  ${sc}
+  <line x1="16" y1="${ay}" x2="${sx-2}" y2="${ay}" stroke="${acc}" stroke-width="5" stroke-linecap="round"/>
+  <line x1="${sx+sw+2}" y1="${ay}" x2="230" y2="${ay}" stroke="${acc}" stroke-width="${bw}" stroke-linecap="round" opacity=".9"/>
+  <path d="M 230 ${ay} l -7 -4 v 8 Z" fill="${acc}"/>
+  <path d="M ${sx+sw} ${ay} q 24 -26 44 -34" fill="none" stroke="${css('--c-fwd')}" stroke-width="2" opacity=".8"/>
+  <path d="M ${sx+sw} ${ay} q 24 26 44 34" fill="none" stroke="${css('--c-fwd')}" stroke-width="2" opacity=".8"/>
+  <path d="M ${sx} ${ay} q -20 -22 -36 -28" fill="none" stroke="${css('--c-back')}" stroke-width="2" opacity=".8"/>
+  <text x="${sx+sw/2}" y="${bot+12}" text-anchor="middle" fill="${ink2}" font-size="9">d = ${CONFIG.D} µm · µ<tspan font-size="7" dy="2">s</tspan><tspan dy="-2">d = ${S.tau.toFixed(1)}</tspan> · g = ${S.g.toFixed(2)}</text>
+  <text x="20" y="${ay-10}" fill="${ink2}" font-size="9">beam</text>
+  <text x="188" y="${ay-8}" fill="${ink2}" font-size="9">ballistic</text>`;
+}
+
+/* ================= trajectory recording + animation ================= */
+const PATHS={ list:[], t0:0, dur:6000, raf:0 };
+function samplePaths(n, seed){
+  const rand=rng(seed);
+  const d=CONFIG.D, mus=S.tau/d, mua=mus*S.aRatio, mut=mus+mua, pAbs=mut>0?mua/mut:0;
+  const out=[];
+  for(let p=0;p<n;p++){
+    let x=0,z=0, ux=0,uz=1, scat=0, fate='abs';
+    const pts=[[x,z]];
+    for(let step=0;step<300;step++){
+      const s=-Math.log(rand()+1e-12)/mut;
+      x+=ux*s; z+=uz*s;
+      if(z>=d){ const t=(d-(z-uz*s))/uz; x=x-ux*s+ux*t; z=d;
+        pts.push([x,z],[x+ux/Math.hypot(ux,uz)*6, d+uz/Math.hypot(ux,uz)*6]);
+        fate=scat===0?'ball':'fwd'; break; }
+      if(z<0){ const t=(0-(z-uz*s))/uz; x=x-ux*s+ux*t; z=0;
+        pts.push([x,z],[x+ux/Math.hypot(ux,uz)*6, uz/Math.hypot(ux,uz)*6]);
+        fate='back'; break; }
+      pts.push([x,z]);
+      if(rand()<pAbs){ fate='abs'; break; }
+      scat++;
+      // 2-D projection of the HG walk for display (stats come from the 3-D engine)
+      const ct=hgCos(S.g, rand()), st=Math.sqrt(Math.max(0,1-ct*ct))*(rand()<0.5?1:-1);
+      const nux=ux*ct - uz*st, nuz=ux*st + uz*ct;
+      ux=nux; uz=nuz;
+    }
+    // cumulative lengths for constant-speed animation
+    const cum=[0];
+    for(let i=1;i<pts.length;i++)
+      cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]));
+    out.push({pts, cum, L:cum[cum.length-1], fate, t0:(p/n)*0.55});
+  }
+  return out;
+}
+function drawPathsFrame(frac){
+  const cv=el('paths'), ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const d=CONFIG.D, XM=34;                       // x margin px
+  const zpx=z=>XM+ (z+8)/(d+16) * (W-2*XM);      // z: −8 … d+8 µm
+  const xpx=x=>H/2 - x/46*(H/2-10);              // x: ±46 µm
+  const acc=css('--accent'), hair=css('--hair'), ink2=css('--ink2');
+  // slab
+  ctx.fillStyle=acc+'14'; ctx.strokeStyle=hair;
+  ctx.fillRect(zpx(0),8,zpx(d)-zpx(0),H-16); ctx.strokeRect(zpx(0),8,zpx(d)-zpx(0),H-16);
+  ctx.fillStyle=ink2; ctx.font='10px ui-monospace,Menlo';
+  ctx.fillText('z=0',zpx(0)+3,H-12); ctx.fillText('z=d',zpx(d)-26,H-12);
+  const col={ball:css('--c-ball'), fwd:css('--c-fwd'), back:css('--c-back'), abs:css('--c-abs')};
+  for(const ph of PATHS.list){
+    const sMax=Math.max(0,Math.min(1,(frac-ph.t0)/0.45))*ph.L;
+    if(sMax<=0) continue;
+    ctx.strokeStyle=col[ph.fate];
+    ctx.globalAlpha= ph.fate==='ball'?0.95:0.55;
+    ctx.lineWidth= ph.fate==='ball'?1.8:1.1;
+    ctx.beginPath();
+    ctx.moveTo(zpx(ph.pts[0][1]),xpx(ph.pts[0][0]));
+    for(let i=1;i<ph.pts.length;i++){
+      if(ph.cum[i]<=sMax){ ctx.lineTo(zpx(ph.pts[i][1]),xpx(ph.pts[i][0])); }
+      else{
+        const t=(sMax-ph.cum[i-1])/(ph.cum[i]-ph.cum[i-1]);
+        ctx.lineTo(zpx(ph.pts[i-1][1]+(ph.pts[i][1]-ph.pts[i-1][1])*t),
+                   xpx(ph.pts[i-1][0]+(ph.pts[i][0]-ph.pts[i-1][0])*t));
+        break;
+      }
+    }
+    ctx.stroke();
+    if(ph.fate==='abs' && sMax>=ph.L){
+      const e=ph.pts[ph.pts.length-1];
+      ctx.fillStyle=col.abs; ctx.globalAlpha=.9;
+      ctx.beginPath(); ctx.arc(zpx(e[1]),xpx(e[0]),2.4,0,7); ctx.fill();
+    }
+  }
+  ctx.globalAlpha=1;
+}
+function startPaths(){
+  cancelAnimationFrame(PATHS.raf);
+  PATHS.list=samplePaths(140, 424242 + Math.round(S.tau*100)*7 + Math.round(S.g*100)*61 + Math.round(S.aRatio*100)*97);
+  const names={ball:'ballistic',fwd:'forward diffuse',back:'backscattered',abs:'absorbed (·)'};
+  el('pathLeg').innerHTML=Object.keys(names).map(k=>
+    `<span><i style="background:${css('--c-'+k)}"></i>${names[k]}</span>`).join('')+
+    `<span style="margin-left:auto">140 sample paths — statistics use the full 3-D engine</span>`;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced){ drawPathsFrame(1); return; }
+  PATHS.t0=performance.now();
+  const loop=now=>{
+    const frac=((now-PATHS.t0)%PATHS.dur)/PATHS.dur;
+    drawPathsFrame(frac);
+    PATHS.raf=requestAnimationFrame(loop);
+  };
+  PATHS.raf=requestAnimationFrame(loop);
+}
+el('btnReplay').addEventListener('click',()=>{PATHS.t0=performance.now();});
+
+/* ================= UI ================= */
+let timer=null;
+function queue(){ clearTimeout(timer); timer=setTimeout(()=>{render(); startPaths();}, 160); }
+function bind(sl,key,fmt,lab){
+  el(sl).addEventListener('input',e=>{S[key]=+e.target.value; el(lab).textContent=fmt(S[key]); queue();});
+  el(lab).textContent=fmt(S[key]);
+}
+bind('sTau','tau',v=>v.toFixed(1),'vTau');
+bind('sG','g',v=>v.toFixed(2),'vG');
+bind('sA','aRatio',v=>v.toFixed(2),'vA');
+bind('sN','logN',v=>Math.round(Math.pow(10,v)).toLocaleString(),'vN');
+new MutationObserver(()=>{if(RES){render();}})
+  .observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(RES)render();});
+render();
+startPaths();
+</script>

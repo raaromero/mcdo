@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+
+# LaTeX / tectonic intermediates (the compiled review_NN.pdf are kept)
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Held back from this PUBLIC repo pending the author's OK — it critiques a
+# named external project (gbp-mc). Remove this line to include it.
+docs/gbp_mc_external_review.md
+
+# Generated figures, decks and review folders — 278 MB, and every one of them
+# is reproduced by `python run_all.py`. Kept out of this PUBLIC repo; the
+# scripts and the deck manifest are the source of truth, not the PNGs.
+output/
+
+# Superseded by output/review/, which make_review_folder.py builds per stage.
+slides_review/
