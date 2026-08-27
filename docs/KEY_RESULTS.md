@@ -140,7 +140,7 @@ One line each; details in `docs/theory/`, figures in `output/`, reviews in
     e⁻ᵗ because the cone-averaged path d/cosθ > d), forward-scatter dominates
     (g=0.9; backscatter ≤0.15), the diffuse halo grows (~16–22 µm RMS), and the
     ballistic core **broadens ~5%** (478→501 nm) as steep rays are preferentially
-    scattered. The corrected, error-barred analogue of Arjonillo Fig 4.1.
+    scattered, with error bars across independent trials.
 25. **Rung 4 (single-scatter Born) + from-scratch physics audit** (2026-06-28,
     `verify_scatter_born.png`, `audit_first_principles.png`,
     `docs/theory/AUDIT_FROM_SCRATCH.md`). Poisson scatter counts: P0 = ⟨e^{−μ_sL}⟩

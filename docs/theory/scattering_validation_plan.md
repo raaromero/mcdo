@@ -22,8 +22,9 @@ A focused beam through a slab of scattering strength μ_s (optical depth
 
 As τ → 0 the core → the clear field and the halo → 0; as τ grows the core decays
 exponentially while the halo dominates (the focus washes out). The core/halo
-contrast ∝ exp(−μ_s L)/(1 − exp(−μ_s L)) is the corrected analogue of Arjonillo
-Fig 4.1. These are *quantitative* expectations, so a deviation flags a bug.
+contrast ∝ exp(−μ_s L)/(1 − exp(−μ_s L)) is the quantity we plot against
+scattering depth. These are *quantitative* expectations, so a deviation
+flags a bug.
 
 ## Validation ladder — every rung is something we DO know
 1. **Continuity (μ_s → 0).** Must recover the clear-limit Debye field (already
