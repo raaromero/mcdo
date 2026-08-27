@@ -104,7 +104,7 @@ Each asserts a fundamental result:
 ## Separate tasks (not part of our research)
 | open | what |
 |---|---|
-| `docs/gbp_mc_external_review.md` | review of Arjonillo gbp-mc — C1 scattering-direction bug, C2 expit≠exp |
+| `docs/gbp_mc_external_review.md` | private external review — kept out of this repo |
 
 ## The 3 candidate-publishable results (to highlight later)
 1. Pulsed-annular DOF extension bandwidth-invariant while transverse contrast erodes (Phase 5).

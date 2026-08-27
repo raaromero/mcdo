@@ -8,7 +8,7 @@ as sources.
 
 **Method.** Each phase is a module + validation script + notebook + figures,
 checkpointed against literature or analytics before the next phase builds on
-it. Predecessor codebases (`mcdo`, `optical-diffraction`, `gbp-mc`) are used
+it. Predecessor codebases are used
 as references only; known bugs found in them are documented here and fixed on
 `mcdo`'s `cleanup` branch.
 

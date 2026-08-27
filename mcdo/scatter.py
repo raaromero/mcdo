@@ -4,9 +4,9 @@ and the correct local-frame direction update.
 A photon is advected in straight steps; between steps it may scatter, sampling
 a deflection from the Henyey-Greenstein phase function and rotating its
 direction *vector* in its own local frame (the MCML update [MCML95]_). This is
-the physically correct version of the operation reviewed in ``gbp-mc`` (whose
+the physically correct form of this operation (a common failure mode is a
 issue C1 was a scalar angle addition with an elevation/polar convention
-mismatch — see ``docs/gbp_mc_external_review.md``); rotating the vector
+scalar/vector mismatch); rotating the vector
 composes rotations correctly on the sphere.
 
 References

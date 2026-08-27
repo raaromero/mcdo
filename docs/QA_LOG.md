@@ -12,7 +12,7 @@ Session of 2026-06-14 (Phase 6a Monte-Carlo: launcher, sampling, pulsed).
 | 5 | Intensities after MC launching vs expected? | Match on transverse+axial cuts and x–z slice, RMS 6–8×10⁻⁴. | `verify_launcher_intensity.png` |
 | 6 | What is the distribution of initial directions? | Cone θ∈[0,α=38°], density ∝ |A|√cosθ sinθ; φ uniform; |k|=nk₀ (spherical cap). | `verify_launcher.png` panel (1) |
 | 7 | 2-D slices with both heat map and Romallosa iso-contours? | Adopted as the standard; gates use heat map + labeled contours. | `verify_launcher_intensity.png` (gates) |
-| 8 | Don't introduce gbp-mc concepts. | Honored — all within our own RW/Debye–Wolf framework. | (policy) |
+| 8 | Don't import concepts from external codebases. | Honored — all within our own RW/Debye–Wolf framework. | (policy) |
 | 9 | Where are the review PDFs? | Built the Phase-6 one (was missing). | `docs/review/06_monte_carlo/review_06.pdf` |
 | 10 | The Phase-6a plots aren't clear. | Reworked: smoothed pupil maps, normalized FWHM panels, bigger fonts, separated concerns. | `study_sampling.png`, `verify_launcher*.png` |
 | 11 | Visual flowchart / optical schematic for each model since Romallosa? | One card per phase: pupil → focusing cone → focal signature + result. | `output/00_overview/models_schematic.png` (review_06 p.1) |
