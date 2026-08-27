@@ -16,12 +16,30 @@ The deck lands in `output/deck/stage<N>_<key>.pptx` and ends with an
 **Outputs for this stage** section listing the scripts it runs, the figures it
 writes and the exact commands to reproduce both.
 
-Once the stage is accepted:
+## Branches
+
+- `rebuild` — where the work happens. Everything under review lives here.
+- `locked` — accepted stages only. A stage lands here after you have reviewed
+  its deck and folder and said so. Nothing is added to `locked` on the model's
+  own judgement.
+
+Once a stage is accepted:
 
 ```bash
-git checkout main
-git merge rebuild --no-ff             # or cherry-pick that stage's commits
+git checkout locked
+git merge rebuild --no-ff -m "Lock stage N - <name>"
+git checkout rebuild
 ```
+
+`locked` is local and is not pushed. Publishing to the public remote goes to
+`refactor` and only on an explicit instruction; never to `main`.
+
+## Accepted so far
+
+| Stage | Accepted | Commit |
+|---|---|---|
+| 1 Romallosa (2003) replication | 2026-08-26 | `cb492fc` |
+| 2-6 | not yet reviewed | |
 
 ## Stages
 
