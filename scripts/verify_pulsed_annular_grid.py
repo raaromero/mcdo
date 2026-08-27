@@ -86,19 +86,22 @@ def _profile(cfg, eps, apod, tau, coords, axis):
 
 
 rows = []
+suspect = []
 print(f"{'NA':>5} {'input':<38} {'eps':>5} {'pulse':<17} "
       f"{'width nm':>9} {'depth um':>9} {'gain':>6}")
 
 for xna in NA_CASES:
     # windows scale with aperture: the focus is ~lambda/NA wide, ~lambda/NA^2 long
     r_arr = np.linspace(0.0, 3.0 * LAM / xna, 500)
-    # 1/(1-eps^2) diverges as the ring thins, so it cannot size the window on
-    # its own: at eps = 0.99 it asks for centimetres, and a fixed point count
-    # then samples far coarser than the axial structure. Hold the sampling step
-    # fixed instead and grow the window until the profile actually crosses half.
-    dz = 0.05 * LAM / xna ** 2          # step, not span: resolution stays fixed
-    z_span = {e: 12.0 * LAM / xna ** 2 * min(1.0 / (1.0 - e ** 2), 60.0)
-              for e in EPS}
+    # A thin ring makes a Bessel-like beam whose focus stays above half maximum
+    # across most of any window sized for the full disk, so the window has to be
+    # referred to the unobstructed depth of focus and scaled by the obstruction.
+    # One window for every obstruction ratio. Stretching it for the thin ring
+    # while holding the point count fixed coarsens the step until the Bessel
+    # ripples alias and the half-crossing is found far too late; 40 unobstructed
+    # depths already contain the eps = 0.99 crossing at both apertures.
+    dof0 = 2.0 * LAM / xna ** 2
+    z_span = {e: 40.0 * dof0 for e in EPS}
     cfg = SimConfig(lam_c=LAM, X_NA=xna, n=N_MED, tau=np.inf,
                     N_freq=NFREQ, N_theta=NT)
     for label in INPUTS:
@@ -108,19 +111,22 @@ for xna in NA_CASES:
                           N_freq=NFREQ, N_theta=NT)
             base_depth = None
             for eps in EPS:
-                span = z_span[eps]
-                for _attempt in range(4):
-                    z_arr = np.arange(0.0, span, dz)
-                    d = _fwhm(z_arr, _profile(c, eps, apod, tau, z_arr, 'z'))
-                    if np.isfinite(d) and d < 1.8 * span:
-                        break          # a crossing well inside the window
-                    span *= 2.0        # otherwise the window was the limit
-                else:
-                    d = np.nan         # report nothing rather than the edge
+                z_arr = np.linspace(0.0, z_span[eps], 4000)
+                d = _fwhm(z_arr, _profile(c, eps, apod, tau, z_arr, 'z'))
                 w = _fwhm(r_arr, _profile(c, eps, apod, tau, r_arr, 'r')) * 1000.0
                 if eps == 0.0:
                     base_depth = d
                 gain = d / base_depth
+                # The paraxial law is an upper bound: vector focusing only ever
+                # reduces the gain. A value above it means the axial profile was
+                # under-sampled and the half-crossing was found too late, so say
+                # so rather than reporting a number that looks like physics.
+                bound = 1.0 / (1.0 - eps ** 2)
+                if np.isfinite(gain) and gain > 1.05 * bound:
+                    suspect.append(f"NA {xna}, {label}, eps {eps}, {tlab}: "
+                                   f"gain {gain:.1f} exceeds the paraxial bound "
+                                   f"{bound:.1f}")
+                    gain = np.nan
                 rows.append(dict(na=xna, input=label, eps=eps, tau=tlab,
                                  width_nm=w, depth_um=d, gain=gain))
                 print(f"{xna:>5.1f} {label:<38} {eps:>5.2f} {tlab:<17} "
@@ -161,6 +167,11 @@ plt.close(fig)
 print(f"\nSaved → {out}")
 
 # ── what changes with bandwidth, stated as a number per cell ───────────────
+if suspect:
+    print("\nNOT REPORTED — these cells failed the paraxial upper bound:")
+    for line in suspect:
+        print("  " + line)
+
 print("\nBandwidth sensitivity of the gain (1 fs against continuous wave):")
 for xna in NA_CASES:
     for label in INPUTS:

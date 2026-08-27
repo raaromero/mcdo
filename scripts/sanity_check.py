@@ -152,5 +152,30 @@ check("depth-of-focus gain below paraxial 5.26 at NA 0.8", ratio < 5.26,
       f"{ratio:.2f} < 5.26", "<5.26")
 
 
+# ── the paraxial ring law is a low-aperture limit, and must be used as one ──
+def _dof_at(xna, eps):
+    cc = SimConfig(lam_c=0.750, X_NA=xna, n=1.3, tau=np.inf, N_freq=3, N_theta=501)
+    dof0 = 2.0 * 0.750 / xna ** 2
+    zz2 = np.linspace(0.0, 40.0 * dof0 * (1.0 if eps == 0 else 8.0), 4000)
+    if eps == 0.0:
+        B0, B1, B2 = compute_integrals(r0, zz2, cc.k_c, cc.alpha, cc.N_theta)
+    else:
+        B0, B1, B2 = compute_integrals_annular(r0, zz2, cc.k_c, cc.alpha, eps, cc.N_theta)
+    I = _full(B0[:, 0], B1[:, 0], B2[:, 0])
+    I = I / I.max()
+    below = np.where(I < 0.5)[0]
+    if not len(below):
+        return np.nan
+    i = below[0]
+    return 2 * np.interp(0.5, [I[i], I[i - 1]], [zz2[i], zz2[i - 1]])
+
+g_lo = _dof_at(0.1, 0.9) / _dof_at(0.1, 0.0)
+check("paraxial ring law holds at low aperture", abs(g_lo / 5.263 - 1) < 0.03,
+      f"{g_lo:.2f} vs 5.26", "within 3%")
+g_hi = _dof_at(1.2, 0.9) / _dof_at(1.2, 0.0)
+check("paraxial ring law overstates at high aperture", g_hi < 0.85 * 5.263,
+      f"{g_hi:.2f} << 5.26", "<0.85x")
+
+
 print(f"\n{'ALL SANITY CHECKS PASS' if not fails else 'FAILURES: '+', '.join(fails)}")
 sys.exit(1 if fails else 0)

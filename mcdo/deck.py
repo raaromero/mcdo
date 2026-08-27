@@ -67,6 +67,10 @@ FIGURES = {
     "mc_clear":   ("06_monte_carlo/verify_mc_clear.png",            "scripts/verify_mc_clear.py"),
     "mc_conv":    ("06_monte_carlo/profiles_vs_N.png",              "scripts/verify_mc_clear.py"),
     "mc_var":     ("06_monte_carlo/mc_variance.png",                "scripts/verify_mc_clear.py"),
+    "pag_lo_uni": ("05_pulsed_pupils/panels/pulsed_annular_grid_p1.png", "scripts/verify_pulsed_annular_grid.py"),
+    "pag_lo_gau": ("05_pulsed_pupils/panels/pulsed_annular_grid_p2.png", "scripts/verify_pulsed_annular_grid.py"),
+    "pag_hi_uni": ("05_pulsed_pupils/panels/pulsed_annular_grid_p3.png", "scripts/verify_pulsed_annular_grid.py"),
+    "pag_hi_gau": ("05_pulsed_pupils/panels/pulsed_annular_grid_p4.png", "scripts/verify_pulsed_annular_grid.py"),
     "apod_alpha":  ("02_na_apodization/panels/fig_apodization_inputs_p3.png", "scripts/fig_apodization_inputs.py"),
     "apod_maps":   ("02_na_apodization/fig_apodization_maps.png",             "scripts/fig_apodization_inputs.py"),
     "apod_in":     ("02_na_apodization/panels/fig_apodization_inputs_p1.png", "scripts/fig_apodization_inputs.py"),
@@ -667,6 +671,7 @@ DECK = [
         (0, "Depth of focus grows with obstruction and follows the paraxial law at low numerical aperture"),
         (0, "At high numerical aperture the vector result falls short of the paraxial prediction"),
         (0, "At obstruction 0.9 the paraxial law gives 5.26 times; the computed gain is 5.25 at numerical aperture 0.13, 4.76 at 0.8 and 3.67 at 1.17"),
+        (0, "The gap widens as the ring thins: at obstruction 0.99 the law predicts 50.3 and the computed gain is 50.2 at numerical aperture 0.1 but only 27.9 at 1.2"),
     ], "ann3", None),
     ("slide", "Uniform and Gaussian illumination compared", [
         (0, "Solid: uniform illumination, dashed: truncated Gaussian"),
@@ -792,6 +797,25 @@ DECK = [
         (0, "Even at 1 fs the depth-of-focus gain from the ring is retained"),
         (0, "Numerical aperture 0.8, total intensity of all three components, physical coordinates"),
     ], "atlas_pa_e9_1fs", None),
+    ("slide", "Does the ring survive bandwidth at low numerical aperture?", [
+        (0, "Depth-of-focus gain against pulse duration at numerical aperture 0.1 with uniform input, 750 nm"),
+        (0, "Obstruction ratios 0, 0.5 and 0.99, each measured against its own unobstructed reference"),
+        (0, "The gain is flat across the bandwidth, so the ring gives the same extension to a one femtosecond pulse as to continuous light"),
+    ], "pag_lo_uni", None),
+    ("slide", "The same question for Gaussian input at low numerical aperture", [
+        (0, "Numerical aperture 0.1, Gaussian input with truncation coefficient 4, 750 nm"),
+        (0, "At obstruction 0.5 the gain erodes by about two per cent from continuous wave to one femtosecond"),
+        (0, "Truncating the pupil removes the edge rays the ring relies on, so the two effects compete"),
+    ], "pag_lo_gau", None),
+    ("slide", "The ring at high numerical aperture, uniform input", [
+        (0, "Numerical aperture 1.2, uniform input, 750 nm"),
+        (0, "The gain is still bandwidth invariant, but its size falls well below the paraxial prediction"),
+    ], "pag_hi_uni", None),
+    ("slide", "The ring at high numerical aperture, Gaussian input", [
+        (0, "Numerical aperture 1.2, Gaussian input with truncation coefficient 4, 750 nm"),
+        (0, "At obstruction 0.5 the gain drops below one: the ring shortens the focus instead of extending it"),
+        (0, "Gaussian truncation has already starved the pupil edge, so blocking the centre removes what little weight was left"),
+    ], "pag_hi_gau", None),
     ("section", "Monte Carlo in the clear limit"),
     ("slide", "How a photon is launched", [
         (0, "Each photon is drawn on the pupil, not in the focal volume: a radius from the illumination profile and an azimuth uniform on the full circle"),
