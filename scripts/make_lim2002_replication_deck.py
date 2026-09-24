@@ -468,29 +468,66 @@ r_{\mathrm{width}} \propto \frac{\lambda}{\mathrm{NA}}, \qquad z_{\mathrm{length
 
 WIDTHS = [('θ = π, x', '520', '385', '300'), ('θ = π, z', '3570', '1570', '1280'),
           ('θ = π/2, x', '765', '560', '435'), ('θ = π/2, z', '680', '500', '390')]
-for na, img, medium, peaks, main in (
-        ('0.7', 'highna_psf_na0p7.png', 'air',
-         ('(0.23, 0.58)', '(0.03, 0.95)'),
-         'At NA 0.7 the 2CE spot shrinks, but the paper’s picture holds: crossed beams still give the shortest spot.'),
-        ('0.9', 'highna_psf_na0p9_water.png', 'water, n = 1.33',
-         ('(0.23, 0.58)', '(0.03, 0.95)'),
-         'At NA 0.9 in water the 2CE spot is 42% narrower and 2.8× shorter than at NA 0.5 (θ = π), with the same behavior.')):
-    s = slide(f'2CE PSFs at NA {na}', main)
-    figure(s, os.path.join(FIG, img), 0.45, 1.35, 3.9, 3.55)
-    col = 2 if na == '0.7' else 3
-    b = num_table(s, 4.55, 1.35, 4.95, 'Central spot, full width at half maximum (nm)',
-                  [(r[0], r[1], r[2], r[3]) for r in WIDTHS], highlight=(col - 1,))
-    bullets(s, 4.6, b + 0.12, 4.9, 5.2 - b - 0.12, [
-        f'Misaligned, O′ = (0.4, 1.0) µm: θ = π peak at {peaks[0]} µm (NA 0.5: (0.23, 0.55)); '
-        f'θ = π/2 peak at {peaks[1]} µm (NA 0.5: (0.01, 1.00)).',
-        f'Same axes and contours as the paper’s Figs. 2–3; Richards–Wolf, unpolarized, {medium}.'], 10)
-    text(s, 0.45, 4.98, 3.9, 0.22, 'Top θ = π, bottom θ = π/2; left aligned, right O′ = (0.4, 1.0) µm.', 8.5, GREY)
-    notes(s, main,
-          f'The 2CE panels of the paper’s Figs. 2 and 3, recomputed with the vector focus at NA {na} in {medium}, unpolarized. '
-          'The axes and contour levels are the paper’s, so these compare directly with its NA 0.5 figures. The spot shrinks: across '
-          'the axis as lambda over NA, along it as n lambda over NA squared. The qualitative story is unchanged: crossing at pi/2 '
-          'still gives the shortest spot, and with O prime displaced the theta = pi peak still sits between the two foci while the '
-          'theta = pi/2 peak follows beam 2 along z.')
+PEAKS = [('θ = π', '(0.23, 0.55)', '(0.23, 0.58)', '(0.23, 0.58)'),
+         ('θ = π/2', '(0.01, 1.00)', '(0.03, 0.95)', '(0.03, 0.95)')]
+HEADS3 = ('Paper, NA 0.5', 'RW, NA 0.7', 'RW, NA 0.9, water')
+
+
+def na_grid(s, panels):
+    """Rows θ = π and π/2; columns: paper at NA 0.5, ours at NA 0.7 and 0.9."""
+    for c, hd in enumerate(HEADS3):
+        label(s, 0.75 + c * 1.9, 1.3, 1.8, hd, GREY if c == 0 else PURPLE)
+    for r, rl in enumerate(('θ = π', 'θ = π/2')):
+        text(s, 0.2, 1.58 + r * 1.78 + 0.7, 0.55, 0.3, rl, 10, NAVY, True)
+        for c in range(3):
+            figure(s, panels[r][c], 0.75 + c * 1.9, 1.58 + r * 1.78, 1.8, 1.72)
+
+
+def small_table(s, l, t, w, title, heads, rows):
+    lw = 0.8; cw = (w - 0.4 - lw) / len(heads)
+    h = 0.95 + 0.32 * len(rows)
+    shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, t, w, h, CARD)
+    text(s, l + 0.2, t + 0.1, w - 0.4, 0.45, title, 11, PURPLE, True, 'Cambria')
+    for j, hd in enumerate(heads):
+        text(s, l + 0.2 + lw + j * cw, t + 0.6, cw, 0.3, hd, 9, GREY, True, align=PP_ALIGN.CENTER)
+    for i, row in enumerate(rows):
+        for j, v in enumerate(row):
+            text(s, l + 0.2 + (0 if j == 0 else lw + (j - 1) * cw), t + 0.92 + i * 0.32,
+                 lw if j == 0 else cw, 0.3, v, 9.5 if j else 10, NAVY, j == 0,
+                 align=None if j == 0 else PP_ALIGN.CENTER)
+    return t + h
+
+
+hp = lambda na, k: P(f'highna_psf_{na}_p{k}.png')
+s = slide('2CE aligned PSFs: NA 0.5, 0.7, 0.9', 'Higher NA shrinks the 2CE spot; crossed beams (θ = π/2) still give the shortest spot along z.')
+na_grid(s, [[os.path.join(ORIG, 'orig_fig2a.png'), hp('na0p7', 1), hp('na0p9_water', 1)],
+            [os.path.join(ORIG, 'orig_fig2c.png'), hp('na0p7', 3), hp('na0p9_water', 3)]])
+b = small_table(s, 6.55, 1.35, 2.95, 'Central spot FWHM (nm)', ('0.5', '0.7', '0.9'), WIDTHS)
+bullets(s, 6.6, b + 0.12, 2.9, 5.2 - b - 0.12, [
+    'Width shrinks as λ/NA, length as nλ/NA^2.',
+    'NA 0.5 values are our reconstruction of the paper’s panels.'], 9.5)
+text(s, 0.2, 5.1, 6.2, 0.2, 'Same axes (±1 × ±5 µm) and contours (1–80%) in every panel; RW = Richards–Wolf, unpolarized.', 8, GREY)
+notes(s, 'Higher NA shrinks the 2CE spot; crossed beams still give the shortest spot along z.',
+      'Left column: the paper’s own panels at NA 0.5. Middle and right: our Richards–Wolf vector focus at NA 0.7 in air and NA 0.9 '
+      'in water, unpolarized, on the same axes and contour levels. The spot shrinks in every direction: across the axis as lambda over '
+      'NA, 520, 385, 300 nanometres at theta = pi; along it as n lambda over NA squared, 3.6, 1.6, 1.3 micrometres. The comparison the '
+      'paper draws between the angles does not change: at every NA, crossing the beams at pi/2 gives a spot three to five times shorter '
+      'along z than facing them at pi.')
+
+s = slide('2CE misaligned PSFs: NA 0.5, 0.7, 0.9', 'With O′ = (0.4, 1.0) µm the 2CE peak lands in the same place at every NA.')
+na_grid(s, [[os.path.join(ORIG, 'orig_fig3a.png'), hp('na0p7', 2), hp('na0p9_water', 2)],
+            [os.path.join(ORIG, 'orig_fig3c.png'), hp('na0p7', 4), hp('na0p9_water', 4)]])
+b = small_table(s, 6.55, 1.35, 2.95, 'Peak position (µm)', ('0.5', '0.7', '0.9'), PEAKS)
+bullets(s, 6.6, b + 0.12, 2.9, 5.2 - b - 0.12, [
+    'θ = π: the peak sits between O and O′, as the paper states.',
+    'θ = π/2: the peak follows beam 2 along z only.',
+    'The spot around it shrinks with NA, as on the previous slide.'], 9.5)
+text(s, 0.2, 5.1, 6.2, 0.2, 'Paper panels: its Fig. 3(a), 3(c). Ours: Richards–Wolf, unpolarized; NA 0.9 in water.', 8, GREY)
+notes(s, 'With O prime at (0.4, 1.0) micrometres the 2CE peak lands in the same place at every NA.',
+      'The misaligned case of the paper’s Fig. 3 at the three NAs. At theta = pi the peak sits between the two foci, at (0.23, 0.58) '
+      'micrometres for NA 0.7 and 0.9, against (0.23, 0.55) at NA 0.5 and the paper’s midpoint (0.20, 0.50). At theta = pi/2 the peak '
+      'follows beam 2 along z only, at z about 1. Where the peak goes is set by the geometry of the offset, not by NA; only the size of '
+      'the spot around it changes.')
 
 # ══ 15. conclusions ══════════════════════════════════════════════════════
 s = slide('Conclusions', 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.')
