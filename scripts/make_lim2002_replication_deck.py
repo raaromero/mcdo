@@ -419,6 +419,36 @@ notes(s, 'Each comparison the abstract draws between 2CE and 2PE comes out the s
       'recovers: it fluctuates. At theta = pi the two fall alike. Along the axis at theta = pi/2, two-color falls at every step while '
       'two-photon rises and falls fourteen times as fringes pass the peak.')
 
+# ══ 15. high NA, first look ══════════════════════════════════════════════
+s = slide('First look at high NA', 'The paper’s scalar model holds at NA 0.5; at NA 0.7 the 2CE tolerances shrink, most by about half.')
+figure(s, os.path.join(FIG, 'highna_tolerance.png'), 0.45, 1.35, 4.9, 3.85)
+shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, 5.55, 1.35, 3.95, 2.25, CARD)
+text(s, 5.75, 1.45, 3.6, 0.3, 'Offset that costs 20% of the peak (µm)', 11.5, PURPLE, True, 'Cambria')
+for j, h in enumerate(('', 'paper', 'RW 0.5', 'RW 0.7')):
+    text(s, 5.75 + (0 if j == 0 else 1.2 + (j - 1) * 0.78), 1.8, 1.2 if j == 0 else 0.75, 0.25, h, 10, GREY, True,
+         align=None if j == 0 else PP_ALIGN.CENTER)
+for i, row in enumerate((('θ = π/2, x_c', '> 1.0', '> 1.0', '0.61'), ('θ = π/2, z_c', '1.54', '1.44', '0.68'),
+                         ('θ = π, x_c', '0.30', '0.29', '0.21'), ('θ = π, z_c', '2.06', '1.93', '0.91'))):
+    for j, v in enumerate(row):
+        text(s, 5.75 + (0 if j == 0 else 1.2 + (j - 1) * 0.78), 2.1 + i * 0.36, 1.2 if j == 0 else 0.75, 0.3, v,
+             11, RED if j == 3 else NAVY, j == 3, align=None if j == 0 else PP_ALIGN.CENTER)
+bullets(s, 5.6, 3.75, 3.9, 1.45, [
+    'NA 0.5: the vector focus agrees with the paper’s scalar model within 7%.',
+    'NA 0.7: θ = π in-plane shrinks as 1/NA (spot width); the rest as about 1/NA^2 (spot length).',
+    'Both beams polarized along y, perpendicular to both optical axes.'], 10.5)
+text(s, 0.45, 5.05, 4.9, 0.22, 'Peak 2CE signal against x_c (z_c = 0) and z_c (x_c = 0); dotted line: 20% lost.', 8.5, GREY)
+notes(s, 'The paper’s scalar model holds at NA 0.5; at NA 0.7 the 2CE tolerances shrink, most by about half.',
+      'A first high-NA check with our Richards–Wolf vector focus, the model the adviser asked us to move to. At NA 0.5 the vector '
+      'curves sit on the paper’s scalar ones, within 7 percent, so the paper’s model is adequate at its own NA. At NA 0.7, close to '
+      'the largest NA at which two cones can cross at right angles in air, every tolerance shrinks. The in-plane tolerance at '
+      'theta = pi is set by the spot width and shrinks as 1/NA, from 0.29 to 0.21 micrometres. The others are set by a spot length '
+      'and shrink roughly as 1/NA squared, for example 1.93 to 0.91 micrometres along z at theta = pi. The crossed geometry is still '
+      'the most tolerant in-plane.',
+      r'''
+r_{\mathrm{width}} \propto \frac{\lambda}{\mathrm{NA}}, \qquad z_{\mathrm{length}} \propto \frac{n\lambda}{\mathrm{NA}^2}
+\mathrm{NA} \le \frac{n}{\sqrt{2}} \ \text{for two cones crossing at } \theta = \pi/2
+''')
+
 # ══ 15. conclusions ══════════════════════════════════════════════════════
 s = slide('Conclusions', 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.')
 numbered(s, 1, PURPLE, 1.45, '2CE tolerates misalignment better than two-beam 2PE, most of all at θ = π/2: confirmed.')
