@@ -7,7 +7,9 @@ Three models, all 2CE (λ1 = 750 nm, λ2 = 656 nm) in air:
     Richards–Wolf,   NA 0.7   near the largest NA at which two cones can cross
                               at θ = π/2 in air, n/√2 = 0.71
 
-Both beams are polarized along y, perpendicular to both optical axes. The
+Both beams are unpolarized, as the scalar model implicitly assumes: each
+beam's intensity is the average over two orthogonal input polarizations,
+I = (I_x + I_y)/2, and the two colors do not interfere, so F_2c = I_1 I_2. The
 peak is taken over the paper's ±1 × ±5 µm window and divided by the aligned
 peak; cuts run along x_c (z_c = 0) and along z_c (x_c = 0), for θ = π/2 and π.
 
@@ -39,17 +41,25 @@ DX, DZ = 0.02, 0.1                               # µm, the paper's grid
 NX, NZ = 50, 50                                  # window ±1 × ±5 µm
 MX, MZ = 50, 30                                  # offsets up to 1.0 µm across, 3.0 µm along
 MODELS = [('paraxial', 0.5, 'Paraxial scalar, NA 0.5 (paper)', '#555555', '-'),
-          ('rw', 0.5, 'Richards–Wolf, NA 0.5', '#1f77b4', '--'),
-          ('rw', 0.7, 'Richards–Wolf, NA 0.7', '#d62728', '-')]
+          ('rw', 0.5, 'Richards–Wolf, NA 0.5, unpolarized', '#1f77b4', '--'),
+          ('rw', 0.7, 'Richards–Wolf, NA 0.7, unpolarized', '#d62728', '-')]
 
 XW, ZW = np.meshgrid(np.arange(-NX, NX) * DX, np.arange(-NZ, NZ) * DZ)
 XE, ZE = np.meshgrid(np.arange(-NX - MX, NX + MX) * DX, np.arange(-NZ - MZ, NZ + MZ) * DZ)
 
 
+def unpolarized(x, z, lam, na, theta, model):
+    """Intensity of an unpolarized beam: the mean over two orthogonal input polarizations."""
+    if model != 'rw':
+        return intensity(beam_field(x, z, lam, na, theta=theta, model=model))
+    return 0.5 * sum(intensity(beam_field(x, z, lam, na, theta=theta, model=model, psi=psi))
+                     for psi in (0.0, np.pi / 2))
+
+
 def cuts(model, na, theta):
     """Peak 2CE signal, relative to aligned, along x_c (z_c = 0) and along z_c (x_c = 0)."""
-    I1 = intensity(beam_field(XW, ZW, L1, na, model=model))
-    I2 = intensity(beam_field(XE, ZE, L2, na, theta=theta, model=model))
+    I1 = unpolarized(XW, ZW, L1, na, 0.0, model)
+    I2 = unpolarized(XE, ZE, L2, na, theta, model)
     sz, sx = XW.shape
 
     def peak(ix, iz):
