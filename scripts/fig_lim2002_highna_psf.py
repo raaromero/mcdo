@@ -11,8 +11,8 @@ compare directly with its NA 0.5 figures.
 
     python scripts/fig_lim2002_highna_psf.py
     -> output/08_two_color/lim2002/highna_psf_na0p7.png, highna_psf_na0p9_water.png
-       and one figure per paper panel, NA 0.5 | 0.7 | 0.9 side by side:
-       highna_fig2a.png, highna_fig2c.png, highna_fig3a.png, highna_fig3c.png
+       and one figure per paper panel, NA 0.5 (air) | 0.75 | 0.9 (water) side by side,
+       for α_t = 0 and 4: highna_fig2a_at0.png, ..., highna_fig3c_at4.png
 """
 
 import os
@@ -76,26 +76,39 @@ for na, n, tag, medium in ((0.7, 1.0, 'na0p7', 'air'), (0.9, 1.33, 'na0p9_water'
     print('Saved ->', name + '.png')
 
 
-# ── one figure per paper panel: NA 0.5, 0.7 (air) and 0.9 (water) side by side ──
-NAS = ((0.5, 1.0, 'NA 0.5, air'), (0.7, 1.0, 'NA 0.7, air'), (0.9, 1.33, 'NA 0.9, water'))
-I1s = {na: unpolarized(L1, na, n) for na, n, _ in NAS}
-for tag, th, tl, (xc, zc) in (('fig2a', np.pi, 'θ = π', (0.0, 0.0)), ('fig2c', np.pi / 2, 'θ = π/2', (0.0, 0.0)),
-                              ('fig3a', np.pi, 'θ = π', (0.4, 1.0)), ('fig3c', np.pi / 2, 'θ = π/2', (0.4, 1.0))):
-    fig, axes = plt.subplots(1, 3, figsize=(33.0, 12.0))
-    for ax, (na, n, lab) in zip(axes, NAS):
-        F = I1s[na] * unpolarized(L2, na, n, th, xc, zc)
-        F = 100 * F / F.max()
-        cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=2.0)
-        ax.clabel(cs, fmt='%d', fontsize=24)
-        ax.set_xlabel('x (µm)'); ax.set_ylabel('z (µm)')
-        ax.set_box_aspect(1.0)
-        ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-5, 6, 1))
-        ax.tick_params(axis='x', pad=14)
-        ax.set_title(lab)
-    where = 'aligned' if xc == 0 and zc == 0 else 'O′ = (0.4, 1.0) µm'
-    fig.suptitle(f'2CE, {tl}, {where}: Fig. {tag[3]}({tag[4]}) at three NAs, Richards–Wolf, unpolarized',
-                 fontsize=32, y=1.01)
-    plt.tight_layout()
-    fig.savefig(os.path.join(OUT, f'highna_{tag}.png'), dpi=600, bbox_inches='tight')
-    plt.close(fig)
-    print('Saved ->', f'highna_{tag}.png')
+# ── one figure per paper panel: NA 0.5 (air), 0.75 and 0.9 (water) side by side,
+#    for uniform input (α_t = 0) and a truncated Gaussian (α_t = 4) ──
+from mcdo.apodization import gaussian
+
+NAS = ((0.5, 1.0, 'NA 0.5, air'), (0.75, 1.33, 'NA 0.75, water'), (0.9, 1.33, 'NA 0.9, water'))
+
+
+def unpolarized_apod(lam, na, n, alpha_t, theta=0.0, xc=0.0, zc=0.0):
+    apod = gaussian(alpha_t, (na / n) ** 2) if alpha_t else None
+    return 0.5 * sum(intensity(beam_field(X, Z, lam, na, n, theta=theta, xc=xc, zc=zc, model='rw',
+                                          psi=psi, apodization=apod)) for psi in (0.0, np.pi / 2))
+
+
+for alpha_t in (0, 4):
+    I1s = {na: unpolarized_apod(L1, na, n, alpha_t) for na, n, _ in NAS}
+    for tag, th, tl, (xc, zc) in (('fig2a', np.pi, 'θ = π', (0.0, 0.0)), ('fig2c', np.pi / 2, 'θ = π/2', (0.0, 0.0)),
+                                  ('fig3a', np.pi, 'θ = π', (0.4, 1.0)), ('fig3c', np.pi / 2, 'θ = π/2', (0.4, 1.0))):
+        fig, axes = plt.subplots(1, 3, figsize=(33.0, 12.0))
+        for ax, (na, n, lab) in zip(axes, NAS):
+            F = I1s[na] * unpolarized_apod(L2, na, n, alpha_t, th, xc, zc)
+            F = 100 * F / F.max()
+            cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=2.0)
+            ax.clabel(cs, fmt='%d', fontsize=24)
+            ax.set_xlabel('x (µm)'); ax.set_ylabel('z (µm)')
+            ax.set_box_aspect(1.0)
+            ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-5, 6, 1))
+            ax.tick_params(axis='x', pad=14)
+            ax.set_title(lab)
+        where = 'aligned' if xc == 0 and zc == 0 else 'O′ = (0.4, 1.0) µm'
+        inp = 'uniform input' if alpha_t == 0 else f'Gaussian input, α$_t$ = {alpha_t}'
+        fig.suptitle(f'2CE, {tl}, {where}: Fig. {tag[3]}({tag[4]}), Richards–Wolf, unpolarized, {inp}',
+                     fontsize=32, y=1.01)
+        plt.tight_layout()
+        fig.savefig(os.path.join(OUT, f'highna_{tag}_at{alpha_t}.png'), dpi=600, bbox_inches='tight')
+        plt.close(fig)
+        print('Saved ->', f'highna_{tag}_at{alpha_t}.png')
