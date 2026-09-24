@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 from mcdo.style import apply as _apply_style
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 30,
+matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'axes.labelsize': 28, 'xtick.labelsize': 24,
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
@@ -67,12 +67,12 @@ ax.plot([1.33, -1.33], [-0.8, -0.8], 'o', ms=16, mfc='none', mec='#d62728', mew=
         label='Paper: F ≈ −0.8 at |z$_c$| = 1.33 λ$_1$')
 ax.plot([1.33, -1.33], [0.0, 0.0], 's', ms=16, mfc='none', mec='k', mew=3,
         label='Paper: "C" ≈ 0 at |z$_c$| = 1.33 λ$_1$')
-ax.axhline(0, color='#999999', lw=1.2)
+ax.axhline(0, color='#999999', lw=2.0)
 ax.set_xlabel('Focus offset along z, z$_c$ (λ$_1$)')
 ax.set_ylabel('Linfoot criterion')
 ax.set_xlim(-4, 4); ax.set_ylim(-1.1, 1.2)
 ax.set_title('2CE, θ = π/2, x$_c$ = 0, NA 0.5')
 fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.02), ncol=2)
 plt.tight_layout()
-fig.savefig(os.path.join(OUT, 'labeling_FCQ.png'), dpi=300, bbox_inches='tight')
+fig.savefig(os.path.join(OUT, 'labeling_FCQ.png'), dpi=600, bbox_inches='tight')
 print('Saved -> labeling_FCQ.png')

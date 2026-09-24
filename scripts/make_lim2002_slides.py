@@ -160,6 +160,23 @@ def figslide(ttl, img, items, latex=None, layout='left', size=17):
 
 
 
+def var_table(ttl, rows, latex=None):
+    """Symbol, meaning and value, one variable per row."""
+    s = prs.slides.add_slide(BLANK); title(s, ttl)
+    tb = s.shapes.add_table(len(rows) + 1, 3, Inches(0.4), Inches(0.95),
+                            Inches(W - 0.8), Inches(0.28 * (len(rows) + 1))).table
+    for c, w in enumerate((2.0, 6.6, W - 0.8 - 8.6)):
+        tb.columns[c].width = Inches(w)
+    for r, row in enumerate([("Symbol", "Meaning", "Value")] + list(rows)):
+        tb.rows[r].height = Inches(0.28)
+        for c, txt in enumerate(row):
+            cell = tb.cell(r, c)
+            cell.margin_top = cell.margin_bottom = Inches(0.02)
+            rich(cell.text_frame.paragraphs[0], txt, 13, BLACK, r == 0)
+    if latex:
+        notes(s, latex)
+
+
 def background_slides():
     """Background: microscopy, one and two photons, two colors, focus size, interference, two lenses."""
     explain('What a fluorescence microscope measures', [
@@ -275,23 +292,34 @@ def equations_slides():
     F = 1 - \frac{\langle (t-a)^2 \rangle}{\langle t^2 \rangle}, \quad C = \frac{\langle a^2 \rangle}{\langle t^2 \rangle}, \quad Q = \frac{\langle |a|\,|t| \rangle}{\langle t^2 \rangle}, \quad 2Q - C = F = 1 - \epsilon
     ''', size=17)
 
-    explain('Variables and definitions', [
-        (0, 'λ_1 = 750 nm and λ_2 = 656 nm are the wavelengths of beams 1 and 2 in 2CE; λ_{2p} = 700 nm is the wavelength of both beams in 2PE.'),
-        (0, 'λ_e = 350 nm is the single-photon excitation wavelength, and the fluorescence wavelength λ_f is taken equal to it.'),
-        (0, 'NA = a/f = 0.5 is the numerical aperture, with a the aperture radius and f the focal length of each lens, in air (n = 1).'),
-        (0, 'u and v are the axial and radial optical coordinates, and ρ is the normalized radius on the pupil.'),
-        (0, 'L1 and L2 are the two lenses, with geometric foci O (the origin) and O′ = (x_c, z_c).'),
-        (0, 'θ is the angle between the optical axes of L1 and L2.'),
-        (0, 'x_c and z_c are the offsets of O′ across and along the axis of L1, in units of λ_1 (λ_{2p} for 2PE); d is their magnitude.'),
-        (0, 'U_1, U_2 are the beams’ fields and I_1, I_2 their intensities at the observation point P.'),
-        (0, 'F_{2c}, F_{2p} are the 2CE and 2PE fluorescence, κ_{2c}, κ_{2p} the cross-sections, and F^p the peak relative to alignment.'),
-        (0, 'F, C, Q are Linfoot’s fidelity, structural content and correlation quality; t and a are the aligned and misaligned PSFs.'),
+    var_table('Variables and definitions', [
+        ('λ_1', 'wavelength of beam 1 in 2CE', '750 nm'),
+        ('λ_2', 'wavelength of beam 2 in 2CE', '656 nm'),
+        ('λ_{2p}', 'wavelength of both beams in 2PE', '700 nm'),
+        ('λ_e', 'single-photon excitation wavelength, taken equal to the fluorescence λ_f', '350 nm'),
+        ('NA = a/f', 'numerical aperture: aperture radius a over focal length f', '0.5'),
+        ('n', 'refractive index of the medium', '1 (air)'),
+        ('u, v', 'axial and radial optical coordinates', 'u = (2π/λ) NA^2 z, v = (2π/λ) NA r'),
+        ('ρ', 'normalized radius on the pupil', '0 to 1'),
+        ('L1, L2', 'the lenses that focus beams 1 and 2', 'identical'),
+        ('O, O′', 'geometric foci of L1 and L2', 'O at the origin, O′ = (x_c, z_c)'),
+        ('θ', 'angle between the optical axes of L1 and L2', '0, π/2, π'),
+        ('x_c, z_c', 'offsets of O′ across and along the axis of L1', 'in λ_1 (λ_{2p} for 2PE)'),
+        ('d', 'separation of the foci', '(x_c^2 + z_c^2)^{1/2}'),
+        ('P', 'observation point', '(x, y, z)'),
+        ('U_1, U_2', 'fields of beams 1 and 2 at P', 'Eq. (2)'),
+        ('I_1, I_2', 'intensities of beams 1 and 2 at P', 'I = |U|^2'),
+        ('F_{2c}, F_{2p}', '2CE and 2PE fluorescence at P', 'κ_{2c} I_1 I_2, κ_{2p} |U_1 + U_2|^4'),
+        ('κ_{2c}, κ_{2p}', '2CE and 2PE cross-sections of the sample', 'constants'),
+        ('F^p', 'peak fluorescence relative to the aligned peak', '0 to 1'),
+        ('t, a', 'aligned and misaligned PSFs, each scaled to a peak of 1', '100 × 100 point x–z field'),
+        ('F, C, Q', 'Linfoot’s fidelity, structural content and correlation quality', 'F = 2Q − C'),
     ], r'''
     \lambda_1 = 750\ \mathrm{nm},\ \lambda_2 = 656\ \mathrm{nm},\ \lambda_{2p} = 700\ \mathrm{nm},\ \lambda_e = \lambda_f = 350\ \mathrm{nm}
     \mathrm{NA} = a/f = 0.5, \quad n = 1
     O' = (x_c, z_c), \quad d = \left(x_c^2 + z_c^2\right)^{1/2}
     F^{p}_{2c},\ F^{p}_{2p}, \quad \kappa_{2c},\ \kappa_{2p}
-    ''', size=16)
+    ''')
 
 
 
@@ -631,7 +659,7 @@ prs.save(OUT)
 print('Saved ->', OUT, f'({len(prs.slides)} slides)')
 
 
-# ══ research-meeting deck: main points, abstract step by step, whole figures ══
+# ══ research-meeting deck: conclusions first, then figures, then setup and theory ══
 MEETING = os.path.expanduser('~/Downloads/Research/two_color/lim2002_meeting.pptx')
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(W), Inches(H)
@@ -639,9 +667,10 @@ BLANK = prs.slide_layouts[6]
 QUOTE = RGBColor(0x33, 0x33, 0x33)
 
 
-def abstract(k, quote, items, imgs=(), latex=None, size=16):
+
+def abstract(ttl, quote, items, imgs=(), latex=None, size=16):
     """One abstract sentence, quoted, then explained; optional paper panels at the right."""
-    s = prs.slides.add_slide(BLANK); title(s, f'The abstract, step {k} of 9')
+    s = prs.slides.add_slide(BLANK); title(s, ttl)
     tf = box(s, 0.5, 0.95, W - 1.0, 1.1)
     p = tf.paragraphs[0]; rich(p, '“' + quote + '”', 17, QUOTE)
     for r in p.runs:
@@ -655,8 +684,6 @@ def abstract(k, quote, items, imgs=(), latex=None, size=16):
         fit(s, os.path.join(ORIG, img), x0, 2.6, wcol, H - 2.8)
     if latex:
         notes(s, latex)
-
-
 def compare_wide(ttl, orig, ours, v, items, cite, latex=None):
     """A whole original figure beside the whole reconstruction, bullets below."""
     s = prs.slides.add_slide(BLANK); title(s, ttl); verdict(s, v)
@@ -689,84 +716,39 @@ explain('Main points', [
     (1, 'Figs. 6(c)–(d), captioned θ = π/2, match θ = 0.'),
     (0, 'The paper treats spatial overlap only; overlap in time, with pulses, is our next step.'),
 ], size=18)
-
-# ── the abstract, step by step ────────────────────────────────────────────
-abstract(1, 'We evaluate the point spread function (PSF) of the two-color excitation (2CE) microscope when the '
-            'confocality condition is not strictly satisfied by the two focused excitation beams which are '
-            'separated by an angle θ ≠ 0.', [
-    (0, 'The PSF is the fluorescence pattern produced by a single point in the sample; the image is the sample blurred by it.'),
-    (0, 'In 2CE two beams, each focused by its own lens, must both be present for a molecule to fluoresce.'),
-    (0, 'The confocality condition is that the two geometric foci, O and O′, are the same point.'),
-    (0, 'θ is the angle between the two lenses’ optical axes: θ = π means facing lenses, θ = π/2 perpendicular lenses.'),
-    (0, 'The paper asks what happens to the PSF when O′ is moved away from O.'),
-])
-abstract(2, 'The 2CE wavelengths λ_1 and λ_2 are related to the single-photon excitation wavelength λ_e of the '
-            'sample according to: 1/λ_e = 1/λ_1 + 1/λ_2.', [
-    (0, 'The molecule absorbs one photon from each beam, and the two photon energies add up to the transition energy.'),
-    (0, 'Photon energy is hc/λ, so energy conservation reads 1/λ_e = 1/λ_1 + 1/λ_2.'),
-    (0, 'The paper uses λ_1 = 750 nm and λ_2 = 656 nm, which together reach λ_e = 350 nm (3.54 eV).'),
-    (0, 'Two-photon excitation (2PE) reaches the same state with two 700 nm photons.'),
-    (0, 'Each photon alone has too little energy, so a single beam cannot excite the molecule through 2CE.'),
-], latex=r'\frac{1}{\lambda_e} = \frac{1}{\lambda_1} + \frac{1}{\lambda_2}')
-abstract(3, 'Spatio-temporal simultaneity for the two excitation beams is essential in 2CE (λ_1 ≠ λ_2).', [
-    (0, 'The two photons must be absorbed together, through a short-lived virtual state.'),
-    (0, 'So both beams must be present at the same place (spatial simultaneity) and at the same time (temporal simultaneity).'),
-    (0, 'The signal is proportional to the product I_1 I_2 and vanishes wherever either beam is absent.', 'p. 123'),
-    (0, 'This paper studies the spatial part only: it moves the foci apart and keeps the beams continuous.'),
-    (0, 'With pulsed beams, the pulses must also arrive together; a time delay between them is the extension we take up next.'),
-], latex=r'F_{2c}(P) = \kappa_{2c}\, I_1(P)\, I_2(P)')
-abstract(4, 'Only aberration-free misalignment of the geometrical foci is considered and the degradation of the peak '
-            '2CE fluorescence intensity (F_{2c}^p) is determined as a function of the focus separation for '
-            'θ = 0, π/2 and π. The deterioration of the fluorescence PSF is also evaluated using the Linfoot’s '
-            'criteria of fidelity, structural content and correlation quality.', [
-    (0, 'Aberration-free: each lens forms a perfect focus; only its position is wrong. Aberrations are the subject of the 2003 paper.', 'LS03'),
-    (0, 'The focus separation is d = (x_c^2 + z_c^2)^{1/2}, the distance from O to O′.'),
-    (0, 'Two measures of damage are used:'),
-    (1, 'F_{2c}^p, the peak signal relative to perfect alignment, which sets the brightness (Fig. 4);'),
-    (1, 'Linfoot’s fidelity F, structural content C and correlation quality Q, which compare the shape of the misaligned PSF with the aligned one (Figs. 5–6).'),
-], latex=LINFOOT_TEX)
-abstract(5, 'We compare the 2CE PSF behavior with that of the two-photon excitation (2PE) fluorescence (λ_1 = λ_2) '
-            'under the same misalignment settings.', [
-    (0, 'In two-beam 2PE both beams have the same wavelength, 700 nm.'),
-    (0, 'The fields then add before squaring, F_{2p} ∝ |U_1 + U_2|^4, so the two beams interfere and form fringes.', 'p. 123'),
-    (0, 'In 2CE the cross term oscillates at the difference frequency and averages away, so F_{2c} ∝ I_1 I_2 has no fringes.'),
-    (0, 'Moving one focus shifts 2PE fringes as well as the envelope, which is why 2PE is expected to be more sensitive.'),
-], latex=r'F_{2p} = \kappa_{2p}\,|U_1 + U_2|^4, \qquad F_{2c} = \kappa_{2c}\, I_1 I_2')
-abstract(6, 'At θ = π/2, the F_{2c}^p degrades less rapidly than the peak 2PE fluorescence intensity (F_{2p}^p) '
-            'for misalignments that are confined within the focal plane of the focusing lens L1 for λ_1.', [
-    (0, 'Focal-plane misalignment means z_c = 0: beam 2’s focus slides sideways by x_c.'),
-    (0, 'At θ = π/2 that slide is along beam 2’s own axis, the long direction of its focus, so the overlap barely changes.'),
-    (0, 'Reconstruction: the 2CE peak falls smoothly, as −0.063 x_c^2 against the paper’s −0.06 x_c^2, and stays above 0.89 for |x_c| ≤ 1.33 λ_1.', 'p. 126'),
-    (0, 'The 2PE peak drops to 0.73 at x_c = 0.5 λ, as the paper states (30% drop), then recovers to 0.94 at 1.0 λ: it fluctuates with the fringes.', 'p. 126'),
-], imgs=(('Paper Fig. 4(c): 2CE', 'orig_fig4c.png'), ('Paper Fig. 4(d): 2PE', 'orig_fig4d.png')), size=15)
-abstract(7, 'At θ = π, F_{2c}^p and F_{2p}^p degrade in a similar manner.', [
-    (0, 'At θ = π the two lenses face each other, so a sideways offset x_c moves beam 2 across its narrow direction.'),
-    (0, 'Both signals therefore fall quickly with x_c.'),
-    (0, 'Reconstruction, peak at x_c = 0.37, 0.5 and 1.0 λ:'),
-    (1, '2CE: 0.82, 0.70, 0.22. The paper states a 20% drop at 0.37 λ_1.', 'p. 126'),
-    (1, '2PE: 0.84, 0.73, 0.27.'),
-], imgs=(('Paper Fig. 4(a): 2CE', 'orig_fig4a.png'), ('Paper Fig. 4(b): 2PE', 'orig_fig4b.png')), size=15)
-abstract(8, 'For misalignments along the optical axis of L1 and at θ = π/2, the F_{2c}^p degrades monotonically '
-            'while the F_{2p}^p degradation is accompanied by fluctuations caused by two-beam interference.', [
-    (0, 'Axial misalignment means x_c = 0: beam 2’s focus moves along z, across beam 2’s narrow direction.'),
-    (0, 'Reconstruction, 2CE peak at z_c = 1.33, 1.8 and 2.7 λ_1: 0.91, 0.84, 0.68, falling at every step.'),
-    (0, 'Reconstruction, 2PE: 0.85, 0.72, 0.51, with 14 rises and falls on the way as the fringes pass the peak.'),
-    (0, 'The contour maps show the same thing: smooth bands for 2CE, wavy tilted contours for 2PE.'),
-], imgs=(('Paper Fig. 4(c): 2CE', 'orig_fig4c.png'), ('Paper Fig. 4(d): 2PE', 'orig_fig4d.png')), size=15)
-abstract(9, 'Our calculations reveal that 2CE imaging is more resilient to the ill-effects of misalignment than '
+# ── conclusions: the paper's, with the figures that show them ─────────────
+abstract('Conclusion: 2CE is more resilient', 'Our calculations reveal that 2CE imaging is more resilient to the ill-effects of misalignment than '
             'the two-beam 2PE.', [
     (0, '2CE loses signal smoothly and predictably, and its PSF has no fringes to be distorted.'),
     (0, '2PE loses signal at least as fast and fluctuates, because its PSF is an interference pattern.'),
     (0, 'The paper’s tolerance: at θ = π/2 the 2CE peak drops by less than 20% for in-plane offsets up to 1.5 λ_1.', 'p. 129'),
     (0, 'The reconstruction agrees with this conclusion; the problems we found concern labels and one figure caption, not the conclusion.'),
 ], size=18)
-
-# ── introduction and theory ───────────────────────────────────────────────
-background_slides()
-setup_slides()
-equations_slides()
-
-# ── all figures ───────────────────────────────────────────────────────────
+abstract('θ = π/2 in-plane: 2CE degrades less than 2PE', 'At θ = π/2, the F_{2c}^p degrades less rapidly than the peak 2PE fluorescence intensity (F_{2p}^p) '
+            'for misalignments that are confined within the focal plane of the focusing lens L1 for λ_1.', [
+    (0, 'Focal-plane misalignment means z_c = 0: beam 2’s focus slides sideways by x_c.'),
+    (0, 'At θ = π/2 that slide is along beam 2’s own axis, the long direction of its focus, so the overlap barely changes.'),
+    (0, 'Reconstruction: the 2CE peak falls smoothly, as −0.063 x_c^2 against the paper’s −0.06 x_c^2, and stays above 0.89 for |x_c| ≤ 1.33 λ_1.', 'p. 126'),
+    (0, 'The 2PE peak drops to 0.73 at x_c = 0.5 λ, as the paper states (30% drop), then recovers to 0.94 at 1.0 λ: it fluctuates with the fringes.', 'p. 126'),
+], imgs=(('Paper Fig. 4(c): 2CE', 'orig_fig4c.png'), ('Paper Fig. 4(d): 2PE', 'orig_fig4d.png')), size=15)
+abstract('θ = π: 2CE and 2PE degrade alike', 'At θ = π, F_{2c}^p and F_{2p}^p degrade in a similar manner.', [
+    (0, 'At θ = π the two lenses face each other, so a sideways offset x_c moves beam 2 across its narrow direction.'),
+    (0, 'Both signals therefore fall quickly with x_c.'),
+    (0, 'Reconstruction, peak at x_c = 0.37, 0.5 and 1.0 λ:'),
+    (1, '2CE: 0.82, 0.70, 0.22. The paper states a 20% drop at 0.37 λ_1.', 'p. 126'),
+    (1, '2PE: 0.84, 0.73, 0.27.'),
+], imgs=(('Paper Fig. 4(a): 2CE', 'orig_fig4a.png'), ('Paper Fig. 4(b): 2PE', 'orig_fig4b.png')), size=15)
+abstract('θ = π/2 axial: 2CE smooth, 2PE fluctuates', 'For misalignments along the optical axis of L1 and at θ = π/2, the F_{2c}^p degrades monotonically '
+            'while the F_{2p}^p degradation is accompanied by fluctuations caused by two-beam interference.', [
+    (0, 'Axial misalignment means x_c = 0: beam 2’s focus moves along z, across beam 2’s narrow direction.'),
+    (0, 'Reconstruction, 2CE peak at z_c = 1.33, 1.8 and 2.7 λ_1: 0.91, 0.84, 0.68, falling at every step.'),
+    (0, 'Reconstruction, 2PE: 0.85, 0.72, 0.51, with 14 rises and falls on the way as the fringes pass the peak.'),
+    (0, 'The contour maps show the same thing: smooth bands for 2CE, wavy tilted contours for 2PE.'),
+], imgs=(('Paper Fig. 4(c): 2CE', 'orig_fig4c.png'), ('Paper Fig. 4(d): 2PE', 'orig_fig4d.png')), size=15)
+# ── conclusions: ours ─────────────────────────────────────────────────────
+swap_slide()
+theta0_slides()
+# ── supporting figures ────────────────────────────────────────────────────
 read_psf_slide()
 compare_wide('Fig. 2: aligned PSFs', 'orig_fig2.png', os.path.join(FIG, 'fig2_contours.png'), 'match', [
     (0, 'Columns: 2CE (left) and 2PE (right); rows: θ = π (top) and θ = π/2 (bottom); contours at 1–80% of the peak.'),
@@ -795,11 +777,51 @@ compare_wide('Fig. 6: Linfoot’s criteria for 2PE', 'orig_fig6.png', os.path.jo
     (0, 'Bottom row, captioned θ = π/2: our θ = π/2 surfaces are spiky and do not match.'),
     (0, 'The same panels match our θ = 0 surfaces, as the next slides show.'),
 ], 'p. 129', LINFOOT_TEX)
-theta0_slides()
-
-# ── findings and next steps ───────────────────────────────────────────────
-swap_slide()
-conclusions_slide()
+# ── setup and assumptions ─────────────────────────────────────────────────
+abstract('Abstract 1/5: the question', 'We evaluate the point spread function (PSF) of the two-color excitation (2CE) microscope when the '
+            'confocality condition is not strictly satisfied by the two focused excitation beams which are '
+            'separated by an angle θ ≠ 0.', [
+    (0, 'The PSF is the fluorescence pattern produced by a single point in the sample; the image is the sample blurred by it.'),
+    (0, 'In 2CE two beams, each focused by its own lens, must both be present for a molecule to fluoresce.'),
+    (0, 'The confocality condition is that the two geometric foci, O and O′, are the same point.'),
+    (0, 'θ is the angle between the two lenses’ optical axes: θ = π means facing lenses, θ = π/2 perpendicular lenses.'),
+    (0, 'The paper asks what happens to the PSF when O′ is moved away from O.'),
+])
+abstract('Abstract 2/5: the energy condition', 'The 2CE wavelengths λ_1 and λ_2 are related to the single-photon excitation wavelength λ_e of the '
+            'sample according to: 1/λ_e = 1/λ_1 + 1/λ_2.', [
+    (0, 'The molecule absorbs one photon from each beam, and the two photon energies add up to the transition energy.'),
+    (0, 'Photon energy is hc/λ, so energy conservation reads 1/λ_e = 1/λ_1 + 1/λ_2.'),
+    (0, 'The paper uses λ_1 = 750 nm and λ_2 = 656 nm, which together reach λ_e = 350 nm (3.54 eV).'),
+    (0, 'Two-photon excitation (2PE) reaches the same state with two 700 nm photons.'),
+    (0, 'Each photon alone has too little energy, so a single beam cannot excite the molecule through 2CE.'),
+], latex=r'\frac{1}{\lambda_e} = \frac{1}{\lambda_1} + \frac{1}{\lambda_2}')
+abstract('Abstract 3/5: simultaneity', 'Spatio-temporal simultaneity for the two excitation beams is essential in 2CE (λ_1 ≠ λ_2).', [
+    (0, 'The two photons must be absorbed together, through a short-lived virtual state.'),
+    (0, 'So both beams must be present at the same place (spatial simultaneity) and at the same time (temporal simultaneity).'),
+    (0, 'The signal is proportional to the product I_1 I_2 and vanishes wherever either beam is absent.', 'p. 123'),
+    (0, 'This paper studies the spatial part only: it moves the foci apart and keeps the beams continuous.'),
+    (0, 'With pulsed beams, the pulses must also arrive together; a time delay between them is the extension we take up next.'),
+], latex=r'F_{2c}(P) = \kappa_{2c}\, I_1(P)\, I_2(P)')
+abstract('Abstract 4/5: what is computed', 'Only aberration-free misalignment of the geometrical foci is considered and the degradation of the peak '
+            '2CE fluorescence intensity (F_{2c}^p) is determined as a function of the focus separation for '
+            'θ = 0, π/2 and π. The deterioration of the fluorescence PSF is also evaluated using the Linfoot’s '
+            'criteria of fidelity, structural content and correlation quality.', [
+    (0, 'Aberration-free: each lens forms a perfect focus; only its position is wrong. Aberrations are the subject of the 2003 paper.', 'LS03'),
+    (0, 'The focus separation is d = (x_c^2 + z_c^2)^{1/2}, the distance from O to O′.'),
+    (0, 'Two measures of damage are used:'),
+    (1, 'F_{2c}^p, the peak signal relative to perfect alignment, which sets the brightness (Fig. 4);'),
+    (1, 'Linfoot’s fidelity F, structural content C and correlation quality Q, which compare the shape of the misaligned PSF with the aligned one (Figs. 5–6).'),
+], latex=LINFOOT_TEX)
+abstract('Abstract 5/5: the 2PE comparison', 'We compare the 2CE PSF behavior with that of the two-photon excitation (2PE) fluorescence (λ_1 = λ_2) '
+            'under the same misalignment settings.', [
+    (0, 'In two-beam 2PE both beams have the same wavelength, 700 nm.'),
+    (0, 'The fields then add before squaring, F_{2p} ∝ |U_1 + U_2|^4, so the two beams interfere and form fringes.', 'p. 123'),
+    (0, 'In 2CE the cross term oscillates at the difference frequency and averages away, so F_{2c} ∝ I_1 I_2 has no fringes.'),
+    (0, 'Moving one focus shifts 2PE fringes as well as the envelope, which is why 2PE is expected to be more sensitive.'),
+], latex=r'F_{2p} = \kappa_{2p}\,|U_1 + U_2|^4, \qquad F_{2c} = \kappa_{2c}\, I_1 I_2')
+setup_slides()
+equations_slides()
+background_slides()
 explain('Summary and next steps', [
     (0, 'The reconstruction reproduces the paper’s conclusion and every number in its Section 3.2.'),
     (0, 'Three problems in the paper, each checked against its own text:'),
@@ -810,7 +832,6 @@ explain('Summary and next steps', [
     (0, 'Next: the same misalignment study with the high-NA vector (Richards–Wolf) focus.'),
     (0, 'Later: pulsed beams and a time delay between them, the temporal half of spatio-temporal simultaneity.'),
 ], size=19)
-
 os.makedirs(os.path.dirname(MEETING), exist_ok=True)
 prs.save(MEETING)
 print('Saved ->', MEETING, f'({len(prs.slides)} slides)')

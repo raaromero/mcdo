@@ -24,8 +24,8 @@ from matplotlib.patches import Arc, Ellipse, FancyArrowPatch, Polygon
 from mcdo.style import apply as _apply_style
 _apply_style()
 matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
-                            'axes.labelsize': 28, 'xtick.labelsize': 22,
-                            'ytick.labelsize': 22, 'legend.fontsize': 24})
+                            'axes.labelsize': 28, 'xtick.labelsize': 24,
+                            'ytick.labelsize': 24, 'legend.fontsize': 24})
 
 from mcdo.figio import save_panels
 from mcdo.twobeam import beam_field
@@ -43,8 +43,8 @@ def note(s):
 
 
 def save(fig, name):
-    save_panels(fig, fig.axes, os.path.join(OUT, 'panels'), name[:-4], dpi=300)
-    fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight')
+    save_panels(fig, fig.axes, os.path.join(OUT, 'panels'), name[:-4], dpi=600)
+    fig.savefig(os.path.join(OUT, name), dpi=600, bbox_inches='tight')
     plt.close(fig); print('Saved ->', name)
 
 
@@ -63,8 +63,8 @@ def psf(X, Z, pair, theta, xc=0.0, zc=0.0):
 fig, ax = plt.subplots(figsize=(14.0, 14.0))
 ax.set_aspect('equal'); ax.axis('off')
 ax.set_xlim(-4.2, 6.6); ax.set_ylim(5.4, -5.4)
-ax.annotate('', xy=(6.2, 0), xytext=(-3.6, 0), arrowprops=dict(arrowstyle='->', lw=1.8))
-ax.annotate('', xy=(0, 5.0), xytext=(0, -5.0), arrowprops=dict(arrowstyle='->', lw=1.8))
+ax.annotate('', xy=(6.2, 0), xytext=(-3.6, 0), arrowprops=dict(arrowstyle='->', lw=2.0))
+ax.annotate('', xy=(0, 5.0), xytext=(0, -5.0), arrowprops=dict(arrowstyle='->', lw=2.0))
 ax.text(6.3, 0, 'x', fontsize=30, va='center'); ax.text(0.15, 5.2, 'z', fontsize=30)
 # beam 1 along z to O
 ax.add_patch(Polygon([(-1.1, -3.4), (0, 0), (1.1, -3.4)], fc='#d62728', alpha=0.15, lw=0))
@@ -93,15 +93,15 @@ ax.text(Lc[0] - 1.5 * d[0] + 0.3, Lc[1] - 1.5 * d[1] + 1.3, 'Beam 2, λ$_2$', fo
         color='#1f77b4')
 # axis of L2 and angle θ
 ax.plot([Op[0] - 5.0 * d[0], Op[0] + 0.8 * d[0]], [Op[1] - 5.0 * d[1], Op[1] + 0.8 * d[1]],
-        ':', color='#1f77b4', lw=1.8)
+        ':', color='#1f77b4', lw=2.0)
 ax.add_patch(Arc(Op, 2.2, 2.2, theta1=-20, theta2=90, color='k', lw=2))
-ax.plot([Op[0], Op[0]], [Op[1], Op[1] + 1.4], ':', color='k', lw=1.8)
+ax.plot([Op[0], Op[0]], [Op[1], Op[1] + 1.4], ':', color='k', lw=2.0)
 ax.text(Op[0] + 0.95, Op[1] + 0.95, 'θ', fontsize=30)
 for pt, lab, off in (((0, 0), 'O', (-0.45, -0.3)), (tuple(Op), 'O′', (-0.6, 0.55))):
     ax.plot(*pt, 'o', color='k', ms=11, zorder=6)
     ax.text(pt[0] + off[0], pt[1] + off[1], lab, fontsize=30)
-ax.plot([Op[0], Op[0]], [0, Op[1]], '--', color='#555555', lw=1.6)
-ax.plot([0, Op[0]], [Op[1], Op[1]], '--', color='#555555', lw=1.6)
+ax.plot([Op[0], Op[0]], [0, Op[1]], '--', color='#555555', lw=2.0)
+ax.plot([0, Op[0]], [Op[1], Op[1]], '--', color='#555555', lw=2.0)
 ax.text(Op[0] / 2, -0.25, 'x$_c$', fontsize=26, ha='center')
 ax.text(-0.2, Op[1], 'z$_c$', fontsize=26, ha='right', va='center')
 ax.text(-3.5, -1.2, 'U$_1$(P; λ$_1$)', fontsize=26, color='#d62728')
@@ -119,11 +119,12 @@ for fig_no, (xc, zc) in ((2, (0.0, 0.0)), (3, (0.4, 1.0))):
     for ax, (pair, th, tag, lab) in zip(axes.ravel(), PANELS):
         F = psf(X, Z, pair, th, xc, zc)
         F = 100 * F / F.max()
-        cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=1.6)
-        ax.clabel(cs, fmt='%d', fontsize=16)
+        cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=2.0)
+        ax.clabel(cs, fmt='%d', fontsize=24)
         ax.set_xlabel('x (µm)'); ax.set_ylabel('z (µm)')
         ax.set_box_aspect(1.0)                  # the paper's frames are square
         ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-5, 6, 1))
+        ax.tick_params(axis='x', pad=14)             # keeps −1.0 clear of the −5 on the z axis
         ax.set_title(f'({tag}) {lab}')
         iz, ix = np.unravel_index(np.argmax(F), F.shape)
         note(f"Fig. {fig_no} ({tag}) {lab}: peak at x = {x[ix]:+.3f}, z = {z[iz]:+.3f} µm")
@@ -174,8 +175,8 @@ MAPS[('2pe', 0.0)] = offset_maps('2pe', 0.0, True)
 fig, axes = plt.subplots(2, 2, figsize=(22.0, 23.0))
 for ax, (pair, th, tag, lab) in zip(axes.ravel(), PANELS):
     xc, zc, P, *_ = MAPS[(pair, th)]
-    cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], colors='k', linewidths=1.6)
-    ax.clabel(cs, fmt='%d', fontsize=16)
+    cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], colors='k', linewidths=2.0)
+    ax.clabel(cs, fmt='%d', fontsize=24)
     u = 'λ$_1$' if pair == '2ce' else 'λ$_{2p}$'   # 2PE offsets are in units of its 700 nm wavelength
     ax.set_xlabel(f'x$_c$ ({u})'); ax.set_ylabel(f'z$_c$ ({u})')
     ax.set_box_aspect(1.0)                      # the paper's Fig. 4 frames are square
