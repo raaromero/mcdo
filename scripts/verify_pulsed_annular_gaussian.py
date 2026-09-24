@@ -37,7 +37,7 @@ LAM, N_MED, NT, NFREQ = 0.750, 1.3, 401, 41      # 41 samples: convergence shown
 C_UM = 2.99792458e14
 EPS = [0.0, 0.3, 0.5, 0.7, 0.9]
 TAUS = [(np.inf, 'continuous wave'), (2e-15, '2 fs'), (1e-15, '1 fs')]
-ILLUM = [(0.0, 'uniform'), (4.0, 'Gaussian, truncation coefficient 4')]
+ILLUM = [(0.0, 'uniform'), (4.0, 'Gaussian, alpha = 4')]
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '05_pulsed_pupils')
 Z_UM = np.linspace(0.0, 60.0, 1200)              # on-axis, one side; profile is even
 
@@ -91,7 +91,7 @@ for (illum, tlabel), d in results.items():
 
 fig, axes = plt.subplots(1, 2, figsize=(20.5, 6.5))
 styles = {'continuous wave': '-o', '2 fs': '--s', '1 fs': ':^'}
-colors = {'uniform': '#1f77b4', 'Gaussian, truncation coefficient 4': '#0a3a66'}
+colors = {'uniform': '#1f77b4', 'Gaussian, alpha = 4': '#0a3a66'}
 
 ax = axes[0]
 for (illum, tlabel), d in results.items():
@@ -108,7 +108,7 @@ for illum, c in colors.items():
     cw = results[(illum, 'continuous wave')]
     one = results[(illum, '1 fs')]
     ax.plot(EPS, one / cw, '-o', color=c, lw=2.0, ms=5,
-            label='uniform' if illum == 'uniform' else 'Gaussian')
+            label='Uniform' if illum == 'uniform' else 'Gaussian')
 ax.axhline(1.0, color='#999', ls=':', lw=1.2)
 ax.set_xlabel('Obstruction ratio')
 ax.set_ylabel('Depth of focus, 1 fs relative to continuous wave')

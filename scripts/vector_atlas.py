@@ -61,7 +61,7 @@ def full_vec(I0, I1, I2):
 
 def card(h, v, I, title, outpath, base_tr=None, base_ax=None, airy_um=None,
          hlabel='Radial position r (μm)', vlabel='Axial position z (μm)',
-         curve_label='this configuration', base_label='uniform disk, all components'):
+         curve_label='This configuration', base_label='Uniform disk, all components'):
     ih0 = np.argmin(np.abs(h)); izpk = np.argmax(I[:, ih0])
     fig = plt.figure(figsize=(11.3, 6.8))
     gs = fig.add_gridspec(2, 2, width_ratios=[1.15, 1], hspace=0.55, wspace=0.75)
@@ -122,7 +122,7 @@ uni_ax = UNI[:, np.argmin(np.abs(r_full))]
 
 FAMILIES = [
     ('NA', [0.1, 0.5, 0.8, 1.2], lambda v: f'{v}'),
-    ('gaussian', [0.0, 2.0, 4.0], lambda v: f'truncation coefficient {v:g}'),
+    ('gaussian', [0.0, 2.0, 4.0], lambda v: f'alpha {v:g}'),
     ('annular', [0.0, 0.5, 0.9, 0.99], lambda v: f'obstruction ratio {v}'),
     ('axicon', [0, 20, 40], lambda v: f'conical phase depth {v}'),
 ]

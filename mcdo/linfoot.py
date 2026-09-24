@@ -5,7 +5,7 @@ correlation quality :math:`Q` — quantify how a *test* distribution
 :math:`a = \{a(m)\}` deviates from a *reference* :math:`r = \{r(m)\}`. In this
 package the reference is the CW point-spread function and the test is the
 pulsed (or otherwise modified) PSF, both peak-normalized and sampled on a
-common grid centred at the geometric focus [Rom03]_.
+common grid centerd at the geometric focus [Rom03]_.
 
 With :math:`\langle\cdot\rangle` an average over samples,
 

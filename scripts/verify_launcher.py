@@ -50,9 +50,10 @@ cfg = SimConfig(lam_c=LAM, X_NA=0.8, n=N_MED, tau=np.inf, N_freq=3, N_theta=1201
 N_DIST = 400_000       # photons for the distribution checks (smooth histograms)
 N_FIELD = 120_000      # photons for the field gates / cuts
 
-CONFIGS = [('uniform', None), ('Gaussian, truncation coefficient 2', gaussian(2.0, cfg.sin2_alpha))]
-COLOR = {'uniform': '#1f77b4', 'Gaussian, truncation coefficient 2': '#d62728'}
-MARKER = {'uniform': 'o', 'Gaussian, truncation coefficient 2': 's'}
+CONFIGS = [('Uniform', None), ('Gaussian, α = 2', gaussian(2.0, cfg.sin2_alpha)),
+           ('Gaussian, α = 4', gaussian(4.0, cfg.sin2_alpha))]
+COLOR = {'Uniform': '#1f77b4', 'Gaussian, α = 2': '#2ca02c', 'Gaussian, α = 4': '#d62728'}
+MARKER = {'Uniform': 'o', 'Gaussian, α = 2': '^', 'Gaussian, α = 4': 's'}
 
 
 def amp(apod, th):
@@ -90,8 +91,8 @@ th_fine = np.linspace(0, cfg.alpha, 600)
 adeg = np.degrees(cfg.alpha)
 
 # ═══ FIGURE 1 — distribution proof ══════════════════════════════════════════
-fig = plt.figure(figsize=(21.6, 12.2))
-gs = fig.add_gridspec(2, 3, hspace=0.36, wspace=0.30)
+fig = plt.figure(figsize=(28.8, 12.2))
+gs = fig.add_gridspec(2, 4, hspace=0.36, wspace=0.30)
 fig.suptitle('Photon initialization sampling, numerical aperture 0.8, 750 nm', fontsize=15, y=0.98)
 
 ax_th = fig.add_subplot(gs[0, 0])
@@ -126,7 +127,7 @@ for label, apod in CONFIGS:
     # small vertical offset keep both visible.
     pc, pe = np.histogram(ph, bins=48, range=(0, 2 * np.pi), density=True)
     pctr = 0.5 * (pe[:-1] + pe[1:])
-    off = 0.012 if label == 'uniform' else -0.012
+    off = {'Uniform': 0.012, 'Gaussian, α = 2': 0.0, 'Gaussian, α = 4': -0.012}[label]
     ax_phi.plot(np.degrees(pctr), pc * 2 * np.pi + off, MARKER[label], ms=5,
                 color=c, mfc='white', mew=1.2, alpha=0.85, label=label)
     phi_dev = float(np.max(np.abs(pc * 2 * np.pi - 1.0)))
@@ -206,8 +207,8 @@ x = np.linspace(-1.2, 1.2, 121)
 z = np.linspace(-4.0, 4.0, 161)
 Z, X = np.meshgrid(z, x, indexing='ij'); Y = np.zeros_like(X)
 
-fig2 = plt.figure(figsize=(17.6, 12.2))
-gs2 = fig2.add_gridspec(2, 2, hspace=0.32, wspace=0.26)
+fig2 = plt.figure(figsize=(26.4, 12.2))
+gs2 = fig2.add_gridspec(2, 3, hspace=0.32, wspace=0.26)
 fig2.suptitle('Intensity after MC launching matches the expected '
               'field (coherent clear limit)', fontsize=15, y=0.98)
 axt = fig2.add_subplot(gs2[0, 0]); axa = fig2.add_subplot(gs2[0, 1])

@@ -6,7 +6,7 @@ to *see* MC convergence — faint line per run, bold mean, ±1σ shaded band (th
 seaborn-style envelope), with the deterministic field overlaid as the target.
 
 Two photon counts (N = 2×10³ and 2×10⁴) show the band shrink ∝ 1/√N; both the
-transverse (z=0) and axial (x=0) cuts are shown. Each run is normalised to its
+transverse (z=0) and axial (x=0) cuts are shown. Each run is normalized to its
 own peak (the convention used throughout), so the spread appears in the
 side-lobes and zeros — where the MC noise actually lives.
 
@@ -44,7 +44,7 @@ det_z /= det_z.max()
 
 
 def runs(N, pts_x, pts_y, pts_z):
-    """K normalised MC cross-sections (each row = one run)."""
+    """K normalized MC cross-sections (each row = one run)."""
     out = np.empty((K, len(pts_x)))
     for s in range(K):
         rng = np.random.default_rng(1000 + s)

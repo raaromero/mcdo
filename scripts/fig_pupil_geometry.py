@@ -9,7 +9,7 @@ Panels (also saved individually to output/03_annular/panels/):
   p3 — Gaussian input, moderate obstruction
   p4 — Gaussian input, thin ring
 
-The Gaussian panels are the point: the obstruction removes the centre of the
+The Gaussian panels are the point: the obstruction removes the center of the
 pupil, which is exactly where a Gaussian keeps its light, so the same ε costs a
 Gaussian far more power than it costs a uniform pupil.
 """
@@ -57,7 +57,7 @@ for i, e in enumerate(EPS):
     ax_ring.add_patch(Circle((cx, 0), 1.0, facecolor=RING, edgecolor='k', lw=1.2, zorder=1))
     if e > 0:
         ax_ring.add_patch(Circle((cx, 0), e, facecolor='white', edgecolor='k', lw=1.2, zorder=2))
-        # inner-radius arrow, drawn below the centre so it never crosses a label
+        # inner-radius arrow, drawn below the center so it never crosses a label
         ax_ring.annotate('', xy=(cx - e, 0.0), xytext=(cx, 0.0),
                          arrowprops=dict(arrowstyle='<->', lw=1.1, color='k'), zorder=3)
         ax_ring.text(cx - e / 2, 0.10, r'$r_{\mathrm{in}}$', ha='center', va='bottom',
@@ -84,9 +84,9 @@ def truncation_panel(ax, amp, amp_pos, eps, title):
     passed = inside & (a_rho >= eps)
     ax.plot(rho, amp, color='#1f4e79', lw=2.0, zorder=3)
     ax.fill_between(rho, 0, amp, where=blocked, color=BLOCKED, alpha=0.75,
-                    label='blocked by the central stop', zorder=2)
+                    label='Blocked by the central stop', zorder=2)
     ax.fill_between(rho, 0, amp, where=passed, color=PASSED, alpha=0.75,
-                    label='transmitted by the ring', zorder=2)
+                    label='Transmitted by the ring', zorder=2)
     for x in (-1.0, 1.0):
         ax.axvline(x, color='k', ls='--', lw=1.2, zorder=4)
     if eps > 0:
@@ -107,7 +107,7 @@ def truncation_panel(ax, amp, amp_pos, eps, title):
 truncation_panel(ax_uni, np.ones_like(rho), np.ones_like(rho_pos), 0.5,
                  '(b) Uniform input, obstruction ratio 0.5')
 truncation_panel(ax_gau, np.exp(-ALPHA_T * rho ** 2), np.exp(-ALPHA_T * rho_pos ** 2), 0.5,
-                 f'(c) Gaussian input, truncation coefficient {ALPHA_T:g}, obstruction ratio 0.5')
+                 f'(c) Gaussian input, alpha {ALPHA_T:g}, obstruction ratio 0.5')
 
 print('Power transmitted by the ring:')
 for e in EPS:

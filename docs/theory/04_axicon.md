@@ -27,7 +27,7 @@ $u\approx\beta\cos\alpha$; paraxial rays feed large $u$.
   $J_0^2(v\sin\theta^\*/\sin\alpha)$ to max dev **0.04–0.08**, at both
   $X_{NA}=0.13$ and $0.8$.
 - **Axicon ≡ annulus**: the axicon's local profile at $\theta^\*$ overlies a
-  thin annulus centred on the same θ and the $J_0^2$ prediction — two roads
+  thin annulus centerd on the same θ and the $J_0^2$ prediction — two roads
   to one Bessel core.
 
 ## 3. Flag — the deviation is SPA-limited, not vector

@@ -20,11 +20,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
+from mcdo.atlascard import render_card
 from mcdo.style import apply as _apply_style
 _apply_style()
-from matplotlib.colors import LogNorm
 
 from mcdo import SimConfig
 from mcdo.rw_integrals import compute_integrals
@@ -51,57 +50,6 @@ LAM, N_MED, C_UM = 0.750, 1.3, 2.99792458e14
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', 'atlas')
 if _args.component != 'full':
     OUT = OUT + '_' + _args.component   # never overwrite another component's cards
-LEVELS = [0.5, 1, 2, 4, 6, 10, 20, 40, 60, 80, 100]
-
-
-def mirror(Ih):
-    return np.concatenate([Ih[:, ::-1][:, :-1], Ih], axis=1)
-
-
-def render_card(h, v, I, title, outpath, base_tr=None, base_ax=None, airy_um=None,
-                hlabel='Radial position r (μm)', vlabel='Axial position z (μm)',
-                base_label='uniform disk, continuous wave', curve_label='this configuration'):
-    ih0 = np.argmin(np.abs(h))
-    izpk = np.argmax(I[:, ih0])
-    fig = plt.figure(figsize=(11.3, 6.5))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.15, 1], hspace=0.55, wspace=0.75)
-    axm = fig.add_subplot(gs[:, 0])
-    axt = fig.add_subplot(gs[0, 1])
-    axa = fig.add_subplot(gs[1, 1])
-    fig.suptitle(title, fontsize=11)
-
-    HH, VV = np.meshgrid(h, v)
-    ext = [h[0], h[-1], v[0], v[-1]]
-    im = axm.imshow(I, extent=ext, origin='lower', aspect='auto', cmap='inferno',
-                    norm=LogNorm(vmin=1e-3, vmax=1))       # heat map
-    cb = fig.colorbar(im, ax=axm, fraction=0.040, pad=0.02, shrink=0.85)
-    cb.set_label('Normalized intensity', fontsize=8)
-    cb.ax.tick_params(labelsize=7)
-    axm.contour(HH, VV, 100.0 * I / I.max(), levels=LEVELS,
-                colors='w', linewidths=0.4, alpha=0.45)    # + contour lines
-    from mcdo.figio import mark_focus
-    mark_focus(axm, HH, VV, I / I.max(), airy_um=airy_um)
-    axm.set_xlabel(hlabel); axm.set_ylabel(vlabel)
-    axm.set_title('(a) Two-dimensional map with contours', fontsize=9)
-
-    axt.plot(h, I[izpk], 'k-', lw=2.0, label=curve_label)
-    if base_tr is not None:
-        axt.plot(h, base_tr, 'k:', lw=2.0, label=base_label)
-    axt.set_ylim(0, 1.05); axt.set_xlim(h[0], h[-1])
-    axt.set_xlabel(hlabel); axt.set_ylabel('Normalized intensity')
-    axt.set_title('(b) Transverse profile', fontsize=9)
-    axt.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0), frameon=False, borderaxespad=0.0)
-
-    axa.plot(v, I[:, ih0], 'k-', lw=2.0)
-    if base_ax is not None:
-        axa.plot(v, base_ax, 'k:', lw=2.0)
-    axa.set_ylim(0, 1.05); axa.set_xlim(v[0], v[-1])
-    axa.set_xlabel(vlabel); axa.set_ylabel('Normalized intensity')
-    axa.set_title('(c) Axial profile (r = 0)', fontsize=9)
-
-    fig.savefig(outpath, dpi=300, bbox_inches='tight')
-    plt.close(fig)
-    print("  saved", os.path.relpath(outpath, OUT))
 
 
 def save_field(sub, name, h, v, I):
@@ -110,6 +58,11 @@ def save_field(sub, name, h, v, I):
     np.savez_compressed(os.path.join(d, f'field_{name}.npz'),
                         intensity=I.astype(np.float32), h=h, v=v)
     return d
+
+
+def mirror(Ih):
+    return np.concatenate([Ih[:, ::-1][:, :-1], Ih], axis=1)
+
 
 
 # ── NA family (optical coords; baseline = NA 0.3, near-scalar) ─────────────
@@ -141,8 +94,8 @@ for xna in NA_VALS:
                 airy_um=0.61 * LAM / xna, curve_label=f'NA = {xna}')
 
 # ── fixed-NA families (physical μm, NA=0.8; baseline = uniform cw) ──────────
-r_half = np.linspace(0.0, 2.0, 161)
-z_arr = np.linspace(-6.0, 6.0, 261)
+r_half = np.linspace(0.0, 5.0, 301)      # wide enough to zoom out of
+z_arr = np.linspace(-15.0, 15.0, 481)
 r_full = np.concatenate([-r_half[::-1][:-1], r_half])
 c8 = SimConfig(lam_c=LAM, X_NA=0.8, n=N_MED, tau=np.inf, N_freq=3, N_theta=801)
 I0, I1, I2 = compute_integrals(r_half, z_arr, c8.k_c, c8.alpha, c8.N_theta)
@@ -151,7 +104,7 @@ uni_tr = UNI[np.argmax(UNI[:, np.argmin(np.abs(r_full))])]
 uni_ax = UNI[:, np.argmin(np.abs(r_full))]
 
 
-def do_fixed(sub, name, title, I_half, curve_label='this configuration'):
+def do_fixed(sub, name, title, I_half, curve_label='This configuration'):
     airy_um = 0.61 * LAM / 0.8
     I = mirror(I_half); I /= I.max()
     d = save_field(sub, name, r_full, z_arr, I)
@@ -163,21 +116,129 @@ print("Gaussian family …")
 for at, nm in [(0.0, 'at0'), (0.5, 'at0p5'), (1.0, 'at1'), (2.0, 'at2'), (4.0, 'at4')]:
     A = None if at == 0 else gaussian(at, c8.sin2_alpha)
     I0, I1, I2 = compute_integrals(r_half, z_arr, c8.k_c, c8.alpha, c8.N_theta, apodization=A)
-    do_fixed('gaussian', nm, f'Gaussian apodization, truncation coefficient {at:g} (NA = 0.8)', ydir(I0, I1, I2),
-             curve_label=f'truncation coefficient {at:g}')
+    do_fixed('gaussian', nm, f'Gaussian apodization, alpha {at:g} (NA = 0.8)', ydir(I0, I1, I2),
+             curve_label=f'Alpha {at:g}')
 
 print("Annular family …")
 for eps in [0.0, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]:
     I0, I1, I2 = compute_integrals_annular(r_half, z_arr, c8.k_c, c8.alpha, eps, c8.N_theta)
     do_fixed('annular', f'eps{eps}', f'Annular aperture, obstruction ratio {eps} (NA = 0.8)', ydir(I0, I1, I2),
-             curve_label=f'obstruction ratio {eps}')
+             curve_label=f'Obstruction ratio {eps}')
+
+# ── annular across the baseline grid: aperture x input x ratio ────────────
+# The annular family above sits at one aperture with uniform light, so it cannot
+# be compared against the baseline sweep. This spans the same grid: each card's
+# window is sized from its own aperture and its own unobstructed depth, so the
+# maps stay legible from numerical aperture 0.1 to 1.2.
+print("Annular grid family …")
+for xna_g in [0.1, 0.8, 1.2]:
+    cg = SimConfig(lam_c=LAM, X_NA=xna_g, n=N_MED, tau=np.inf,
+                   N_freq=3, N_theta=801)
+    rh = np.linspace(0.0, 7.5 * LAM / xna_g, 301)
+    zg = np.linspace(-20.0 * LAM / xna_g ** 2, 20.0 * LAM / xna_g ** 2, 481)
+    rf = np.concatenate([-rh[::-1][:-1], rh])
+    B0, B1, B2 = compute_integrals(rh, zg, cg.k_c, cg.alpha, cg.N_theta)
+    REF = mirror(ydir(B0, B1, B2)); REF /= REF.max()
+    ref_tr = REF[np.argmin(np.abs(zg))]
+    ref_ax = REF[:, np.argmin(np.abs(rf))]
+    for at_g, in_nm, in_lab in [(None, 'uniform', 'uniform'),
+                                (4.0, 'gaussian', 'Gaussian, alpha = 4')]:
+        A = None if at_g is None else gaussian(at_g, cg.sin2_alpha)
+        for eps in [0.0, 0.5, 0.9, 0.99]:
+            if eps == 0.0:
+                G0, G1, G2 = compute_integrals(rh, zg, cg.k_c, cg.alpha,
+                                               cg.N_theta, apodization=A)
+            else:
+                G0, G1, G2 = compute_integrals_annular(rh, zg, cg.k_c, cg.alpha,
+                                                       eps, cg.N_theta, apodization=A)
+            I = mirror(ydir(G0, G1, G2)); I /= I.max()
+            nm_g = f'na{str(xna_g).replace(".", "p")}_{in_nm}_eps{str(eps).replace(".", "p")}'
+            d = save_field('annular_grid', nm_g, rf, zg, I)
+            render_card(rf, zg, I,
+                        f'Obstruction ratio {eps:g}, {in_lab} input, '
+                        f'numerical aperture {xna_g:g}',
+                        os.path.join(d, f'{nm_g}.png'), ref_tr, ref_ax,
+                        airy_um=0.61 * LAM / xna_g,
+                        curve_label=f'Obstruction ratio {eps:g}')
+    print(f"  numerical aperture {xna_g:g}: 8 cards")
+
+# ── alpha crossed with obstruction ratio ─────────────────
+# The annular grid varies the illumination as a binary. This sweeps the
+# alpha so the trend can be followed rather than inferred.
+print("Truncation grid family …")
+for at_t in [0.0, 1.0, 2.0, 4.0, 8.0]:
+    A_t = None if at_t == 0 else gaussian(at_t, c8.sin2_alpha)
+    for eps_t in [0.0, 0.5, 0.9, 0.99]:
+        if eps_t == 0.0:
+            T0, T1, T2 = compute_integrals(r_half, z_arr, c8.k_c, c8.alpha,
+                                           c8.N_theta, apodization=A_t)
+        else:
+            T0, T1, T2 = compute_integrals_annular(r_half, z_arr, c8.k_c, c8.alpha,
+                                                   eps_t, c8.N_theta, apodization=A_t)
+        I = mirror(ydir(T0, T1, T2)); I /= I.max()
+        nm_t = (f'at{str(at_t).replace(".", "p")}'
+                f'_eps{str(eps_t).replace(".", "p")}')
+        d = save_field('truncation_grid', nm_t, r_full, z_arr, I)
+        render_card(r_full, z_arr, I,
+                    f'alpha {at_t:g}, obstruction ratio {eps_t:g}, '
+                    f'numerical aperture 0.8',
+                    os.path.join(d, f'{nm_t}.png'), uni_tr, uni_ax,
+                    airy_um=0.61 * LAM / 0.8,
+                    curve_label=f'Alpha {at_t:g}, ratio {eps_t:g}')
+    print(f"  coefficient {at_t:g}: 4 cards")
+
+# ── pulsed against continuous wave, for each illumination ─────────────────
+print("Pulsed illumination family …")
+for at_p, in_nm in [(None, 'uniform'), (4.0, 'gaussian')]:
+    A_p = None if at_p is None else gaussian(at_p, c8.sin2_alpha)
+    for eps_p in [0.0, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]:
+        for tau_p, t_nm, t_lab in [(np.inf, 'cw', 'continuous wave'),
+                                   (1e-15, '1fs', '1 fs')]:
+            cfg_p = SimConfig(lam_c=LAM, X_NA=0.8, n=N_MED, tau=tau_p,
+                              N_freq=201 if np.isfinite(tau_p) else 3,
+                              N_theta=801)
+            if np.isfinite(tau_p):
+                acc = np.zeros((len(z_arr), len(r_half)))
+                om = cfg_p.omega_grid(); wt = cfg_p.spectral_power(om)
+                for o, wgt in zip(om, wt):
+                    if o <= 0:
+                        continue
+                    k = cfg_p.k_for_omega(o)
+                    if eps_p == 0.0:
+                        Q0, Q1, Q2 = compute_integrals(r_half, z_arr, k, cfg_p.alpha,
+                                                       801, apodization=A_p)
+                    else:
+                        Q0, Q1, Q2 = compute_integrals_annular(r_half, z_arr, k,
+                                                               cfg_p.alpha, eps_p, 801,
+                                                               apodization=A_p)
+                    acc += wgt * ydir(Q0, Q1, Q2)
+                I_half = acc
+            else:
+                if eps_p == 0.0:
+                    Q0, Q1, Q2 = compute_integrals(r_half, z_arr, cfg_p.k_c,
+                                                   cfg_p.alpha, 801, apodization=A_p)
+                else:
+                    Q0, Q1, Q2 = compute_integrals_annular(r_half, z_arr, cfg_p.k_c,
+                                                           cfg_p.alpha, eps_p, 801,
+                                                           apodization=A_p)
+                I_half = ydir(Q0, Q1, Q2)
+            I = mirror(I_half); I /= I.max()
+            nm_p = f'{in_nm}_eps{str(eps_p).replace(".", "p")}_{t_nm}'
+            d = save_field('pulsed_illumination', nm_p, r_full, z_arr, I)
+            lab = 'uniform' if in_nm == 'uniform' else 'Gaussian, alpha = 4'
+            render_card(r_full, z_arr, I,
+                        f'{lab}, obstruction ratio {eps_p:g}, {t_lab}',
+                        os.path.join(d, f'{nm_p}.png'), uni_tr, uni_ax,
+                        airy_um=0.61 * LAM / 0.8,
+                        curve_label=f'Ratio {eps_p:g}, {t_lab}')
+    print(f"  {in_nm}: 8 cards")
 
 print("Axicon family …")
 for beta in [0, 5, 10, 20, 40]:
     A = None if beta == 0 else axicon(beta, c8.sin_alpha)
     I0, I1, I2 = compute_integrals(r_half, z_arr, c8.k_c, c8.alpha, 2001, apodization=A)
     do_fixed('axicon', f'beta{beta}', f'Axicon, conical phase depth {beta} (NA = 0.8)', ydir(I0, I1, I2),
-             curve_label=f'conical phase depth {beta}')
+             curve_label=f'Conical phase depth {beta}')
 
 print("Pulsed family …")
 for tau, nm, lab in [(np.inf, 'cw', 'cw'), (5e-15, '5fs', '5 fs'), (3e-15, '3fs', '3 fs'),
@@ -195,7 +256,7 @@ for tau, nm, lab in [(np.inf, 'cw', 'cw'), (5e-15, '5fs', '5 fs'), (3e-15, '3fs'
                 I0, I1, I2 = compute_integrals(r_half, z_arr, k, cp.alpha, 801)
                 Ih += s * ydir(I0, I1, I2)
     do_fixed('pulsed', nm, f'Pulsed source, {lab} (uniform disk, NA = 0.8)', Ih,
-             curve_label=f'{lab} pulse')
+             curve_label=f'Pulse, {lab}')
 
 print("Pulsed annular family …")
 for eps in [0.5, 0.9]:
@@ -216,6 +277,6 @@ for eps in [0.5, 0.9]:
         tag = f'eps{str(eps).replace(".", "p")}_{nm}'
         do_fixed('pulsed_annular', tag,
                  f'Obstruction ratio {eps}, {lab} (NA = 0.8)', Ih,
-                 curve_label=f'obstruction {eps}, {lab}')
+                 curve_label=f'Obstruction {eps}, {lab}')
 
 print("atlas done →", OUT)

@@ -68,7 +68,7 @@ lens maps a pupil ray at radius ρ to focal angle θ by ρ = f·sinθ. Initial
 *position* and initial *direction* are therefore **not independent** — one fixes
 the other. The 2-D pupil map (ρ̂ = sinθ/sinα) and the θ-distribution are the
 same information in two coordinates. The physical launch surface is the
-**reference sphere** of radius f centred on focus (equivalently the flat exit
+**reference sphere** of radius f centerd on focus (equivalently the flat exit
 pupil); that is the only "position" the clear field needs, because the phase is
 referenced to focus. An explicit slab-plane position is added only for
 scattering (§7).

@@ -83,7 +83,7 @@ def crossing(xs, ys, level):
 
 
 results = {}
-for label, alpha_t in [('uniform', 0.0), (f'Gaussian, truncation coefficient {ALPHA_T:g}', ALPHA_T)]:
+for label, alpha_t in [('uniform', 0.0), (f'Gaussian, alpha {ALPHA_T:g}', ALPHA_T)]:
     for eps in EPS_VALS:
         rmse, dfw = [], []
         for xna in XNA_VALS:

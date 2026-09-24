@@ -56,7 +56,7 @@ def ballistic_fraction_analytic(cfg, mu_s, d, apod=None, ngrid=4001):
 #   [0] core peak attenuation  I_core(0)/I_clear(0)
 #   [1:5] energy partition (ballistic, forward-scattered, back-scattered, absorbed)
 #   [5] halo RMS radius (μm)
-#   [6 : 6+Lx] ballistic core transverse profile (normalised to the clear peak)
+#   [6 : 6+Lx] ballistic core transverse profile (normalized to the clear peak)
 #   [6+Lx : ] diffuse halo radial profile (energy per bin)
 _N_SCALAR = 6
 

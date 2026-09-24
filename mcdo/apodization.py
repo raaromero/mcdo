@@ -105,7 +105,7 @@ def axicon(beta, sin_alpha_ref):
 
 
 def gaussian_ring(sin_theta0, sigma_s):
-    r"""Gaussian annular illumination centred on cone angle :math:`\theta_0`.
+    r"""Gaussian annular illumination centerd on cone angle :math:`\theta_0`.
 
     A Gaussian ring in the pupil,
     :math:`A(\theta) = \exp[-(\sin\theta-\sin\theta_0)^2/(2\sigma_s^2)]`, used
@@ -116,7 +116,7 @@ def gaussian_ring(sin_theta0, sigma_s):
     Parameters
     ----------
     sin_theta0 : float
-        Ring centre, in :math:`\sin\theta`.
+        Ring center, in :math:`\sin\theta`.
     sigma_s : float
         1/e-amplitude half-width in :math:`\sin\theta`.
 

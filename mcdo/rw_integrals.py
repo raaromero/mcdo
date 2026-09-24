@@ -113,6 +113,6 @@ def integrals_to_intensity(I0: np.ndarray, I1: np.ndarray, I2: np.ndarray) -> np
 
     At φ=π/2 (y-axis): Ex = -j(I₀−I₂), Ey=0, Ez=0.
     Returns |I₀ − I₂|² — gives the dark ring (true zero) in the CW transverse
-    profile, matching the zero-point behaviour stated in [Rom03 Sec. III].
+    profile, matching the zero-point behavior stated in [Rom03 Sec. III].
     """
     return np.abs(I0 - I2) ** 2

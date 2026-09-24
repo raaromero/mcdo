@@ -71,7 +71,7 @@ for row, xna in enumerate(NA_CASES):
     ax.set_xlim(rr[0], rr[-1]); ax.set_ylim(0, 1.05)
     ax.set_xlabel('Radial position r (μm)')
     ax.set_ylabel('Normalized intensity')
-    ax.set_title(f'Focal plane, numerical aperture {xna:g}, truncation coefficient {int(ALPHA_T)}, 750 nm',
+    ax.set_title(f'Focal plane, numerical aperture {xna:g}, α = {int(ALPHA_T)}, 750 nm',
                  fontsize=11)
     ax.grid(alpha=0.25)
     ax.legend(fontsize=9)
@@ -79,7 +79,7 @@ for row, xna in enumerate(NA_CASES):
     dev = 100 * abs(np.trapezoid(np.abs(g_vec / g_vec.max() - g_sca / g_sca.max()), r_half)
                     / np.trapezoid(g_sca / g_sca.max(), r_half))
     print(f'NA {xna:g}: Airy radius {airy_r * 1000:.0f} nm, '
-          f'vector against scalar area difference {dev:.2f} per cent')
+          f'vector against scalar area difference {dev:.2f}%')
 
     # ── axial profile ─────────────────────────────────────────────────────
     z_span_ax = 4.0 * LAM / (xna ** 2)

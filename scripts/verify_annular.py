@@ -101,7 +101,7 @@ for e in EPS:
 
 print("\nD. uniform vs Gaussian α_t=2 (X_NA=1.17, ε=0.7): transverse FWHM_v")
 cfg_hi = cfg_at(XNA_HI)
-A2 = gaussian_apod(2.0, cfg_hi.sin2_alpha)
+A2 = gaussian_apod(4.0, cfg_hi.sin2_alpha)   # the deck standard
 I_g = transverse(cfg_hi, 0.7, apod=A2)
 print(f"   uniform {fwhm(v_arr, tr_hi[0.7]):.3f}   Gaussian {fwhm(v_arr, I_g):.3f}"
       f"   (annulus passes only the Gaussian tail → nearly uniform ring)")
@@ -117,8 +117,8 @@ fig.suptitle('Annular apertures, 750 nm',
 
 ax = axes[0, 0]
 for e in EPS_SHOW:
-    ax.plot(r_um, tr_hi[e], color=COLS[EPS.index(e)], lw=2.0, label=f'ε={e:g}')
-ax.plot(r_um, J0sq, 'k--', lw=2.0, label='ideal thin ring (non-diffracting limit)')
+    ax.plot(r_um, tr_hi[e], color=COLS[EPS.index(e)], lw=2.0, label=f'Ratio ε = {e:g}')
+ax.plot(r_um, J0sq, 'k--', lw=2.0, label='Ideal thin ring (non-diffracting limit)')
 ax.set_yscale('log'); ax.set_ylim(1e-5, 1.5)
 ax.set_xlabel('Radial position r (μm)'); ax.set_ylabel('Normalized intensity')
 ax.set_title('(a) Transverse profile versus obstruction ratio', fontsize=11)
@@ -126,7 +126,7 @@ ax.legend(fontsize=7.5, ncol=2)
 
 ax = axes[0, 1]
 for e in EPS_SHOW:
-    ax.plot(z_um, axial(cfg_at(XNA_HI), e), color=COLS[EPS.index(e)], lw=2.0, label=f'ε={e:g}')
+    ax.plot(z_um, axial(cfg_at(XNA_HI), e), color=COLS[EPS.index(e)], lw=2.0, label=f'Ratio ε = {e:g}')
 ax.set_xlim(0, 40); ax.set_yscale('log'); ax.set_ylim(1e-4, 1.5)
 ax.set_xlabel('Axial position z (μm)'); ax.set_ylabel('Normalized intensity')
 ax.set_title('(b) Axial profile versus obstruction ratio', fontsize=11)
@@ -134,7 +134,7 @@ ax.legend(fontsize=7.5, ncol=2)
 
 ax = axes[1, 0]
 e_th = np.linspace(0, 0.992, 200)
-ax.plot(e_th, 1 / (1 - e_th ** 2), 'k--', lw=2.0, label='theory 1/(1−ε²)')
+ax.plot(e_th, 1 / (1 - e_th ** 2), 'k--', lw=2.0, label='Theory 1/(1−ε²)')
 for xna, st, lab in [(XNA_LO, 'C0o-', f'X_NA={XNA_LO} (sinα=0.1)'),
                      (XNA_HI, 'C3s-', f'X_NA={XNA_HI} (sinα=0.9)')]:
     ratios = np.array(dof[xna]) / dof[xna][0]
@@ -145,9 +145,9 @@ ax.set_title('(c) Depth-of-focus extension against obstruction ratio', fontsize=
 ax.legend(fontsize=8)
 
 ax = axes[1, 1]
-ax.plot(r_um, tr_hi[0.7], 'C0-', lw=2.0, label='uniform, ε=0.7')
+ax.plot(r_um, tr_hi[0.7], 'C0-', lw=2.0, label='Uniform, ε=0.7')
 ax.plot(r_um, I_g, 'C3--', lw=2.0, label='Gaussian $\\alpha_t$=2, ε=0.7')
-ax.plot(r_um, tr_hi[0.0], 'k:', lw=2.0, label='uniform, full disk')
+ax.plot(r_um, tr_hi[0.0], 'k:', lw=2.0, label='Uniform, full disk')
 ax.set_yscale('log'); ax.set_ylim(1e-5, 1.5)
 ax.set_xlabel('Radial position r (μm)'); ax.set_ylabel('Normalized intensity')
 ax.set_title('(d) Uniform and Gaussian illumination compared', fontsize=11)

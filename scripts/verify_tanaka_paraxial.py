@@ -71,9 +71,9 @@ for at, c in zip([0.5, 1.0, 2.0, 4.0], styles):
     axes[0].plot(r_um, I_par, color=c, lw=2.6, alpha=0.3)
     axes[0].plot(r_um, I_sc, color=c, lw=2.0, label=f'$\\alpha_t$={at:g}')
     axes[1].semilogy(r_um, np.abs(I_sc - I_par) + 1e-12, color=c, lw=2.0,
-                     label=f'scalar, $\\alpha_t$={at:g}')
+                     label=f'Scalar, $\\alpha_t$={at:g}')
     axes[1].semilogy(r_um, np.abs(I_rw - I_par) + 1e-12, color=c, lw=2.0,
-                     ls='--', label=f'vector, $\\alpha_t$={at:g}')
+                     ls='--', label=f'Vector, $\\alpha_t$={at:g}')
 
 axes[0].set_xlabel('Radial position r (μm)'); axes[0].set_ylabel('Normalized intensity')
 axes[0].set_title('(a) Profiles against the paraxial reference', fontsize=11)

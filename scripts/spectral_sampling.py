@@ -3,7 +3,7 @@ Spectral (wavelength) sampling for pulsed sources, and how the focal pattern
 scales with wavelength — the answer to "is wavelength factored in, and does the
 focus move?".
 
-In the monochromatic (CW) launcher every photon has |k| = 2πn/λ_c (the centre
+In the monochromatic (CW) launcher every photon has |k| = 2πn/λ_c (the center
 wavelength). For a PULSED source the wavelength is drawn from the power spectrum
 |E(ω)|² ∝ exp[-(ω-ω_c)²/2a], a = 2ln2/τ²  (FWHM = 4ln2/τ) — panel (A). Converting
 to the λ-domain needs the Jacobian |dω/dλ| = 2πc/λ² (∝ ω²), which shifts and
@@ -53,7 +53,7 @@ for fs in (10, 5, 2, 1):
     cfg = SimConfig(lam_c=LAM, X_NA=0.8, n=N_MED, tau=fs * 1e-15)
     P = cfg.spectral_power(om); P = P / P.max()
     ax.plot(om / wc, P, lw=2, label=f'τ = {fs} fs')
-ax.axvline(1.0, color='k', ls='--', lw=1, label='ω_c (centre)')
+ax.axvline(1.0, color='k', ls='--', lw=1, label='ω_c (center)')
 ax.set_xlabel('ω / ω_c'); ax.set_ylabel('P(ω) = |E(ω)|² (norm.)')
 ax.set_title('(A) frequency probability — what we sample λ from')
 ax.legend()

@@ -24,14 +24,14 @@ OUT = os.path.join(os.path.dirname(__file__), '..', 'output', 'atlas')
 
 FAMILIES = [
     ('NA', 'numerical aperture', lambda n: n.replace('field_NA', '').replace('.npz', '')),
-    ('gaussian', 'truncation coefficient', lambda n: n.replace('field_at', '').replace('.npz', '')),
+    ('gaussian', 'alpha', lambda n: n.replace('field_at', '').replace('.npz', '')),
     ('annular', 'obstruction ratio', lambda n: n.replace('field_eps', '').replace('.npz', '')),
     ('pulsed', 'pulse duration', lambda n: n.replace('field_', '').replace('.npz', '')),
 ]
 
 
 def fwhm(x, y):
-    """Full width at half maximum of a centred profile, in the units of x."""
+    """Full width at half maximum of a centerd profile, in the units of x."""
     y = np.asarray(y, dtype=float)
     if y.max() <= 0:
         return float('nan')

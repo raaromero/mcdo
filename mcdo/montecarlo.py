@@ -84,7 +84,7 @@ def sample_photons(cfg, n_photons, apod=None, rng=None, k=None):
     rng : numpy.random.Generator, optional
         Random generator; a fresh default is created if omitted.
     k : float, optional
-        Wavevector magnitude (μm⁻¹). Defaults to ``cfg.k_c`` (centre
+        Wavevector magnitude (μm⁻¹). Defaults to ``cfg.k_c`` (center
         wavelength); pass a per-frequency value for pulsed wavelength sampling
         (the angular density is wavelength-independent — it depends only on
         ``alpha`` and ``A`` — so only the magnitude changes).
@@ -269,7 +269,7 @@ def mc_pulsed_intensity(cfg, x, y, z, n_photons, apod=None, rng=None,
 
     The physical, broadband-ensemble counterpart of the deterministic spectral
     sum. Each photon's wavelength is drawn from the power spectrum
-    :math:`|E(\omega)|^2`: the photon budget is allocated across the spectral
+    :math:`|E(\omega)|^2`: the photons are distributed across the spectral
     nodes by a multinomial draw with probabilities :math:`\propto |E(\omega)|^2`.
     Within one wavelength the photons interfere **coherently**; different
     wavelengths add **incoherently** — i.e. the time-integrated intensity
@@ -278,7 +278,7 @@ def mc_pulsed_intensity(cfg, x, y, z, n_photons, apod=None, rng=None,
 
         I(P) = \int |E(\omega)|^2\,|U(P,\omega)|^2\, d\omega ,
 
-    with :math:`U(P,\omega)` the (normalised) monochromatic field. As
+    with :math:`U(P,\omega)` the (normalized) monochromatic field. As
     :math:`N\to\infty` this converges to the deterministic
     :func:`mcdo.intensity.pulsed_intensity`; for CW (``cfg.tau`` infinite) it
     falls back to the monochromatic :func:`mc_focal_intensity`.

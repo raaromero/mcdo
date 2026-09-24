@@ -40,16 +40,19 @@ def build_stage(stage_id):
     for item in DECK:
         if item[0] == 'section':
             keep = item[1] in st['sections']
-        elif keep and item[0] == 'slide' and item[3] in FIGURES:
-            index += 1
-            rel, script = FIGURES[item[3]]
-            src = os.path.join(OUT, rel)
-            name = f"{index:02d}-{_slug(item[1])}.png"
-            if os.path.exists(src):
-                shutil.copy2(src, os.path.join(dest, name))
-            else:
-                name += "  (MISSING)"
-            rows.append((name, item[1], rel, script))
+        elif keep and item[0] == 'slide' and item[3]:
+            keys = [item[3]] if isinstance(item[3], str) else list(item[3])
+            for part, key in enumerate(k for k in keys if k in FIGURES):
+                index += 1
+                rel, script = FIGURES[key]
+                src = os.path.join(OUT, rel)
+                suffix = '' if len(keys) == 1 else chr(ord('a') + part)
+                name = f"{index:02d}{suffix}-{_slug(item[1])}.png"
+                if os.path.exists(src):
+                    shutil.copy2(src, os.path.join(dest, name))
+                else:
+                    name += "  (MISSING)"
+                rows.append((name, item[1], rel, script))
 
     with open(os.path.join(dest, 'README.md'), 'w') as fh:
         fh.write(f"# {st['title']}\n\nFigures in the order they appear in the deck.\n\n")

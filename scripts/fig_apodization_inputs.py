@@ -55,7 +55,7 @@ ks = cfg.k_c * np.sin(cfg.alpha)
 r = np.linspace(0, 6.5 / ks, 400)      # physical radius (μm) out to v = 6.5
 z0 = np.array([0.0])
 ax = axes[1]
-print('Focal FWHM (v units) vs truncation coefficient:')
+print('Focal FWHM (v units) vs alpha:')
 for a, c in zip(ALPHAS, colors):
     apod = gaussian(a, cfg.sin2_alpha) if a > 0 else None
     I0, I1, I2 = compute_integrals(r, z0, cfg.k_c, cfg.alpha, cfg.N_theta, apodization=apod)
@@ -74,7 +74,7 @@ ax.set_title('(b) Focal profile, numerical aperture 0.8, 750 nm', fontsize=10)
 ax.set_xlim(0, r[-1]); ax.grid(alpha=0.25)
 ax.legend(fontsize=8, loc='upper left', bbox_to_anchor=(1.02, 1.0), frameon=False)
 
-# ── p3: focal width against the truncation coefficient ────────────────────
+# ── p3: focal width against the alpha ────────────────────
 alpha_fine = [0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0]
 widths_nm = []
 for a in alpha_fine:
@@ -86,11 +86,11 @@ for a in alpha_fine:
     widths_nm.append(2000 * (r[i - 1] + (r[i] - r[i - 1]) * (I[i - 1] - 0.5) / (I[i - 1] - I[i])))
 ax = axes[2]
 ax.plot(alpha_fine, widths_nm, 'o-', color='#1f77b4', lw=2.0, ms=6)
-ax.set_xlabel('Truncation coefficient')
+ax.set_xlabel('Truncation parameter α')
 ax.set_ylabel('Focal-spot FWHM (nm)')
-ax.set_title('(c) Focal width against truncation coefficient, numerical aperture 0.8, 750 nm', fontsize=11)
+ax.set_title('(c) Focal width against α, numerical aperture 0.8, 750 nm', fontsize=11)
 ax.grid(alpha=0.25)
-print('FWHM vs truncation coefficient:', dict(zip(alpha_fine, [round(w) for w in widths_nm])))
+print('FWHM vs alpha:', dict(zip(alpha_fine, [round(w) for w in widths_nm])))
 
 plt.tight_layout()
 save_panels(fig, fig.axes, os.path.join(OUTDIR, 'panels'), 'fig_apodization_inputs')
@@ -105,7 +105,7 @@ z_arr = np.linspace(-4.0, 4.0, 220)
 r_map = np.linspace(0.0, 1.5, 140)
 LEVELS = [0.01, 0.05, 0.10, 0.20, 0.30, 0.50, 0.70, 0.90]
 for ax2, a, title in [(axes2[0], 0.0, '(a) Uniform input'),
-                      (axes2[1], 4.0, '(b) Gaussian input, truncation coefficient 4')]:
+                      (axes2[1], 4.0, '(b) Gaussian input, alpha = 4')]:
     apod = gaussian(a, cfg.sin2_alpha) if a > 0 else None
     M0, M1, M2 = compute_integrals(r_map, z_arr, cfg.k_c, cfg.alpha, 401, apodization=apod)
     I = vec_intensity(M0, M1, M2); I = I / I.max()

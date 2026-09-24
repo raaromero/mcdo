@@ -56,8 +56,8 @@ def profiles(cfg, apod):
 
 illums = {
     'uniform':       None,
-    'Gaussian, truncation coefficient 1': 1.0,
-    'Gaussian, truncation coefficient 4': 4.0,
+    'Gaussian, alpha = 1': 1.0,
+    'Gaussian, alpha = 4': 4.0,
 }
 
 XNA_vals = np.arange(0.05, 1.26, 0.05)

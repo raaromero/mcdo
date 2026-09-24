@@ -131,7 +131,7 @@ ax.axhline(0.005, color='gray', ls=':', lw=0.8)
 ax.set_xlabel('N photons'); ax.set_ylabel('RMS vs deterministic field')
 ax.set_title('(A) sufficient N: accuracy vs N'); ax.legend()
 
-# normalised FWHM (each config ÷ its finest-voxel value) so all configs share
+# normalized FWHM (each config ÷ its finest-voxel value) so all configs share
 # one scale — the message is "flat below the Nyquist voxel, degrades above".
 ax = axes[1]
 for lab in fw_dx:

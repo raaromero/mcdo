@@ -10,7 +10,7 @@ uniform illumination, as the numerical aperture is raised:
 All three are computed from the same pair of profiles, so the comparison is
 like for like. The width difference registers the departure long before the
 other two move at all: correlation in particular stays above 0.99 well past the
-point where the predicted spot size is already wrong by tens of per cent, which
+point where the predicted spot size is already wrong by tens of percent, which
 is exactly the failure mode that matters in an imaging application.
 
 Output: output/02_na_apodization/fig_metric_choice.png (+ panels/)
@@ -79,29 +79,29 @@ na_corr = crossing(one_minus_corr, 0.01)
 
 fig, ax = plt.subplots(figsize=(10.3, 6.5))
 ax.plot(XNA_VALS, dev / 100, '-o', color='#1f77b4', ms=4, lw=2.0,
-        label='focal-width difference')
+        label='Focal-width difference')
 ax.plot(XNA_VALS, rmse, '--s', color='#e8820c', ms=4, lw=2.0,
-        label='root-mean-square error')
+        label='Root-mean-square error')
 ax.plot(XNA_VALS, one_minus_corr, ':^', color='#c0504d', ms=4, lw=2.0,
-        label='one minus Pearson correlation')
+        label='One minus Pearson correlation')
 ax.axhline(0.01, color='#999', ls=':', lw=1.2)
-ax.text(0.06, 0.012, 'one per cent level', fontsize=9, color='#666')
+ax.text(0.06, 0.012, '1% level', fontsize=9, color='#666')
 for x, c in [(na_dev, '#1f77b4'), (na_rmse, '#e8820c'), (na_corr, '#c0504d')]:
     if np.isfinite(x):
         ax.axvline(x, color=c, lw=1.2, alpha=0.5)
 ax.set_yscale('log'); ax.set_ylim(1e-6, 1.0)
 ax.set_xlabel('Numerical aperture')
-ax.set_ylabel('Departure from the scalar prediction')
-ax.set_title('Departure from scalar theory by metric, uniform input at 750 nm', fontsize=12)
+ax.set_ylabel('Relative deviation from scalar theory')
+ax.set_title('Relative deviation from scalar theory by metric, uniform input at 750 nm', fontsize=12)
 ax.grid(alpha=0.25, which='both')
 ax.legend(fontsize=10, loc='lower right')
 
-print('Numerical aperture at which each metric first exceeds one per cent:')
+print('Numerical aperture at which each metric first exceeds 1%:')
 print(f'  focal-width difference        {na_dev:.2f}')
 print(f'  root-mean-square error        {na_rmse:.2f}')
 print(f'  one minus Pearson correlation {na_corr:.2f}')
 i08 = int(np.argmin(np.abs(XNA_VALS - 0.8)))
-print(f'\nAt numerical aperture 0.8: width off by {dev[i08]:.1f} per cent, '
+print(f'\nAt numerical aperture 0.8: width off by {dev[i08]:.1f}%, '
       f'while correlation is still {1 - one_minus_corr[i08]:.4f}')
 
 plt.tight_layout()

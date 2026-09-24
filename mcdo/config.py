@@ -49,8 +49,10 @@ class SimConfig:
     def spectral_bandwidth(self) -> float:
         """FWHM bandwidth of |E(ω)|²: Ω = 4·ln2/τ  (rad/s).
 
-        Derived from |E(ω)|² ∝ exp[-(ω-ω_c)²/a] with a = 2·ln2/τ²:
-            FWHM_ω = 4·ln2/τ  [Rom03 text after Eq. 9]
+        Derived from |E(ω)|² ∝ exp[-(ω-ω_c)²/(2a)] with a = 2·ln2/τ², the same
+        density `spectral_power` returns:
+            half maximum at (ω-ω_c)² = 2a·ln2, so FWHM_ω = 4·ln2/τ
+        [Rom03 text after Eq. 9]
         """
         if np.isinf(self.tau):
             return 0.0

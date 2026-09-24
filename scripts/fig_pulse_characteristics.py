@@ -31,9 +31,9 @@ from mcdo.figio import save_panels
 
 LAM_C, N_MED = 0.750, 1.3
 C_UM = 2.99792458e14                      # micrometres per second
-TAUS_FS = [1.0, 1.5, 2.0, 3.0, 5.0]
+TAUS_FS = [2.0, 1.0]        # the durations used in this study
 OUTDIR = os.path.join(os.path.dirname(__file__), '..', 'output', '05_pulsed_pupils')
-COLORS = plt.cm.viridis(np.linspace(0.0, 0.85, len(TAUS_FS)))
+COLORS = ['#d62728', '#2ca02c']      # 2 fs, 1 fs
 
 fig, axes = plt.subplots(2, 2, figsize=(20.5, 13.0))
 omega_c = 2 * np.pi * C_UM / LAM_C
@@ -48,23 +48,25 @@ for tau_fs, c in zip(TAUS_FS, COLORS):
     w, S = w[good], S[good] / S[good].max()
     lam_nm = 2 * np.pi * C_UM / w * 1e3
     order = np.argsort(lam_nm)
-    axes[0, 0].plot(lam_nm[order], S[order], color=c, lw=2, label=f'{tau_fs:g} fs')
-    axes[0, 1].plot(w / omega_c, S, color=c, lw=2, label=f'{tau_fs:g} fs')
+    bw = 2 * np.sqrt(2 * (2 * np.log(2) / (tau_fs * 1e-15) ** 2) * np.log(2))
+    axes[0, 0].plot(lam_nm[order], S[order], color=c, lw=2.4,
+                    label=f'Duration {tau_fs:g} fs, bandwidth {bw / omega_c:.2f} of carrier')
+    axes[0, 1].plot(w / omega_c, S, color=c, lw=2.4, label=f'Duration {tau_fs:g} fs')
 
 ax = axes[0, 0]
 ax.axvline(LAM_C * 1e3, color='#c0504d', ls='--', lw=1.2,
-           label=f'Centre wavelength {LAM_C * 1e3:.0f} nm')
+           label=f'Continuous wave, single line at {LAM_C * 1e3:.0f} nm')
 ax.set_xlim(300, 1800); ax.set_ylim(0, 1.05)
 ax.set_xlabel('Wavelength (nm)'); ax.set_ylabel('Normalized spectral power')
-ax.set_title('(a) Spectrum against wavelength, centre 750 nm', fontsize=11)
+ax.set_title('(a) Spectrum against wavelength, center 750 nm', fontsize=11)
 ax.grid(alpha=0.25); ax.legend(fontsize=9, title='Pulse Duration')
 
 ax = axes[0, 1]
 ax.axvline(1.0, color='#c0504d', ls='--', lw=1.2,
-           label=f'Carrier frequency, {LAM_C * 1e3:.0f} nm')
+           label='Continuous wave, single line at the carrier')
 ax.set_xlim(0, 2); ax.set_ylim(0, 1.05)
 ax.set_xlabel('Frequency, in units of the carrier'); ax.set_ylabel('Normalized spectral power')
-ax.set_title('(b) Spectrum against frequency, centre 750 nm', fontsize=11)
+ax.set_title('(b) Spectrum against frequency, center 750 nm', fontsize=11)
 ax.grid(alpha=0.25); ax.legend(fontsize=9, title='Pulse Duration')
 
 # ── p3: bandwidth against duration ────────────────────────────────────────
@@ -72,7 +74,7 @@ tau_fine = np.linspace(0.8, 10.0, 120)
 bandwidth_hz = 4 * np.log(2) / (2 * np.pi * tau_fine * 1e-15)      # FWHM of |E(w)|^2, in Hz
 ax = axes[1, 0]
 ax.loglog(tau_fine, bandwidth_hz * 1e-12, color='#1f77b4', lw=2,
-          label='spectral width, full width at half maximum')
+          label='Spectral width, full width at half maximum')
 for tau_fs, c in zip(TAUS_FS, COLORS):
     bw = 4 * np.log(2) / (2 * np.pi * tau_fs * 1e-15)
     ax.plot(tau_fs, bw * 1e-12, 'o', color=c, ms=7)
@@ -85,12 +87,12 @@ coh_nm = C_UM * tau_fine * 1e-15 * 1e3
 nyquist_nm = LAM_C * 1e3 / 2
 tau_crit = nyquist_nm / (C_UM * 1e-15 * 1e3)
 ax = axes[1, 1]
-ax.plot(tau_fine, coh_nm, color='#1f77b4', lw=2, label='coherence length')
+ax.plot(tau_fine, coh_nm, color='#1f77b4', lw=2, label='Coherence length')
 ax.axhline(nyquist_nm, color='#c0504d', ls='--', lw=1.2,
            label=f'Nyquist interval, {nyquist_nm:.0f} nm')
 ax.axvline(tau_crit, color='#888', ls=':', lw=1.2)
 ax.fill_between(tau_fine, 0, coh_nm, where=(coh_nm < nyquist_nm),
-                color='#c0504d', alpha=0.18, label='below the sampling limit')
+                color='#c0504d', alpha=0.18, label='Below the sampling limit')
 ax.text(tau_crit, coh_nm.max() * 0.92, f'  critical duration {tau_crit:.2f} fs',
         fontsize=9, color='#444')
 ax.set_xlim(tau_fine[0], tau_fine[-1]); ax.set_ylim(0, coh_nm.max())

@@ -41,7 +41,7 @@ det_z /= det_z.max()
 
 
 def trial_profiles(N):
-    """fn(rng) → concatenated [transverse(121), axial(161)], each peak-normalised."""
+    """fn(rng) → concatenated [transverse(121), axial(161)], each peak-normalized."""
     def fn(rng):
         kx, ky, kz, w = sample_photons(cfg, N, rng=rng)
         It = coherent_intensity(kx, ky, kz, w, x, np.zeros_like(x), np.zeros_like(x))

@@ -61,7 +61,7 @@ def panel(ax, alpha_t, title):
         ax.semilogy(v, vec, '-', color=c, lw=2.0, label=f'NA {xna:g}, vector')
         ax.semilogy(v, sca, ':', color=c, lw=2.0)
         d = 100 * abs(fwhm_v(v, vec) / fwhm_v(v, sca) - 1)
-        print(f'  NA {xna:g}:  focal width differs from scalar by {d:5.2f} per cent')
+        print(f'  NA {xna:g}:  focal width differs from scalar by {d:5.2f}%')
     ax.set_ylim(1e-5, 2.0); ax.set_xlim(0, V_MAX)
     ax.set_xlabel('Optical radial coordinate')
     ax.set_ylabel('Normalized intensity')
@@ -72,7 +72,7 @@ def panel(ax, alpha_t, title):
 
 fig, axes = plt.subplots(1, 3, figsize=(30.8, 6.5))
 panel(axes[0], 0.0, '(a) Uniform illumination, 750 nm')
-panel(axes[1], ALPHA_T, f'(b) Gaussian, truncation coefficient {ALPHA_T:g}, 750 nm')
+panel(axes[1], ALPHA_T, f'(b) Gaussian, alpha {ALPHA_T:g}, 750 nm')
 
 # ── p3: the components that cause it ──────────────────────────────────────
 ax = axes[2]
@@ -86,10 +86,10 @@ ey = 0.5 * np.abs(I2) ** 2
 ez = 2 * np.abs(I1) ** 2
 tot = ex + ey + ez
 n = tot.max()
-ax.semilogy(v, tot / n, 'k-', lw=2.0, label='total intensity')
-ax.semilogy(v, ex / n, '-', color='#1f77b4', lw=2.0, label='transverse, along the polarization')
-ax.semilogy(v, ey / n, '--', color='#2ca02c', lw=2.0, label='transverse, orthogonal')
-ax.semilogy(v, ez / n, '-.', color='#c0504d', lw=2.0, label='longitudinal')
+ax.semilogy(v, tot / n, 'k-', lw=2.0, label='Total intensity')
+ax.semilogy(v, ex / n, '-', color='#1f77b4', lw=2.0, label='Transverse, along the polarization')
+ax.semilogy(v, ey / n, '--', color='#2ca02c', lw=2.0, label='Transverse, orthogonal')
+ax.semilogy(v, ez / n, '-.', color='#c0504d', lw=2.0, label='Longitudinal')
 ax.set_ylim(1e-5, 2.0); ax.set_xlim(0, V_MAX)
 ax.set_xlabel('Optical radial coordinate')
 ax.set_ylabel('Normalized intensity')
@@ -97,7 +97,7 @@ ax.set_title('(c) Field components, numerical aperture 1.2, 750 nm', fontsize=11
 ax.grid(alpha=0.25, which='both')
 ax.legend(fontsize=8, loc='upper right')
 print(f'\nAt numerical aperture 1.2 the longitudinal component carries '
-      f'{100 * np.trapezoid(ez * v, v) / np.trapezoid(tot * v, v):.1f} per cent of the focal energy')
+      f'{100 * np.trapezoid(ez * v, v) / np.trapezoid(tot * v, v):.1f}% of the focal energy')
 
 plt.tight_layout()
 save_panels(fig, fig.axes, os.path.join(OUTDIR, 'panels'), 'fig_na_profiles')

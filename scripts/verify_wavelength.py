@@ -1,131 +1,106 @@
-"""Does the scalar-to-vector threshold depend on wavelength?
+r"""Does anything in the annular result depend on wavelength?
 
-Two statements that are easy to confuse, separated here:
+Every sweep in this work runs at 750 nm. That is a gap in coverage, and it is
+also a testable prediction rather than a blank: the closed-form extension
 
-  (a) In normalized (optical) coordinates the comparison is wavelength-free.
-      The Richards-Wolf integrand depends on wavelength only through u and v,
-      so the RMSE-against-scalar curves for different wavelengths must lie on
-      top of one another and the threshold numerical apertures are identical.
+    (1 - cos alpha) / (cos theta_in - cos alpha)
 
-  (b) The focus itself is not wavelength-free. Its physical width scales with
-      wavelength, so the same numerical aperture gives a proportionally larger
-      spot at a longer wavelength.
+contains no wavelength at all. The extension an annulus gives should therefore
+be identical at every color, while the absolute depth of focus scales as 1/k,
+that is linearly with wavelength.
 
-Wavelengths: 532, 633 and 750 nm, for uniform and truncated-Gaussian input.
+This runs the continuous-wave grid at three wavelengths spanning the visible
+and near infrared and checks both halves: extension invariant, absolute depth
+proportional to wavelength.
 
-Output: output/02_na_apodization/verify_wavelength.png (+ panels/)
+    python scripts/verify_wavelength.py
+    -> output/03_annular/wavelength_sweep.npz
 """
 
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-from mcdo.style import apply as _apply_style
-_apply_style()
 
 from mcdo import SimConfig
-from mcdo.rw_integrals import compute_integrals
+from mcdo.annular import compute_integrals_annular
 from mcdo.apodization import gaussian
 from mcdo.components import full as vec_intensity
-from mcdo.debye import scalar_debye
-from mcdo.figio import save_panels
+from mcdo.rw_integrals import compute_integrals
 
-LAMS = [0.532, 0.633, 0.750]        # μm
-N_MED, NT = 1.3, 601
-XNA_VALS = np.linspace(0.1, 1.2, 23)
-ALPHA_T = 4.0
-V_MAX = 8.0
-OUTDIR = os.path.join(os.path.dirname(__file__), '..', 'output', '02_na_apodization')
-Z0 = np.array([0.0])
-COLORS = {0.532: '#2E9BE0', 0.633: '#e8820c', 0.750: '#c0504d'}
+N_MED, NT = 1.3, 801
+LAMS = [0.400, 0.500, 0.633, 0.750, 0.850, 1.000, 1.300]
+NA_CASES = [0.1, 0.8, 1.2]
+EPS = [0.0, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]
+INPUTS = [('uniform', None), ('Gaussian, alpha = 4', 4.0)]
+
+OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '03_annular')
+os.makedirs(OUT, exist_ok=True)
 
 
-def fwhm_v(v, I):
-    I = I / I.max()
-    below = np.where(I < 0.5)[0]
-    if len(below) == 0:
+def _fwhm(x, y):
+    y = y / y.max()
+    below = np.where(y < 0.5)[0]
+    if not len(below):
         return np.nan
     i = below[0]
-    return 2 * (v[i - 1] + (v[i] - v[i - 1]) * (I[i - 1] - 0.5) / (I[i - 1] - I[i]))
+    return 2.0 * np.interp(0.5, [y[i], y[i - 1]], [x[i], x[i - 1]])
 
 
-def measure(lam, xna, alpha_t):
-    """RMSE against scalar, and the physical focal width in nanometres."""
-    cfg = SimConfig(lam_c=lam, X_NA=xna, n=N_MED, tau=np.inf, N_freq=3, N_theta=NT)
-    v = np.linspace(0.0, V_MAX, 321)
-    r = v / (cfg.k_c * cfg.sin_alpha)
-    apod = gaussian(alpha_t, cfg.sin2_alpha) if alpha_t > 0 else None
-    I0, I1, I2 = compute_integrals(r, Z0, cfg.k_c, cfg.alpha, NT, apodization=apod)
-    # independent scalar Debye theory (no vector obliquity factor)
-    sca = scalar_debye(r, Z0, cfg.k_c, cfg.alpha, NT, apodization=apod)[0]
-    vec = vec_intensity(I0[0], I1[0], I2[0])
-    sca, vec = sca / sca.max(), vec / vec.max()
-    rmse = float(np.sqrt(np.mean((vec - sca) ** 2)))
-    width_nm = fwhm_v(v, vec) / (cfg.k_c * cfg.sin_alpha) * 1000.0
-    return rmse, width_nm
+rows = []
+print(f"{'lambda':>8} {'NA':>5} {'input':<22} {'eps':>6} "
+      f"{'depth um':>10} {'width nm':>10} {'extension':>10}", flush=True)
+for lam in LAMS:
+    for xna in NA_CASES:
+        cfg = SimConfig(lam_c=lam, X_NA=xna, n=N_MED, tau=np.inf,
+                        N_freq=3, N_theta=NT)
+        # windows scale with wavelength and aperture, so every color is
+        # sampled on the same grid in optical units
+        r = np.linspace(0.0, 4.0 * lam / xna, 900)
+        z = np.linspace(0.0, 40.0 * 2.0 * lam / xna ** 2, 4000)
+        r0, z0 = np.array([0.0]), np.array([0.0])
+        for label, at in INPUTS:
+            apod = None if at is None else gaussian(at, cfg.sin2_alpha)
+            base = None
+            for eps in EPS:
+                def _int(rr, zz):
+                    if eps == 0.0:
+                        return compute_integrals(rr, zz, cfg.k_c, cfg.alpha,
+                                                 NT, apodization=apod)
+                    return compute_integrals_annular(rr, zz, cfg.k_c, cfg.alpha,
+                                                     eps, NT, apodization=apod)
+                A0, A1, A2 = _int(r, z0)
+                B0, B1, B2 = _int(r0, z)
+                w = _fwhm(r, vec_intensity(A0[0], A1[0], A2[0])) * 1000.0
+                d = _fwhm(z, vec_intensity(B0[:, 0], B1[:, 0], B2[:, 0]))
+                if eps == 0.0:
+                    base = d
+                rows.append(dict(lam=lam, na=xna, input=label, eps=eps,
+                                 depth_um=d, width_nm=w, gain=d / base))
+                print(f"{lam:>8.3f} {xna:>5.1f} {label:<22} {eps:>6.2f} "
+                      f"{d:>10.3f} {w:>10.1f} {d / base:>10.4f}", flush=True)
 
+np.savez_compressed(
+    os.path.join(OUT, 'wavelength_sweep.npz'),
+    **{k: np.array([r[k] for r in rows]) for k in rows[0]})
 
-def crossing(xs, ys, level):
-    ys = np.asarray(ys)
-    idx = np.where(ys > level)[0]
-    if len(idx) == 0 or idx[0] == 0:
-        return np.nan
-    i = idx[0]
-    return xs[i - 1] + (xs[i] - xs[i - 1]) * (level - ys[i - 1]) / (ys[i] - ys[i - 1])
+print("\nIs the extension the same at every wavelength?  (uniform)")
+for xna in NA_CASES:
+    for eps in EPS[1:]:
+        g = [next(r['gain'] for r in rows if r['lam'] == L and r['na'] == xna
+                  and r['input'] == 'uniform' and r['eps'] == eps)
+             for L in LAMS]
+        print(f"  NA {xna:<4} eps {eps:<5} " +
+              "  ".join(f"{x:7.4f}" for x in g) +
+              f"   spread {100 * (max(g) / min(g) - 1):+.3f}%")
 
-
-data = {}
-for alpha_t, name in [(0.0, 'uniform'), (ALPHA_T, f'Gaussian, truncation coefficient {ALPHA_T:g}')]:
-    for lam in LAMS:
-        rows = [measure(lam, x, alpha_t) for x in XNA_VALS]
-        data[(name, lam)] = (np.array([r for r, _ in rows]), np.array([w for _, w in rows]))
-
-print('Threshold numerical aperture (RMSE against scalar):')
-print(f"{'illumination':>44} {'lambda':>8} {'>0.01':>7} {'>0.05':>7}")
-for (name, lam), (rmse, _w) in data.items():
-    print(f'{name:>44} {lam * 1000:>6.0f} nm {crossing(XNA_VALS, rmse, 0.01):>7.2f} '
-          f'{crossing(XNA_VALS, rmse, 0.05):>7.2f}')
-
-fig, axes = plt.subplots(1, 2, figsize=(20.5, 6.5))
-
-ax = axes[0]
-for (name, lam), (rmse, _w) in data.items():
-    style = '-' if name == 'uniform' else '--'
-    ax.plot(XNA_VALS, rmse, style, color=COLORS[lam], lw=2.0,
-            label=f'{"uniform" if name == "uniform" else "Gaussian"}, {lam * 1000:.0f} nm')
-for lvl in (0.01, 0.05):
-    ax.axhline(lvl, color='#999', ls=':', lw=1.2)
-ax.set_yscale('log')
-ax.set_xlabel('Numerical aperture')
-ax.set_ylabel('RMSE against scalar')
-ax.set_title('(a) Error against scalar theory', fontsize=10)
-ax.grid(alpha=0.25)
-ax.legend(fontsize=8, loc='upper left', bbox_to_anchor=(1.02, 1.0), frameon=False)
-
-ax = axes[1]
-for (name, lam), (_r, width) in data.items():
-    style = '-' if name == 'uniform' else '--'
-    ax.plot(XNA_VALS, width, style, color=COLORS[lam], lw=2.0,
-            label=f'{"uniform" if name == "uniform" else "Gaussian"}, {lam * 1000:.0f} nm')
-ax.set_yscale('log')
-ax.set_xlabel('Numerical aperture')
-ax.set_ylabel('Focal-spot FWHM (nm)')
-ax.set_title('(b) Focal-spot width against numerical aperture', fontsize=10)
-# on a logarithmic axis proportional scaling appears as a constant offset,
-# so the three wavelengths sit as parallel curves
-ax.annotate('parallel curves: the spot scales\nin proportion to wavelength',
-            xy=(0.9, 430), xytext=(0.52, 1500), fontsize=8, color='#555',
-            arrowprops=dict(arrowstyle='->', lw=1.0, color='#555'))
-ax.grid(alpha=0.25)
-ax.legend(fontsize=8, loc='upper left', bbox_to_anchor=(1.02, 1.0), frameon=False)
-
-plt.tight_layout()
-save_panels(fig, fig.axes, os.path.join(OUTDIR, 'panels'), 'verify_wavelength')
-out = os.path.join(OUTDIR, 'verify_wavelength.png')
-fig.savefig(out, dpi=300, bbox_inches='tight')
-plt.close(fig)
-print(f'Saved → {out}')
+print("\nDoes the absolute depth scale with wavelength?  (uniform, eps 0)")
+for xna in NA_CASES:
+    d = [next(r['depth_um'] for r in rows if r['lam'] == L and r['na'] == xna
+              and r['input'] == 'uniform' and r['eps'] == 0.0) for L in LAMS]
+    ref = LAMS.index(0.750)
+    ratio = [d[i] / (LAMS[i] / LAMS[ref]) / d[ref] for i in range(len(LAMS))]
+    print(f"  NA {xna:<4} depths " + "  ".join(f"{x:9.3f}" for x in d))
+    print(f"  {'':<8} scaled  " + "  ".join(f"{x:9.4f}" for x in ratio))

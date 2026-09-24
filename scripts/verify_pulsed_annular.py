@@ -166,7 +166,7 @@ for j, (tl, c) in enumerate(zip(TAU_LABELS, ['k', 'C2', 'C1', 'C3'])):
     ax.plot(EPS, ratios, 'o-', color=c, ms=4, lw=2.0, label=tl)
 e_th = np.linspace(0, 0.992, 200)
 ax.plot(e_th, 1 / (1 - e_th ** 2), 'k--', lw=2.0, alpha=0.5,
-        label='paraxial 1/(1−ε²)')
+        label='Paraxial 1/(1−ε²)')
 ax.set_yscale('log')
 ax.set_xlabel('Obstruction ratio'); ax.set_ylabel('Depth of focus, relative')
 ax.set_title('(d) Depth of focus against obstruction ratio', fontsize=11)

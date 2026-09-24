@@ -61,7 +61,10 @@ def test_deck_manifest_is_consistent():
     """Every declared figure is used, every used figure is declared."""
     from mcdo.deck import DECK, FIGURES
 
-    used = {item[3] for item in DECK if item[0] == "slide" and item[3]}
+    used = set()
+    for item in DECK:
+        if item[0] == "slide" and item[3]:
+            used.update([item[3]] if isinstance(item[3], str) else item[3])
     undeclared = used - set(FIGURES)
     assert not undeclared, f"deck slides reference undeclared figures: {sorted(undeclared)}"
 
@@ -106,7 +109,10 @@ def _estimated_text_height(shape):
             continue
         size_pt = max((r.font.size.pt for r in para.runs if r.font.size), default=18)
         indent_in = 0.35 * para.level
-        chars_per_line = max(8, int((width_in - indent_in) * 72 / (size_pt * 0.5)))
+        # 0.5 em under-counts real advance widths; 0.58 matches what
+        # PowerPoint actually wraps at, and the +1 accounts for the fact
+        # that a wrapped line rarely fills to the last character.
+        chars_per_line = max(8, int((width_in - indent_in) * 72 / (size_pt * 0.58)))
         lines = max(1, -(-len(text) // chars_per_line))
         total += lines * size_pt * 1.22 / 72 + 9 / 72       # line height + paragraph space
     return total
@@ -235,9 +241,12 @@ def test_panel_index_matches_panel_content():
     number = re.compile(r"\d+\.\d+")
     offenders = []
     for item in DECK:
-        if item[0] != "slide" or item[3] not in FIGURES:
+        if item[0] != "slide" or not item[3]:
             continue
-        rel = FIGURES[item[3]][0]
+        keys = [item[3]] if isinstance(item[3], str) else list(item[3])
+        if len(keys) != 1 or keys[0] not in FIGURES:
+            continue
+        rel = FIGURES[keys[0]][0]
         panel_title = titles.get(rel)
         if not panel_title:
             continue
@@ -260,3 +269,388 @@ def test_no_figure_numbers_in_titles(path):
     bad = re.compile(r"\b(fig|figure)\.?\s*\d", re.I)
     offenders = [m.group(2)[:60] for m in pattern.finditer(src) if bad.search(m.group(2))]
     assert not offenders, f"{os.path.basename(path)} names a figure number: {offenders}"
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_legend_labels_are_capitalized(path):
+    """Legend entries read as labels, not as sentence fragments.
+
+    The first version of this only matched labels whose literal text began
+    with a lowercase letter, so an f-string label starting with a placeholder
+    slipped through and shipped a lowercase legend. It now strips the
+    placeholders and checks the literal text that remains.
+    """
+    pattern = re.compile(r"label\s*=\s*r?f?(['\"])(.*?)\1", re.S)
+    with open(path, encoding="utf-8") as fh:
+        src = fh.read()
+    offenders = []
+    for m in pattern.finditer(src):
+        text = m.group(2)
+        literal = re.sub(r"\{[^}]*\}", "", text).strip()
+        if not literal or literal.startswith(("$", "\\")):
+            continue
+        if literal[0].islower():
+            offenders.append(text[:50])
+    assert not offenders, f"{os.path.basename(path)} lowercase legends: {offenders}"
+
+
+SYMBOLS = {"epsilon": "ε", "theta": "θ", "lambda": "λ", "omega": "ω",
+           "tau": "τ", "alpha": "α"}
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_greek_letters_are_written_as_symbols(path):
+    """Anything a reader of the figure sees uses the symbol, not the word.
+
+    Generalized from the truncation coefficient, which was corrected several
+    times by hand: the same rule applies to every Greek letter this work uses.
+    Docstrings and comments are prose and are left alone.
+    """
+    with open(path, encoding="utf-8") as fh:
+        src = fh.read()
+    drawn = re.findall(r"(?:label|set_xlabel|set_ylabel|set_title|suptitle)"
+                       r"\s*\(\s*r?f?(['\"])(.*?)\1", src, re.S)
+    offenders = []
+    for _q, text in drawn:
+        for word, sym in SYMBOLS.items():
+            if (re.search(rf"\b{word}\b", text) and sym not in text
+                    and f"{word}_" not in text):
+                offenders.append(f"{word}: {text[:50]}")
+    assert not offenders, (
+        f"{os.path.basename(path)} spells out a symbol in drawn text: "
+        f"{offenders}")
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_truncation_is_written_as_a_symbol(path):
+    """The truncation coefficient is alpha, and it is spelled with the symbol.
+
+    Writing it out as a word in a legend or an axis label has been corrected
+    repeatedly. Prose in docstrings and comments is left alone; this checks
+    only text that reaches a reader of the figure.
+    """
+    with open(path, encoding="utf-8") as fh:
+        src = fh.read()
+    drawn = re.findall(r"(?:label|set_xlabel|set_ylabel|set_title)\s*\(\s*"
+                       r"r?f?(['\"])(.*?)\1", src, re.S)
+    offenders = [t[:60] for _q, t in drawn
+                 if re.search(r"\balpha\b", t) and "α" not in t
+                 and "alpha_" not in t]
+    assert not offenders, (
+        f"{os.path.basename(path)} spells out alpha in drawn text: {offenders}")
+
+
+def test_figure_slides_state_the_source():
+    """A figure slide names the source condition it was computed under.
+
+    Center wavelength or pulse duration is the one setting a reader cannot
+    infer from the plot, and every result here depends on it.
+    """
+    from mcdo.deck import DECK
+    offenders = []
+    for item in DECK:
+        if item[0] != "slide" or not item[3]:
+            continue
+        text = " ".join(b[1] for b in item[2])
+        if not any(k in text for k in ("750", " nm", " fs", "wavelength")):
+            offenders.append(item[1][:60])
+    assert not offenders, f"figure slides not stating the source: {offenders[:8]}"
+
+
+BRITISH = re.compile(
+    r"\b(centre|colour|normalise[sd]?|analyse[sd]?|behaviour|favour|modelling"
+    r"|artefact|apodised|generalised)\b", re.I)
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_us_spelling_in_scripts(path):
+    """US spelling throughout: center, color, normalize."""
+    with open(path, encoding="utf-8") as fh:
+        found = sorted({m.group(0) for m in BRITISH.finditer(fh.read())})
+    assert not found, f"{os.path.basename(path)} uses {found}"
+
+
+def test_us_spelling_everywhere_else():
+    """The rule covers the package and the tests, not only the scripts.
+
+    British spellings kept reappearing in module docstrings and test messages,
+    which the scripts-only sweep never looked at.
+    """
+    import glob
+    offenders = {}
+    for base in ("mcdo", "tests"):
+        for path in glob.glob(os.path.join(ROOT, base, "*.py")):
+            if os.path.basename(path) == "test_standards.py":
+                continue
+            with open(path, encoding="utf-8") as fh:
+                found = sorted({m.group(0) for m in BRITISH.finditer(fh.read())})
+            if found:
+                offenders[os.path.basename(path)] = found
+    assert not offenders, f"British spellings: {offenders}"
+
+
+def test_us_spelling_in_deck():
+    with open(os.path.join(ROOT, "mcdo", "deck.py"), encoding="utf-8") as fh:
+        found = sorted({m.group(0) for m in BRITISH.finditer(fh.read())})
+    assert not found, f"deck.py uses {found}"
+
+
+PER_CENT = re.compile(r"per\s+cent", re.I)
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_percent_sign_not_spelled_out(path):
+    """Write %, never 'per cent'."""
+    with open(path, encoding="utf-8") as fh:
+        assert not PER_CENT.search(fh.read()), f"{os.path.basename(path)} spells out per cent"
+
+
+def test_percent_sign_not_spelled_out_in_deck():
+    with open(os.path.join(ROOT, "mcdo", "deck.py"), encoding="utf-8") as fh:
+        assert not PER_CENT.search(fh.read()), "deck.py spells out per cent"
+
+
+INFORMAL = re.compile(
+    r"\b(budget|knobs?|buys?|spoil\w*|sensational\w*|octaves?|optimistic)\b", re.I)
+
+
+def test_no_informal_terms_in_deck():
+    """Slide text uses the vocabulary of an optics paper."""
+    with open(os.path.join(ROOT, "mcdo", "deck.py"), encoding="utf-8") as fh:
+        found = sorted({m.group(0).lower() for m in INFORMAL.finditer(fh.read())})
+    assert not found, f"deck.py uses informal terms: {found}"
+
+
+@pytest.mark.parametrize("path", _deck_scripts(), ids=os.path.basename)
+def test_no_informal_terms_in_scripts(path):
+    """The same vocabulary rule, in the scripts and their docstrings.
+
+    Slide text is not the only thing anyone reads. A word rejected on a slide
+    is rejected in the module that produced it, so the two cannot drift apart.
+    """
+    with open(path, encoding="utf-8") as fh:
+        found = sorted({m.group(0).lower() for m in INFORMAL.finditer(fh.read())})
+    assert not found, f"{os.path.basename(path)} uses informal terms: {found}"
+
+
+# Only the signatures a mid-word cut actually leaves. A sentence may legitimately
+# end in a preposition ("falls short of", "fills in"), so those are not flagged.
+TRUNCATED = re.compile(r"(?:[=,(]|\s(?:the|a|an|and|with the|of the|at|from|into))\s*$")
+
+
+def test_no_truncated_bullets():
+    """A bullet is a whole sentence, never a sentence cut off mid-clause."""
+    from mcdo.deck import DECK
+    offenders = []
+    for item in DECK:
+        if item[0] != "slide":
+            continue
+        for _lvl, text in item[2]:
+            if TRUNCATED.search(text):
+                offenders.append(f"{item[1][:34]}: ...{text[-42:]}")
+    assert not offenders, "bullets cut mid-clause:\n  " + "\n  ".join(offenders[:8])
+
+
+def test_scripts_do_not_share_output_paths():
+    """Two scripts writing the same file will silently overwrite each other."""
+    import collections
+    from mcdo.deck import FIGURES
+    owners = collections.defaultdict(set)
+    for rel, script in FIGURES.values():
+        owners[rel].add(script)
+    clashes = {rel: sorted(s) for rel, s in owners.items() if len(s) > 1}
+    assert not clashes, f"figures written by more than one script: {clashes}"
+
+
+WIDTH_TALK = re.compile(r"\b(focal|transverse)\s+width\b", re.I)
+
+
+def test_stage7_compares_on_depth_of_focus_only():
+    """The working deck reports depth of focus, never a transverse width.
+
+    Earlier stages measured focal width legitimately and still quote it, so
+    this is not a repository-wide ban. It is scoped to the stage the annular
+    results are argued in, where every comparison was asked to rest on depth
+    of focus alone: quoting a width there invites a second, unasked-for
+    conclusion alongside the one the slide is making.
+    """
+    from mcdo.deck import stage_deck
+    offenders = []
+    for item in stage_deck("7"):
+        if item[0] != "slide":
+            continue
+        for _, text in item[2]:
+            if WIDTH_TALK.search(text):
+                offenders.append(f"{item[1][:40]}: {text[:70]}")
+        if WIDTH_TALK.search(item[1]):
+            offenders.append(item[1][:60])
+    assert not offenders, f"stage 7 quotes a width: {offenders[:6]}"
+
+
+def test_optical_coordinate_equation_carries_the_refractive_index():
+    """The slide equation for u and v has to use the same k the code does.
+
+    `SimConfig.k_c` is 2*pi*n/lambda with lambda the vacuum wavelength, and the
+    settings slide quotes 750 nm and index 1.3 separately. An equation written
+    as 2*pi/lambda is then wrong by the index for anyone who copies it out,
+    which is what these notes are for.
+    """
+    from mcdo.deck import LX
+    coords = LX["coords"]
+    assert r"\frac{2\pi n}{\lambda}" in coords, (
+        f"optical coordinates omit the refractive index: {coords[:80]}")
+    assert r"\frac{2\pi}{\lambda}" not in coords, (
+        "optical coordinates still show a vacuum wave number somewhere")
+
+
+def test_nothing_imports_from_a_script():
+    """Scripts run top to bottom, so importing one runs it.
+
+    Most scripts here have no main guard by design: they are figure recipes,
+    executed once. That is safe only while nothing imports them. A test that
+    pulled a helper out of a figure script would silently recompute that figure
+    on every run, which has cost real time twice. Shared code belongs in mcdo/.
+    """
+    offenders = []
+    for base in ("tests", "mcdo", "scripts"):
+        root = os.path.join(ROOT, base)
+        for dirpath, _dirs, files in os.walk(root):
+            for fn in files:
+                if not fn.endswith(".py"):
+                    continue
+                path = os.path.join(dirpath, fn)
+                with open(path, encoding="utf-8") as fh:
+                    for n, line in enumerate(fh, 1):
+                        if re.match(r"\s*(from scripts[. ]|import scripts\b)",
+                                    line):
+                            offenders.append(
+                                f"{os.path.relpath(path, ROOT)}:{n}")
+    assert not offenders, (
+        f"importing a script executes it; move the shared code into mcdo/: "
+        f"{offenders}")
+
+
+def test_field_map_legend_matches_what_is_drawn():
+    """The settings slide tells the reader how to read every field map.
+
+    It names two markings by color, and nothing otherwise ties that sentence
+    to the drawing code. A palette change would leave the slide describing
+    something the maps no longer show.
+    """
+    import inspect
+    from mcdo.figio import mark_focus
+    src = inspect.getsource(mark_focus)
+    assert '"#ff7f0e"' in src, "the half-maximum contour is no longer orange"
+    assert 'color="red", ls="--"' in src, (
+        "the Airy radius is no longer a red dashed line")
+    assert "levels=[level]" in src and "level=0.5" in src, (
+        "the marked contour is no longer the half maximum")
+
+    from mcdo.deck import stage_deck
+    said = [t for item in stage_deck("7") if item[0] == "slide"
+            for _, t in item[2] if "orange" in t.lower()]
+    assert said, "the field-map legend has gone from the settings slide"
+    for line in said:
+        assert "half maximum" in line.lower() and "airy" in line.lower(), line
+
+
+def test_built_decks_embed_the_current_figures():
+    """The deck build checks that figures exist, not that they are the ones in it.
+
+    Rebuilding a figure after building a deck leaves the deck valid by that
+    check and wrong on screen. Four stage-7 field maps were stale this way
+    after the atlas cards were reframed: the file was present, the image
+    inside the deck was the old one.
+    """
+    import hashlib
+    import zipfile
+    from mcdo.deck import FIGURES, OUT as DECK_OUT, stage_deck
+
+    def digest(rel):
+        path = os.path.join(DECK_OUT, rel)
+        if not os.path.exists(path):
+            return None
+        with open(path, "rb") as fh:
+            return hashlib.md5(fh.read()).hexdigest()
+
+    decks = [(os.path.join(ROOT, "output", "deck", "mcdo_results_deck.pptx"),
+              list(FIGURES), "full deck")]
+    stage7 = os.path.join(os.path.expanduser("~"), "Downloads",
+                          "stage7_rebuilt.pptx")
+    if os.path.exists(stage7):
+        decks.append((stage7,
+                      [it[3] for it in stage_deck("7")
+                       if it[0] == "slide" and it[3]], "stage 7"))
+
+    for path, keys, name in decks:
+        if not os.path.exists(path):
+            continue
+        with zipfile.ZipFile(path) as z:
+            media = {hashlib.md5(z.read(n)).hexdigest()
+                     for n in z.namelist() if n.startswith("ppt/media/")}
+        stale = [k for k in keys
+                 if digest(FIGURES[k][0]) and digest(FIGURES[k][0]) not in media]
+        assert not stale, f"{name} embeds outdated figures: {stale[:6]}"
+
+
+def test_presentation_index_matches_its_folder():
+    """The index is what someone builds slides from, so it must not lie.
+
+    Two of its filenames were wrong on the first pass - it named a ratio as
+    0.90 where the file says 0.9 - which would send someone hunting for a
+    figure that exists under another name mid-preparation.
+    """
+    import glob
+    folder = os.path.join(ROOT, "output", "presentation")
+    index = os.path.join(folder, "README.md")
+    if not os.path.exists(index):
+        pytest.skip("presentation folder not assembled")
+    with open(index, encoding="utf-8") as fh:
+        text = fh.read()
+    named = {n for n in re.findall(r"`([A-Za-z0-9_./]+\.png)`", text)
+             if ".." not in n}
+    have = {os.path.basename(f) for f in glob.glob(os.path.join(folder, "*.png"))}
+    have |= {"field_maps/" + os.path.basename(f)
+             for f in glob.glob(os.path.join(folder, "field_maps", "*.png"))}
+    missing = sorted(n for n in named if n not in have)
+    assert not missing, f"the index names figures that are not there: {missing}"
+    unindexed = sorted(h for h in have
+                       if not h.startswith("field_maps/") and h not in named)
+    assert not unindexed, f"figures present but not in the index: {unindexed}"
+
+
+def test_slides_carry_one_panel_when_panels_exist():
+    """A slide shows one plot, not a composite of four.
+
+    Every figure script writes its panels individually as well as together, so
+    a slide pointing at the composite is choosing the harder-to-read option.
+    This has been corrected by hand more than once; the check is cheap.
+
+    Composites are allowed only where no panel breakdown was written, which is
+    the case for the single-axis figures.
+    """
+    import json
+    from mcdo.deck import DECK, FIGURES, OUT as DECK_OUT
+
+    offenders = []
+    for item in DECK:
+        if item[0] != "slide" or len(item) < 4:
+            continue
+        key = item[3]
+        if not key or not isinstance(key, str):
+            continue
+        rel = FIGURES[key][0]
+        if "/panels/" in rel:
+            continue
+        stem = os.path.basename(rel)[:-4]
+        manifest = os.path.join(DECK_OUT, os.path.dirname(rel), "panels",
+                                f"{stem}_panels.json")
+        if not os.path.exists(manifest):
+            continue
+        with open(manifest, encoding="utf-8") as fh:
+            panels = json.load(fh)
+        if len(panels) > 1:
+            offenders.append(f"{item[1][:44]} -> {stem} ({len(panels)} panels)")
+    assert not offenders, (
+        "slides showing a multi-panel composite where single panels exist: "
+        f"{offenders[:8]}")

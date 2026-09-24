@@ -97,7 +97,7 @@ for tau_fs in tau_vals_fs:
 
 # ── Plot ───────────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(16.2, 6.8))
-fig.suptitle('Single-photon excitation microscope, centre wavelength 750 nm')
+fig.suptitle('Single-photon excitation microscope, center wavelength 750 nm')
 
 ax = axes[0]
 ax.plot(XNA_vals, F_ax_a, 's', ms=7, mfc='white', mec='k', label='F (axial)')

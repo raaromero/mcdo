@@ -67,7 +67,7 @@ thresholds quoted vs sinα. Our scalar module already supports this.
 
 The paper's Fig. 1 axes read **r ∈ [−25, 25] μm and z ∈ [−65, 65] μm**, exactly
 ten times the window our reproduction needs at the stated conditions
-(numerical aperture 0.8, centre wavelength 750 nm, refractive index 1.3).
+(numerical aperture 0.8, center wavelength 750 nm, refractive index 1.3).
 
 Why our scale is the defensible one:
 

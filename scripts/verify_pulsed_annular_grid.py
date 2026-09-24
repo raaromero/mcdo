@@ -5,7 +5,7 @@ The existing pulsed-annular scripts each fix one numerical aperture (0.8).
 This one runs the full grid the depth-of-focus question actually needs:
 
     numerical aperture  0.1 (low)  and  1.2 (high)
-    input               uniform    and  Gaussian, truncation coefficient 4
+    input               uniform    and  Gaussian, alpha = 4
     obstruction ratio   0, 0.5, 0.99
     pulse duration      continuous wave, 2 fs, 1 fs
 
@@ -40,12 +40,12 @@ from mcdo.apodization import gaussian
 from mcdo.components import full as vec_intensity
 from mcdo.figio import save_panels
 
-LAM, N_MED, NT, NFREQ = 0.750, 1.3, 501, 201
+LAM, N_MED, NT, NFREQ = 0.750, 1.3, 501, 101   # 101 is within 0.08% of 201
 ALPHA_T = 4.0
-NA_CASES = [0.1, 1.2]
-EPS = [0.0, 0.5, 0.99]
+NA_CASES = [0.8]             # the aperture every result is quoted at
+EPS = [0.0, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]
 TAUS = [(np.inf, 'continuous wave'), (2e-15, '2 fs'), (1e-15, '1 fs')]
-INPUTS = ['uniform', 'Gaussian, truncation coefficient 4']
+INPUTS = ['uniform', 'Gaussian, alpha = 4']
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '05_pulsed_pupils')
 os.makedirs(OUT, exist_ok=True)
@@ -87,6 +87,7 @@ def _profile(cfg, eps, apod, tau, coords, axis):
 
 rows = []
 suspect = []
+profiles = {}
 print(f"{'NA':>5} {'input':<38} {'eps':>5} {'pulse':<17} "
       f"{'width nm':>9} {'depth um':>9} {'gain':>6}")
 
@@ -109,11 +110,19 @@ for xna in NA_CASES:
         for tau, tlab in TAUS:
             c = SimConfig(lam_c=LAM, X_NA=xna, n=N_MED, tau=tau,
                           N_freq=NFREQ, N_theta=NT)
-            base_depth = None
+            base_depth = base_peak = None
             for eps in EPS:
                 z_arr = np.linspace(0.0, z_span[eps], 4000)
-                d = _fwhm(z_arr, _profile(c, eps, apod, tau, z_arr, 'z'))
-                w = _fwhm(r_arr, _profile(c, eps, apod, tau, r_arr, 'r')) * 1000.0
+                I_z = _profile(c, eps, apod, tau, z_arr, 'z')
+                I_r = _profile(c, eps, apod, tau, r_arr, 'r')
+                d = _fwhm(z_arr, I_z)
+                w = _fwhm(r_arr, I_r) * 1000.0
+                peak = float(I_r[0])
+                if eps == 0.0:
+                    base_peak = peak
+                key = f"{xna}|{label}|{eps}|{tlab}"
+                profiles[key + '|z'] = np.vstack([z_arr, I_z / I_z.max()])
+                profiles[key + '|r'] = np.vstack([r_arr, I_r / I_r.max()])
                 if eps == 0.0:
                     base_depth = d
                 gain = d / base_depth
@@ -128,16 +137,20 @@ for xna in NA_CASES:
                                    f"{bound:.1f}")
                     gain = np.nan
                 rows.append(dict(na=xna, input=label, eps=eps, tau=tlab,
-                                 width_nm=w, depth_um=d, gain=gain))
+                                 width_nm=w, depth_um=d, gain=gain,
+                                 peak=peak / base_peak))
                 print(f"{xna:>5.1f} {label:<38} {eps:>5.2f} {tlab:<17} "
                       f"{w:>9.1f} {d:>9.3f} {gain:>6.2f}")
 
-np.savez(os.path.join(OUT, 'pulsed_annular_grid.npz'),
-         **{k: np.array([r[k] for r in rows]) for k in rows[0]})
+np.savez_compressed(
+    os.path.join(OUT, 'pulsed_annular_grid.npz'),
+    **{k: np.array([r[k] for r in rows]) for k in rows[0]},
+    **profiles)
 
 # ── figure: depth-of-focus gain against pulse duration, one panel per cell ──
-fig, axes = plt.subplots(2, 2, figsize=(20.5, 13.0))
-COLOR = {0.0: '#1f77b4', 0.5: '#d62728', 0.99: '#2ca02c'}
+fig, axes = plt.subplots(len(NA_CASES), len(INPUTS),
+                         figsize=(20.5, 6.5 * len(NA_CASES)), squeeze=False)
+COLOR = dict(zip(EPS, plt.cm.viridis(np.linspace(0.0, 0.85, len(EPS)))))
 x = np.arange(len(TAUS))
 for i, xna in enumerate(NA_CASES):
     for j, label in enumerate(INPUTS):
@@ -147,13 +160,13 @@ for i, xna in enumerate(NA_CASES):
                       if r['na'] == xna and r['input'] == label
                       and r['eps'] == eps and r['tau'] == t[1]) for t in TAUS]
             ax.plot(x, g, 'o-', color=COLOR[eps], lw=2.0, ms=7,
-                    label=f'obstruction ratio {eps:g}')
+                    label=f'Obstruction ratio {eps:g}')
         ax.set_xticks(x)
         ax.set_xticklabels([t[1] for t in TAUS])
         ax.set_yscale('log')
         ax.set_xlabel('Pulse duration')
         ax.set_ylabel('Depth-of-focus gain over the full disk')
-        short = 'uniform' if label == 'uniform' else 'Gaussian, coefficient 4'
+        short = 'uniform' if label == 'uniform' else 'Gaussian, alpha = 4'
         ax.set_title(f'Numerical aperture {xna:g}, {short} input, 750 nm',
                      fontsize=12)
         ax.legend(fontsize=10)
@@ -171,6 +184,19 @@ if suspect:
     print("\nNOT REPORTED — these cells failed the paraxial upper bound:")
     for line in suspect:
         print("  " + line)
+
+print("\nIs the transverse width bandwidth invariant as well?")
+for xna in NA_CASES:
+    for label in INPUTS:
+        for eps in EPS:
+            def _w(t):
+                return next(r['width_nm'] for r in rows if r['na'] == xna
+                            and r['input'] == label and r['eps'] == eps
+                            and r['tau'] == t)
+            cw, fs1 = _w('continuous wave'), _w('1 fs')
+            short = 'uniform' if label == 'uniform' else 'Gaussian'
+            print(f"  NA {xna:<4} {short:<9} eps {eps:<5} "
+                  f"{cw:>8.1f} -> {fs1:>8.1f} nm  ({100 * (fs1 / cw - 1):+5.1f}%)")
 
 print("\nBandwidth sensitivity of the gain (1 fs against continuous wave):")
 for xna in NA_CASES:

@@ -47,7 +47,7 @@ NX, NH = x_line.size, halo_ctr.size
 
 
 def fwhm(prof, coord):
-    """FWHM (nm) of a centred profile peaked near coord=0."""
+    """FWHM (nm) of a centerd profile peaked near coord=0."""
     p = prof / prof.max(); c = int(np.argmax(p))
     right = p[c:]; j = int(np.argmax(right < 0.5))
     if j == 0:

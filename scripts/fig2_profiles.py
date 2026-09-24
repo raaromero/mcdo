@@ -71,7 +71,7 @@ print(f"  Pulsed pedestal at r=1 μm: {I_pls_r[-1]:.4f}  [paper ≈0.05]")
 
 # ── Plot ───────────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(13.5, 6.1))
-fig.suptitle('Intensity profiles, numerical aperture 0.8, centre wavelength 750 nm')
+fig.suptitle('Intensity profiles, numerical aperture 0.8, center wavelength 750 nm')
 
 ax = axes[0]
 ax.plot(r_full, I_cw_r_full,  'k-', lw=2.0, label='Continuous wave')

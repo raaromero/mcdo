@@ -181,8 +181,8 @@ ax = axes[0, 0]
 r01 = _r_um(0.1)
 I_full, I_s = profiles[0.1]
 ax.plot(r01, airy, 'k-', lw=2.0, alpha=0.35, label='Airy [2J₁(v)/v]²')
-ax.plot(r01, I_full, 'C0-', lw=2.0, label='all three components')
-ax.plot(r01, I_s, 'C2:', lw=2.0, label='scalar Debye')
+ax.plot(r01, I_full, 'C0-', lw=2.0, label='All three components')
+ax.plot(r01, I_s, 'C2:', lw=2.0, label='Scalar Debye')
 ax.set_title('(a) All theories coincide at numerical aperture 0.1'); trim_xlim(ax, floor=1e-5, symmetric=False)
 ax.set_xlabel('Radial position r (μm)'); ax.set_ylabel('Normalized intensity')
 ax.set_yscale('log'); ax.set_ylim(1e-6, 1.5); ax.legend(fontsize=8)
@@ -191,22 +191,22 @@ ax = axes[0, 1]
 r12 = _r_um(1.2)
 I_full, I_s = profiles[1.2]
 ax.plot(r12, airy, 'k-', lw=2.0, alpha=0.35, label='Airy')
-ax.plot(r12, I_full, 'C0-', lw=2.0, label='all three components')
-ax.plot(r12, I_s, 'C2:', lw=2.0, label='scalar Debye')
+ax.plot(r12, I_full, 'C0-', lw=2.0, label='All three components')
+ax.plot(r12, I_s, 'C2:', lw=2.0, label='Scalar Debye')
 ax.set_title('(b) Vector splitting appears at numerical aperture 1.2'); trim_xlim(ax, floor=1e-5, symmetric=False)
 ax.set_xlabel('Radial position r (μm)'); ax.set_ylabel('Normalized intensity')
 ax.set_yscale('log'); ax.set_ylim(1e-6, 1.5); ax.legend(fontsize=8)
 
 ax = axes[1, 0]
 ax.axhline(AIRY_FWHM_V, color='k', alpha=0.35, lw=1.2, label='Airy 3.233')
-ax.plot(XNA_vals, fw['full'], 'C1s--', ms=6, lw=2.0, label='all three components')
-ax.plot(XNA_vals, fw['scalar'], 'C2^:', ms=6, lw=2.0, label='scalar Debye')
+ax.plot(XNA_vals, fw['full'], 'C1s--', ms=6, lw=2.0, label='All three components')
+ax.plot(XNA_vals, fw['scalar'], 'C2^:', ms=6, lw=2.0, label='Scalar Debye')
 ax.set_title('(c) Focal-spot FWHM versus numerical aperture')
 ax.set_xlabel('Numerical aperture'); ax.set_ylabel('FWHM (optical units)'); ax.legend(fontsize=8)
 
 ax = axes[1, 1]
 r08 = _r_um(0.8)
-ax.plot(r08, apod_profiles[0.0], 'k-', lw=2.0, label='uniform ($\\alpha_t$=0)')
+ax.plot(r08, apod_profiles[0.0], 'k-', lw=2.0, label='Uniform ($\\alpha_t$=0)')
 for at, style in [(1.0, 'C0--'), (2.0, 'C1-.'), (4.0, 'C3:')]:
     ax.plot(r08, apod_profiles[at], style, lw=2.0, label=f'Gaussian $\\alpha_t$={at:g}')
 ax.set_title('(d) Gaussian apodization broadens the focal spot'); trim_xlim(ax, floor=1e-5, symmetric=False)

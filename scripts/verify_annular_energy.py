@@ -76,7 +76,7 @@ fig.suptitle('Cost of the annular obstruction, 750 nm',
 
 ax = axes[0]
 e_th = np.linspace(0, 0.99, 200)
-ax.plot(e_th, (1 - e_th ** 2) ** 2, 'k--', lw=2.0, label='paraxial (1−ε²)²')
+ax.plot(e_th, (1 - e_th ** 2) ** 2, 'k--', lw=2.0, label='Paraxial (1−ε²)²')
 ax.plot(EPS, res['strehl_lo'], 'C0o-', ms=4, lw=2.0, label='NA=0.13')
 ax.plot(EPS, res['strehl'], 'C3s-', ms=4, lw=2.0, label='NA=1.17')
 ax.set_yscale('log')
