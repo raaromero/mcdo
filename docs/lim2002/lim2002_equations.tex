@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{fontspec}\setmainfont{STIX Two Text}
+\usepackage{unicode-math}\setmathfont{STIX Two Math}
+\usepackage{booktabs,array,enumitem}
+\setlist{nosep}
+\title{Lim \& Saloma (2002): equations, variables and definitions}
+\date{}
+\begin{document}\maketitle\vspace{-3em}
+\noindent M. Lim and C. Saloma, Opt.\ Commun.\ \textbf{207}, 121--130 (2002), doi:10.1016/S0030-4018(02)01530-4.
+Page numbers refer to the paper.
+
+\section*{Field of one focused beam (p.~122, Eq.~1--2)}
+\[
+U(u,v)=\frac{2\pi i a^2A}{\lambda f^2}\,e^{-i(f/a)^2u}\int_0^1 J_0(v\rho)\,e^{-\frac{i}{2}u\rho^2}\rho\,d\rho,
+\qquad u=\frac{2\pi}{\lambda}\Big(\frac{a}{f}\Big)^2 z,\quad v=\frac{2\pi}{\lambda}\frac{a}{f}\sqrt{x^2+y^2}
+\]
+Paraxial scalar Debye field of a uniformly illuminated, aberration-free lens; $a/f=\mathrm{NA}$ for $n=1$.
+In the code: \texttt{mcdo.twobeam.beam\_field(model='paraxial')}, which also carries the carrier
+$e^{ikz}$ so that two beams of one color interfere.
+
+\section*{Second beam (p.~122--123)}
+Beam 2 is focused toward $O'=(x_c,z_c)$ by a lens whose axis makes an angle $\theta$ with the $z$ axis.
+Its field at $P$ is the one-beam field evaluated in the beam's own frame:
+\[
+z_b=(x-x_c)\sin\theta+(z-z_c)\cos\theta,\qquad x_b=(x-x_c)\cos\theta-(z-z_c)\sin\theta,
+\]
+a rotation of real space. The paper writes the rotation in optical coordinates,
+$u_r=u\cos\theta-v\sin\theta$, $v_r=v\cos\theta+u\sin\theta$ (p.~122); that form does not reproduce its
+Fig.~4 ($-0.21x_c^2$ against $-0.06x_c^2$), and the real-space rotation does.
+
+\section*{Signals (p.~123)}
+\[
+I_1(P)=|U_1(P)|^2,\qquad I_2(P;\theta;x_c,z_c)=|U_2(P;\theta;x_c,z_c)|^2
+\]
+\[
+F_{2c}(P;\theta;x_c,z_c)=\kappa_{2c}\,I_2(P;\theta;x_c,z_c)\,I_1(P),\qquad
+F_{2p}(P;\theta;x_c,z_c)=\kappa_{2p}\,|U_2(P;\theta;x_c,z_c)+U_1(P)|^4
+\]
+The point spread function is each signal normalized to its peak. $d=(x_c^2+z_c^2)^{1/2}$; confocality holds iff $d=0$.
+
+\section*{Peak fluorescence (p.~126)}
+$F^{p}_{2c}$ and $F^{p}_{2p}$: peak of the misaligned signal, relative to the aligned peak. Quoted fits:
+\[
+F^p_{2c}(\pi/2)=-0.06x_c^2+1,\quad
+F^p_{2c}(0)=-0.37x_c^4+0.01x_c^3-1.14x_c^2+0.98\ \ (\text{valid near }x_c=0),
+\]
+\[
+F^p_{2c}(0)=-0.027z_c^2+0.996,\qquad F^p_{2c}(\pi/2)=-0.045z_c^2+0.986\qquad(x_c=0).
+\]
+
+\section*{Linfoot's criteria (p.~126)}
+Aligned PSF $t=\{t(m)\}$ and misaligned PSF $a=\{a(m)\}$, each normalized to its peak, on a
+$100\times100$ $x$--$z$ grid centered at $O$; $\langle\cdot\rangle$ is the grid average.
+\[
+F=1-\frac{\langle(t-a)^2\rangle}{\langle t^2\rangle},\qquad
+C=\frac{\langle a^2\rangle}{\langle t^2\rangle},\qquad
+Q=\frac{\langle|a|\,|t|\rangle}{\langle t^2\rangle},\qquad
+2Q-C=F=1-\epsilon .
+\]
+$F$ fidelity, $C$ structural content, $Q$ correlation quality, $\epsilon$ normalized mean-squared error.
+Perfect recovery: $F=C=Q=1$. Since $Q\ge0$, $F\ge-C$.
+
+\section*{Variables}
+\begin{center}\small
+\begin{tabular}{@{}>{$}l<{$}p{0.55\linewidth}l@{}}\toprule
+\text{Symbol}&Meaning&Value\\\midrule
+\lambda_1,\lambda_2&Excitation wavelengths, beam 1 and beam 2 (2CE)&750, 656 nm\\
+\lambda_{2p}&Excitation wavelength, both beams (2PE)&700 nm\\
+\lambda_e&Single-photon excitation wavelength, $1/\lambda_e=1/\lambda_1+1/\lambda_2$&350 nm\\
+\lambda_f&Fluorescence wavelength, taken equal to $\lambda_e$&350 nm\\
+\mathrm{NA}&Numerical aperture, $a/f$&0.5\\
+n&Refractive index&1\\
+a,\ f&Aperture radius and focal length of each lens&---\\
+k&Wavenumber $2\pi/\lambda$&---\\
+u,\ v&Axial and radial optical coordinates&---\\
+\rho&Normalized pupil radius&$0\le\rho\le1$\\
+\theta&Angle between the lens axes&$0,\ \pi/2,\ \pi$\\
+O,\ O'&Geometric foci of L1 and L2&---\\
+x_c,\ z_c&Position of $O'$, in units of $\lambda_1$ (or $\lambda_{2p}$)&$|x_c|\le1.35,\ |z_c|\le6.6$\\
+d&Focus separation $(x_c^2+z_c^2)^{1/2}$&---\\
+U_1,U_2&Fields of beams 1 and 2&---\\
+I_1,I_2&Intensities $|U_1|^2,|U_2|^2$&---\\
+F_{2c},F_{2p}&2CE and 2PE fluorescence&---\\
+\kappa_{2c},\kappa_{2p}&2CE and 2PE cross-sections&---\\
+F^p_{2c},F^p_{2p}&Peak fluorescence relative to the aligned case&---\\
+F,\ C,\ Q&Linfoot fidelity, structural content, correlation quality&---\\
+\bottomrule\end{tabular}\end{center}
+\end{document}
