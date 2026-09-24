@@ -1,13 +1,14 @@
 r"""Lim & Saloma (2002) at high NA: the 2CE peak-signal cuts of their Fig. 4,
 recomputed with the vector Richards–Wolf focus.
 
-Three models, all 2CE (λ1 = 750 nm, λ2 = 656 nm) in air:
+Four models, all 2CE (λ1 = 750 nm, λ2 = 656 nm in vacuum):
     paraxial scalar, NA 0.5   the paper's model
     Richards–Wolf,   NA 0.5   same NA, exact vector focus: checks the paper's model
     Richards–Wolf,   NA 0.7   near the largest NA at which two cones can cross
                               at θ = π/2 in air, n/√2 = 0.71
+    Richards–Wolf,   NA 0.9   in water (n = 1.33), where the limit is 0.94
 
-Both beams are unpolarized, as the scalar model implicitly assumes: each
+Both beams are unpolarized (the scalar model carries no polarization): each
 beam's intensity is the average over two orthogonal input polarizations,
 I = (I_x + I_y)/2, and the two colors do not interfere, so F_2c = I_1 I_2. The
 peak is taken over the paper's ±1 × ±5 µm window and divided by the aligned
@@ -40,26 +41,27 @@ L1, L2 = 0.750, 0.656
 DX, DZ = 0.02, 0.1                               # µm, the paper's grid
 NX, NZ = 50, 50                                  # window ±1 × ±5 µm
 MX, MZ = 50, 30                                  # offsets up to 1.0 µm across, 3.0 µm along
-MODELS = [('paraxial', 0.5, 'Paraxial scalar, NA 0.5 (paper)', '#555555', '-'),
-          ('rw', 0.5, 'Richards–Wolf, NA 0.5, unpolarized', '#1f77b4', '--'),
-          ('rw', 0.7, 'Richards–Wolf, NA 0.7, unpolarized', '#d62728', '-')]
+MODELS = [('paraxial', 0.5, 1.0, 'Paraxial scalar, NA 0.5 (paper)', '#555555', '-'),
+          ('rw', 0.5, 1.0, 'Richards–Wolf, NA 0.5', '#1f77b4', '--'),
+          ('rw', 0.7, 1.0, 'Richards–Wolf, NA 0.7', '#d62728', '-'),
+          ('rw', 0.9, 1.33, 'Richards–Wolf, NA 0.9, water', '#2ca02c', '-.')]
 
 XW, ZW = np.meshgrid(np.arange(-NX, NX) * DX, np.arange(-NZ, NZ) * DZ)
 XE, ZE = np.meshgrid(np.arange(-NX - MX, NX + MX) * DX, np.arange(-NZ - MZ, NZ + MZ) * DZ)
 
 
-def unpolarized(x, z, lam, na, theta, model):
+def unpolarized(x, z, lam, na, n, theta, model):
     """Intensity of an unpolarized beam: the mean over two orthogonal input polarizations."""
     if model != 'rw':
-        return intensity(beam_field(x, z, lam, na, theta=theta, model=model))
-    return 0.5 * sum(intensity(beam_field(x, z, lam, na, theta=theta, model=model, psi=psi))
+        return intensity(beam_field(x, z, lam, na, n, theta=theta, model=model))
+    return 0.5 * sum(intensity(beam_field(x, z, lam, na, n, theta=theta, model=model, psi=psi))
                      for psi in (0.0, np.pi / 2))
 
 
-def cuts(model, na, theta):
+def cuts(model, na, n, theta):
     """Peak 2CE signal, relative to aligned, along x_c (z_c = 0) and along z_c (x_c = 0)."""
-    I1 = unpolarized(XW, ZW, L1, na, 0.0, model)
-    I2 = unpolarized(XE, ZE, L2, na, theta, model)
+    I1 = unpolarized(XW, ZW, L1, na, n, 0.0, model)
+    I2 = unpolarized(XE, ZE, L2, na, n, theta, model)
     sz, sx = XW.shape
 
     def peak(ix, iz):
@@ -83,8 +85,8 @@ def at_20(d, p):
 fig, axes = plt.subplots(2, 2, figsize=(22.0, 18.0))
 lines = []
 for r, (theta, tl) in enumerate(((np.pi / 2, 'θ = π/2'), (np.pi, 'θ = π'))):
-    for model, na, lab, col, ls in MODELS:
-        xc, px, zc, pz = cuts(model, na, theta)
+    for model, na, n, lab, col, ls in MODELS:
+        xc, px, zc, pz = cuts(model, na, n, theta)
         ax, az = axes[r]
         l, = ax.plot(xc, px, ls, color=col, lw=4, label=lab)
         az.plot(zc, pz, ls, color=col, lw=4)
@@ -99,7 +101,7 @@ for r, (theta, tl) in enumerate(((np.pi / 2, 'θ = π/2'), (np.pi, 'θ = π'))):
         a.set_xlabel(xl); a.set_ylabel('Peak, relative to aligned')
         a.set_ylim(0, 1.05); a.set_title(f'2CE, {tl}')
     axes[r, 0].set_xlim(0, 1.0); axes[r, 1].set_xlim(0, 3.0)
-fig.legend(handles=lines, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.02))
-plt.tight_layout(rect=(0, 0.05, 1, 1))
+fig.legend(handles=lines, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.04))
+plt.tight_layout(rect=(0, 0.08, 1, 1))
 fig.savefig(os.path.join(OUT, 'highna_tolerance.png'), dpi=600, bbox_inches='tight')
 print('Saved -> highna_tolerance.png')

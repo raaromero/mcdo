@@ -419,35 +419,78 @@ notes(s, 'Each comparison the abstract draws between 2CE and 2PE comes out the s
       'recovers: it fluctuates. At theta = pi the two fall alike. Along the axis at theta = pi/2, two-color falls at every step while '
       'two-photon rises and falls fourteen times as fringes pass the peak.')
 
-# ══ 15. high NA, first look ══════════════════════════════════════════════
-s = slide('First look at high NA', 'The paper’s scalar model holds at NA 0.5; at NA 0.7 the 2CE tolerances shrink, most by about half.')
-figure(s, os.path.join(FIG, 'highna_tolerance.png'), 0.45, 1.35, 4.9, 3.85)
-shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, 5.55, 1.35, 3.95, 2.25, CARD)
-text(s, 5.75, 1.45, 3.6, 0.3, 'Offset that costs 20% of the peak (µm)', 11.5, PURPLE, True, 'Cambria')
-for j, h in enumerate(('', 'paper', 'RW 0.5', 'RW 0.7')):
-    text(s, 5.75 + (0 if j == 0 else 1.2 + (j - 1) * 0.78), 1.8, 1.2 if j == 0 else 0.75, 0.25, h, 10, GREY, True,
-         align=None if j == 0 else PP_ALIGN.CENTER)
-for i, row in enumerate((('θ = π/2, x_c', '> 1.0', '> 1.0', '0.62'), ('θ = π/2, z_c', '1.54', '1.44', '0.68'),
-                         ('θ = π, x_c', '0.30', '0.30', '0.22'), ('θ = π, z_c', '2.06', '1.93', '0.91'))):
-    for j, v in enumerate(row):
-        text(s, 5.75 + (0 if j == 0 else 1.2 + (j - 1) * 0.78), 2.1 + i * 0.36, 1.2 if j == 0 else 0.75, 0.3, v,
-             11, RED if j == 3 else NAVY, j == 3, align=None if j == 0 else PP_ALIGN.CENTER)
-bullets(s, 5.6, 3.75, 3.9, 1.45, [
-    'NA 0.5: the vector focus agrees with the paper’s scalar model within 7%.',
-    'NA 0.7: θ = π in-plane shrinks as 1/NA (spot width); the rest as about 1/NA^2 (spot length).',
-    'Both beams unpolarized: each intensity is averaged over two orthogonal input polarizations.'], 10.5)
-text(s, 0.45, 5.05, 4.9, 0.22, 'Peak 2CE signal against x_c (z_c = 0) and z_c (x_c = 0); dotted line: 20% lost.', 8.5, GREY)
-notes(s, 'The paper’s scalar model holds at NA 0.5; at NA 0.7 the 2CE tolerances shrink, most by about half.',
-      'A first high-NA check with our Richards–Wolf vector focus, the model the adviser asked us to move to. At NA 0.5 the vector '
-      'curves sit on the paper’s scalar ones, within 7 percent, so the paper’s model is adequate at its own NA. At NA 0.7, close to '
-      'the largest NA at which two cones can cross at right angles in air, every tolerance shrinks. The in-plane tolerance at '
-      'theta = pi is set by the spot width and shrinks as 1/NA, from 0.30 to 0.22 micrometres. Both beams are unpolarized, as the scalar model implicitly assumes. The others are set by a spot length '
-      'and shrink roughly as 1/NA squared, for example 1.93 to 0.91 micrometres along z at theta = pi. The crossed geometry is still '
-      'the most tolerant in-plane.',
-      r'''
+# ══ 15–17. high NA, first look ══════════════════════════════════════════
+COLS = ('NA 0.5\npaper', 'NA 0.5\nRW', 'NA 0.7\nRW', 'NA 0.9\nRW, water')
+
+
+def num_table(s, l, t, w, title, rows, highlight=(2, 3)):
+    """A small grey card holding a numbers table: first column labels, then one column per model."""
+    nc = len(rows[0]) - 1
+    lw = 1.05; cw = (w - 0.4 - lw) / nc
+    h = 0.62 + 0.3 + 0.32 * len(rows)
+    shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, t, w, h, CARD)
+    text(s, l + 0.2, t + 0.1, w - 0.4, 0.45, title, 11.5, PURPLE, True, 'Cambria')
+    heads = COLS if nc == 4 else (COLS[0], COLS[2], COLS[3])
+    for j, hd in enumerate(heads):
+        text(s, l + 0.2 + lw + j * cw, t + 0.55, cw, 0.35, hd, 8.5, GREY, True, align=PP_ALIGN.CENTER)
+    for i, row in enumerate(rows):
+        for j, v in enumerate(row):
+            hi = j - 1 in highlight
+            text(s, l + 0.2 + (0 if j == 0 else lw + (j - 1) * cw), t + 0.95 + i * 0.32,
+                 lw if j == 0 else cw, 0.3, v, 10.5, RED if hi else NAVY, hi,
+                 align=None if j == 0 else PP_ALIGN.CENTER)
+    return t + h
+
+
+s = slide('First look at high NA', 'The paper’s scalar model holds at NA 0.5; at higher NA the 2CE tolerances shrink with the spot.')
+figure(s, os.path.join(FIG, 'highna_tolerance.png'), 0.45, 1.35, 4.9, 3.55)
+b = num_table(s, 5.5, 1.35, 4.0, 'Offset that costs 20% of the peak (µm)', [
+    ('θ = π/2, x_c', '> 1.0', '> 1.0', '0.62', '0.50'),
+    ('θ = π/2, z_c', '1.54', '1.44', '0.68', '0.55'),
+    ('θ = π, x_c', '0.30', '0.30', '0.22', '0.17'),
+    ('θ = π, z_c', '2.06', '1.93', '0.91', '0.73')])
+bullets(s, 5.55, b + 0.12, 3.95, 5.2 - b - 0.12, [
+    'NA 0.5: the vector focus agrees with the paper within 7%.',
+    'θ = π in-plane shrinks as λ/NA; the rest as about nλ/NA^2.',
+    'Unpolarized beams; NA 0.9 needs water (n = 1.33) to cross at θ = π/2.'], 10)
+text(s, 0.45, 4.98, 4.9, 0.22, 'Peak 2CE signal against x_c (z_c = 0) and z_c (x_c = 0); dotted line: 20% lost.', 8.5, GREY)
+notes(s, 'The paper’s scalar model holds at NA 0.5; at higher NA the 2CE tolerances shrink with the spot.',
+      'A first high-NA check with our Richards–Wolf vector focus. Both beams are unpolarized: each intensity is the average over two '
+      'orthogonal input polarizations, which is what the scalar model implicitly describes. At NA 0.5 the vector curves sit on the '
+      'paper’s scalar ones, within 7 percent, so the paper’s model is adequate at its own NA. At NA 0.7 in air, close to the largest '
+      'NA at which two cones can cross at right angles, and at NA 0.9 in water, every tolerance shrinks. The in-plane tolerance at '
+      'theta = pi is set by the spot width and shrinks as lambda over NA: 0.30, 0.22, 0.17 micrometres. The others are set by a spot '
+      'length and shrink as n lambda over NA squared, for example 1.93, 0.91, 0.73 micrometres along z at theta = pi.',
+      r"""
 r_{\mathrm{width}} \propto \frac{\lambda}{\mathrm{NA}}, \qquad z_{\mathrm{length}} \propto \frac{n\lambda}{\mathrm{NA}^2}
 \mathrm{NA} \le \frac{n}{\sqrt{2}} \ \text{for two cones crossing at } \theta = \pi/2
-''')
+""")
+
+WIDTHS = [('θ = π, x', '520', '385', '300'), ('θ = π, z', '3570', '1570', '1280'),
+          ('θ = π/2, x', '765', '560', '435'), ('θ = π/2, z', '680', '500', '390')]
+for na, img, medium, peaks, main in (
+        ('0.7', 'highna_psf_na0p7.png', 'air',
+         ('(0.23, 0.58)', '(0.03, 0.95)'),
+         'At NA 0.7 the 2CE spot shrinks, but the paper’s picture holds: crossed beams still give the shortest spot.'),
+        ('0.9', 'highna_psf_na0p9_water.png', 'water, n = 1.33',
+         ('(0.23, 0.58)', '(0.03, 0.95)'),
+         'At NA 0.9 in water the 2CE spot is 42% narrower and 2.8× shorter than at NA 0.5 (θ = π), with the same behavior.')):
+    s = slide(f'2CE PSFs at NA {na}', main)
+    figure(s, os.path.join(FIG, img), 0.45, 1.35, 3.9, 3.55)
+    col = 2 if na == '0.7' else 3
+    b = num_table(s, 4.55, 1.35, 4.95, 'Central spot, full width at half maximum (nm)',
+                  [(r[0], r[1], r[2], r[3]) for r in WIDTHS], highlight=(col - 1,))
+    bullets(s, 4.6, b + 0.12, 4.9, 5.2 - b - 0.12, [
+        f'Misaligned, O′ = (0.4, 1.0) µm: θ = π peak at {peaks[0]} µm (NA 0.5: (0.23, 0.55)); '
+        f'θ = π/2 peak at {peaks[1]} µm (NA 0.5: (0.01, 1.00)).',
+        f'Same axes and contours as the paper’s Figs. 2–3; Richards–Wolf, unpolarized, {medium}.'], 10)
+    text(s, 0.45, 4.98, 3.9, 0.22, 'Top θ = π, bottom θ = π/2; left aligned, right O′ = (0.4, 1.0) µm.', 8.5, GREY)
+    notes(s, main,
+          f'The 2CE panels of the paper’s Figs. 2 and 3, recomputed with the vector focus at NA {na} in {medium}, unpolarized. '
+          'The axes and contour levels are the paper’s, so these compare directly with its NA 0.5 figures. The spot shrinks: across '
+          'the axis as lambda over NA, along it as n lambda over NA squared. The qualitative story is unchanged: crossing at pi/2 '
+          'still gives the shortest spot, and with O prime displaced the theta = pi peak still sits between the two foci while the '
+          'theta = pi/2 peak follows beam 2 along z.')
 
 # ══ 15. conclusions ══════════════════════════════════════════════════════
 s = slide('Conclusions', 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.')
