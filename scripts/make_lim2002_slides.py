@@ -6,7 +6,7 @@ Every slide with mathematics carries its LaTeX in the speaker notes, for pasting
 into Keynote (Insert > Equation).
 
     python scripts/make_lim2002_slides.py
-    -> ~/Downloads/lim2002_reconstruction.pptx
+    -> ~/Downloads/Research/two_color/lim2002_reconstruction.pptx
 """
 
 import os
@@ -22,7 +22,7 @@ ROOT = os.path.join(os.path.dirname(__file__), '..')
 FIG = os.path.join(ROOT, 'output', '08_two_color', 'lim2002')
 ORIG = os.path.join(FIG, 'original')
 PAN = os.path.join(FIG, 'panels')
-OUT = os.path.expanduser('~/Downloads/lim2002_reconstruction.pptx')
+OUT = os.path.expanduser('~/Downloads/Research/two_color/lim2002_reconstruction.pptx')
 NAVY, GREY, CITE = RGBColor(0x0B, 0x3C, 0x5D), RGBColor(0x55, 0x55, 0x55), RGBColor(0x1F, 0x6F, 0xB4)
 BLACK = RGBColor(0, 0, 0)
 GREEN, RED, AMBER = RGBColor(0x1B, 0x7F, 0x3A), RGBColor(0xB0, 0x1E, 0x1E), RGBColor(0xB0, 0x6A, 0x00)
