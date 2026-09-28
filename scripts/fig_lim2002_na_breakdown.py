@@ -165,7 +165,7 @@ def powerfit(nas, v):
     return np.exp(intercept), -slope
 
 
-fig, axes = plt.subplots(2, 2, figsize=(17.0, 17.0))
+fig, axes = plt.subplots(2, 2, figsize=(18.0, 16.0), sharex=True)
 for r, key in enumerate(('pi2', 'pi')):
     nas = np.array(SWEEP[key]) if not REPLOT else np.array(sorted(na for (k, na) in R if k == key))
     for c, ax_ in enumerate(('x', 'z')):
@@ -173,37 +173,43 @@ for r, key in enumerate(('pi2', 'pi')):
         rw = np.array([R[(key, na)][f'rw_{ax_}'] for na in nas])
         sc = np.array([R[(key, na)][f'sc_{ax_}'] for na in nas])
         Av, pv = powerfit(nas, rw)
-        As, ps = powerfit(nas, sc)
+        lo_na = nas <= 0.5 + 1e-9                      # the paraxial scalar model's stated range
+        As, ps = powerfit(nas[lo_na], sc[lo_na])
         fine = np.linspace(nas[0], nas[-1], 200)
+        fine_s = np.linspace(nas[0], 0.5, 100)
         a.plot(nas, rw, 'o', color='#1f77b4', ms=10, label='Vector (Richards–Wolf)')
         a.plot(fine, Av * fine ** -pv, '-', color='#1f77b4', lw=3, label='Vector, power-law fit')
-        a.plot(nas, sc, 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar')
-        a.plot(fine, As * fine ** -ps, ':', color='#d62728', lw=3, label='Paraxial scalar, power-law fit')
+        a.plot(nas[lo_na], sc[lo_na], 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar (NA ≤ 0.5)')
+        a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Paraxial scalar, power-law fit')
         a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
                  label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
         a.set_xscale('log'); a.set_yscale('log')
         if key == 'pi2' and nas[-1] > 1 / np.sqrt(2):
             a.axvspan(1 / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                       label='not buildable in air')
-        a.set_xticks([t for t in (0.1, 0.2, 0.3, 0.5, 0.7, 0.9) if nas[0] <= t <= nas[-1] + 1e-9])
+        a.set_xlim(0.28, 0.98)
+        a.set_xticks([0.3, 0.5, 0.7, 0.9])
         a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-        lo, hi = min(rw.min(), sc.min()), max(rw.max(), sc.max())
-        a.set_yticks([t for t in (0.1, 0.2, 0.3, 0.5, 1, 2, 3, 5, 10, 20, 50) if lo / 1.3 <= t <= hi * 1.3])
-        a.set_xlabel('NA')
-        a.set_ylabel(f'{ax_}$_c$ for 20% loss (µm)')
+        lo, hi = min(rw.min(), sc.min(), PAPER[(key, ax_)]) / 1.25, max(rw.max(), sc.max()) * 1.6
+        a.set_ylim(lo, hi)                             # room above the data for the fit formulas
+        a.set_yticks([t for t in (0.1, 0.15, 0.2, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10) if lo <= t <= hi])
+        if r == 1:
+            a.set_xlabel('NA')
+        if c == 0:
+            a.set_ylabel('Offset for 20% loss (µm)')
         a.set_title(f'{TL[key]}, along {ax_}$_c$')
-        a.text(0.5, -0.22, f'Vector: {Av:.3g} NA$^{{-{pv:.2f}}}$ µm', transform=a.transAxes, ha='center',
+        a.text(0.97, 0.95, f'{Av:.3g} NA$^{{-{pv:.2f}}}$ µm', transform=a.transAxes, ha='right',
                va='top', color='#1f77b4', fontsize=22)
-        a.text(0.5, -0.31, f'Paraxial scalar: {As:.3g} NA$^{{-{ps:.2f}}}$ µm', transform=a.transAxes,
-               ha='center', va='top', color='#d62728', fontsize=22)
+        a.text(0.97, 0.83, f'{As:.3g} NA$^{{-{ps:.2f}}}$ µm', transform=a.transAxes,
+               ha='right', va='top', color='#d62728', fontsize=22)
         print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^-{pv:.2f}, paraxial scalar {As:.3f} NA^-{ps:.2f}")
 h, l = axes[1, 0].get_legend_handles_labels()
 fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else ''), fontsize=32, y=1.0)
-fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.07), frameon=False)
-plt.tight_layout(rect=(0, 0.02, 1, 0.97), h_pad=6)
+fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.08), frameon=False)
+plt.tight_layout(rect=(0, 0.0, 1, 0.96), h_pad=1.5, w_pad=1.5)
 fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{SUF}.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
 

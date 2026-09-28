@@ -1,0 +1,55 @@
+r"""Two slides: the main result of the NA study, the 20% alignment tolerances
+against NA with power-law fits, in the deck style (mcdo.deckstyle), and the next steps.
+
+    python scripts/make_lim2002_main_result_slide.py
+    -> ~/Downloads/lim2002_main_result.pptx (and a copy in Downloads/Research/two_color)
+"""
+
+import os
+import shutil
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+import mcdo.deckstyle as ds
+from mcdo.deckstyle import FIG, bullets, figure, notes, prs, slide
+
+OUT = os.path.expanduser('~/Downloads/lim2002_main_result.pptx')
+ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
+ds.PAGE[0] = -1                                    # a single slide, numbered 1
+
+s = slide('Main result: alignment tolerance against NA',
+          'Tolerances fall as a power of NA; Lim & Saloma’s scalar model holds only up to NA ≈ 0.5.')
+figure(s, os.path.join(FIG, 'na_breakdown_metrics.png'), 0.3, 1.3, 4.1, 3.95)
+bullets(s, 4.6, 1.4, 4.95, 3.85, [
+    'The tolerance is the offset of O′ that costs 20% of the two-color peak.',
+    'Every tolerance shrinks steeply as NA grows, following a power law in NA.',
+    'At θ = π the tolerance across the axis falls as NA^{−0.93} and the one along the axis as NA^{−2.28}.',
+    'At θ = π/2 both tolerances fall as about NA^{−2.1}.',
+    'Lim & Saloma’s paraxial scalar model scales exactly as NA^{−1} and NA^{−2} and tracks the vector result up to NA 0.5.',
+    'At NA 0.5 it already overstates the length-set tolerances by about 7%, and the error grows beyond it.'], 11.5)
+notes(s, 'Tolerances fall as a power of NA; Lim and Saloma’s scalar model holds only up to NA 0.5.',
+      'Each panel shows the offset of beam 2’s focus that costs twenty percent of the two-color peak, against NA, for '
+      'the facing and crossed geometries and for offsets across and along the axis. Blue is the vector focus, red Lim '
+      'and Saloma’s paraxial scalar model within its stated range, and the black dashed line their quoted value at NA '
+      '0.5. The fits are power laws, straight lines on these log–log axes. The scalar model scales exactly as one over '
+      'NA and one over NA squared; the vector focus departs from that, so the scalar model overstates the tolerances '
+      'set by the focal length, by about seven percent already at NA 0.5.',
+      r'x_c^{20\%},\ z_c^{20\%} = A\,\mathrm{NA}^{-p}')
+s = slide('Next steps', 'Extending the NA study, then adding optical pulses.')
+bullets(s, 0.6, 1.45, 8.9, 3.75, [
+    'Gaussian input (α_t = 4): repeat the tolerance analysis against NA and compare it with uniform input.',
+    'Wider NA range: down to NA 0.1, and θ = π/2 above NA 0.71, computed though two lenses cannot cross there in air.',
+    'Two-dimensional tolerance maps over (x_c, z_c) at NA 0.5, 0.7 and 0.9.',
+    'Optical pulses: fields resolved in time, and the two-color signal as a function of the delay between the pulses.',
+    'Open question for pulses: how the broad spectrum enters, since the two colors interfere unless each pulse is '
+    'longer than about 8 fs.'], 14)
+notes(s, 'Extending the NA study, then adding optical pulses.',
+      'Three extensions of the NA study, then pulses. The Gaussian input repeats the same tolerance analysis with a '
+      'truncation parameter of 4. The NA range extends down to 0.1 and, for crossed beams, past the lens limit. The '
+      'two-dimensional maps show the whole tolerance region. With pulses, the two-color signal becomes the overlap of '
+      'the two pulses in time, which depends on the delay between them.',
+      r'F_{2c}(\Delta t) = \kappa_{2c} \int I_1(P,t)\, I_2(P,t-\Delta t)\, dt')
+prs.save(OUT)
+shutil.copy(OUT, os.path.expanduser('~/Downloads/Research/two_color/'))
+print('Saved ->', OUT)
