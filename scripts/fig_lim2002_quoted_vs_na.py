@@ -12,8 +12,9 @@ much of the peak does the same misalignment cost at this NA":
     4. 2CE, θ = π,   z_c = 2.7 λ1     paper: 20%
     5. 2CE, θ = π/2, z_c = 2.7 λ1     paper: 30%
 
-Air; NA from 0.1; θ = π runs to NA 0.95, θ = π/2 to 0.70 (two cones cannot cross in air
-above 0.71). 2CE beams are unpolarized (mean of two orthogonal input
+Air throughout, NA 0.1–0.95 at both angles. Above NA 0.71 two lenses cannot
+cross at θ = π/2 in air; that range is computed (the field overlap is well
+defined) and hatched as not realizable. 2CE beams are unpolarized (mean of two orthogonal input
 polarizations; the colors do not interfere). 2PE beams are both polarized
 along y, perpendicular to both optical axes, so they interfere fully, the case
 the scalar model describes. Peak = maximum of the signal over a window around
@@ -98,7 +99,7 @@ def loss(pair, na, theta, along, off_um, model):
 
 rows = []
 for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
-    nas = np.round(np.arange(0.10, (0.951 if th == np.pi else 0.701), 0.05), 2)
+    nas = np.round(np.arange(0.10, 0.951, 0.05), 2)
     L = np.array([loss(pair, na, th, along, off * lam, 'vector') for na in nas])
     S = np.array([loss(pair, na, th, along, off * lam, 'scalar') for na in nas])
     for na, v, sc in zip(nas, L, S):
@@ -108,6 +109,9 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
 
     fig, ax = plt.subplots(figsize=(10.0, 7.5))
     ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='NA ≤ 0.5, scalar model\'s stated range')
+    if th == np.pi / 2:
+        ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
+                   label='NA > 0.71: two lenses cannot cross in air')
     ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='vector (Richards–Wolf)')
     ax.plot(nas, S, '--', color='#d62728', lw=4, label='paraxial scalar (Lim & Saloma\'s model)')
     ax.plot([0.5], [paper], 'k*', ms=28,

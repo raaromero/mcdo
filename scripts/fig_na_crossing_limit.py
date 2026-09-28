@@ -31,8 +31,10 @@ COPY = os.path.expanduser('~/Downloads/Research/two_color')
 R = 1.0
 CASES = [(1.0, 0.7, 'Air, n = 1, NA 0.7'), (1.0, 0.9, 'Air, n = 1, NA 0.9'),
          (1.33, 0.9, 'Water, n = 1.33, NA 0.9')]
+if os.environ.get('AIR_ONLY') == '1':            # the air cases alone
+    CASES = CASES[:2]
 
-fig, axes = plt.subplots(1, 3, figsize=(30.0, 12.0))
+fig, axes = plt.subplots(1, len(CASES), figsize=(10.0 * len(CASES), 12.0))
 for ax, (n, na, title) in zip(axes, CASES):
     a = np.degrees(np.arcsin(na / n))
     fits = a <= 45.0
@@ -62,9 +64,9 @@ for ax, (n, na, title) in zip(axes, CASES):
     ax.set_xlim(-1.05, 1.15); ax.set_ylim(-1.05, 1.15)
     ax.set_aspect('equal'); ax.axis('off')
 fig.suptitle('Crossing at θ = π/2 needs α ≤ 45°, that is NA = n sin α ≤ n/√2 '
-             '(0.71 in air, 0.94 in water)', fontsize=32, y=1.02)
+             + ('(0.71 in air)' if len(CASES) == 2 else '(0.71 in air, 0.94 in water)'), fontsize=32, y=1.02)
 plt.tight_layout(rect=(0, 0.08, 1, 1))
-path = os.path.join(OUT, 'na_crossing_limit.png')
+path = os.path.join(OUT, 'na_crossing_limit_air.png' if len(CASES) == 2 else 'na_crossing_limit.png')
 fig.savefig(path, dpi=600, bbox_inches='tight')
 os.makedirs(COPY, exist_ok=True)
 shutil.copy(path, COPY)

@@ -13,8 +13,9 @@ scalar/vector ratio of widths at half maximum across and along the axis.
 
 Severity = |scalar − vector| / vector for each metric; the NA at which it
 first exceeds 5% and 10% is reported. Air, uniform input, unpolarized beams
-(mean of two orthogonal input polarizations). θ = π runs to NA 0.95; θ = π/2
-stops at 0.70, above which two cones cannot cross in air. In immersion the
+(mean of two orthogonal input polarizations). Air, NA 0.1–0.95 at both angles;
+above NA 0.71 two lenses cannot cross at θ = π/2 in air, so that range is
+computed but hatched as not realizable. In immersion the
 defect follows NA/n = sin α, so the NA axis reads as NA/n.
 
 The window (the paper's ±1 × ±5 µm at NA 0.5, 100 × 100 points) and the
@@ -54,7 +55,7 @@ SUF = '' if AT == 0 else f'_at{AT:g}'
 APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
          ('pi', 'x'): 0.37 * L1, ('pi', 'z'): 2.7 * L1}
-SWEEP = {'pi': np.round(np.arange(0.10, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.10, 0.701, 0.05), 2)}
+SWEEP = {'pi': np.round(np.arange(0.10, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.10, 0.951, 0.05), 2)}
 THETA = {'pi': np.pi, 'pi2': np.pi / 2}
 TL = {'pi': 'θ = π', 'pi2': 'θ = π/2'}
 
@@ -81,7 +82,10 @@ def tolerances(na, theta, model):
     sx, sz = 0.5 / na, (0.5 / na) ** 2
     dx, dz = 0.02 * sx, 0.1 * sz                      # the paper's grid at NA 0.5
     nx = nz = 50
-    mx, mz = int(round(1.8 * sz / dx)), 60            # offsets to 1.8 (0.5/NA)² µm across, 6 along
+    # offsets across: at θ = π the tolerance scales with the width (0.30 µm at NA 0.5), at θ = π/2 with the
+    # other beam's length (1.37 µm at NA 0.5); along: with the length at both angles
+    mx = int(round((0.6 * sx if theta == np.pi else 1.8 * sz) / dx))
+    mz = 60                                           # 6 (0.5/NA)² µm along
     XW, ZW = np.meshgrid(np.arange(-nx, nx) * dx, np.arange(-nz, nz) * dz)
     XE, ZE = np.meshgrid(np.arange(-nx - mx, nx + mx) * dx, np.arange(-nz - mz, nz + mz) * dz)
     I1 = beam_I(XW, ZW, L1, na, 0.0, model)
@@ -165,6 +169,8 @@ for r, key in enumerate(('pi2', 'pi')):
         a.plot([0.5], [PAPER[(key, ax_)]], 'k*', ms=30,
                label='paper’s quoted value, NA 0.5' + (' (uniform input)' if AT else ''))
         a.set_yscale('log')
+        if key == 'pi2':
+            a.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
         a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.yaxis.set_minor_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.set_xlabel('NA')
@@ -197,6 +203,8 @@ for a, key in zip(axes, ('pi', 'pi2')):
         print(f"  {TL[key]}, {lab.replace('$_c$', '_c')}: 5% at NA {cross[5]}, 10% at NA {cross[10]}")
     for t in (5, 10):
         a.axhline(t, color='#999999', lw=2, ls=':')
+    if key == 'pi2':
+        a.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
     a.axvline(0.5, color='#999999', lw=2)
     a.set_xlabel('NA')
     a.set_title(f'2CE, {TL[key]}' + (f', α$_t$ = {AT:g}' if AT else ''))
