@@ -151,7 +151,7 @@ for na in NAS:
         print(f"  NA {na} {TL[key]}: " + ', '.join(f'{m} {v:.1f}%' for m, v in e.items()))
 
 # ── figure 1: the paper's metrics against α_t, scalar and vector, Lim as baseline ──
-fig, axes = plt.subplots(2, 2, figsize=(22.0, 18.0))
+fig, axes = plt.subplots(2, 2, figsize=(17.0, 14.0))
 col = {0.3: '#1f77b4', 0.5: '#d62728'}
 for r, key in enumerate(('pi2', 'pi')):
     for c, m in enumerate(('x', 'z')):
@@ -175,7 +175,7 @@ fig.savefig(os.path.join(OUT, 'truncation_check_metrics.png'), dpi=600, bbox_inc
 plt.close(fig)
 
 # ── figure 2: vector against scalar at the same α_t ──
-fig, axes = plt.subplots(1, 2, figsize=(28.0, 12.0), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(20.0, 8.5), sharey=True)
 series = [('x', 'tolerance along x$_c$', '#1f77b4', '-'), ('z', 'tolerance along z$_c$', '#9467bd', '-'),
           ('wx', 'spot width across', '#2ca02c', '--'), ('wz', 'spot length along', '#ff7f0e', '--')]
 for a, na in zip(axes, NAS):
@@ -185,7 +185,7 @@ for a, na in zip(axes, NAS):
                    ls, marker=mk, color=cl, lw=3, ms=10, label=f'{lab}, {TL[key]}')
     a.axhline(0, color='#999999', lw=2)
     a.set_xlabel('Truncation parameter α$_t$')
-    a.set_title(f'NA {na}, air')
+    a.set_title(f'NA {na}')
 axes[0].set_ylabel('Scalar model error, scalar / vector − 1 (%)')
 h, l = axes[0].get_legend_handles_labels()
 fig.legend(h, l, loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1))

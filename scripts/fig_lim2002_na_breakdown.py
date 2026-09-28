@@ -21,6 +21,7 @@ The window (the paper's ±1 × ±5 µm at NA 0.5, 100 × 100 points) and the
 offset range scale with the spot, as 1/NA across and 1/NA² along.
 
     python scripts/fig_lim2002_na_breakdown.py
+    ALPHA_T=4 python scripts/fig_lim2002_na_breakdown.py   # the same with input truncation α_t = 4
     -> output/08_two_color/lim2002/na_breakdown_metrics.png, na_breakdown_severity.png,
        na_breakdown.csv
 """
@@ -43,21 +44,26 @@ matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
 from mcdo import linfoot
+from mcdo.apodization import gaussian
 from mcdo.twobeam import beam_field, intensity
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 L1, L2 = 0.750, 0.656
+AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
+SUF = '' if AT == 0 else f'_at{AT:g}'
+APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
          ('pi', 'x'): 0.37 * L1, ('pi', 'z'): 2.7 * L1}
-SWEEP = {'pi': np.round(np.arange(0.30, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.30, 0.701, 0.05), 2)}
+SWEEP = {'pi': np.round(np.arange(0.10, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.10, 0.701, 0.05), 2)}
 THETA = {'pi': np.pi, 'pi2': np.pi / 2}
 TL = {'pi': 'θ = π', 'pi2': 'θ = π/2'}
 
 
 def _beam_I(x, z, lam, na, theta, model):
     if model == 'paraxial':
-        return intensity(beam_field(x, z, lam, na, 1.0, theta=theta))
-    return 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, theta=theta, model='rw', psi=psi))
+        return intensity(beam_field(x, z, lam, na, 1.0, theta=theta, apodization=APOD(na)))
+    return 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, theta=theta, model='rw', psi=psi,
+                                          apodization=APOD(na)))
                      for psi in (0.0, np.pi / 2))
 
 
@@ -123,7 +129,7 @@ def shape(na, theta):
 
 rows = []
 R = {}
-CSV = os.path.join(OUT, 'na_breakdown.csv')
+CSV = os.path.join(OUT, f'na_breakdown{SUF}.csv')
 REPLOT = os.environ.get('REPLOT') == '1' and os.path.exists(CSV)   # redraw from the saved sweep
 if REPLOT:
     for t, na, sx_, sz_, rx_, rz_, F, wx, wz in np.loadtxt(CSV, delimiter=','):
@@ -147,7 +153,7 @@ if not REPLOT:
                       'width_x_scalar_over_rw,length_z_scalar_over_rw')
 
 # ── the paper's metrics against NA, with the paper's own values as the baseline ──
-fig, axes = plt.subplots(2, 2, figsize=(22.0, 18.0))
+fig, axes = plt.subplots(2, 2, figsize=(17.0, 14.0))
 for r, key in enumerate(('pi2', 'pi')):
     nas = SWEEP[key]
     for c, ax_ in enumerate(('x', 'z')):
@@ -156,21 +162,22 @@ for r, key in enumerate(('pi2', 'pi')):
                label='Richards–Wolf (vector)')
         a.plot(nas, [R[(key, na)][f'sc_{ax_}'] for na in nas], '--s', color='#d62728', lw=4, ms=10,
                label='paraxial scalar (paper’s model)')
-        a.plot([0.5], [PAPER[(key, ax_)]], 'k*', ms=30, label='paper’s quoted value, NA 0.5')
+        a.plot([0.5], [PAPER[(key, ax_)]], 'k*', ms=30,
+               label='paper’s quoted value, NA 0.5' + (' (uniform input)' if AT else ''))
         a.set_yscale('log')
         a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.yaxis.set_minor_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
-        a.set_xlabel('NA (air), or NA/n in immersion')
+        a.set_xlabel('NA')
         a.set_ylabel(f'{ax_}$_c$ costing 20% of peak (µm)')
-        a.set_title(f'2CE, {TL[key]}, offset along {ax_}$_c$')
+        a.set_title(f'2CE, {TL[key]}, offset along {ax_}$_c$' + (f', α$_t$ = {AT:g}' if AT else ''))
 h, l = axes[0, 0].get_legend_handles_labels()
 fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.03))
 plt.tight_layout(rect=(0, 0.06, 1, 1))
-fig.savefig(os.path.join(OUT, 'na_breakdown_metrics.png'), dpi=600, bbox_inches='tight')
+fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{SUF}.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
 
 # ── severity of the scalar model's defect ──
-fig, axes = plt.subplots(1, 2, figsize=(28.0, 12.0), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(20.0, 8.5), sharey=True)
 series = [('x', 'tolerance along x$_c$', '#1f77b4', '-'), ('z', 'tolerance along z$_c$', '#9467bd', '-'),
           ('wx', 'spot width across', '#2ca02c', '--'), ('wz', 'spot length along', '#ff7f0e', '--'),
           ('F', 'PSF shape, 1 − F', '#555555', ':')]
@@ -191,13 +198,13 @@ for a, key in zip(axes, ('pi', 'pi2')):
     for t in (5, 10):
         a.axhline(t, color='#999999', lw=2, ls=':')
     a.axvline(0.5, color='#999999', lw=2)
-    a.set_xlabel('NA (air), or NA/n in immersion')
-    a.set_title(f'2CE, {TL[key]}')
+    a.set_xlabel('NA')
+    a.set_title(f'2CE, {TL[key]}' + (f', α$_t$ = {AT:g}' if AT else ''))
     a.set_ylim(0, 50)
 axes[0].set_ylabel('Scalar model error (%)')
 h, l = axes[0].get_legend_handles_labels()
 fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.06))
 plt.tight_layout(rect=(0, 0.1, 1, 1))
-fig.savefig(os.path.join(OUT, 'na_breakdown_severity.png'), dpi=600, bbox_inches='tight')
+fig.savefig(os.path.join(OUT, f'na_breakdown_severity{SUF}.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
-print('Saved -> na_breakdown_metrics.png, na_breakdown_severity.png, na_breakdown.csv')
+print(f'Saved -> na_breakdown_metrics{SUF}.png, na_breakdown_severity{SUF}.png, na_breakdown{SUF}.csv')
