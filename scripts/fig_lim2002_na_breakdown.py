@@ -56,6 +56,8 @@ APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
          ('pi', 'x'): 0.37 * L1, ('pi', 'z'): 2.7 * L1}
 SWEEP = {'pi': np.round(np.arange(0.10, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.10, 0.951, 0.05), 2)}
+if os.environ.get('NA_LIST'):                      # a coarser NA grid, e.g. 0.3,0.5,0.7,0.9
+    SWEEP = {k: np.array([float(v) for v in os.environ['NA_LIST'].split(',')]) for k in SWEEP}
 THETA = {'pi': np.pi, 'pi2': np.pi / 2}
 TL = {'pi': 'θ = π', 'pi2': 'θ = π/2'}
 
@@ -156,29 +158,52 @@ if not REPLOT:
                header='theta(0=pi,1=pi/2),NA,scalar_x_um,scalar_z_um,rw_x_um,rw_z_um,F_scalar_vs_rw,'
                       'width_x_scalar_over_rw,length_z_scalar_over_rw')
 
-# ── the paper's metrics against NA, with the paper's own values as the baseline ──
-fig, axes = plt.subplots(2, 2, figsize=(17.0, 14.0))
+# ── the paper's metrics against NA: vector, paraxial scalar, power-law fits; Lim & Saloma as reference ──
+def powerfit(nas, v):
+    """t = A NA^(−p), least squares in log–log."""
+    slope, intercept = np.polyfit(np.log(nas), np.log(v), 1)
+    return np.exp(intercept), -slope
+
+
+fig, axes = plt.subplots(2, 2, figsize=(17.0, 17.0))
 for r, key in enumerate(('pi2', 'pi')):
-    nas = SWEEP[key]
+    nas = np.array(SWEEP[key]) if not REPLOT else np.array(sorted(na for (k, na) in R if k == key))
     for c, ax_ in enumerate(('x', 'z')):
         a = axes[r, c]
-        a.plot(nas, [R[(key, na)][f'rw_{ax_}'] for na in nas], '-o', color='#1f77b4', lw=4, ms=10,
-               label='Richards–Wolf (vector)')
-        a.plot(nas, [R[(key, na)][f'sc_{ax_}'] for na in nas], '--s', color='#d62728', lw=4, ms=10,
-               label='paraxial scalar (paper’s model)')
-        a.plot([0.5], [PAPER[(key, ax_)]], 'k*', ms=30,
-               label='paper’s quoted value, NA 0.5' + (' (uniform input)' if AT else ''))
-        a.set_yscale('log')
-        if key == 'pi2':
-            a.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
+        rw = np.array([R[(key, na)][f'rw_{ax_}'] for na in nas])
+        sc = np.array([R[(key, na)][f'sc_{ax_}'] for na in nas])
+        Av, pv = powerfit(nas, rw)
+        As, ps = powerfit(nas, sc)
+        fine = np.linspace(nas[0], nas[-1], 200)
+        a.plot(nas, rw, 'o', color='#1f77b4', ms=10, label='Vector (Richards–Wolf)')
+        a.plot(fine, Av * fine ** -pv, '-', color='#1f77b4', lw=3, label='Vector, power-law fit')
+        a.plot(nas, sc, 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar')
+        a.plot(fine, As * fine ** -ps, ':', color='#d62728', lw=3, label='Paraxial scalar, power-law fit')
+        a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
+                 label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
+        a.set_xscale('log'); a.set_yscale('log')
+        if key == 'pi2' and nas[-1] > 1 / np.sqrt(2):
+            a.axvspan(1 / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
+                      label='not buildable in air')
+        a.set_xticks([t for t in (0.1, 0.2, 0.3, 0.5, 0.7, 0.9) if nas[0] <= t <= nas[-1] + 1e-9])
+        a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
-        a.yaxis.set_minor_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        lo, hi = min(rw.min(), sc.min()), max(rw.max(), sc.max())
+        a.set_yticks([t for t in (0.1, 0.2, 0.3, 0.5, 1, 2, 3, 5, 10, 20, 50) if lo / 1.3 <= t <= hi * 1.3])
         a.set_xlabel('NA')
-        a.set_ylabel(f'{ax_}$_c$ costing 20% of peak (µm)')
-        a.set_title(f'2CE, {TL[key]}, offset along {ax_}$_c$' + (f', α$_t$ = {AT:g}' if AT else ''))
-h, l = axes[0, 0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.03))
-plt.tight_layout(rect=(0, 0.06, 1, 1))
+        a.set_ylabel(f'{ax_}$_c$ for 20% loss (µm)')
+        a.set_title(f'{TL[key]}, along {ax_}$_c$')
+        a.text(0.5, -0.22, f'Vector: {Av:.3g} NA$^{{-{pv:.2f}}}$ µm', transform=a.transAxes, ha='center',
+               va='top', color='#1f77b4', fontsize=22)
+        a.text(0.5, -0.31, f'Paraxial scalar: {As:.3g} NA$^{{-{ps:.2f}}}$ µm', transform=a.transAxes,
+               ha='center', va='top', color='#d62728', fontsize=22)
+        print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^-{pv:.2f}, paraxial scalar {As:.3f} NA^-{ps:.2f}")
+h, l = axes[1, 0].get_legend_handles_labels()
+fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else ''), fontsize=32, y=1.0)
+fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.07), frameon=False)
+plt.tight_layout(rect=(0, 0.02, 1, 0.97), h_pad=6)
 fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{SUF}.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
 
@@ -189,7 +214,7 @@ series = [('x', 'tolerance along x$_c$', '#1f77b4', '-'), ('z', 'tolerance along
           ('F', 'PSF shape, 1 − F', '#555555', ':')]
 print('\nNA at which the scalar error first exceeds 5% and 10%:')
 for a, key in zip(axes, ('pi', 'pi2')):
-    nas = SWEEP[key]
+    nas = np.array(sorted(na for (k, na) in R if k == key))
     for s, lab, col, ls in series:
         if s in ('x', 'z'):
             e = [abs(R[(key, na)][f'sc_{s}'] / R[(key, na)][f'rw_{s}'] - 1) for na in nas]

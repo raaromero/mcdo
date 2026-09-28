@@ -64,9 +64,9 @@ ax.plot(zc, F, '-', color='#d62728', lw=3.4, label='F (fidelity)')
 ax.plot(zc, C, '-', color='#1f77b4', lw=3.4, label='C (structural content)')
 ax.plot(zc, Q, '-', color='#2ca02c', lw=3.4, label='Q (correlation quality)')
 ax.plot([1.33, -1.33], [-0.8, -0.8], 'o', ms=16, mfc='none', mec='#d62728', mew=3,
-        label='Paper: F ≈ −0.8 at |z$_c$| = 1.33 λ$_1$')
+        label='Lim & Saloma: F ≈ −0.8 at |z$_c$| = 1.33 λ$_1$')
 ax.plot([1.33, -1.33], [0.0, 0.0], 's', ms=16, mfc='none', mec='k', mew=3,
-        label='Paper: "C" ≈ 0 at |z$_c$| = 1.33 λ$_1$')
+        label='Lim & Saloma: "C" ≈ 0 at |z$_c$| = 1.33 λ$_1$')
 ax.axhline(0, color='#999999', lw=2.0)
 ax.set_xlabel('Focus offset along z, z$_c$ (λ$_1$)')
 ax.set_ylabel('Linfoot criterion')

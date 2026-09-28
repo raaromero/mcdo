@@ -109,7 +109,7 @@ if not ONLY_SCALAR:
                 if r == 0 and c == 0:
                     handles.append(h)
             if ref[th][k] is not None:
-                h, = ax.plot([0.5], [ref[th][k]], 'k*', ms=26, label='paper model, NA 0.5')
+                h, = ax.plot([0.5], [ref[th][k]], 'k*', ms=26, label='Lim & Saloma model, NA 0.5')
                 if r == 0 and c == 0:
                     handles.append(h)
             ax.set_xlabel('NA (0.5 in air; 0.75, 0.9 in water)')

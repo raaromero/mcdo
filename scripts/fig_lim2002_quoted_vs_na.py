@@ -51,6 +51,8 @@ L1, L2, L2P = 0.750, 0.656, 0.700
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
 SUF = '' if AT == 0 else f'_at{AT:g}'
 APOD = lambda na: gaussian(AT, na ** 2) if AT else None
+NA_LIST = (np.array([float(v) for v in os.environ['NA_LIST'].split(',')])   # a coarser NA grid, e.g. 0.3,0.5,0.7,0.9
+           if os.environ.get('NA_LIST') else None)
 METRICS = [  # (pair, θ, offset along, offset in λ, λ unit, paper %, title)
     ('2ce', np.pi / 2, 'x', 1.33, L1, 11, '2CE, θ = π/2, x$_c$ = 1.33 λ$_1$'),
     ('2ce', np.pi, 'x', 0.37, L1, 20, '2CE, θ = π, x$_c$ = 0.37 λ$_1$'),
@@ -99,7 +101,7 @@ def loss(pair, na, theta, along, off_um, model):
 
 rows = []
 for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
-    nas = np.round(np.arange(0.10, 0.951, 0.05), 2)
+    nas = NA_LIST if NA_LIST is not None else np.round(np.arange(0.10, 0.951, 0.05), 2)
     L = np.array([loss(pair, na, th, along, off * lam, 'vector') for na in nas])
     S = np.array([loss(pair, na, th, along, off * lam, 'scalar') for na in nas])
     for na, v, sc in zip(nas, L, S):
@@ -112,10 +114,10 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     if th == np.pi / 2:
         ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                    label='NA > 0.71: two lenses cannot cross in air')
-    ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='vector (Richards–Wolf)')
-    ax.plot(nas, S, '--', color='#d62728', lw=4, label='paraxial scalar (Lim & Saloma\'s model)')
-    ax.plot([0.5], [paper], 'k*', ms=28,
-            label='Lim & Saloma, quoted at NA 0.5' + (' (uniform input)' if AT else ''))
+    ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='Vector (Richards–Wolf)')
+    ax.plot(nas, S, ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar')
+    ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3,
+              label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
     ax.set_xlim(0.1, nas[-1] + 0.02)
     ax.set_xlabel('NA')
     ax.set_ylabel('Peak lost (%)')
