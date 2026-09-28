@@ -145,3 +145,23 @@ def test_opposed_2ce_loses_a_fifth_of_its_peak_at_0p37_lambda():
     """At θ = π an in-plane offset of 0.37 λ1 lowers the 2CE peak by about 20% (p. 126)."""
     drop = 1 - _two_color(np.pi, ix=14).max() / _two_color(np.pi).max()   # 0.28 µm = 0.37 λ1
     assert abs(drop - 0.20) < 0.03
+
+
+# ── Gaussian truncation in the scalar model ───────────────────────────────
+
+def test_scalar_gaussian_truncation_matches_vector_at_low_na():
+    """At NA 0.1 the scalar and vector foci agree with and without a Gaussian pupil,
+    and truncation α_t = 4 broadens the spot (both use A = exp(−α_t sin²ϑ / sin²α))."""
+    from mcdo.apodization import gaussian
+    from mcdo.twobeam import intensity
+    na = 0.1
+    r = np.linspace(0.0, 12.0, 121)
+    half = {}
+    for at in (0, 4):
+        ap = gaussian(at, na ** 2) if at else None
+        s = intensity(beam_field(r, 0 * r, L1, na, apodization=ap))
+        v = 0.5 * sum(intensity(beam_field(r, 0 * r, L1, na, model='rw', psi=p, apodization=ap))
+                      for p in (0.0, np.pi / 2))
+        assert np.max(np.abs(s / s.max() - v / v.max())) < 2e-3
+        half[at] = r[np.argmax(s / s.max() < 0.5)]
+    assert half[4] > 1.3 * half[0]

@@ -85,13 +85,16 @@ def _to_lab(E, theta):
     return np.stack([c * ex + s * ez, ey, -s * ex + c * ez])
 
 
-def _paraxial(rb, zb, k, na, n, n_rho=401, eps=0.0, sa=0.0):
+def _paraxial(rb, zb, k, na, n, n_rho=401, eps=0.0, sa=0.0, apodization=None):
     """Scalar paraxial Debye field with carrier, at beam-frame (r, z).
 
     ``eps`` is the obstruction ratio: the pupil integral runs over ρ ∈ [ε, 1],
     which is the Babinet difference U_R − U_εR of [CS00]_ Eq. 4. ``sa`` is the
     primary spherical aberration coefficient φ of [LS03]_: the aberration
     function Φ = (φ/100) λ ρ⁴ adds the pupil phase exp(i 2π (φ/100) ρ⁴).
+    ``apodization`` is the same A(ϑ) the vector models take, evaluated at the
+    ray angle of each pupil radius, sin ϑ = ρ NA/n; a truncated Gaussian
+    exp(−α_t sin²ϑ / sin²α) becomes exactly exp(−α_t ρ²).
     """
     u = k * (na / n) ** 2 * zb             # (2π/λ) NA² z / n
     v = (k / n) * na * rb                  # (2π/λ) NA r
@@ -101,6 +104,8 @@ def _paraxial(rb, zb, k, na, n, n_rho=401, eps=0.0, sa=0.0):
     phase = np.exp(-0.5j * np.outer(flat_u, rho ** 2))
     bes = jv(0, np.outer(flat_v, rho))
     ab = np.exp(2j * np.pi * (sa / 100.0) * rho ** 4)
+    if apodization is not None:
+        ab = ab * apodization(np.arcsin(rho * na / n))
     U = 2.0 * (phase * bes) @ (w * rho * ab)
     return (np.exp(1j * k * zb.ravel()) * U).reshape(zb.shape)
 
@@ -164,12 +169,12 @@ def beam_field(x, z, lam, na, n=1.0, theta=0.0, xc=0.0, zc=0.0, model='paraxial'
         ur, vr = u * c - v * s, v * c + u * s
         zb = ur / (kk * na ** 2)
         rb = np.abs(vr) / (kk * na)
-        return _paraxial(rb, zb, k, na, n, eps=eps, sa=sa)
+        return _paraxial(rb, zb, k, na, n, eps=eps, sa=sa, apodization=apodization)
 
     xb, yb, zb = _beam_frame(x, z, theta, xc, zc)
     rb = np.hypot(xb, yb)
     if model == 'paraxial':
-        return _paraxial(rb, zb, k, na, n, eps=eps, sa=sa)
+        return _paraxial(rb, zb, k, na, n, eps=eps, sa=sa, apodization=apodization)
     if model == 'debye':
         return _debye(rb, zb, k, alpha, n_theta, apodization)
     if model == 'rw':
