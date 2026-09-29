@@ -65,49 +65,66 @@ METRICS = [  # (pair, θ, offset along, offset in λ, λ unit, paper %, title)
 def chunked(f, x, z, chunk=15000):
     x, z = np.broadcast_arrays(np.asarray(x, float), np.asarray(z, float))
     fx, fz = x.ravel(), z.ravel()
-    return np.concatenate([f(fx[i:i + chunk], fz[i:i + chunk]) for i in range(0, fx.size, chunk)],
-                          axis=-1).reshape(x.shape)
+    out = np.concatenate([f(fx[i:i + chunk], fz[i:i + chunk]) for i in range(0, fx.size, chunk)], axis=-1)
+    return out.reshape(out.shape[:-1] + x.shape)     # keeps a leading field-component axis
 
 
-def signal(pair, na, theta, xc, zc, X, Z, model):
+def intens(lam, na, model, X, Z, **geo):
+    """2CE: one beam's intensity on the grid, unpolarized for the vector model."""
+    if model == 'scalar':
+        return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, 1.0, apodization=APOD(na), **geo)), X, Z)
+    return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, model='rw', psi=p,
+                                                                apodization=APOD(na), **geo))
+                                          for p in (0.0, np.pi / 2)), X, Z)
+
+
+def field(lam, na, model, X, Z, **geo):
+    """2PE: one beam's field on the grid, polarized along y for the vector model."""
+    kw = {} if model == 'scalar' else dict(model='rw', psi=np.pi / 2)
+    return chunked(lambda x, z: beam_field(x, z, lam, na, 1.0, apodization=APOD(na), **kw, **geo), X, Z)
+
+
+_BEAM1 = {}
+
+
+def signal(pair, na, theta, xc, zc, X, Z, model, key):
+    k = (pair, na, model, key)                        # beam 1 never moves: compute it once per grid
+    if k not in _BEAM1:
+        _BEAM1[k] = intens(L1, na, model, X, Z) if pair == '2ce' else field(L2P, na, model, X, Z)
     if pair == '2ce':
-        def I(lam, th, a, b):
-            if model == 'scalar':
-                return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, 1.0, theta=th, xc=a, zc=b,
-                                                                 apodization=APOD(na))), X, Z)
-            return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, theta=th, xc=a, zc=b,
-                                                                        apodization=APOD(na),
-                                                                        model='rw', psi=p))
-                                                  for p in (0.0, np.pi / 2)), X, Z)
-        return I(L1, 0.0, 0.0, 0.0) * I(L2, theta, xc, zc)
-
-    kw = dict(apodization=APOD(na)) if model == 'scalar' else dict(model='rw', psi=np.pi / 2, apodization=APOD(na))
-
-    def s(x, z):
-        E = (beam_field(x, z, L2P, na, 1.0, **kw)
-             + beam_field(x, z, L2P, na, 1.0, theta=theta, xc=xc, zc=zc, **kw))
-        return intensity(E) ** 2
-    return chunked(s, X, Z)
+        return _BEAM1[k] * intens(L2, na, model, X, Z, theta=theta, xc=xc, zc=zc)
+    E = _BEAM1[k] + field(L2P, na, model, X, Z, theta=theta, xc=xc, zc=zc)
+    return (np.sum(np.abs(E) ** 2, axis=0) if E.ndim == 3 else np.abs(E) ** 2) ** 2
 
 
 def loss(pair, na, theta, along, off_um, model):
     xc, zc = (off_um, 0.0) if along == 'x' else (0.0, off_um)
     hx = max(1.0 * 0.5 / na, abs(xc) + 0.5)
     hz = max(5.0 * (0.5 / na) ** 2, abs(zc) + 1.0)
-    X, Z = np.meshgrid(np.linspace(-hx, hx, 201), np.linspace(-hz, hz, 401))
-    return 100 * (1 - signal(pair, na, theta, xc, zc, X, Z, model).max()
-                  / signal(pair, na, theta, 0, 0, X, Z, model).max())
+    X, Z = np.meshgrid(np.linspace(-hx, hx, 121), np.linspace(-hz, hz, 241))
+    key = (round(hx, 6), round(hz, 6))
+    return 100 * (1 - signal(pair, na, theta, xc, zc, X, Z, model, key).max()
+                  / signal(pair, na, theta, 0, 0, X, Z, model, key).max())
 
 
-rows = []
+SEL = os.environ.get('METRIC_SEL')                    # compute one metric only, e.g. '3'
+REPLOT = os.environ.get('REPLOT') == '1'              # redraw from the saved files
+csv_of = lambda k: os.path.join(OUT, f'quoted_vs_na{SUF}_m{k}.csv')        # one file per metric
 for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
-    nas = NA_LIST if NA_LIST is not None else np.round(np.arange(0.10, 0.951, 0.05), 2)
-    L = np.array([loss(pair, na, th, along, off * lam, 'vector') for na in nas])
-    S = np.array([loss(pair, na, th, along, off * lam, 'scalar') for na in nas])
-    for na, v, sc in zip(nas, L, S):
-        rows.append((k, na, v, sc))
-    print(f'{k}. {title.replace("$", "")}: paper {paper}% at NA 0.5; vector/scalar '
-          + ', '.join(f'{na:.2f}: {v:.1f}/{sc:.1f}%' for na, v, sc in zip(nas, L, S)), flush=True)
+    if SEL and str(k) != SEL:
+        continue
+    if not REPLOT:
+        nas = NA_LIST if NA_LIST is not None else np.round(np.arange(0.10, 0.9501, 0.025), 3)   # 35 NAs
+        with open(csv_of(k), 'w') as fh:
+            fh.write('# NA,peak_lost_percent_vector,peak_lost_percent_scalar\n')
+        for na in nas:
+            v, sc = loss(pair, na, th, along, off * lam, 'vector'), loss(pair, na, th, along, off * lam, 'scalar')
+            with open(csv_of(k), 'a') as fh:         # saved at once, so a stopped run keeps its points
+                fh.write(f'{na:.4g},{v:.6g},{sc:.6g}\n')
+            print(f'{k}. NA {na:.3f}: vector {v:.2f}%, scalar {sc:.2f}% (Lim & Saloma {paper}% at NA 0.5)', flush=True)
+    if not os.path.exists(csv_of(k)):
+        continue
+    nas, L, S = np.atleast_2d(np.loadtxt(csv_of(k), delimiter=',')).T
 
     fig, ax = plt.subplots(figsize=(10.0, 7.5))
     ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='NA ≤ 0.5, scalar model\'s stated range')
@@ -127,6 +144,4 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     fig.savefig(os.path.join(OUT, f'quoted_vs_na_{k}{SUF}.png'), dpi=600, bbox_inches='tight')
     plt.close(fig)
 
-np.savetxt(os.path.join(OUT, f'quoted_vs_na{SUF}.csv'), np.array(rows), delimiter=',', fmt='%.4f',
-           header='metric,NA,peak_lost_percent_vector,peak_lost_percent_scalar')
-print(f'Saved -> quoted_vs_na_1..5{SUF}.png, quoted_vs_na{SUF}.csv')
+print(f'Saved -> quoted_vs_na_k{SUF}.png and quoted_vs_na{SUF}_mk.csv')

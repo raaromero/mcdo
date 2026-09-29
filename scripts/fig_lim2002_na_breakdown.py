@@ -24,7 +24,7 @@ offset range scale with the spot, as 1/NA across and 1/NA² along.
     python scripts/fig_lim2002_na_breakdown.py
     ALPHA_T=4 python scripts/fig_lim2002_na_breakdown.py   # the same with input truncation α_t = 4
     -> output/08_two_color/lim2002/na_breakdown_metrics.png, na_breakdown_severity.png,
-       na_breakdown.csv
+       na_breakdown[_at4]_{pi,pi2}.csv (one row per NA, written as computed)
 """
 
 import os
@@ -55,7 +55,7 @@ SUF = '' if AT == 0 else f'_at{AT:g}'
 APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
          ('pi', 'x'): 0.37 * L1, ('pi', 'z'): 2.7 * L1}
-SWEEP = {'pi': np.round(np.arange(0.10, 0.951, 0.05), 2), 'pi2': np.round(np.arange(0.10, 0.951, 0.05), 2)}
+SWEEP = {k: np.round(np.arange(0.10, 0.9501, 0.025), 3) for k in ('pi', 'pi2')}   # 35 NAs per angle
 if os.environ.get('NA_LIST'):                      # a coarser NA grid, e.g. 0.3,0.5,0.7,0.9
     SWEEP = {k: np.array([float(v) for v in os.environ['NA_LIST'].split(',')]) for k in SWEEP}
 THETA = {'pi': np.pi, 'pi2': np.pi / 2}
@@ -133,30 +133,31 @@ def shape(na, theta):
     return F, w['paraxial'][0] / w['rw'][0], w['paraxial'][1] / w['rw'][1]
 
 
-rows = []
 R = {}
-CSV = os.path.join(OUT, f'na_breakdown{SUF}.csv')
-REPLOT = os.environ.get('REPLOT') == '1' and os.path.exists(CSV)   # redraw from the saved sweep
-if REPLOT:
-    for t, na, sx_, sz_, rx_, rz_, F, wx, wz in np.loadtxt(CSV, delimiter=','):
-        key = 'pi' if t == 0 else 'pi2'
-        R[(key, round(na, 2))] = dict(sc_x=sx_, sc_z=sz_, rw_x=rx_, rw_z=rz_, F=F, wx=wx, wz=wz)
-for key in (() if REPLOT else ('pi', 'pi2')):
-    for na in SWEEP[key]:
-        th = THETA[key]
-        sc, rw = tolerances(na, th, 'paraxial'), tolerances(na, th, 'rw')
-        F, rx, rz = shape(na, th)
-        R[(key, na)] = dict(sc_x=sc[0], sc_z=sc[1], rw_x=rw[0], rw_z=rw[1], F=F, wx=rx, wz=rz)
-        rows.append((key, na, *sc, *rw, F, rx, rz))
-        print(f"{TL[key]} NA {na:.2f}: 20% offset x_c scalar {sc[0]:.3f} vs RW {rw[0]:.3f} µm, "
-              f"z_c scalar {sc[1]:.3f} vs RW {rw[1]:.3f} µm; F {F:.4f}; widths scalar/RW x {rx:.3f} z {rz:.3f}",
-              flush=True)
-
+HEADER = ('NA,scalar_x_um,scalar_z_um,rw_x_um,rw_z_um,F_scalar_vs_rw,'
+          'width_x_scalar_over_rw,length_z_scalar_over_rw')
+csv_of = lambda key: os.path.join(OUT, f'na_breakdown{SUF}_{key}.csv')    # one file per angle
+SEL = os.environ.get('THETA_SEL')                     # compute one angle only ('pi' or 'pi2')
+REPLOT = os.environ.get('REPLOT') == '1'              # redraw from the saved files
 if not REPLOT:
-    np.savetxt(CSV,
-               np.array([[0 if r[0] == 'pi' else 1, *r[1:]] for r in rows], float), delimiter=',', fmt='%.5f',
-               header='theta(0=pi,1=pi/2),NA,scalar_x_um,scalar_z_um,rw_x_um,rw_z_um,F_scalar_vs_rw,'
-                      'width_x_scalar_over_rw,length_z_scalar_over_rw')
+    for key in ((SEL,) if SEL else ('pi', 'pi2')):
+        with open(csv_of(key), 'w') as fh:
+            fh.write('# ' + HEADER + '\n')
+        for na in SWEEP[key]:
+            th = THETA[key]
+            sc, rw = tolerances(na, th, 'paraxial'), tolerances(na, th, 'rw')
+            F, rx, rz = shape(na, th)
+            with open(csv_of(key), 'a') as fh:     # saved at once, so a stopped run keeps its points
+                fh.write(','.join(f'{v:.6g}' for v in (na, *sc, *rw, F, rx, rz)) + '\n')
+            print(f"{TL[key]} NA {na:.3f}: 20% offset x_c scalar {sc[0]:.3f} vs RW {rw[0]:.3f} µm, "
+                  f"z_c scalar {sc[1]:.3f} vs RW {rw[1]:.3f} µm; F {F:.4f}; widths scalar/RW x {rx:.3f} z {rz:.3f}",
+                  flush=True)
+    if SEL:
+        sys.exit(0)                                   # figures come from REPLOT=1 once both angles are saved
+for key in ('pi', 'pi2'):
+    if os.path.exists(csv_of(key)):
+        for na, sx_, sz_, rx_, rz_, F, wx, wz in np.atleast_2d(np.loadtxt(csv_of(key), delimiter=',')):
+            R[(key, round(na, 3))] = dict(sc_x=sx_, sc_z=sz_, rw_x=rx_, rw_z=rz_, F=F, wx=wx, wz=wz)
 
 # ── the paper's metrics against NA: vector, paraxial scalar, power-law fits; Lim & Saloma as reference ──
 def powerfit(nas, v):
@@ -167,7 +168,7 @@ def powerfit(nas, v):
 
 fig, axes = plt.subplots(2, 2, figsize=(18.0, 16.0), sharex=True)
 for r, key in enumerate(('pi2', 'pi')):
-    nas = np.array(SWEEP[key]) if not REPLOT else np.array(sorted(na for (k, na) in R if k == key))
+    nas = np.array(sorted(na for (k, na) in R if k == key))
     for c, ax_ in enumerate(('x', 'z')):
         a = axes[r, c]
         rw = np.array([R[(key, na)][f'rw_{ax_}'] for na in nas])

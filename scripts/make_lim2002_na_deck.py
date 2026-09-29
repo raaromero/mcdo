@@ -39,17 +39,24 @@ QUOTED = [  # metric number: (title, paper %)
 # ── read the results ──────────────────────────────────────────────────────
 def load_quoted(suf):
     d = {}
-    for k, na, v, s in np.loadtxt(F(f'quoted_vs_na{suf}.csv'), delimiter=','):
-        d[(int(k), round(na, 2))] = (v, s)
+    for k in range(1, 6):
+        path = F(f'quoted_vs_na{suf}_m{k}.csv')
+        if os.path.exists(path):
+            for na, v, sc in np.atleast_2d(np.loadtxt(path, delimiter=',')):
+                d[(k, round(na, 3))] = (v, sc)
     return d
 
 
 def load_breakdown(suf):
     d = {}
-    for t, na, sx, sz, rx, rz, Fi, wx, wz in np.loadtxt(F(f'na_breakdown{suf}.csv'), delimiter=','):
-        d[('pi' if t == 0 else 'pi2', round(na, 2))] = dict(x=abs(sx / rx - 1) * 100, z=abs(sz / rz - 1) * 100,
-                                                          wx=abs(wx - 1) * 100, wz=abs(wz - 1) * 100,
-                                                          F=(1 - Fi) * 100, rx=rx, rz=rz)
+    for key in ('pi', 'pi2'):
+        path = F(f'na_breakdown{suf}_{key}.csv')
+        if not os.path.exists(path):
+            continue
+        for na, sx, sz, rx, rz, Fi, wx, wz in np.atleast_2d(np.loadtxt(path, delimiter=',')):
+            d[(key, round(na, 3))] = dict(x=abs(sx / rx - 1) * 100, z=abs(sz / rz - 1) * 100,
+                                          wx=abs(wx - 1) * 100, wz=abs(wz - 1) * 100,
+                                          F=(1 - Fi) * 100, rx=rx, rz=rz)
     return d
 
 
@@ -59,8 +66,8 @@ def first_above(d, key, m, thr):
 
 
 have = lambda name: os.path.exists(F(name))
-Q = {suf: load_quoted(suf) for suf in ('', '_at4') if have(f'quoted_vs_na{suf}.csv')}
-B = {suf: load_breakdown(suf) for suf in ('', '_at4') if have(f'na_breakdown{suf}.csv')}
+Q = {suf: q for suf in ('', '_at4') if len(q := load_quoted(suf)) and all((k, 0.5) in q and (k, 0.9) in q for k in range(1, 6))}
+B = {suf: b for suf in ('', '_at4') if len(b := load_breakdown(suf)) and all((t, 0.5) in b and (t, 0.9) in b for t in ('pi', 'pi2'))}
 
 
 def pending(title, what):
