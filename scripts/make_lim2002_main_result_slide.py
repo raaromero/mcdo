@@ -18,16 +18,40 @@ OUT = os.path.expanduser('~/Downloads/lim2002_main_result.pptx')
 ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
 ds.PAGE[0] = -1                                    # a single slide, numbered 1
 
+import glob
+
+import numpy as np
+
+
+def saved(key):
+    """NA and the 20% tolerances (scalar x, z; vector x, z) from the saved uniform-input sweep."""
+    files = glob.glob(os.path.join(FIG, f'na_breakdown_{key}.csv')) + glob.glob(os.path.join(FIG, f'na_breakdown_{key}_*.csv'))
+    a = np.concatenate([np.loadtxt(f, delimiter=',', ndmin=2) for f in files])
+    return a[np.argsort(a[:, 0])]
+
+
+def slope(na, v):
+    return -np.polyfit(np.log(na), np.log(v), 1)[0]
+
+
+pi, pi2 = saved('pi'), saved('pi2')
+p_x, p_z = slope(pi[:, 0], pi[:, 3]), slope(pi[:, 0], pi[:, 4])
+p2 = 0.5 * (slope(pi2[:, 0], pi2[:, 3]) + slope(pi2[:, 0], pi2[:, 4]))
+at05 = pi[np.argmin(abs(pi[:, 0] - 0.5))]
+err05 = 100 * (at05[2] / at05[4] - 1)                 # scalar over vector, axial tolerance at θ = π
+na_lo, na_hi = pi[0, 0], pi[-1, 0]
+
 s = slide('Main result: alignment tolerance against NA',
           'Tolerances fall as a power of NA; Lim & Saloma’s scalar model holds only up to NA ≈ 0.5.')
 figure(s, os.path.join(FIG, 'na_breakdown_metrics.png'), 0.3, 1.3, 4.1, 3.95)
 bullets(s, 4.6, 1.4, 4.95, 3.85, [
     'The tolerance is the offset of O′ that costs 20% of the two-color peak.',
     'Every tolerance shrinks steeply as NA grows, following a power law in NA.',
-    'At θ = π the tolerance across the axis falls as NA^{−0.93} and the one along the axis as NA^{−2.28}.',
-    'At θ = π/2 both tolerances fall as about NA^{−2.1}.',
+    f'At θ = π the tolerance across the axis falls as NA^{{−{p_x:.2f}}} and the one along the axis as NA^{{−{p_z:.2f}}} '
+    f'(fits over NA {na_lo:g}–{na_hi:g}).',
+    f'At θ = π/2 both tolerances fall as about NA^{{−{p2:.1f}}}.',
     'Lim & Saloma’s paraxial scalar model scales exactly as NA^{−1} and NA^{−2} and tracks the vector result up to NA 0.5.',
-    'At NA 0.5 it already overstates the length-set tolerances by about 7%, and the error grows beyond it.'], 11.5)
+    f'At NA 0.5 it already overstates the length-set tolerances by about {err05:.0f}%, and the error grows beyond it.'], 11.5)
 notes(s, 'Tolerances fall as a power of NA; Lim and Saloma’s scalar model holds only up to NA 0.5.',
       'Each panel shows the offset of beam 2’s focus that costs twenty percent of the two-color peak, against NA, for '
       'the facing and crossed geometries and for offsets across and along the axis. Blue is the vector focus, red Lim '

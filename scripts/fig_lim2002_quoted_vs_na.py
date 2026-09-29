@@ -140,7 +140,7 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     ax.plot(nas, S, ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar')
     ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3,
               label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
-    ax.set_xlim(0.1, nas[-1] + 0.02)
+    ax.set_xlim(0.0, 1.0)
     ax.set_xlabel('NA')
     ax.set_ylabel('Peak lost (%)')
     ax.set_title(title + (f', α$_t$ = {AT:g}' if AT else ''))

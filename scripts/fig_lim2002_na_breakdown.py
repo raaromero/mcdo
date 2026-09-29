@@ -193,15 +193,15 @@ for r, key in enumerate(('pi2', 'pi')):
         if key == 'pi2' and nas[-1] > 1 / np.sqrt(2):
             a.axvspan(1 / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                       label='not buildable in air')
-        a.set_xlim(0.28, 0.98)
-        a.set_xticks([0.3, 0.5, 0.7, 0.9])
+        a.set_xlim(nas[0] / 1.15, 1.02)
+        a.set_xticks([t for t in (0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0) if t >= nas[0] - 1e-9])
         a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         lo, hi = min(rw.min(), sc.min(), PAPER[(key, ax_)]) / 1.25, max(rw.max(), sc.max()) * 1.6
         a.set_ylim(lo, hi)                             # room above the data for the fit formulas
-        a.set_yticks([t for t in (0.1, 0.15, 0.2, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10) if lo <= t <= hi])
+        a.set_yticks([t for t in (0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000) if lo <= t <= hi])
         if r == 1:
             a.set_xlabel('NA')
         if c == 0:
