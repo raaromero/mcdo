@@ -15,6 +15,7 @@ the deck:
     -> ~/Downloads/Research/two_color/lim2002_na_study.pptx
 """
 
+import glob
 import os
 import sys
 
@@ -37,12 +38,17 @@ QUOTED = [  # metric number: (title, paper %)
 
 
 # ── read the results ──────────────────────────────────────────────────────
+def rows_of(path):
+    """The saved rows of a result file; empty while its run has not produced a point yet."""
+    a = np.loadtxt(path, delimiter=',', ndmin=2)
+    return a if a.size else np.empty((0, 8))
+
+
 def load_quoted(suf):
     d = {}
     for k in range(1, 6):
-        path = F(f'quoted_vs_na{suf}_m{k}.csv')
-        if os.path.exists(path):
-            for na, v, sc in np.atleast_2d(np.loadtxt(path, delimiter=',')):
+        for path in glob.glob(F(f'quoted_vs_na{suf}_m{k}.csv')) + glob.glob(F(f'quoted_vs_na{suf}_m{k}_*.csv')):
+            for na, v, sc in rows_of(path):
                 d[(k, round(na, 3))] = (v, sc)
     return d
 
@@ -50,10 +56,8 @@ def load_quoted(suf):
 def load_breakdown(suf):
     d = {}
     for key in ('pi', 'pi2'):
-        path = F(f'na_breakdown{suf}_{key}.csv')
-        if not os.path.exists(path):
-            continue
-        for na, sx, sz, rx, rz, Fi, wx, wz in np.atleast_2d(np.loadtxt(path, delimiter=',')):
+        for path in glob.glob(F(f'na_breakdown{suf}_{key}.csv')) + glob.glob(F(f'na_breakdown{suf}_{key}_*.csv')):
+          for na, sx, sz, rx, rz, Fi, wx, wz in rows_of(path):
             d[(key, round(na, 3))] = dict(x=abs(sx / rx - 1) * 100, z=abs(sz / rz - 1) * 100,
                                           wx=abs(wx - 1) * 100, wz=abs(wz - 1) * 100,
                                           F=(1 - Fi) * 100, rx=rx, rz=rz)
@@ -88,6 +92,18 @@ def glossary(title, takeaway, rows):
         text(s, 0.65, t, 1.85, 0.315, term, 11.5, PURPLE, True, anchor=MSO_ANCHOR.MIDDLE)
         text(s, 2.55, t, 6.85, 0.315, meaning, 10.5, NAVY, anchor=MSO_ANCHOR.MIDDLE)
     return s
+
+
+def stacked(s, name):
+    """Uniform input on top, Gaussian input (α_t = 4) below when it exists; one wide figure each."""
+    at4 = name.replace('.png', '_at4.png')
+    if have(at4):
+        label(s, 0.3, 1.3, 1.2, 'Uniform', GREY)
+        figure(s, F(name), 1.5, 1.28, 8.0, 1.92)
+        label(s, 0.3, 3.25, 1.2, 'α_t = 4', PURPLE)
+        figure(s, F(at4), 1.5, 3.23, 8.0, 1.92)
+    else:
+        figure(s, F(name), 0.45, 1.4, 9.1, 3.7)
 
 
 def pair(title, takeaway, left, right, labels, items, main, script, latex=None):
@@ -128,18 +144,28 @@ notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 a
       'their quoted metrics with the vector focus, keep their model alongside, and measure the gap.')
 
 # ══ 2. main points ═══════════════════════════════════════════════════════
-b0 = B['']
-s = slide('Main points', 'The scalar model misjudges focal length first; widths and shapes hold much longer.')
-bullets(s, 0.6, 1.45, 8.9, 3.75, [
-    'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
-    'of the analysis to 10^{−8}.',
-    'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
-    f'The scalar model’s error in the axial tolerance exceeds 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))} '
-    f'and 10% from NA {fmt_na(first_above(b0, "pi", "z", 10))}.',
-    'That error comes from the small-angle approximation of the phase, not from ignoring polarization.',
-    f'Quantities set by the spot width stay within 5% up to NA {fmt_na(first_above(b0, "pi", "x", 5))}.',
-    f'At Lim & Saloma’s own NA 0.5 the scalar model already overstates the axial tolerance by '
-    f'{b0[("pi", 0.5)]["z"]:.0f}%.'], 13)
+if '' in B:
+    b0 = B['']
+    s = slide('Main points', 'The scalar model misjudges focal length first; widths and shapes hold much longer.')
+    bullets(s, 0.6, 1.45, 8.9, 3.75, [
+        'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
+        'of the analysis to 10^{−8}.',
+        'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
+        f'The scalar model’s error in the axial tolerance exceeds 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))} '
+        f'and 10% from NA {fmt_na(first_above(b0, "pi", "z", 10))}.',
+        'That error comes from the small-angle approximation of the phase, not from ignoring polarization.',
+        f'Quantities set by the spot width stay within 5% up to NA {fmt_na(first_above(b0, "pi", "x", 5))}.',
+        f'At Lim & Saloma’s own NA 0.5 the scalar model already overstates the axial tolerance by '
+        f'{b0[("pi", 0.5)]["z"]:.0f}%.'], 13)
+else:                                                 # the uniform sweep is still running: no numbers yet
+    s = slide('Main points', 'The scalar model misjudges focal length first; widths and shapes hold much longer.')
+    bullets(s, 0.6, 1.45, 8.9, 3.75, [
+        'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
+        'of the analysis to 10^{−8}.',
+        'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
+        'Tolerances set by the focal length go wrong first as NA grows; those set by the width hold much longer.',
+        'That error comes from the small-angle approximation of the phase, not from ignoring polarization.',
+        '(Thresholds and percentages fill in when the dense uniform sweep finishes.)'], 13)
 notes(s, 'The scalar model misjudges focal length first; widths and shapes hold much longer.',
       'Four points. The models and the engine check out at low NA. The metrics set by the length of the focus go wrong '
       'first, above five percent from NA 0.45 and above ten percent from 0.6. The cause is the paraxial phase, not '
@@ -290,7 +316,7 @@ for tag, lab in (('a', '2CE, θ = π'), ('b', '2PE, θ = π'), ('c', '2CE, θ = 
         pending(f'Fig. 4({tag}) against NA: {lab}', 'Peak maps over (x_c, z_c) at NA 0.5, 0.7, 0.9 from fig_lim2002_na_peakmaps.py.')
         continue
     s = slide(f'Fig. 4({tag}) against NA: {lab}', 'Peak surviving over (x_c, z_c): the tolerance region shrinks as NA grows.')
-    figure(s, F(f'na_peakmaps_fig4{tag}.png'), 0.45, 1.4, 9.1, 3.7)
+    stacked(s, f'na_peakmaps_fig4{tag}.png')
     notes(s, 'The region of (x_c, z_c) that keeps most of the peak shrinks as NA grows.',
           f'Lim & Saloma’s Fig. 4({tag}), {lab}, recomputed with the vector focus at NA 0.5, 0.7 and 0.9, on their '
           'offset axes. Each contour marks the offsets that keep that percentage of the aligned peak.')
@@ -321,7 +347,7 @@ for fig_no, where in ((2, 'aligned'), (3, 'O′ = (0.4, 1.0) µm')):
     for tag, lab in PANEL.items():
         nas = '0.5, 0.7, 0.9' if 'π/2' not in lab else '0.5, 0.6, 0.7'
         s = slide(f'Fig. {fig_no}({tag}) against NA: {lab}', f'{where}; NA {nas}, vector, Lim & Saloma’s axes.')
-        figure(s, F(f'na_contours_fig{fig_no}{tag}.png'), 0.45, 1.4, 9.1, 3.7)
+        stacked(s, f'na_contours_fig{fig_no}{tag}.png')
         notes(s, 'The same panel at three NAs: the spot shrinks and becomes less elongated.',
               f'Lim & Saloma’s Fig. {fig_no}({tag}), {lab}, {where}, recomputed with the vector focus at NA {nas} on '
               'their axes and contour levels. Width shrinks as lambda over NA and length as n lambda over NA squared.')
@@ -383,7 +409,7 @@ short = Presentation(OUT)
 title_of = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
 ids = list(short.slides._sldIdLst)
 by_title = {title_of(sl): el for sl, el in zip(short.slides, ids)}
-order = [next(el for t, el in by_title.items() if t.startswith(key)) for key in SHORT]
+order = [el for key in SHORT for el in [next((el for t, el in by_title.items() if t.startswith(key)), None)] if el is not None]   # slides still pending are skipped
 for el in ids:
     short.slides._sldIdLst.remove(el)
     if el not in order:

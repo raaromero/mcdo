@@ -27,6 +27,7 @@ Figures are one metric each at 10 × 7.5 in, fonts 32/28/24 pt, 600 dpi.
     -> output/08_two_color/lim2002/quoted_vs_na_{1..5}[_at4].png, quoted_vs_na[_at4].csv
 """
 
+import glob
 import os
 import sys
 
@@ -109,7 +110,10 @@ def loss(pair, na, theta, along, off_um, model):
 
 SEL = os.environ.get('METRIC_SEL')                    # compute one metric only, e.g. '3'
 REPLOT = os.environ.get('REPLOT') == '1'              # redraw from the saved files
-csv_of = lambda k: os.path.join(OUT, f'quoted_vs_na{SUF}_m{k}.csv')        # one file per metric
+TAG = os.environ.get('RUN_TAG', '')                  # extra NA points go to their own file, e.g. '_lo'
+csv_of = lambda k: os.path.join(OUT, f'quoted_vs_na{SUF}_m{k}{TAG}.csv')   # one file per metric (and tag)
+all_csv = lambda k: sorted(glob.glob(os.path.join(OUT, f'quoted_vs_na{SUF}_m{k}.csv'))
+                           + glob.glob(os.path.join(OUT, f'quoted_vs_na{SUF}_m{k}_*.csv')))
 for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     if SEL and str(k) != SEL:
         continue
@@ -122,9 +126,10 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
             with open(csv_of(k), 'a') as fh:         # saved at once, so a stopped run keeps its points
                 fh.write(f'{na:.4g},{v:.6g},{sc:.6g}\n')
             print(f'{k}. NA {na:.3f}: vector {v:.2f}%, scalar {sc:.2f}% (Lim & Saloma {paper}% at NA 0.5)', flush=True)
-    if not os.path.exists(csv_of(k)):
-        continue
-    nas, L, S = np.atleast_2d(np.loadtxt(csv_of(k), delimiter=',')).T
+    if TAG or not all_csv(k):
+        continue                                      # tagged runs only save; the plot merges all files
+    nas, L, S = np.concatenate([np.atleast_2d(np.loadtxt(f, delimiter=',')) for f in all_csv(k)]).T
+    order = np.argsort(nas); nas, L, S = nas[order], L[order], S[order]
 
     fig, ax = plt.subplots(figsize=(10.0, 7.5))
     ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='NA ≤ 0.5, scalar model\'s stated range')

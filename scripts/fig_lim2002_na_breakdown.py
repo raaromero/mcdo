@@ -27,6 +27,7 @@ offset range scale with the spot, as 1/NA across and 1/NA² along.
        na_breakdown[_at4]_{pi,pi2}.csv (one row per NA, written as computed)
 """
 
+import glob
 import os
 import sys
 
@@ -86,8 +87,9 @@ def tolerances(na, theta, model):
     nx = nz = 50
     # offsets across: at θ = π the tolerance scales with the width (0.30 µm at NA 0.5), at θ = π/2 with the
     # other beam's length (1.37 µm at NA 0.5); along: with the length at both angles
-    mx = int(round((0.6 * sx if theta == np.pi else 1.8 * sz) / dx))
-    mz = 60                                           # 6 (0.5/NA)² µm along
+    grow = 1.0 if AT == 0 else 1.7                    # a Gaussian input enlarges the spot, and the tolerance
+    mx = int(round(grow * (0.6 * sx if theta == np.pi else 1.8 * sz) / dx))
+    mz = int(round(60 * grow))                        # 6 (0.5/NA)² µm along, more for a Gaussian input
     XW, ZW = np.meshgrid(np.arange(-nx, nx) * dx, np.arange(-nz, nz) * dz)
     XE, ZE = np.meshgrid(np.arange(-nx - mx, nx + mx) * dx, np.arange(-nz - mz, nz + mz) * dz)
     I1 = beam_I(XW, ZW, L1, na, 0.0, model)
@@ -136,7 +138,10 @@ def shape(na, theta):
 R = {}
 HEADER = ('NA,scalar_x_um,scalar_z_um,rw_x_um,rw_z_um,F_scalar_vs_rw,'
           'width_x_scalar_over_rw,length_z_scalar_over_rw')
-csv_of = lambda key: os.path.join(OUT, f'na_breakdown{SUF}_{key}.csv')    # one file per angle
+TAG = os.environ.get('RUN_TAG', '')                  # extra NA points go to their own file, e.g. '_lo'
+csv_of = lambda key: os.path.join(OUT, f'na_breakdown{SUF}_{key}{TAG}.csv')   # one file per angle (and tag)
+all_csv = lambda key: sorted(glob.glob(os.path.join(OUT, f'na_breakdown{SUF}_{key}.csv'))
+                             + glob.glob(os.path.join(OUT, f'na_breakdown{SUF}_{key}_*.csv')))
 SEL = os.environ.get('THETA_SEL')                     # compute one angle only ('pi' or 'pi2')
 REPLOT = os.environ.get('REPLOT') == '1'              # redraw from the saved files
 if not REPLOT:
@@ -152,11 +157,11 @@ if not REPLOT:
             print(f"{TL[key]} NA {na:.3f}: 20% offset x_c scalar {sc[0]:.3f} vs RW {rw[0]:.3f} µm, "
                   f"z_c scalar {sc[1]:.3f} vs RW {rw[1]:.3f} µm; F {F:.4f}; widths scalar/RW x {rx:.3f} z {rz:.3f}",
                   flush=True)
-    if SEL:
+    if SEL or TAG:
         sys.exit(0)                                   # figures come from REPLOT=1 once both angles are saved
 for key in ('pi', 'pi2'):
-    if os.path.exists(csv_of(key)):
-        for na, sx_, sz_, rx_, rz_, F, wx, wz in np.atleast_2d(np.loadtxt(csv_of(key), delimiter=',')):
+    for f in all_csv(key):
+        for na, sx_, sz_, rx_, rz_, F, wx, wz in np.atleast_2d(np.loadtxt(f, delimiter=',')):
             R[(key, round(na, 3))] = dict(sc_x=sx_, sc_z=sz_, rw_x=rx_, rw_z=rz_, F=F, wx=wx, wz=wz)
 
 # ── the paper's metrics against NA: vector, paraxial scalar, power-law fits; Lim & Saloma as reference ──

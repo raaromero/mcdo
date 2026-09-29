@@ -10,7 +10,9 @@ shrinking tolerance reads directly; contours at 10–80% of the aligned peak.
 2CE beams unpolarized; 2PE beams both polarized along y (full interference).
 
     python scripts/fig_lim2002_na_peakmaps.py
-    -> output/08_two_color/lim2002/na_peakmaps_fig4{a,b,c,d}.png
+    ALPHA_T=4 python scripts/fig_lim2002_na_peakmaps.py   # Gaussian input, suffix _at4
+    -> output/08_two_color/lim2002/na_peakmaps_fig4{a,b,c,d}.png, and the maps themselves in
+       na_peakmaps_fig4{a,b,c,d}.npz (x_c_um, z_c_um, P_na0.5, P_na0.7, P_na0.9; saved after each NA)
 """
 
 import os
@@ -29,10 +31,14 @@ matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'axes.labelsize': 28, 'xtick.labelsize': 24,
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
+from mcdo.apodization import gaussian
 from mcdo.twobeam import beam_field, intensity
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 L1, L2, L2P = 0.750, 0.656, 0.700
+AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
+SUF = '' if AT == 0 else f'_at{AT:g}'
+APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 DX, DZ = 0.02, 0.05                     # µm, PSF grid
 NX, NZ = 60, 110                        # window ±1.2 × ±5.5 µm
 SX, SZ = 2, 4                           # offset steps: 0.04 µm across, 0.2 µm along
@@ -53,11 +59,11 @@ def peak_map(pair, na, theta):
     s0, s1 = XW.shape
     if pair == '2ce':
         I = lambda X, Z, lam, th: chunked(lambda x, z: 0.5 * sum(
-            intensity(beam_field(x, z, lam, na, 1.0, theta=th, model='rw', psi=p)) for p in (0.0, np.pi / 2)), X, Z)
+            intensity(beam_field(x, z, lam, na, 1.0, theta=th, apodization=APOD(na), model='rw', psi=p)) for p in (0.0, np.pi / 2)), X, Z)
         I1, I2 = I(XW, ZW, L1, 0.0), I(XE, ZE, L2, theta)
         sig = lambda ix, iz: I1 * I2[MZ - iz:MZ - iz + s0, MX - ix:MX - ix + s1]
     else:
-        E = lambda X, Z, th, k: np.stack([chunked(lambda x, z: beam_field(x, z, L2P, na, 1.0, theta=th, model='rw',
+        E = lambda X, Z, th, k: np.stack([chunked(lambda x, z: beam_field(x, z, L2P, na, 1.0, theta=th, apodization=APOD(na), model='rw',
                                                                           psi=np.pi / 2)[c], X, Z) for c in range(3)])
         E1, E2 = E(XW, ZW, 0.0, 0), E(XE, ZE, theta, 0)
         sig = lambda ix, iz: np.sum(np.abs(E1 + E2[:, MZ - iz:MZ - iz + s0, MX - ix:MX - ix + s1]) ** 2, axis=0) ** 2
@@ -69,8 +75,11 @@ def peak_map(pair, na, theta):
 
 for tag, pair, th, lab in PANELS:
     fig, axes = plt.subplots(1, 3, figsize=(21.0, 8.2))
+    maps = {}
     for ax, na in zip(axes, (0.5, 0.7, 0.9)):
         xc, zc, P = peak_map(pair, na, th)
+        maps[f'P_na{na:g}'] = P
+        np.savez_compressed(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.npz'), x_c_um=xc, z_c_um=zc, **maps)
         cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], colors='k', linewidths=2.0)
         ax.clabel(cs, fmt='%d', fontsize=20)
         ax.set_xlabel('x$_c$ (µm)'); ax.set_ylabel('z$_c$ (µm)')
@@ -81,8 +90,8 @@ for tag, pair, th, lab in PANELS:
         print(f'Fig. 4({tag}) {lab}, NA {na}: peak at x_c = 0.5 µm {100 * np.interp(0.5, xc, P[i0]):.0f}%, '
               f'at z_c = 1 µm {100 * np.interp(1.0, zc, P[:, j0]):.0f}%', flush=True)
     note = '   * not buildable in air (NA > 0.71)' if th == np.pi / 2 else ''
-    fig.suptitle(f'Fig. 4({tag}): peak surviving, % of aligned, {lab}, vector{note}', fontsize=30, y=1.03)
+    fig.suptitle(f'Fig. 4({tag}): peak surviving, % of aligned, {lab}, vector' + (f', α$_t$ = {AT:g}' if AT else '') + note, fontsize=30, y=1.03)
     plt.tight_layout()
-    fig.savefig(os.path.join(OUT, f'na_peakmaps_fig4{tag}.png'), dpi=600, bbox_inches='tight')
+    fig.savefig(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.png'), dpi=600, bbox_inches='tight')
     plt.close(fig)
 print('Saved -> na_peakmaps_fig4a..d.png')
