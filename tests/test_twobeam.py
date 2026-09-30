@@ -165,3 +165,15 @@ def test_scalar_gaussian_truncation_matches_vector_at_low_na():
         assert np.max(np.abs(s / s.max() - v / v.max())) < 2e-3
         half[at] = r[np.argmax(s / s.max() < 0.5)]
     assert half[4] > 1.3 * half[0]
+
+
+def test_unpolarized_average_is_circular_polarization():
+    """The 2CE 'unpolarized' beam, (I_x + I_y)/2, is exactly the intensity of
+    circularly polarized input, (E_x + iE_y)/√2, at any NA: a physical beam."""
+    X, Z = np.meshgrid(np.linspace(-1, 1, 21), np.linspace(-2, 2, 21))
+    for na in (0.5, 0.9):
+        ex = beam_field(X, Z, L1, na, N, model='rw', psi=0.0)
+        ey = beam_field(X, Z, L1, na, N, model='rw', psi=np.pi / 2)
+        circ = np.sum(np.abs((ex + 1j * ey) / np.sqrt(2)) ** 2, axis=0)
+        avg = 0.5 * (np.sum(np.abs(ex) ** 2, axis=0) + np.sum(np.abs(ey) ** 2, axis=0))
+        assert np.max(np.abs(circ - avg)) < 1e-12 * avg.max()

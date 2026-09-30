@@ -23,6 +23,7 @@ offset range scale with the spot, as 1/NA across and 1/NA² along.
 
     python scripts/fig_lim2002_na_breakdown.py
     ALPHA_T=4 python scripts/fig_lim2002_na_breakdown.py   # the same with input truncation α_t = 4
+    POL=s python scripts/fig_lim2002_na_breakdown.py       # both beams linearly polarized, s or p (suffix _pols, _polp)
     -> output/08_two_color/lim2002/na_breakdown_metrics.png, na_breakdown_severity.png,
        na_breakdown[_at4]_{pi,pi2}.csv (one row per NA, written as computed)
 """
@@ -53,7 +54,10 @@ OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'l
 L1, L2 = 0.750, 0.656
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
 N = float(os.environ.get('N_MED', '1'))            # medium index; 1 = air, 1.33 = water (to reach NA > 1)
-SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}')
+POL = os.environ.get('POL', 'unpol')                # 2CE beams: 'unpol' (averaged), 's' (both along y, perpendicular
+                                                   # to the plane of the two axes) or 'p' (both in that plane)
+PSIS = {'unpol': (0.0, np.pi / 2), 's': (np.pi / 2,), 'p': (0.0,)}[POL]
+SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}') + ('' if POL == 'unpol' else f'_pol{POL}')
 APOD = lambda na: gaussian(AT, (na / N) ** 2) if AT else None
 MEDIUM = '' if N == 1 else f', n = {N:g}'
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
@@ -68,13 +72,13 @@ TL = {'pi': 'θ = π', 'pi2': 'θ = π/2'}
 def _beam_I(x, z, lam, na, theta, model):
     if model == 'paraxial':
         return intensity(beam_field(x, z, lam, na, N, theta=theta, apodization=APOD(na)))
-    return 0.5 * sum(intensity(beam_field(x, z, lam, na, N, theta=theta, model='rw', psi=psi,
-                                          apodization=APOD(na)))
-                     for psi in (0.0, np.pi / 2))
+    return sum(intensity(beam_field(x, z, lam, na, N, theta=theta, model='rw', psi=psi,
+                                    apodization=APOD(na)))
+               for psi in PSIS) / len(PSIS)
 
 
 def beam_I(x, z, lam, na, theta, model, chunk=15000):
-    """Unpolarized intensity, computed in chunks of points to bound memory."""
+    """Intensity (unpolarized, or s or p per POL), computed in chunks of points to bound memory."""
     x, z = np.broadcast_arrays(np.asarray(x, float), np.asarray(z, float))
     fx, fz = x.ravel(), z.ravel()
     out = np.concatenate([_beam_I(fx[i:i + chunk], fz[i:i + chunk], lam, na, theta, model)

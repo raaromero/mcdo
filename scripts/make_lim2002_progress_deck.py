@@ -1,14 +1,16 @@
-r"""Progress report: Lim & Saloma (2002), from replication to high NA and pulses.
+r"""Progress report: Lim & Saloma (2002), from replication to high NA, with the choices that remain.
 
-One deck in three parts, in the shared style (mcdo.deckstyle):
+One deck in six parts, in the shared style (mcdo.deckstyle):
 
-  Part 1  the replication deck, as built by make_lim2002_replication_deck.py
-  Part 2  the NA study, as built by make_lim2002_na_deck.py
-  Part 3  pulses and a time delay, from fig_lim2002_pulsed.py (built here)
+  Part 1  replication, as built by make_lim2002_replication_deck.py
+  Part 2  high NA, uniform input: make_lim2002_na_deck.py with SECTION=uniform
+  Part 3  fidelity against NA: the fidelity slides of that same run
+  Part 4  Gaussian input, α_t = 4: make_lim2002_na_deck.py with SECTION=gaussian
+  Part 5  polarization as a decision: unpolarized against s–s and p–p, from fig_lim2002_polarization.py
+  Part 6  next time: pulses, what the model has to account for (theory only)
 
-The two existing decks run unchanged into the same presentation (DECK_APPEND=1
-stops them saving their own files); their title slides give way to section
-dividers, and the NA deck's forward-looking pulse slides give way to Part 3.
+The existing decks run into the same presentation (DECK_APPEND=1 stops them
+saving their own files); their title slides give way to section dividers.
 Every number is read from the saved results, so a rerun updates the report.
 
     python scripts/make_lim2002_progress_deck.py
@@ -59,38 +61,190 @@ s = navy('Lim & Saloma (2002): replication, high NA and pulses', [
     ('Roland Albert A. Romero', 18, WHITE),
     ('National Institute of Physics, University of the Philippines Diliman', 13, PALE),
     ('Progress report on two-color excitation with misaligned foci', 13, PALE)],
-    chips=(('Replication', PURPLE), ('High NA', RED), ('Pulses', ORANGE)))
-notes(s, 'Three steps: the paper rebuilt, its model tested against the vector focus at high NA, and pulses added.',
+    chips=(('Replication', PURPLE), ('High NA', RED), ('Polarization', ORANGE)))
+notes(s, 'The paper rebuilt, its model tested against the vector focus at high NA, and the choices that remain.',
       'This report collects the work on Lim and Saloma (2002). First the replication of the paper itself; then how far its '
       'scalar model carries as the numerical aperture grows; then what changes when the two beams are pulses with a delay.')
 
-s = slide('Where we are', 'Replication done; high-NA study done; pulses and a time delay started.')
-numbered(s, 1, PURPLE, 1.45, 'Replication: every quoted number and 22 of 24 panels reproduce; three details of the paper do not.')
-numbered(s, 2, RED, 2.15, 'High NA: the scalar model gets the focal length wrong first, by 5% from NA 0.45 and 10% from 0.6 in air; '
-         'the deviation follows NA/n.')
-numbered(s, 3, ORANGE, 2.85, 'Pulses: the two pulses meet only in a gate of width c√2 τ/2n; at θ = π short pulses shorten the focus.')
-numbered(s, 4, NAVY, 3.55, 'Open: polarization of the two beams, and crossed beams above the lens-crossing limit.')
-notes(s, 'Replication done; high-NA study done; pulses and a time delay started.',
-      'Where the project stands. The replication is complete. The high-NA study compares Lim and Saloma’s scalar model with the '
-      'vector focus on their own metrics, in air and in water. Pulses have just been added: the new physics is that the two '
-      'pulses overlap in time only in a narrow region, which matters for facing lenses. Two questions are open for discussion.')
+s = slide('Where we are', 'Main results of each part; polarization to decide; pulses next time.')
+ROWS = [('1. Replication', PURPLE, 'Every quoted number and 22 of 24 panels reproduce. Three errors in the paper: C and Q swapped, '
+         'Eq. (2) rotation, Fig. 6(c)–(d) caption.'),
+        ('2. High NA', RED, 'Vector tolerances: NA^{−0.97} across, NA^{−2.12} along (θ = π). The scalar model errs on the focal length '
+         'first: 5% from NA 0.45, 10% from 0.6; in water at 1.33× those NAs, so it follows NA/n.'),
+        ('3. Fidelity', ORANGE, 'At NA 0.9 the 2CE F ≥ 0.8 region is 17–26% smaller than the scalar one; 2PE changes by 1–3%, '
+         'its fringes set its shape.'),
+        ('4. Gaussian', NAVY, 'α_t = 4: tolerances about 1.4× looser, same power laws; the scalar model holds to NA 0.525 (5%) and 0.7 (10%).'),
+        ('5. Polarization', GREY, 'Unpolarized is exactly circular polarization. 2PE crossed beams interfere only with s–s; with p–p the '
+         'fringes vanish. To decide: which is the main result.'),
+        ('Next time', GREY, 'Pulses and a time delay: the signal is a time overlap, gated along z at θ = π.')]
+for i, (head, col, body) in enumerate(ROWS):
+    t = 1.32 + i * 0.63
+    text(s, 0.5, t, 1.75, 0.6, head, 12, col, True, anchor=MSO_ANCHOR.MIDDLE)
+    text(s, 2.3, t, 7.2, 0.6, body, 10.5, NAVY, anchor=MSO_ANCHOR.MIDDLE)
+notes(s, 'Main results of each part; polarization to decide; pulses next time.',
+      'One line per part. The replication holds with three corrections to the paper. At high NA the scalar model fails first on '
+      'the focal length, and the deviation follows NA over n. The fidelity maps change shape most for two-color excitation. A '
+      'Gaussian input loosens the tolerances and extends the scalar model. Polarization is a decision to make, and pulses are '
+      'for next time.')
 
 # ══ Part 1: the replication deck ═════════════════════════════════════════
 part(1, 'replication', 'Lim & Saloma (2002) rebuilt from its equations, checked number by number.')
-drop = [len(prs.slides)]                                       # the replication deck's own title slide
+at = len(prs.slides)
 runpy.run_path(os.path.join(HERE, 'make_lim2002_replication_deck.py'), run_name='__main__')
+ds.DROP = [list(prs.slides._sldIdLst)[at]]                      # its own title slide; removed at the end
 
-# ══ Part 2: the NA deck ══════════════════════════════════════════════════
-part(2, 'high NA', 'Where Lim & Saloma’s scalar model applies: their metrics recomputed with the vector focus, NA 0.03 to 1.2.')
-drop.append(len(prs.slides))                                   # the NA deck's own title slide
-try:
-    runpy.run_path(os.path.join(HERE, 'make_lim2002_na_deck.py'), run_name='__main__')
-except SystemExit:                                             # it stops before saving in append mode
-    pass
-drop += [i for i, sl in enumerate(prs.slides) if title_of(sl).startswith(('Next: optical pulses', 'Other next steps'))]
+# ══ Parts 2–3: the NA deck, uniform input (high NA, then fidelity) ═════════
+part(2, 'high NA', 'Where Lim & Saloma’s scalar model applies: their metrics recomputed with the vector focus, NA 0.03 to 1.2, uniform input.')
+ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
 
-# ══ Part 3: pulses ═══════════════════════════════════════════════════════
-part(3, 'pulses and a time delay', 'Transform-limited pulses of 100 fs and 20 fs, vector focus, NA 0.5 unless stated.')
+
+def na_deck(section):
+    """Append the NA deck's slides for one section and mark its own title slide for removal."""
+    at = len(prs.slides)
+    os.environ['SECTION'] = section
+    try:
+        runpy.run_path(os.path.join(HERE, 'make_lim2002_na_deck.py'), run_name='__main__')
+    except SystemExit:                                         # it stops before saving in append mode
+        pass
+    ds.DROP.append(list(prs.slides._sldIdLst)[at])
+
+
+na_deck('uniform')
+first_fid = next(i for i, sl in enumerate(prs.slides) if title_of(sl).startswith('Fidelity against NA'))
+part(3, 'fidelity against NA', 'Linfoot fidelity over the offset of O′, Lim & Saloma’s Figs. 5–6, from NA 0.1 to 1.2.')
+ids = prs.slides._sldIdLst
+el = list(ids)[-1]                                             # move the divider in front of the fidelity slides
+ids.remove(el)
+ids.insert(first_fid, el)
+
+# ══ Part 4: Gaussian input ═══════════════════════════════════════════════
+part(4, 'Gaussian input, α_t = 4', 'The same study with a Gaussian beam filling both lenses.')
+ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA, Gaussian input'
+na_deck('gaussian')
+del os.environ['SECTION']
+
+# ══ decision: polarization ═══════════════════════════════════════════════
+ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA: polarization'
+LIM = FIG
+
+
+def brow(suf, key, na):
+    path = os.path.join(LIM, f'na_breakdown{suf}_{key}.csv')
+    if not os.path.exists(path):
+        return None
+    a = np.loadtxt(path, delimiter=',', ndmin=2)
+    r = a[np.isclose(a[:, 0], na)] if a.size else a
+    return r[0] if len(r) else None
+
+
+def qrow(suf, k, na):
+    import glob
+    rows_ = [np.loadtxt(f, delimiter=',', ndmin=2) for f in glob.glob(os.path.join(LIM, f'quoted_vs_na{suf}_m{k}*.csv'))]
+    rows_ = [r for r in rows_ if r.size]
+    if not rows_:
+        return None
+    a = np.concatenate(rows_)
+    r = a[np.isclose(a[:, 0], na)]
+    return r[0, 1] if len(r) else None
+
+
+part(5, 'a decision: polarization', 'Unpolarized beams, as the scalar model implies, or fixed linear polarizations, as a laser delivers?')
+s = slide('Two options for the polarization of the beams', 'At low NA it does not matter; at high NA it changes the spot and the interference.')
+text(s, 0.5, 1.35, 4.35, 0.35, 'A: unpolarized (used so far for 2CE)', 13, PURPLE, True, 'Cambria')
+bullets(s, 0.5, 1.8, 4.35, 3.35, [
+    'Each beam’s focus averaged over two perpendicular input polarizations.',
+    'Exactly the intensity of circularly polarized input (checked to 10^{−16}): a quarter-wave plate in each beam.',
+    'A round spot: results do not depend on the direction of the offset.',
+    'The natural vector counterpart of Lim & Saloma’s scalar 2CE.'], 11.5)
+text(s, 5.1, 1.35, 4.4, 0.35, 'B: fixed linear polarization', 13, PURPLE, True, 'Cambria')
+bullets(s, 5.1, 1.8, 4.4, 3.35, [
+    's–s: both along y, perpendicular to the plane of the two axes; the two fields stay parallel at any θ '
+    '(used so far for 2PE).',
+    'p–p: both in that plane; at θ = π/2 the two fields are perpendicular and do not interfere; at θ = π they are '
+    'antiparallel, which only moves the fringes by half a period.',
+    'The spot is wider along the polarization, so tolerances depend on the offset direction.',
+    'Matches an instrument; doubles the results.'], 11.5)
+notes(s, 'At low NA it does not matter; at high NA it changes the spot and the interference.',
+      'Option A averages over the input polarization; for the intensity of each beam this is exactly circular polarization, '
+      'so it is a real experiment, and the natural vector counterpart of the scalar 2CE model. Option B fixes a linear '
+      'polarization, as a laser does, with two natural choices: perpendicular to the plane of the two lens axes, s, or in it, p. '
+      'We ran both B cases next to A on Lim and Saloma’s metrics.')
+
+pl = os.path.join(LIM, 'polarization_spot.png')
+if os.path.exists(pl):
+    from mcdo.twobeam import beam_field, intensity
+    xx = np.linspace(-1.2, 1.2, 481)
+    fw = lambda na, psi: (lambda v: np.ptp(xx[v >= 0.5 * v.max()]))(intensity(beam_field(xx, 0 * xx, 0.750, na, model='rw', psi=psi)))
+    r5, r9 = fw(0.5, 0.0) / fw(0.5, np.pi / 2), fw(0.9, 0.0) / fw(0.9, np.pi / 2)
+    s = slide('Why polarization matters at high NA', f'The spot is wider along the polarization: {r5:.2f}× at NA 0.5, {r9:.2f}× at NA 0.9.')
+    figure(s, pl, 0.45, 1.35, 9.1, 3.2)
+    bullets(s, 0.6, 4.6, 8.9, 0.65, [
+        'At high NA the focused field gains a component along the axis, strongest along the polarization, which widens the spot there.'], 11)
+    notes(s, 'The focal spot is wider along the polarization at high NA.',
+          'One beam at focus, profile across x. With the field along y, s, the profile across x is the narrow direction; with '
+          'the field along x, p, it is the wide one. The unpolarized average sits between. This is why the tolerance along x_c '
+          'depends on the polarization.')
+else:
+    s = slide('Why polarization matters at high NA', 'Result still computing; this slide fills in when the report is rebuilt.')
+    notes(s, 'Pending result.', 'From fig_lim2002_polarization.py.')
+
+pl = os.path.join(LIM, 'polarization_tolerances.png')
+rA, rS, rP = brow('', 'pi', 0.9), brow('_pols', 'pi', 0.9), brow('_polp', 'pi', 0.9)
+if os.path.exists(pl) and rS is not None and rP is not None:
+    s = slide('2CE tolerances by polarization', f'θ = π, NA 0.9, along x_c: A {1000 * rA[3]:.0f} nm, s–s {1000 * rS[3]:.0f} nm, '
+              f'p–p {1000 * rP[3]:.0f} nm.')
+    figure(s, pl, 0.45, 1.35, 5.0, 3.85)
+    qA, qS, qP = brow('', 'pi2', 0.9), brow('_pols', 'pi2', 0.9), brow('_polp', 'pi2', 0.9)
+    bullets(s, 5.65, 1.45, 3.85, 3.75, [
+        'Along z_c the three agree closely: the length of the focus hardly depends on the polarization.',
+        f'Along x_c they split at high NA: at θ = π the p–p tolerance is {rP[3] / rS[3]:.2f}× the s–s one at NA 0.9, '
+        'because the spot is wider along the polarization.',
+        f'θ = π/2, NA 0.9, along x_c: A {1000 * qA[3]:.0f}, s–s {1000 * qS[3]:.0f}, p–p {1000 * qP[3]:.0f} nm.' if qP is not None else '',
+        'The unpolarized result sits between the two.'], 11)
+    notes(s, 'The polarization moves the tolerances across the axis, not along it.',
+          'The twenty percent tolerances against NA for the three choices. Along the axis they coincide; across it the linear '
+          'polarizations bracket the unpolarized result, with the tolerance wider along the polarization.')
+else:
+    s = slide('2CE tolerances by polarization', 'Result still computing; this slide fills in when the report is rebuilt.')
+    notes(s, 'Pending result.', 'From fig_lim2002_na_breakdown.py with POL = s and p.')
+
+pl = os.path.join(LIM, 'polarization_quoted.png')
+q3s, q3p = qrow('', 3, 0.5), qrow('_polp', 3, 0.5)
+if os.path.exists(pl) and q3p is not None:
+    s = slide('Lim & Saloma’s quoted losses by polarization', f'2PE crossed beams at NA 0.5: {q3s:.0f}% lost for s–s, {q3p:.0f}% for p–p '
+              '(Lim & Saloma: 30%).')
+    figure(s, pl, 0.45, 1.35, 9.1, 2.3)
+    bullets(s, 0.6, 3.8, 8.9, 1.4, [
+        'The 2CE losses shift by a few percent between the three choices, most at high NA and across the axis.',
+        'The 2PE crossed-beam loss depends on the choice entirely: with p–p the two fields are perpendicular, the beams no '
+        'longer interfere, and there are no fringes to lose.',
+        'So Lim & Saloma’s 2PE result assumes, implicitly, fields that stay parallel: s–s.'], 11.5)
+    notes(s, 'The 2PE crossed-beam result depends entirely on the polarization.',
+          'Lim and Saloma’s five quoted losses against NA for the three choices. For two-color excitation the choice moves the '
+          'numbers by a few percent. For two-photon excitation with crossed beams it decides whether the beams interfere at '
+          'all: with both polarizations in the plane the fields are perpendicular and the fringes vanish.')
+else:
+    s = slide('Lim & Saloma’s quoted losses by polarization', 'Result still computing; this slide fills in when the report is rebuilt.')
+    notes(s, 'Pending result.', 'From fig_lim2002_quoted_vs_na.py with POL = s and p.')
+
+s = slide('The decision', 'Proposed: 2CE with circular (A) and 2PE with s–s as the main result; linear 2CE as bounds.')
+bullets(s, 0.6, 1.45, 8.9, 3.75, [
+    '2CE: A is circular polarization, a real experiment with a round spot; the natural vector form of Lim & Saloma’s 2CE.',
+    '2PE: s–s keeps the two fields parallel at any θ, which is what Lim & Saloma’s 2PE result implicitly assumes.',
+    'That is the set used so far. Linear s–s and p–p for 2CE bracket it; p–p shows crossed-beam 2PE losing its fringes.',
+    'Open physics: with fixed linear polarizations the dye’s transition dipole matters; for randomly oriented molecules the '
+    'signal goes as (|E_1|^2|E_2|^2 + |E_1·E_2|^2 + |E_1·E_2^*|^2)/15, 3× larger for parallel fields than perpendicular.',
+    'Question: keep A / s–s as the main result, or move to linear polarization and add the molecular factor?'], 12.5)
+notes(s, 'Proposed: 2CE with circular polarization and 2PE with s–s as the main result; linear 2CE as bounds.',
+      'The decision to make. The unpolarized average we used for 2CE is exactly the intensity of circularly polarized beams, so '
+      'it is physical, round, and the natural vector version of the paper’s scalar model. For 2PE the fields must be parallel to '
+      'interfere, which is the s–s case. Linear polarizations for 2CE bracket the circular result. If linear polarization '
+      'becomes the main case, the orientation of the dye’s transition dipole should enter the signal as well; the isotropic '
+      'product I_1 I_2 assumes it does not matter.',
+      r'\langle |\mathbf{E}_1\cdot\hat{d}|^2 |\mathbf{E}_2\cdot\hat{d}|^2 \rangle = \frac{|\mathbf{E}_1|^2|\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2^*|^2}{15}')
+
+# ══ next time: pulses, what the model must account for ═══════════════════
+part(6, 'next time: pulses and a time delay', 'What the pulsed model has to account for.')
 ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), with pulses'
 
 s = slide('The two-color signal with pulses', 'The signal is the time overlap of the two pulses, not a product of averages.')
@@ -111,92 +265,30 @@ notes(s, 'The signal is the time overlap of the two pulses, not a product of ave
 \mathbf{E}(P,t) = \int a(\omega)\,\frac{\omega}{\omega_0}\,\mathbf{E}_\omega(P)\, e^{-i(\omega-\omega_0)t}\, d\omega, \quad a(\omega) = \exp\!\left[-\frac{(\omega-\omega_0)^2\tau^2}{8\ln 2}\right]
 \text{gate FWHM } (\theta=\pi) = \frac{c\sqrt{\tau_1^2+\tau_2^2}}{2n}, \quad z_{\text{centre}} = \frac{c\,\Delta t}{2n}""")
 
-s = slide('Check: the gate', 'The computed overlap matches the analytic gate.')
+s = slide('What the pulsed model has to account for', 'Each item changes the signal; together they set what to compute.')
 bullets(s, 0.6, 1.45, 8.9, 3.75, [
-    'Low NA (0.1), θ = π, 20 fs: the signal along z divided by the CW signal is the gate.',
-    'Its FWHM is 4.25 µm; the analytic value c√2 τ/2n is 4.24 µm.',
-    'With Δt = 15 fs its centre moves to z = 2.30 µm; the analytic value cΔt/2n is 2.25 µm.',
-    'Pulses of 2 ps reproduce the CW signal to 0.5%.',
-    'θ = π/2, NA 0.5, 20 fs: the map differs from the CW map by at most 0.6%.'], 13)
-notes(s, 'The computed overlap matches the analytic gate.',
-      'Before using the pulsed signal we check its limits. Very long pulses give back the continuous-wave signal. At low NA, '
-      'where the focus is much longer than the gate, the signal is the gate itself, with the predicted width and position. '
-      'Crossed beams barely change, as expected. These checks are part of the test suite.')
+    'Where the pulses meet: the signal is a time overlap, so at θ = π it is gated along z (c√2 τ/2n), and a delay Δt moves the gate by cΔt/2n.',
+    'The spectrum with its phases: each frequency focused on its own and summed coherently, sampled in ω, not λ, with the ω/ω_0 factor of the focal field.',
+    'Separate colors: the 2CE term I_1 I_2 holds while the spectra do not overlap, τ above about 8 fs; shorter pulses make the colors interfere.',
+    'The spread of spot sizes over the bandwidth: a few percent at 20 fs, negligible at 100 fs.',
+    'Dispersion in the objective (chirp, and a delay between the pupil centre and edge): ignored so far, transform-limited pulses assumed.',
+    'The dye: a flat absorption band and the I_1 I_2 term only, as in Lim & Saloma.'], 12)
+notes(s, 'Each item changes the signal; together they set what to compute.',
+      'The points to settle before presenting pulsed results. The first is the new physics: the pulses overlap only in a gate. '
+      'The others are what a correct calculation has to include or state as assumptions: coherent spectral summation, the '
+      'separation of the two colors, the chromatic spread of the focus, dispersion in real objectives, and the dye’s absorption.')
 
-if os.path.exists(os.path.join(PUL, 'pulsed_maps.png')):
-    d = np.load(os.path.join(PUL, 'pulsed_maps.npz'))
-    z = d['z_um']
-    ax_fwhm = lambda F: (lambda p: np.ptp(z[p >= 0.5 * p.max()]))(F[:, len(d['x_um']) // 2])
-    cw, f20 = ax_fwhm(d['pi_CW']), ax_fwhm(d['pi_20'])
-    s = slide('The aligned PSF with pulses, NA 0.5', f'θ = π: 20 fs pulses shorten the focus from {cw:.1f} to {f20:.1f} µm; θ = π/2 is unchanged.')
-    figure(s, os.path.join(PUL, 'pulsed_maps.png'), 0.45, 1.35, 4.9, 3.85)
-    bullets(s, 5.55, 1.45, 3.95, 3.75, [
-        'Lim & Saloma’s axes and contour levels; CW, 100 fs and 20 fs.',
-        'θ = π: the gate (4.2 µm for 20 fs) is comparable to the focal length, so it trims the focus along z.',
-        'At 100 fs the gate is 21 µm and changes little.',
-        'θ = π/2: the gate is far wider than the crossed spot; the PSF is the CW one.'], 11.5)
-    notes(s, 'Short pulses shorten the focus of facing beams and leave crossed beams unchanged.',
-          'The aligned two-color point spread function at NA 0.5 with continuous beams and with 100 and 20 femtosecond pulses. '
-          'With facing lenses the pulses overlap only within the gate, which for 20 femtoseconds is about as long as the focus, '
-          'so the focus is shortened. Crossed beams already confine the spot to the overlap of two narrow widths.')
-else:
-    s = slide('The aligned PSF with pulses, NA 0.5', 'Result still computing; this slide fills in when the report is rebuilt.')
-    notes(s, 'Pending result.', 'From fig_lim2002_pulsed.py, PART=maps.')
-
-if os.path.exists(os.path.join(PUL, 'pulsed_na.png')):
-    r = np.load(os.path.join(PUL, 'pulsed_na.npz'))['rows']
-    at = lambda na, j: 100 * (1 - r[np.argmin(np.abs(r[:, 0] - na)), j] / r[np.argmin(np.abs(r[:, 0] - na)), 1])
-    s = slide('When pulses matter: axial FWHM against NA', f'20 fs shortens the facing-beam focus by {at(0.3, 3):.0f}% at NA 0.3, '
-              f'{at(0.5, 3):.0f}% at 0.5, {at(0.9, 3):.0f}% at 0.9.')
-    figure(s, os.path.join(PUL, 'pulsed_na.png'), 0.45, 1.35, 9.1, 3.1)
-    bullets(s, 0.6, 4.5, 8.9, 0.75, [
-        'The focus shrinks as nλ/NA²; the gate does not change with NA. Pulses matter where the focus is longer than the gate: low NA.',
-        f'100 fs: {at(0.3, 2):.0f}% at NA 0.3 and {at(0.5, 2):.0f}% at 0.5.'], 11)
-    notes(s, 'Pulses matter where the focus is longer than the gate, which is at low NA.',
-          'The axial width of the facing-beam focus against NA, for continuous beams and for 100 and 20 femtosecond pulses. The '
-          'dashed lines are the gate widths. Where the focus is longer than the gate, the gate sets the width; at high NA the focus '
-          'is already shorter than the gate and pulses change little.')
-else:
-    s = slide('When pulses matter: axial FWHM against NA', 'Result still computing; this slide fills in when the report is rebuilt.')
-    notes(s, 'Pending result.', 'From fig_lim2002_pulsed.py, PART=na.')
-
-if os.path.exists(os.path.join(PUL, 'pulsed_delay.png')):
-    d = np.load(os.path.join(PUL, 'pulsed_delay.npz'))
-
-    def t20(key, tau):
-        dl, pk = d[f'delays_{tau:g}'], d[f'{key}_{tau:g}_peak']
-        lost = 100 * (1 - pk / pk[np.argmin(np.abs(dl))])
-        pos = dl >= 0
-        return np.interp(20.0, lost[pos], dl[pos]) if lost[pos].max() >= 20 else np.nan
-    s = slide('The time delay', f'20% of the peak is lost at Δt = {t20("pi", 20.0):.0f} fs (θ = π) and '
-              f'{t20("pi2", 20.0):.0f} fs (θ = π/2) for 20 fs pulses.')
-    figure(s, os.path.join(PUL, 'pulsed_delay.png'), 0.45, 1.35, 9.1, 2.95)
-    bullets(s, 0.6, 4.4, 8.9, 0.85, [
-        f'100 fs pulses: 20% lost at Δt = {t20("pi", 100.0):.0f} fs (θ = π) and {t20("pi2", 100.0):.0f} fs (θ = π/2).',
-        'At θ = π a delay moves the meeting point of the pulses along z, at cΔt/2n; the peak follows it.'], 11)
-    notes(s, 'A delay moves where the pulses meet; the peak survives a delay of a fraction of the pulse length.',
-          'The peak two-color signal against the delay between the pulses, in units of the pulse length, and at theta = pi the '
-          'position of the peak along the axis. At theta = pi the delay slides the gate along z, so the signal follows the gate '
-          'until it leaves the focus. At theta = pi/2 the delay moves the gate across the crossed spot.')
-else:
-    s = slide('The time delay', 'Result still computing; this slide fills in when the report is rebuilt.')
-    notes(s, 'Pending result.', 'From fig_lim2002_pulsed.py, PART=delay.')
-
-s = slide('Next steps', 'Two questions to discuss, and the pulsed study to widen.')
+s = slide('Next steps', 'Two questions to discuss, then pulses.')
 bullets(s, 0.6, 1.45, 8.9, 3.75, [
-    'Polarization of the two beams: keep them unpolarized, or fix linear polarizations to match an instrument (see the options).',
+    'Polarization of the two beams: which option to present as the main result (Part 4).',
     'Crossed beams above the lens-crossing limit, NA > n sin(θ/2): report as a computed trend, or stop at the limit.',
-    'Pulses: the misalignment tolerances and fidelity with pulses, and the delay that best recovers a misaligned focus.',
-    'Pulses shorter than about 8 fs: the two colors’ spectra overlap and they interfere, beyond Lim & Saloma’s model.'], 13)
+    'Pulses: settle the list above, then the misalignment tolerances and fidelity with pulses and a delay.'], 13)
 notes(s, 'Two questions to discuss, and the pulsed study to widen.',
-      'Two questions for discussion: the polarization of the beams and the crossed geometry above the lens limit. For pulses, '
-      'the next step is to redo the misalignment tolerances with the pulsed signal, including whether a delay can compensate an '
-      'axial misalignment, since the delay moves the meeting point along the axis.')
+      'Two questions for discussion: the polarization of the beams and the crossed geometry above the lens limit. Then pulses, '
+      'starting from the list of what the model has to account for.')
 
-# ══ drop the sub-decks' title slides and the superseded pulse slides; renumber ══
-ids = list(prs.slides._sldIdLst)
-for i in sorted(set(drop), reverse=True):
-    el = ids[i]
+# ══ remove the marked slides (sub-deck titles, other sections' slides), only now; renumber ══
+for el in ds.DROP:
     prs.part.drop_rel(el.rId)
     prs.slides._sldIdLst.remove(el)
 for i, sl in enumerate(prs.slides, 1):

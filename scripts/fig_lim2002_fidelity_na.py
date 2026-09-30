@@ -40,13 +40,17 @@ PAIR = os.environ.get('PAIR', '2ce')
 TH = os.environ.get('THETA', 'pi')
 THETA = np.pi if TH == 'pi' else np.pi / 2
 AT = float(os.environ.get('ALPHA_T', '0'))
-SUF = '' if AT == 0 else f'_at{AT:g}'
+POL = os.environ.get('POL', 'unpol')             # 2CE: 'unpol' (= circular), 's' or 'p'; 2PE: s unless 'p'
+PSIS = {'unpol': (0.0, np.pi / 2), 's': (np.pi / 2,), 'p': (0.0,)}[POL]
+SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if POL == 'unpol' else f'_pol{POL}')
 NO = 20                                          # offsets −NO..NO steps each way: 41 × 41
 MAX_POINTS = 2.5e6                               # skip an NA whose extended grid would be larger
 
 air = [round(v, 3) for v in np.arange(0.1 if PAIR == '2ce' else 0.3, 0.951, 0.05)] + [0.99]
 water = [1.0, 1.05, 1.1, 1.15, 1.2]
 PLAN = [(na, 1.0) for na in air] + [(na, 1.33) for na in water]
+if os.environ.get('NA_LIST'):                      # a few NAs only, in air, e.g. 0.3,0.5,0.7,0.9
+    PLAN = [(float(v), 1.0) for v in os.environ['NA_LIST'].split(',')]
 
 
 def chunked(f, X, Z, chunk=15000):
@@ -56,15 +60,15 @@ def chunked(f, X, Z, chunk=15000):
 
 
 def beam(lam, na, n, model, X, Z, theta=0.0, field=False):
-    """Intensity (2CE, unpolarized for the vector model) or field (2PE, polarized along y) on a grid."""
+    """Intensity (2CE, unpolarized unless POL = s or p) or field (2PE, along y, or in the plane with POL = p) on a grid."""
     ap = gaussian(AT, (na / n) ** 2) if AT else None
     if field:
-        kw = {} if model == 'sca' else dict(model='rw', psi=np.pi / 2)
+        kw = {} if model == 'sca' else dict(model='rw', psi=0.0 if POL == 'p' else np.pi / 2)
         return chunked(lambda x, z: beam_field(x, z, lam, na, n, theta=theta, apodization=ap, **kw), X, Z)
     if model == 'sca':
         return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, n, theta=theta, apodization=ap)), X, Z)
-    return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, n, theta=theta, model='rw', psi=p,
-                                                                apodization=ap)) for p in (0.0, np.pi / 2)), X, Z)
+    return chunked(lambda x, z: sum(intensity(beam_field(x, z, lam, na, n, theta=theta, model='rw', psi=p,
+                                                          apodization=ap)) for p in PSIS) / len(PSIS), X, Z)
 
 
 def maps(na, n, model):

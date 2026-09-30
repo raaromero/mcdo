@@ -24,6 +24,7 @@ Figures are one metric each at 10 × 7.5 in, fonts 32/28/24 pt, 600 dpi.
 
     python scripts/fig_lim2002_quoted_vs_na.py
     ALPHA_T=4 python scripts/fig_lim2002_quoted_vs_na.py   # the same with input truncation α_t = 4
+    POL=p python scripts/fig_lim2002_quoted_vs_na.py       # both beams linearly polarized, s or p (suffix _pols, _polp)
     -> output/08_two_color/lim2002/quoted_vs_na_{1..5}[_at4].png, quoted_vs_na[_at4].csv
 """
 
@@ -51,7 +52,10 @@ OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'l
 L1, L2, L2P = 0.750, 0.656, 0.700
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
 N = float(os.environ.get('N_MED', '1'))            # medium index; 1 = air, 1.33 = water (to reach NA > 1)
-SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}')
+POL = os.environ.get('POL', 'unpol')                # 2CE beams: 'unpol' (averaged), 's' (both along y, perpendicular
+                                                   # to the plane of the two axes) or 'p' (both in that plane)
+PSIS = {'unpol': (0.0, np.pi / 2), 's': (np.pi / 2,), 'p': (0.0,)}[POL]
+SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}') + ('' if POL == 'unpol' else f'_pol{POL}')
 APOD = lambda na: gaussian(AT, (na / N) ** 2) if AT else None
 MEDIUM = '' if N == 1 else f', n = {N:g}'
 NA_LIST = (np.array([float(v) for v in os.environ['NA_LIST'].split(',')])   # a coarser NA grid, e.g. 0.3,0.5,0.7,0.9
@@ -73,17 +77,17 @@ def chunked(f, x, z, chunk=15000):
 
 
 def intens(lam, na, model, X, Z, **geo):
-    """2CE: one beam's intensity on the grid, unpolarized for the vector model."""
+    """2CE: one beam's intensity on the grid, unpolarized (or s or p, per POL) for the vector model."""
     if model == 'scalar':
         return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, N, apodization=APOD(na), **geo)), X, Z)
-    return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, N, model='rw', psi=p,
-                                                                apodization=APOD(na), **geo))
-                                          for p in (0.0, np.pi / 2)), X, Z)
+    return chunked(lambda x, z: sum(intensity(beam_field(x, z, lam, na, N, model='rw', psi=p,
+                                                          apodization=APOD(na), **geo))
+                                    for p in PSIS) / len(PSIS), X, Z)
 
 
 def field(lam, na, model, X, Z, **geo):
-    """2PE: one beam's field on the grid, polarized along y for the vector model."""
-    kw = {} if model == 'scalar' else dict(model='rw', psi=np.pi / 2)
+    """2PE: one beam's field on the grid, polarized along y (s) for the vector model, or in the plane (p) with POL = p."""
+    kw = {} if model == 'scalar' else dict(model='rw', psi=0.0 if POL == 'p' else np.pi / 2)   # 2PE: s unless POL = p
     return chunked(lambda x, z: beam_field(x, z, lam, na, N, apodization=APOD(na), **kw, **geo), X, Z)
 
 

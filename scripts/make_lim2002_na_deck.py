@@ -72,6 +72,9 @@ def first_above(d, key, m, thr):
 
 
 have = lambda name: os.path.exists(F(name))
+SECTION = os.environ.get('SECTION')                 # progress report: 'uniform' (Parts 2–3) or 'gaussian' (Part 4)
+SUFS = {'uniform': ('',), 'gaussian': ('_at4',)}.get(SECTION, ('', '_at4'))
+GT = ' (α_t = 4)' if SECTION == 'gaussian' else ''  # marks Part 4's result slides
 Q = {suf: q for suf in ('', '_at4') if len(q := load_quoted(suf)) and all((k, 0.5) in q and (k, 0.9) in q for k in range(1, 6))}
 B = {suf: b for suf in ('', '_at4') if len(b := load_breakdown(suf)) and all((t, 0.5) in b and (t, 0.9) in b for t in ('pi', 'pi2'))}
 
@@ -99,7 +102,9 @@ def glossary(title, takeaway, rows):
 def stacked(s, name):
     """Uniform input on top, Gaussian input (α_t = 4) below when it exists; one wide figure each."""
     at4 = name.replace('.png', '_at4.png')
-    if have(at4):
+    if SECTION == 'gaussian' and have(at4):
+        figure(s, F(at4), 0.45, 1.4, 9.1, 3.7)
+    elif SECTION is None and have(at4):
         label(s, 0.3, 1.3, 1.2, 'Uniform', GREY)
         figure(s, F(name), 1.5, 1.28, 8.0, 1.92)
         label(s, 0.3, 3.25, 1.2, 'α_t = 4', PURPLE)
@@ -127,6 +132,8 @@ def one(title, takeaway, path, items, main, script, latex=None, fw=5.6):
     notes(s, main, script, latex)
     return s
 
+
+START = len(prs.slides)                             # slides already in a shared presentation (progress report)
 
 # ══ 1. title ═════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(ds.BLANK)
@@ -174,6 +181,33 @@ notes(s, 'The scalar model tracks the vector one at low NA; focal lengths depart
       'polarization. Metrics set by the width stay close to about NA 0.8, and a Gaussian input reduces every difference. '
       'Lim and Saloma state their model for NA up to 0.5; this marks where it still applies.')
 
+# ══ Gaussian input (Part 4 of the progress report) ═══════════════════════
+if SECTION == 'gaussian' and '_at4' in B and '' in B:
+    g, u = B['_at4'], B['']
+    s = slide('Gaussian input: main points', 'A Gaussian input keeps the scalar model valid to a higher NA and loosens every tolerance.')
+    bullets(s, 0.6, 1.45, 8.9, 3.75, [
+        'Both beams have the same Gaussian input, truncation α_t = 4; everything else is as in Part 2.',
+        f'Tolerances are looser: at NA 0.5, θ = π, {g[("pi", 0.5)]["rx"] / u[("pi", 0.5)]["rx"]:.2f}× across and '
+        f'{g[("pi", 0.5)]["rz"] / u[("pi", 0.5)]["rz"]:.2f}× along, because the dim pupil edge makes the focus act like a lower NA.',
+        f'The scalar axial tolerance departs from the vector one by more than 5% from NA {fmt_na(first_above(g, "pi", "z", 5))} '
+        f'and 10% from NA {fmt_na(first_above(g, "pi", "z", 10))} (uniform: {fmt_na(first_above(u, "pi", "z", 5))} and '
+        f'{fmt_na(first_above(u, "pi", "z", 10))}).',
+        'The power laws keep their exponents: about NA^{−1} across and NA^{−2} along.'], 13)
+    notes(s, 'A Gaussian input keeps the scalar model valid to a higher NA and loosens every tolerance.',
+          'The same study with a Gaussian input on both lenses. The dim edge of the pupil removes the steepest rays, so the '
+          'focus is larger, the tolerances looser, and the scalar model holds to a higher NA.')
+    s = slide('Gaussian input: the pupil of both beams', 'Each lens is filled by a Gaussian beam truncated at α_t = 4.')
+    bullets(s, 0.6, 1.45, 8.9, 3.75, [
+        'Pupil amplitude of each beam: A(ϑ) = exp(−α_t sin^2ϑ / sin^2α), with ϑ the ray angle and sin α = NA/n.',
+        'In the paraxial model the same function at sin ϑ = ρ NA/n is exactly exp(−α_t ρ^2), ρ the pupil radius over its edge.',
+        'α_t = 0 is uniform input, Lim & Saloma’s case. α_t = 4: the field at the pupil edge is e^{−4} ≈ 1.8% of the centre, '
+        'and the beam’s 1/e^2 intensity radius is half the pupil radius.',
+        'The same α_t on both lenses, for both wavelengths, in every result of this part.'], 13)
+    notes(s, 'Each lens is filled by a Gaussian beam truncated at alpha_t = 4.',
+          'The Gaussian input multiplies the pupil of both lenses by the same apodization. In the paraxial model it reduces to '
+          'exp(−alpha_t rho squared). With truncation 4 the edge of the pupil is dim, so the high-angle rays carry little light.',
+          r'A(\vartheta) = \exp\!\left(-\alpha_t \frac{\sin^2\vartheta}{\sin^2\alpha}\right), \quad \sin\alpha = \mathrm{NA}/n, \qquad A = e^{-\alpha_t \rho^2}\ (\text{paraxial})')
+
 # ══ 3–4. glossary ════════════════════════════════════════════════════════
 glossary('Glossary: geometry and optics', 'Every symbol on the following slides.', [
     ('NA', 'numerical aperture, n sin α: how wide a cone of light the lens focuses'),
@@ -218,18 +252,20 @@ one('Geometry: x_c, z_c and θ', 'Beam 2’s focus O′ is displaced from O by x
 # ══ the single-beam field, before and after ══════════════════════════════
 s = slide('The single-beam field: before and after', 'Lim & Saloma’s paraxial scalar field against the vector Richards–Wolf field.')
 text(s, 0.5, 1.35, 4.3, 0.35, 'Before: Lim & Saloma (paraxial scalar)', 13, PURPLE, True, 'Cambria')
-bullets(s, 0.5, 1.8, 4.3, 3.35, [
+bullets(s, 0.5, 1.8, 4.3, 2.75, [
     'U(u, v) ∝ e^{ikz} · 2∫_0^1 J_0(vρ) e^{−iuρ²/2} ρ dρ',
     'u = k NA² z/n, v = k NA r, k = 2πn/λ',
     'Intensity I = |U|²',
     'One scalar field; the phase kz cos ϑ is replaced by its small-angle form.'], 12)
 text(s, 5.1, 1.35, 4.4, 0.35, 'After: Richards–Wolf (vector)', 13, PURPLE, True, 'Cambria')
-bullets(s, 5.1, 1.8, 4.4, 3.35, [
+bullets(s, 5.1, 1.8, 4.4, 2.75, [
     'E(r, φ, z) ∝ (I_0 + I_2 cos 2φ, I_2 sin 2φ, 2i I_1 cos φ)',
     'I_0 = ∫_0^α √cos ϑ sin ϑ (1 + cos ϑ) J_0(kr sin ϑ) e^{ikz cos ϑ} dϑ',
     'I_1 = ∫_0^α √cos ϑ sin²ϑ J_1(kr sin ϑ) e^{ikz cos ϑ} dϑ',
     'I_2 = ∫_0^α √cos ϑ sin ϑ (1 − cos ϑ) J_2(kr sin ϑ) e^{ikz cos ϑ} dϑ',
     'sin α = NA/n; unpolarized: I averaged over two perpendicular input polarizations.'], 11.5)
+text(s, 0.5, 4.6, 9.0, 0.3, 'r, z: distance from the focus across and along the axis; φ: azimuth about the axis; ρ: pupil radius over its '
+     'edge; ϑ: ray angle; J_n: Bessel function of order n; λ: vacuum wavelength; n: medium index.', 10, GREY)
 text(s, 0.5, 4.95, 9.0, 0.3, 'Both: a Gaussian input multiplies the pupil by A(ϑ) = exp(−α_t sin²ϑ/sin²α); α_t = 0 is uniform.', 11, GREY)
 notes(s, 'Lim and Saloma’s paraxial scalar field against the vector Richards–Wolf field.',
       'Before: Lim and Saloma’s single-beam field, a scalar Debye integral in its small-angle, paraxial form, in the '
@@ -312,11 +348,12 @@ for k, (title, paper) in enumerate(QUOTED, 1):
         pending(f'Quoted loss {k}: {title}', f'Lim & Saloma quote {paper}% lost at NA 0.5. Curve against NA from '
                 'fig_lim2002_quoted_vs_na.py.')
         continue
-    if '_at4' not in Q:                             # uniform input only; α_t = 4 is a next step
-        v5u, s5u = Q[''][(k, 0.5)]
-        v9u, s9u = Q[''][(k, 0.9)]
-        one(f'Quoted loss {k}: {title}', f'Lim & Saloma: {paper}% lost at NA 0.5. Vector: {v5u:.0f}% at NA 0.5, {v9u:.0f}% at NA 0.9.',
-            F(f'quoted_vs_na_{k}.png'), [
+    if '_at4' not in Q or SECTION:                  # one input per slide: uniform, or α_t = 4 in the Gaussian section
+        qs = '_at4' if SECTION == 'gaussian' else ''
+        v5u, s5u = Q[qs][(k, 0.5)]
+        v9u, s9u = Q[qs][(k, 0.9)]
+        one(f'Quoted loss {k}{GT}: {title}', f'Lim & Saloma: {paper}% lost at NA 0.5 (uniform). Vector: {v5u:.0f}% at NA 0.5, {v9u:.0f}% at NA 0.9.',
+            F(f'quoted_vs_na_{k}{qs}.png'), [
                 f'NA 0.5: vector {v5u:.1f}%, scalar {s5u:.1f}%, Lim & Saloma {paper}%.',
                 f'NA 0.9: vector {v9u:.1f}% (the scalar model is shown only up to NA 0.5).',
                 'The same offset in wavelengths costs more as the spot shrinks.'],
@@ -340,7 +377,7 @@ for k, (title, paper) in enumerate(QUOTED, 1):
 
 # ══ 13–16. tolerances and severity ═══════════════════════════════════════
 for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
-    if suf not in B:                                # α_t = 4 is a next step until its sweep is run
+    if suf not in B or suf not in SUFS:                                # α_t = 4 is a next step until its sweep is run
         continue
     b = B[suf]
     one(f'20% tolerances against NA, {lab}', 'Vector (solid) against the paraxial scalar model (dotted); black dashed: Lim & Saloma at NA 0.5.',
@@ -369,7 +406,19 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
 
 # ══ water, NA to 1.2 ═════════════════════════════════════════════════════
 BW = {suf: b for suf in ('_n1.33', '_at4_n1.33') if len(b := load_breakdown(suf))}
-if have('na_breakdown_metrics_n1.33.png') and '_n1.33' in BW:
+if SECTION and have(f'na_breakdown_metrics{SUFS[0]}_n1.33.png') and f'{SUFS[0]}_n1.33' in BW:
+    bw, ba = BW[f'{SUFS[0]}_n1.33'], B[SUFS[0]]
+    one(f'20% tolerances in water, NA 0.5 to 1.2{GT}', 'The scalar deviation follows NA/n: in water it starts at 1.33 times the air NA.',
+        F(f'na_breakdown_metrics{SUFS[0]}_n1.33.png'), [
+            f'θ = π, axial: the deviation passes 5% at NA {fmt_na(first_above(bw, "pi", "z", 5))} and 10% at NA '
+            f'{fmt_na(first_above(bw, "pi", "z", 10))} (air: {fmt_na(first_above(ba, "pi", "z", 5))} and '
+            f'{fmt_na(first_above(ba, "pi", "z", 10))}).',
+            'The paraxial scalar model is shown only at NA 0.5, its stated range.',
+            'Hatched: θ = π/2 above NA 0.94, where two lenses cannot cross in water.'],
+        'In water the scalar deviation starts at 1.33 times the air NA: it follows the aperture angle NA/n.',
+        'The same tolerances in water, to NA 1.2. The NA at which the scalar model departs by five and ten percent moves up '
+        'by the index, because what sets the deviation is the half-angle of the cone, sin alpha = NA/n.', fw=5.4)
+elif have('na_breakdown_metrics_n1.33.png') and '_n1.33' in BW:
     bw = BW['_n1.33']
     pair('20% tolerances in water, NA 0.5 to 1.2', 'The scalar deviation follows NA/n: in water it starts at 1.33 times the air NA.',
          F('na_breakdown_metrics_n1.33.png'), F('na_breakdown_metrics_at4_n1.33.png'),
@@ -388,7 +437,7 @@ for tag, lab in (('a', '2CE, θ = π'), ('b', '2PE, θ = π'), ('c', '2CE, θ = 
     if not have(f'na_peakmaps_fig4{tag}.png'):
         pending(f'Fig. 4({tag}) against NA: {lab}', 'Peak maps over (x_c, z_c) at NA 0.5, 0.7, 0.9 from fig_lim2002_na_peakmaps.py.')
         continue
-    s = slide(f'Fig. 4({tag}) against NA: {lab}', 'Peak surviving over (x_c, z_c): the tolerance region shrinks as NA grows.')
+    s = slide(f'Fig. 4({tag}) against NA{GT}: {lab}', 'Peak surviving over (x_c, z_c): the tolerance region shrinks as NA grows.')
     stacked(s, f'na_peakmaps_fig4{tag}.png')
     notes(s, 'The region of (x_c, z_c) that keeps most of the peak shrinks as NA grows.',
           f'Lim & Saloma’s Fig. 4({tag}), {lab}, recomputed with the vector focus at NA 0.5, 0.7 and 0.9, on their '
@@ -419,7 +468,7 @@ PANEL = {'a': '2CE, θ = π', 'b': '2PE, θ = π', 'c': '2CE, θ = π/2', 'd': '
 for fig_no, where in ((2, 'aligned'), (3, 'O′ = (0.4, 1.0) µm')):
     for tag, lab in PANEL.items():
         nas = '0.5, 0.7, 0.9' if 'π/2' not in lab else '0.5, 0.6, 0.7'
-        s = slide(f'Fig. {fig_no}({tag}) against NA: {lab}', f'{where}; NA {nas}, vector, Lim & Saloma’s axes.')
+        s = slide(f'Fig. {fig_no}({tag}) against NA{GT}: {lab}', f'{where}; NA {nas}, vector, Lim & Saloma’s axes.')
         stacked(s, f'na_contours_fig{fig_no}{tag}.png')
         notes(s, 'The same panel at three NAs: the spot shrinks and becomes less elongated.',
               f'Lim & Saloma’s Fig. {fig_no}({tag}), {lab}, {where}, recomputed with the vector focus at NA {nas} on '
@@ -455,7 +504,19 @@ def ratio_at(a, na, col):
 
 for case, lab in (('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2pe_pi', '2PE, θ = π'), ('2pe_pi2', '2PE, θ = π/2')):
     u, g = os.path.join(FD, f'fidelity_na_{case}_F.png'), os.path.join(FD, f'fidelity_na_{case}_at4_F.png')
-    a = shape_rows(case)
+    a = shape_rows(case + ('_at4' if SECTION == 'gaussian' else ''))
+    if SECTION and os.path.exists(g if SECTION == 'gaussian' else u) and len(a):
+        hx, hz, ar = (ratio_at(a, 0.9, c) for c in (2, 3, 4))
+        s = slide(f'Fidelity against NA{GT}: {lab}', f'NA 0.9, vector over scalar: half-width {hx:.2f} in x_c, {hz:.2f} in z_c; area {ar:.2f}.')
+        figure(s, g if SECTION == 'gaussian' else u, 0.45, 1.35, 4.9, 3.9)
+        bullets(s, 5.55, 1.45, 3.95, 3.75, [
+            f'NA 0.5, vector over scalar: {ratio_at(a, 0.5, 2):.2f} in x_c, {ratio_at(a, 0.5, 3):.2f} in z_c, area {ratio_at(a, 0.5, 4):.2f}.',
+            f'NA 0.9: {hx:.2f}, {hz:.2f}, area {ar:.2f}.',
+            '(a) the F = 0.8 contour at every NA; (b) F vector − F scalar; (c) the shape against NA.'], 11.5)
+        notes(s, f'{lab}: how the F ≥ 0.8 region changes shape against NA, relative to the scalar model.',
+              f'Linfoot fidelity over the offset of O prime for {lab}{GT}. At NA 0.5 the vector region is {ratio_at(a, 0.5, 2):.2f} '
+              f'of the scalar in x_c and {ratio_at(a, 0.5, 3):.2f} in z_c; at NA 0.9, {hx:.2f} and {hz:.2f}, with area {ar:.2f}.')
+        continue
     if not (os.path.exists(u) and os.path.exists(g)) or not len(a):
         pending(f'Fidelity against NA: {lab}', 'F maps over the offset of O′ against NA from fig_lim2002_fidelity_na.py.')
         continue
@@ -512,6 +573,16 @@ bullets(s, 0.6, 1.45, 8.9, 3.7, [
     'Second set of results with a Gaussian input (α_t = 4): the quoted losses, tolerances and deviation against NA.'], 13)
 notes(s, 'The lens-crossing limit to settle.', 'Whether to keep theta = pi/2 above the lens-crossing limit as a trend.')
 
+if SECTION:                                          # keep only this section's slides of this run
+    keep_out = (('Gaussian input', 'Check 1') if SECTION == 'uniform' else
+                ('Where Lim', 'Main points', 'Glossary', 'Geometry:', 'The single-beam field', 'Check 2', 'Discussion:',
+                 'Where the length difference', 'Profiles at', 'Fidelity against NA: how', 'How NA changes'))
+    keep_out += ('Next: optical', 'Other next steps')
+    ds.DROP = getattr(ds, 'DROP', [])                  # marked here, removed once by the caller after every slide is added
+    for sl, el in list(zip(prs.slides, prs.slides._sldIdLst))[START + 1:]:   # the run's own title is the caller's to replace
+        t = next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
+        if t.startswith(keep_out):
+            ds.DROP.append(el)
 if os.environ.get('DECK_APPEND'):                    # set by make_lim2002_progress_deck.py, which saves the whole report
     raise SystemExit
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
