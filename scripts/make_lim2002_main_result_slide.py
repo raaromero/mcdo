@@ -51,13 +51,13 @@ bullets(s, 4.6, 1.4, 4.95, 3.85, [
     f'(fits over NA {na_lo:g}–{na_hi:g}).',
     f'At θ = π/2 both tolerances fall as about NA^{{−{p2:.1f}}}.',
     'Lim & Saloma’s paraxial scalar model scales exactly as NA^{−1} and NA^{−2} and tracks the vector result up to NA 0.5.',
-    f'At NA 0.5 it already overstates the length-set tolerances by about {err05:.0f}%, and the error grows beyond it.'], 11.5)
+    f'Lim & Saloma state their model for NA ≤ 0.5; at that edge its length-set tolerances are {err05:.0f}% above the vector ones, and the gap grows beyond it.'], 11.5)
 notes(s, 'Tolerances fall as a power of NA; Lim and Saloma’s scalar model holds only up to NA 0.5.',
       'Each panel shows the offset of beam 2’s focus that costs twenty percent of the two-color peak, against NA, for '
       'the facing and crossed geometries and for offsets across and along the axis. Blue is the vector focus, red Lim '
       'and Saloma’s paraxial scalar model within its stated range, and the black dashed line their quoted value at NA '
       '0.5. The fits are power laws, straight lines on these log–log axes. The scalar model scales exactly as one over '
-      'NA and one over NA squared; the vector focus departs from that, so the scalar model overstates the tolerances '
+      'NA and one over NA squared; the vector focus departs from that, so the scalar model gives larger values for the tolerances '
       'set by the focal length, by about seven percent already at NA 0.5.',
       r'x_c^{20\%},\ z_c^{20\%} = A\,\mathrm{NA}^{-p}')
 s = slide('Next steps', 'Extending the NA study, then adding optical pulses.')

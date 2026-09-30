@@ -50,8 +50,10 @@ from mcdo.twobeam import beam_field, intensity
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 L1, L2, L2P = 0.750, 0.656, 0.700
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
-SUF = '' if AT == 0 else f'_at{AT:g}'
-APOD = lambda na: gaussian(AT, na ** 2) if AT else None
+N = float(os.environ.get('N_MED', '1'))            # medium index; 1 = air, 1.33 = water (to reach NA > 1)
+SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}')
+APOD = lambda na: gaussian(AT, (na / N) ** 2) if AT else None
+MEDIUM = '' if N == 1 else f', n = {N:g}'
 NA_LIST = (np.array([float(v) for v in os.environ['NA_LIST'].split(',')])   # a coarser NA grid, e.g. 0.3,0.5,0.7,0.9
            if os.environ.get('NA_LIST') else None)
 METRICS = [  # (pair, θ, offset along, offset in λ, λ unit, paper %, title)
@@ -73,8 +75,8 @@ def chunked(f, x, z, chunk=15000):
 def intens(lam, na, model, X, Z, **geo):
     """2CE: one beam's intensity on the grid, unpolarized for the vector model."""
     if model == 'scalar':
-        return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, 1.0, apodization=APOD(na), **geo)), X, Z)
-    return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, model='rw', psi=p,
+        return chunked(lambda x, z: intensity(beam_field(x, z, lam, na, N, apodization=APOD(na), **geo)), X, Z)
+    return chunked(lambda x, z: 0.5 * sum(intensity(beam_field(x, z, lam, na, N, model='rw', psi=p,
                                                                 apodization=APOD(na), **geo))
                                           for p in (0.0, np.pi / 2)), X, Z)
 
@@ -82,7 +84,7 @@ def intens(lam, na, model, X, Z, **geo):
 def field(lam, na, model, X, Z, **geo):
     """2PE: one beam's field on the grid, polarized along y for the vector model."""
     kw = {} if model == 'scalar' else dict(model='rw', psi=np.pi / 2)
-    return chunked(lambda x, z: beam_field(x, z, lam, na, 1.0, apodization=APOD(na), **kw, **geo), X, Z)
+    return chunked(lambda x, z: beam_field(x, z, lam, na, N, apodization=APOD(na), **kw, **geo), X, Z)
 
 
 _BEAM1 = {}
@@ -134,16 +136,16 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     fig, ax = plt.subplots(figsize=(10.0, 7.5))
     ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='NA ≤ 0.5, scalar model\'s stated range')
     if th == np.pi / 2:
-        ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
-                   label='NA > 0.71: two lenses cannot cross in air')
+        ax.axvspan(N / np.sqrt(2), max(1.0, nas[-1] + 0.02), color='none', hatch='//', ec='#999999', lw=0, zorder=0,
+                   label=f'NA > {N / np.sqrt(2):.2f}: two lenses cannot cross' + (' in air' if N == 1 else ''))
     ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='Vector (Richards–Wolf)')
     ax.plot(nas, S, ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar')
     ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3,
               label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
-    ax.set_xlim(0.0, 1.0)
+    ax.set_xlim(0.0, max(1.0, nas[-1] + 0.02))
     ax.set_xlabel('NA')
     ax.set_ylabel('Peak lost (%)')
-    ax.set_title(title + (f', α$_t$ = {AT:g}' if AT else ''))
+    ax.set_title(title + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM)
     ax.set_ylim(0, 100)
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
     fig.savefig(os.path.join(OUT, f'quoted_vs_na_{k}{SUF}.png'), dpi=600, bbox_inches='tight')

@@ -1,4 +1,4 @@
-r"""Deck: Lim & Saloma (2002) against NA. Where their scalar model breaks down,
+r"""Deck: Lim & Saloma (2002) against NA. Where their scalar model applies,
 measured on their own metrics, for uniform input and for α_t = 4.
 
 Same style as the replication deck (mcdo.deckstyle). Every number on the slides
@@ -130,7 +130,7 @@ def one(title, takeaway, path, items, main, script, latex=None, fw=5.6):
 s = prs.slides.add_slide(ds.BLANK)
 s.background.fill.solid(); s.background.fill.fore_color.rgb = NAVY
 dots(s, 0.6, 0.7, 0.2, 0.27)
-text(s, 0.6, 1.15, 8.8, 1.5, 'Severity of the scalar-model defect as a function of NA: Lim & Saloma (2002)',
+text(s, 0.6, 1.15, 8.8, 1.5, 'Where Lim & Saloma’s scalar model applies, as a function of NA',
      30, WHITE, True, 'Cambria')
 text(s, 0.6, 2.85, 8.8, 0.4, 'Roland Albert A. Romero', 18, WHITE)
 text(s, 0.6, 3.25, 8.8, 0.35, 'National Institute of Physics, University of the Philippines Diliman', 13, PALE)
@@ -146,30 +146,31 @@ notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 a
 # ══ 2. main points ═══════════════════════════════════════════════════════
 if '' in B:
     b0 = B['']
-    s = slide('Main points', 'The scalar model misjudges focal length first; widths and shapes hold much longer.')
+    s = slide('Main points', 'The scalar model tracks the vector one at low NA; focal lengths depart first.')
     bullets(s, 0.6, 1.45, 8.9, 3.75, [
         'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
         'of the analysis to 10^{−8}.',
         'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
-        f'The scalar model’s error in the axial tolerance exceeds 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))} '
-        f'and 10% from NA {fmt_na(first_above(b0, "pi", "z", 10))}.',
-        'That error comes from the small-angle approximation of the phase, not from ignoring polarization.',
+        f'The scalar axial tolerance departs from the vector one by more than 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))} '
+        f'and by more than 10% from NA {fmt_na(first_above(b0, "pi", "z", 10))}.',
+        'That difference comes from the small-angle approximation of the phase, not from ignoring polarization.',
         f'Quantities set by the spot width stay within 5% up to NA {fmt_na(first_above(b0, "pi", "x", 5))}.',
-        f'At Lim & Saloma’s own NA 0.5 the scalar model already overstates the axial tolerance by '
-        f'{b0[("pi", 0.5)]["z"]:.0f}%.'], 13)
+        f'Lim & Saloma state their model for NA ≤ 0.5; at that edge its axial tolerance is '
+        f'{b0[("pi", 0.5)]["z"]:.0f}% above the vector one.'], 13)
 else:                                                 # the uniform sweep is still running: no numbers yet
-    s = slide('Main points', 'The scalar model misjudges focal length first; widths and shapes hold much longer.')
+    s = slide('Main points', 'The scalar model tracks the vector one at low NA; focal lengths depart first.')
     bullets(s, 0.6, 1.45, 8.9, 3.75, [
         'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
         'of the analysis to 10^{−8}.',
         'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
-        'Tolerances set by the focal length go wrong first as NA grows; those set by the width hold much longer.',
-        'That error comes from the small-angle approximation of the phase, not from ignoring polarization.',
+        'Tolerances set by the focal length depart first as NA grows; those set by the width hold much longer.',
+        'That difference comes from the small-angle approximation of the phase, not from ignoring polarization.',
         '(Thresholds and percentages fill in when the dense uniform sweep finishes.)'], 13)
-notes(s, 'The scalar model misjudges focal length first; widths and shapes hold much longer.',
-      'Four points. The models and the engine check out at low NA. The metrics set by the length of the focus go wrong '
-      'first, above five percent from NA 0.45 and above ten percent from 0.6. The cause is the paraxial phase, not '
-      'polarization. Metrics set by the width hold to about NA 0.8, and a Gaussian input reduces every error.')
+notes(s, 'The scalar model tracks the vector one at low NA; focal lengths depart first.',
+      'The models and the engine check out at low NA. The metrics set by the length of the focus depart first, by more '
+      'than five percent from NA 0.45 and more than ten percent from 0.6. The cause is the paraxial phase, not '
+      'polarization. Metrics set by the width stay close to about NA 0.8, and a Gaussian input reduces every difference. '
+      'Lim and Saloma state their model for NA up to 0.5; this marks where it still applies.')
 
 # ══ 3–4. glossary ════════════════════════════════════════════════════════
 glossary('Glossary: geometry and optics', 'Every symbol on the following slides.', [
@@ -197,7 +198,7 @@ glossary('Glossary: signals, models and measures', 'What is computed and how it 
     ('Unpolarized', 'intensity averaged over two orthogonal input polarizations'),
     ('α_t', 'truncation parameter, pupil amplitude exp(−α_t sin²ϑ/sin²α); 0 = uniform'),
     ('FWHM', 'full width at half maximum of a profile'),
-    ('Scalar error', '|scalar/vector − 1| of a metric, in percent'),
+    ('Scalar deviation', '|scalar/vector − 1| of a metric, in percent: how far the scalar model departs'),
     ('Linfoot F', 'fidelity of the scalar PSF against the vector one; 1 − F reported'),
 ])
 
@@ -211,6 +212,34 @@ one('Geometry: x_c, z_c and θ', 'Beam 2’s focus O′ is displaced from O by x
     'Beam 2’s focus O prime is displaced from O by x_c across and z_c along L1’s axis.',
     'The geometry of Lim & Saloma’s Fig. 1. Every metric in this deck is a peak loss or a tolerance for moving O prime '
     'away from O, at the facing (theta = pi) or crossed (theta = pi/2) arrangement.', fw=4.4)
+
+# ══ the single-beam field, before and after ══════════════════════════════
+s = slide('The single-beam field: before and after', 'Lim & Saloma’s paraxial scalar field against the vector Richards–Wolf field.')
+text(s, 0.5, 1.35, 4.3, 0.35, 'Before: Lim & Saloma (paraxial scalar)', 13, PURPLE, True, 'Cambria')
+bullets(s, 0.5, 1.8, 4.3, 3.35, [
+    'U(u, v) ∝ e^{ikz} · 2∫_0^1 J_0(vρ) e^{−iuρ²/2} ρ dρ',
+    'u = k NA² z/n, v = k NA r, k = 2πn/λ',
+    'Intensity I = |U|²',
+    'One scalar field; the phase kz cos ϑ is replaced by its small-angle form.'], 12)
+text(s, 5.1, 1.35, 4.4, 0.35, 'After: Richards–Wolf (vector)', 13, PURPLE, True, 'Cambria')
+bullets(s, 5.1, 1.8, 4.4, 3.35, [
+    'E(r, φ, z) ∝ (I_0 + I_2 cos 2φ, I_2 sin 2φ, 2i I_1 cos φ)',
+    'I_0 = ∫_0^α √cos ϑ sin ϑ (1 + cos ϑ) J_0(kr sin ϑ) e^{ikz cos ϑ} dϑ',
+    'I_1 = ∫_0^α √cos ϑ sin²ϑ J_1(kr sin ϑ) e^{ikz cos ϑ} dϑ',
+    'I_2 = ∫_0^α √cos ϑ sin ϑ (1 − cos ϑ) J_2(kr sin ϑ) e^{ikz cos ϑ} dϑ',
+    'sin α = NA/n; unpolarized: I averaged over two perpendicular input polarizations.'], 11.5)
+text(s, 0.5, 4.95, 9.0, 0.3, 'Both: a Gaussian input multiplies the pupil by A(ϑ) = exp(−α_t sin²ϑ/sin²α); α_t = 0 is uniform.', 11, GREY)
+notes(s, 'Lim and Saloma’s paraxial scalar field against the vector Richards–Wolf field.',
+      'Before: Lim and Saloma’s single-beam field, a scalar Debye integral in its small-angle, paraxial form, in the '
+      'optical coordinates u and v. After: the Richards–Wolf field, which keeps the exact phase kz cos theta, the '
+      'aplanatic factor root cos theta, and the three components of the electric field. Both take the same pupil '
+      'function for a Gaussian input. At low NA the second reduces to the first.',
+      r"""U(u,v) \propto e^{ikz}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho, \quad u = \frac{k\,\mathrm{NA}^2 z}{n},\ v = k\,\mathrm{NA}\, r
+\mathbf{E}(r,\phi,z) \propto \left(I_0 + I_2\cos 2\phi,\ I_2 \sin 2\phi,\ 2i I_1 \cos\phi\right)
+I_0 = \int_0^\alpha \sqrt{\cos\vartheta}\,\sin\vartheta\,(1+\cos\vartheta)\, J_0(kr\sin\vartheta)\, e^{ikz\cos\vartheta}\, d\vartheta
+I_1 = \int_0^\alpha \sqrt{\cos\vartheta}\,\sin^2\vartheta\, J_1(kr\sin\vartheta)\, e^{ikz\cos\vartheta}\, d\vartheta
+I_2 = \int_0^\alpha \sqrt{\cos\vartheta}\,\sin\vartheta\,(1-\cos\vartheta)\, J_2(kr\sin\vartheta)\, e^{ikz\cos\vartheta}\, d\vartheta
+A(\vartheta) = \exp\!\left(-\alpha_t \frac{\sin^2\vartheta}{\sin^2\alpha}\right), \qquad \sin\alpha = \mathrm{NA}/n""")
 
 # ══ 6–9. checks, Gaussian input, the lens problem ═════════════════════════
 one('Check 1: Lim & Saloma is the α_t → 0 limit', 'Truncated scalar foci converge smoothly onto Lim & Saloma’s as α_t → 0.',
@@ -238,16 +267,42 @@ one('Check 2: scalar and vector agree at low NA', 'At every truncation the three
     'Scalar and vector on-axis profiles for truncation 0, 1 and 4 at NA 0.1, 0.3 and 0.5, with the Richards–Wolf '
     'engine used throughout the rest of the analysis overlaid. The numbers we project come from identical optics.')
 
-s = slide('The θ = π/2 lens problem', 'Above NA 0.71 in air, two lenses cannot cross at θ = π/2.')
+s = slide('Discussion: crossed beams above NA 0.71', 'In air, two lenses cannot cross at θ = π/2 above NA 1/√2.')
 figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit_air.png'), 0.45, 1.35, 5.4, 3.85)
-text(s, 6.1, 1.45, 3.4, 3.7, '(description to be written)', 13, GREY)
-notes(s, 'Above NA 0.71 in air, two lenses cannot cross at theta = pi/2.',
-      'Each lens focuses a cone of half-angle alpha, with NA = n sin alpha. At theta = pi/2 the two cones fit side by '
-      'side only if alpha is at most 45 degrees, NA at most 1 over root 2 in air. Above that the two lenses would occupy '
-      'the same directions from the focus. The field overlap is still well defined, so these NAs are computed and '
-      'hatched in the plots as not buildable. The limit does not arise at theta = 0, where both colors share one lens, '
-      'or at theta = pi, where the lenses face each other.',
+bullets(s, 6.0, 1.45, 3.5, 3.75, [
+    'Each lens focuses a cone of half-angle α, with NA = n sin α.',
+    'At θ = π/2 the cones fit side by side only while α ≤ 45°.',
+    'Above that, the two lenses and their rays occupy the same directions from the focus.',
+    'At θ = 0 (one shared lens) and θ = π (facing lenses) there is no such limit.'], 12)
+notes(s, 'In air, two lenses cannot cross at theta = pi/2 above NA 1 over root 2.',
+      'The limit is geometric. Each lens fills a cone of directions around its axis. With the axes at right angles, the '
+      'cones stop overlapping only while each half-angle is at most 45 degrees, which in air is NA 0.71.',
       r'\mathrm{NA} = n\sin\alpha \le \frac{n}{\sqrt{2}}')
+
+s = slide('Discussion: how high can crossed beams go?', 'Two lenses fit only while NA ≤ n sin(θ/2).')
+figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_general.png'), 0.45, 1.35, 5.2, 3.85)
+bullets(s, 5.85, 1.45, 3.65, 3.75, [
+    'At θ = π/2 the limit is 0.71 in air, 0.94 in water and 1.07 in immersion oil.',
+    'NA can never exceed n itself, so NA above 1 needs an immersion medium.',
+    'Crossing at θ = π/2 with NA 1.2 would need n ≥ 1.70, beyond common immersion media.',
+    'A smaller NA, or a wider angle between the lenses, keeps the geometry buildable.'], 12)
+notes(s, 'Two lenses fit only while NA is at most n sin(theta/2).',
+      'The general condition for two cones meeting at angle theta is that each half-angle be at most theta over two. '
+      'At theta = pi/2 that gives 0.71 in air, 0.94 in water and 1.07 in oil. NA 1.2 at right angles would need an '
+      'index of at least 1.7.',
+      r'\mathrm{NA} \le n \sin(\theta/2)')
+
+s = slide('Discussion: what our results above the limit mean', 'Computed field overlap, not a buildable microscope.')
+bullets(s, 0.6, 1.45, 8.9, 3.75, [
+    'We keep computing θ = π/2 above the limit, in air to NA 0.99 and in water to NA 1.2; these ranges are hatched.',
+    'The calculation assumes both full cones reach the focus; real lenses there would block part of each other’s rays.',
+    'So above the limit the results are a trend of the ideal overlap, not what an instrument would measure.',
+    'Question 1: report these as trends, or stop θ = π/2 at the limit of the medium?',
+    'Question 2: move the crossed-beam study to immersion (water, up to NA 0.94)?',
+    'Question 3: study other crossing angles, where the limit is n sin(θ/2)?'], 13)
+notes(s, 'Computed field overlap, not a buildable microscope.',
+      'The results above the limit are well-defined calculations of how two ideal foci overlap, but no pair of lenses '
+      'could deliver those full cones at right angles. These are the questions for the discussion.')
 
 # ══ 8–12. the paper's quoted losses against NA ═══════════════════════════
 for k, (title, paper) in enumerate(QUOTED, 1):
@@ -291,13 +346,13 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
             f'θ = π, axial: vector {b[("pi", 0.5)]["rz"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rz"]:.2f} µm at NA 0.9.',
             f'θ = π, in-plane: vector {b[("pi", 0.5)]["rx"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rx"]:.2f} µm at NA 0.9.',
             'Hatched: θ = π/2 above NA 0.71, not buildable in air.'],
-        'Tolerances shrink with the spot; the scalar model overstates the length-set ones.',
+        'Tolerances shrink with the spot; the scalar model gives larger length-set ones than the vector model.',
         f'The offset costing twenty percent of the two-color peak, along x_c and z_c, at theta = pi and pi/2, for {lab}. '
         'The vector focus is the reference; the dotted line is the paraxial scalar model. The gap between them is the next slide.',
         fw=5.4)
     rows = [(f'θ = {"π" if key == "pi" else "π/2"}, {nm}', fmt_na(first_above(b, key, m, 5)), fmt_na(first_above(b, key, m, 10)))
             for key in ('pi', 'pi2') for m, nm in (('z', 'tolerance z_c'), ('x', 'tolerance x_c'), ('wz', 'length'), ('wx', 'width'))]
-    s = slide(f'Severity of the scalar model’s error, {lab}', 'NA at which the scalar error first exceeds 5% and 10%.')
+    s = slide(f'How far the scalar model departs, {lab}', 'NA at which the scalar–vector deviation first exceeds 5% and 10%.')
     figure(s, F(f'na_breakdown_severity{suf}.png'), 0.45, 1.35, 5.4, 3.85)
     for j, h in enumerate(('', '5%', '10%')):
         text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.42, 1.7 if j == 0 else 0.75, 0.25, h, 10, GREY, True,
@@ -306,8 +361,8 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
         for j, v in enumerate(row):
             text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.72 + i * 0.3, 1.7 if j == 0 else 0.75, 0.28, v,
                  9.5, NAVY, j == 0, align=None if j == 0 else PP_ALIGN.CENTER)
-    notes(s, 'The scalar model’s error grows with NA; length-set metrics cross 5% first.',
-          f'Each line is the scalar model’s relative error against the vector focus, for {lab}. The table gives the NA '
+    notes(s, 'The scalar–vector deviation grows with NA; length-set metrics cross 5% first.',
+          f'Each line is how far the scalar model departs from the vector focus, in percent, for {lab}. The table gives the NA '
           'at which each first exceeds five and ten percent. Entries above 0.95 never cross in the range computed.')
 
 # ══ Fig. 4 maps against NA ═══════════════════════════════════════════════
@@ -322,22 +377,22 @@ for tag, lab in (('a', '2CE, θ = π'), ('b', '2PE, θ = π'), ('c', '2CE, θ = 
           'offset axes. Each contour marks the offsets that keep that percentage of the aligned peak.')
 
 # ══ 17–18. why: the error split ══════════════════════════════════════════
-one('Where the length error comes from', 'Keeping the exact phase fixes the length; polarization only widens the spot slightly.',
+one('Where the length difference comes from', 'Keeping the exact phase fixes the length; polarization only widens the spot slightly.',
     F('na_profiles_theta_pi.png'), [
         'Lim & Saloma’s model makes two simplifications: a small-angle phase and no polarization.',
         'A third model keeps the exact phase but still ignores polarization; its spot length matches the vector one '
         '(θ = π, NA 0.5: 3324 against 3326 nm; Lim & Saloma: 3562 nm).',
-        'So the length error is the small-angle phase; polarization only widens the spot, by 2–13%.'],
-    'The length error comes from the small-angle phase; polarization only widens the spot slightly.',
+        'So the length difference is the small-angle phase; polarization only widens the spot, by 2–13%.'],
+    'The length difference comes from the small-angle phase; polarization only widens the spot slightly.',
     'Three models: Lim & Saloma’s paraxial scalar focus, the exact scalar Debye integral, and the vector focus. The '
-    'scalar Debye length equals the vector length, so the length error comes from replacing kz cos theta by its '
-    'small-angle form. The width error is polarization: at high angles part of the field turns longitudinal.', fw=3.9)
-one('Profiles at θ = π/2', 'Crossed beams see only widths, so only the smaller polarization error appears.',
+    'scalar Debye length equals the vector length, so the length difference comes from replacing kz cos theta by its '
+    'small-angle form. The width difference is polarization: at high angles part of the field turns longitudinal.', fw=3.9)
+one('Profiles at θ = π/2', 'Crossed beams see only widths, so only the smaller polarization difference appears.',
     F('na_profiles_theta_pi2.png'), [
         'Both FWHMs at θ = π/2 are set by lateral widths of the two beams.',
         'Paraxial and scalar Debye agree; the vector spot is 2–3% wider up to NA 0.7.',
         'Tolerances at θ = π/2 still err more, because an offset slides one beam along the other’s length.'],
-    'Crossed beams see only widths, so only the smaller polarization error appears.',
+    'Crossed beams see only widths, so only the smaller polarization difference appears.',
     'At theta = pi/2 the aligned spot is bounded by the two beams’ lateral widths, so its size is nearly right in the '
     'scalar model. The tolerances are not, because moving O prime slides one beam along the other’s long axis.', fw=3.9)
 
@@ -359,14 +414,14 @@ bullets(s, 0.6, 1.45, 8.9, 3.75, [
     'Every alignment tolerance shrinks with the spot, so the same offset in wavelengths costs more of the peak.',
     'Crossing the beams at θ = π/2 helps by cutting across the long axis of the spot; a less elongated spot gains '
     'less, and above NA 0.71 in air the crossing cannot be built.',
-    'Lim & Saloma’s scalar model overstates focal lengths because of its small-angle phase, by 7% already at NA 0.5.',
-    'Ignoring polarization makes it understate spot widths slightly, reaching 5% near NA 0.8.',
-    'A Gaussian input dims the high-angle rays and reduces both errors.'], 13)
+    'Lim & Saloma’s scalar model gives longer foci than the vector model through its small-angle phase; at the edge of its stated range, NA 0.5, the difference is 7%.',
+    'Without polarization it gives slightly narrower spots, by 5% near NA 0.8.',
+    'A Gaussian input dims the high-angle rays and reduces both differences.'], 13)
 notes(s, 'Everything scales with the spot; the scalar model gets the length wrong first.',
       'Three things happen as NA grows. The spot shrinks, faster along the axis than across it, and every alignment '
       'tolerance shrinks with it. The crossed geometry loses some of its advantage because the spot is less elongated, '
-      'and above NA 0.71 in air it cannot be built at all. Lim and Saloma’s scalar model overstates focal lengths through its '
-      'paraxial phase and slightly understates widths by ignoring polarization.')
+      'and above NA 0.71 in air it cannot be built at all. Lim and Saloma’s scalar model gives longer foci through its '
+      'paraxial phase and slightly narrower spots by ignoring polarization.')
 
 # ══ next: optical pulses ═════════════════════════════════════════════════
 s = slide('Next: optical pulses and a time delay', 'Questions to settle before adding pulses to 2CE.')
@@ -391,7 +446,7 @@ s = slide('Other next steps', 'Two geometry choices to settle, and the Gaussian-
 bullets(s, 0.6, 1.45, 8.9, 3.7, [
     'θ = π/2 above NA 0.71: keep as a computed trend (hatched), or move to immersion, where it is buildable.',
     'Beam 2’s direction at θ = π/2: follow Lim & Saloma’s Fig. 1 or keep ours; it only tilts the 2PE fringes.',
-    'Second set of results with a Gaussian input (α_t = 4): the quoted losses, tolerances and severity against NA.'], 13)
+    'Second set of results with a Gaussian input (α_t = 4): the quoted losses, tolerances and deviation against NA.'], 13)
 notes(s, 'Two geometry choices to settle.', 'The lens-crossing limit and the direction of beam 2 at theta = pi/2.')
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
@@ -401,9 +456,9 @@ print('Saved ->', OUT, f'({len(prs.slides)} slides)')
 # ── the 15-minute cut: the same slides, fewer of them, renumbered ──
 from pptx import Presentation
 
-SHORT = ('Severity of the scalar-model defect', 'Main points', 'Glossary: geometry', 'Glossary: signals',
+SHORT = ('Where Lim & Saloma’s scalar model applies', 'Main points', 'Glossary: geometry', 'Glossary: signals',
          'Geometry:', 'Check 2:', 'Fig. 2(a) against NA', 'Fig. 4(a) against NA', '20% tolerances against NA, uniform',
-         'Severity of the scalar model’s error, uniform', 'Where the length error comes from', 'How NA changes',
+         'How far the scalar model departs, uniform', 'Where the length difference comes from', 'How NA changes',
          'Next: optical pulses')
 short = Presentation(OUT)
 title_of = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')

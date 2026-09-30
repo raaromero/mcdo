@@ -52,8 +52,10 @@ from mcdo.twobeam import beam_field, intensity
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 L1, L2 = 0.750, 0.656
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
-SUF = '' if AT == 0 else f'_at{AT:g}'
-APOD = lambda na: gaussian(AT, na ** 2) if AT else None
+N = float(os.environ.get('N_MED', '1'))            # medium index; 1 = air, 1.33 = water (to reach NA > 1)
+SUF = ('' if AT == 0 else f'_at{AT:g}') + ('' if N == 1 else f'_n{N:g}')
+APOD = lambda na: gaussian(AT, (na / N) ** 2) if AT else None
+MEDIUM = '' if N == 1 else f', n = {N:g}'
 PAPER = {('pi2', 'x'): 1.826 * L1, ('pi2', 'z'): 2.033 * L1,
          ('pi', 'x'): 0.37 * L1, ('pi', 'z'): 2.7 * L1}
 SWEEP = {k: np.round(np.arange(0.10, 0.9501, 0.025), 3) for k in ('pi', 'pi2')}   # 35 NAs per angle
@@ -65,8 +67,8 @@ TL = {'pi': 'θ = π', 'pi2': 'θ = π/2'}
 
 def _beam_I(x, z, lam, na, theta, model):
     if model == 'paraxial':
-        return intensity(beam_field(x, z, lam, na, 1.0, theta=theta, apodization=APOD(na)))
-    return 0.5 * sum(intensity(beam_field(x, z, lam, na, 1.0, theta=theta, model='rw', psi=psi,
+        return intensity(beam_field(x, z, lam, na, N, theta=theta, apodization=APOD(na)))
+    return 0.5 * sum(intensity(beam_field(x, z, lam, na, N, theta=theta, model='rw', psi=psi,
                                           apodization=APOD(na)))
                      for psi in (0.0, np.pi / 2))
 
@@ -87,7 +89,7 @@ def tolerances(na, theta, model):
     nx = nz = 50
     # offsets across: at θ = π the tolerance scales with the width (0.30 µm at NA 0.5), at θ = π/2 with the
     # other beam's length (1.37 µm at NA 0.5); along: with the length at both angles
-    grow = 1.0 if AT == 0 else 1.7                    # a Gaussian input enlarges the spot, and the tolerance
+    grow = (1.0 if AT == 0 else 1.7) * N                     # a Gaussian input enlarges the spot, and the tolerance
     mx = int(round(grow * (0.6 * sx if theta == np.pi else 1.8 * sz) / dx))
     mz = int(round(60 * grow))                        # 6 (0.5/NA)² µm along, more for a Gaussian input
     XW, ZW = np.meshgrid(np.arange(-nx, nx) * dx, np.arange(-nz, nz) * dz)
@@ -190,10 +192,10 @@ for r, key in enumerate(('pi2', 'pi')):
         a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
                  label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
         a.set_xscale('log'); a.set_yscale('log')
-        if key == 'pi2' and nas[-1] > 1 / np.sqrt(2):
-            a.axvspan(1 / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
+        if key == 'pi2' and nas[-1] > N / np.sqrt(2):
+            a.axvspan(N / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                       label='not buildable in air')
-        a.set_xlim(nas[0] / 1.15, 1.02)
+        a.set_xlim(nas[0] / 1.15, max(1.02, nas[-1] * 1.03))
         a.set_xticks([t for t in (0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0) if t >= nas[0] - 1e-9])
         a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
@@ -213,7 +215,7 @@ for r, key in enumerate(('pi2', 'pi')):
                ha='right', va='top', color='#d62728', fontsize=22)
         print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^-{pv:.2f}, paraxial scalar {As:.3f} NA^-{ps:.2f}")
 h, l = axes[1, 0].get_legend_handles_labels()
-fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else ''), fontsize=32, y=1.0)
+fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM, fontsize=32, y=1.0)
 fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.08), frameon=False)
 plt.tight_layout(rect=(0, 0.0, 1, 0.96), h_pad=1.5, w_pad=1.5)
 fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{SUF}.png'), dpi=600, bbox_inches='tight')
@@ -224,7 +226,7 @@ fig, axes = plt.subplots(1, 2, figsize=(20.0, 8.5), sharey=True)
 series = [('x', 'tolerance along x$_c$', '#1f77b4', '-'), ('z', 'tolerance along z$_c$', '#9467bd', '-'),
           ('wx', 'spot width across', '#2ca02c', '--'), ('wz', 'spot length along', '#ff7f0e', '--'),
           ('F', 'PSF shape, 1 − F', '#555555', ':')]
-print('\nNA at which the scalar error first exceeds 5% and 10%:')
+print('\nNA at which the scalar–vector deviation first exceeds 5% and 10%:')
 for a, key in zip(axes, ('pi', 'pi2')):
     nas = np.array(sorted(na for (k, na) in R if k == key))
     for s, lab, col, ls in series:
@@ -241,12 +243,12 @@ for a, key in zip(axes, ('pi', 'pi2')):
     for t in (5, 10):
         a.axhline(t, color='#999999', lw=2, ls=':')
     if key == 'pi2':
-        a.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
+        a.axvspan(N / np.sqrt(2), max(1.0, nas.max()), color='none', hatch='//', ec='#999999', lw=0, zorder=0)
     a.axvline(0.5, color='#999999', lw=2)
     a.set_xlabel('NA')
-    a.set_title(f'2CE, {TL[key]}' + (f', α$_t$ = {AT:g}' if AT else ''))
+    a.set_title(f'2CE, {TL[key]}' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM)
     a.set_ylim(0, 50)
-axes[0].set_ylabel('Scalar model error (%)')
+axes[0].set_ylabel('Scalar – vector deviation (%)')
 h, l = axes[0].get_legend_handles_labels()
 fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.06))
 plt.tight_layout(rect=(0, 0.1, 1, 1))
