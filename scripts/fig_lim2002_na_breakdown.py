@@ -182,13 +182,15 @@ for r, key in enumerate(('pi2', 'pi')):
         sc = np.array([R[(key, na)][f'sc_{ax_}'] for na in nas])
         Av, pv = powerfit(nas, rw)
         lo_na = nas <= 0.5 + 1e-9                      # the paraxial scalar model's stated range
-        As, ps = powerfit(nas[lo_na], sc[lo_na])
+        fit_s = lo_na.sum() >= 3                       # a fit needs a few points (water runs start at NA 0.5)
+        As, ps = powerfit(nas[lo_na], sc[lo_na]) if fit_s else (np.nan, np.nan)
         fine = np.linspace(nas[0], nas[-1], 200)
         fine_s = np.linspace(nas[0], 0.5, 100)
         a.plot(nas, rw, 'o', color='#1f77b4', ms=10, label='Vector (Richards–Wolf)')
         a.plot(fine, Av * fine ** -pv, '-', color='#1f77b4', lw=3, label='Vector, power-law fit')
         a.plot(nas[lo_na], sc[lo_na], 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar (NA ≤ 0.5)')
-        a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Paraxial scalar, power-law fit')
+        if fit_s:
+            a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Paraxial scalar, power-law fit')
         a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
                  label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
         a.set_xscale('log'); a.set_yscale('log')
@@ -209,11 +211,12 @@ for r, key in enumerate(('pi2', 'pi')):
         if c == 0:
             a.set_ylabel('Offset for 20% loss (µm)')
         a.set_title(f'{TL[key]}, along {ax_}$_c$')
-        a.text(0.97, 0.95, f'{Av:.3g} NA$^{{-{pv:.2f}}}$ µm', transform=a.transAxes, ha='right',
+        a.text(0.97, 0.95, f'{Av:.3g} NA$^{{{-pv:.2f}}}$ µm', transform=a.transAxes, ha='right',
                va='top', color='#1f77b4', fontsize=22)
-        a.text(0.97, 0.83, f'{As:.3g} NA$^{{-{ps:.2f}}}$ µm', transform=a.transAxes,
-               ha='right', va='top', color='#d62728', fontsize=22)
-        print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^-{pv:.2f}, paraxial scalar {As:.3f} NA^-{ps:.2f}")
+        if fit_s:
+            a.text(0.97, 0.83, f'{As:.3g} NA$^{{{-ps:.2f}}}$ µm', transform=a.transAxes,
+                   ha='right', va='top', color='#d62728', fontsize=22)
+        print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^{-pv:.2f}, paraxial scalar {As:.3f} NA^{-ps:.2f}")
 h, l = axes[1, 0].get_legend_handles_labels()
 fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM, fontsize=32, y=1.0)
 fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.08), frameon=False)

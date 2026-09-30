@@ -10,6 +10,8 @@ the deck:
     fig_lim2002_na_profiles.py                  -> na_profiles_theta_{pi,pi2}.png
     fig_lim2002_na_contours.py                  -> na_contours_fig{2,3}{a..d}.png
     fig_lim2002_axial_truncation.py             -> axial_lim_vs_truncation.png, axial_scalar_vs_vector_truncation.png
+    N_MED=1.33 fig_lim2002_na_breakdown.py      -> na_breakdown_metrics[_at4]_n1.33.png   (water, NA to 1.2)
+    fig_lim2002_fidelity_na{,_plot}.py          -> fidelity/fidelity_na_*.png, fidelity/fidelity_shape_*.csv
 
     python scripts/make_lim2002_na_deck.py
     -> ~/Downloads/Research/two_color/lim2002_na_study.pptx
@@ -137,8 +139,8 @@ text(s, 0.6, 3.25, 8.8, 0.35, 'National Institute of Physics, University of the 
 text(s, 0.6, 3.6, 8.8, 0.35, 'Lim & Saloma’s own metrics, recomputed with the vector (Richards–Wolf) focus', 13, PALE)
 chip(s, 0.6, 4.45, 1.15, 'NA 0.1', PURPLE)
 text(s, 1.8, 4.45, 0.35, 0.36, '→', 16, WHITE, True, anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.CENTER)
-chip(s, 2.2, 4.45, 1.15, 'NA 0.95', RED)
-text(s, 3.5, 4.45, 5.5, 0.36, 'air; uniform input and α_t = 4', 12, PALE, anchor=MSO_ANCHOR.MIDDLE)
+chip(s, 2.2, 4.45, 1.15, 'NA 1.2', RED)
+text(s, 3.5, 4.45, 5.5, 0.36, 'air to NA 0.99, water to 1.2; uniform input and α_t = 4', 12, PALE, anchor=MSO_ANCHOR.MIDDLE)
 notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 and fails on focal length above it.',
       'This deck asks how far Lim and Saloma’s results carry as the numerical aperture grows. We recompute the '
       'their quoted metrics with the vector focus, keep their model alongside, and measure the gap.')
@@ -175,7 +177,7 @@ notes(s, 'The scalar model tracks the vector one at low NA; focal lengths depart
 # ══ 3–4. glossary ════════════════════════════════════════════════════════
 glossary('Glossary: geometry and optics', 'Every symbol on the following slides.', [
     ('NA', 'numerical aperture, n sin α: how wide a cone of light the lens focuses'),
-    ('n', 'refractive index of the medium; air, n = 1, throughout'),
+    ('n', 'refractive index of the medium; air (n = 1), and water (n = 1.33) for NA above 0.99'),
     ('α', 'half-angle of the focusing cone'),
     ('L1, L2', 'the lenses focusing beam 1 and beam 2'),
     ('O', 'geometric focus of L1, the origin'),
@@ -199,7 +201,7 @@ glossary('Glossary: signals, models and measures', 'What is computed and how it 
     ('α_t', 'truncation parameter, pupil amplitude exp(−α_t sin²ϑ/sin²α); 0 = uniform'),
     ('FWHM', 'full width at half maximum of a profile'),
     ('Scalar deviation', '|scalar/vector − 1| of a metric, in percent: how far the scalar model departs'),
-    ('Linfoot F', 'fidelity of the scalar PSF against the vector one; 1 − F reported'),
+    ('Linfoot F', 'fidelity of the misaligned PSF against the aligned one, each scaled to its peak (Lim & Saloma)'),
 ])
 
 # ══ 5. geometry ══════════════════════════════════════════════════════════
@@ -365,6 +367,22 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
           f'Each line is how far the scalar model departs from the vector focus, in percent, for {lab}. The table gives the NA '
           'at which each first exceeds five and ten percent. Entries above 0.95 never cross in the range computed.')
 
+# ══ water, NA to 1.2 ═════════════════════════════════════════════════════
+BW = {suf: b for suf in ('_n1.33', '_at4_n1.33') if len(b := load_breakdown(suf))}
+if have('na_breakdown_metrics_n1.33.png') and '_n1.33' in BW:
+    bw = BW['_n1.33']
+    pair('20% tolerances in water, NA 0.5 to 1.2', 'The scalar deviation follows NA/n: in water it starts at 1.33 times the air NA.',
+         F('na_breakdown_metrics_n1.33.png'), F('na_breakdown_metrics_at4_n1.33.png'),
+         ('Uniform input, n = 1.33', 'Gaussian input, α_t = 4, n = 1.33'), [
+             f'θ = π, axial: the deviation passes 5% at NA {fmt_na(first_above(bw, "pi", "z", 5))} and 10% at NA '
+             f'{fmt_na(first_above(bw, "pi", "z", 10))} (air: {fmt_na(first_above(B[""], "pi", "z", 5))} and '
+             f'{fmt_na(first_above(B[""], "pi", "z", 10))}).',
+             'Hatched: θ = π/2 above NA 0.94, where two lenses cannot cross in water.'],
+         'In water the scalar deviation starts at 1.33 times the air NA: it follows the aperture angle NA/n.',
+         'The same tolerances in water, to NA 1.2. The paraxial scalar model is shown only at NA 0.5, its stated range. '
+         'The NA at which the scalar model departs by five and ten percent moves up by the index, because what sets the '
+         'deviation is the half-angle of the cone, sin alpha = NA/n.')
+
 # ══ Fig. 4 maps against NA ═══════════════════════════════════════════════
 for tag, lab in (('a', '2CE, θ = π'), ('b', '2PE, θ = π'), ('c', '2CE, θ = π/2'), ('d', '2PE, θ = π/2')):
     if not have(f'na_peakmaps_fig4{tag}.png'):
@@ -406,6 +424,52 @@ for fig_no, where in ((2, 'aligned'), (3, 'O′ = (0.4, 1.0) µm')):
         notes(s, 'The same panel at three NAs: the spot shrinks and becomes less elongated.',
               f'Lim & Saloma’s Fig. {fig_no}({tag}), {lab}, {where}, recomputed with the vector focus at NA {nas} on '
               'their axes and contour levels. Width shrinks as lambda over NA and length as n lambda over NA squared.')
+
+# ══ fidelity maps against NA ═════════════════════════════════════════════
+FD = os.path.join(FIG, 'fidelity')
+s = slide('Fidelity against NA: how it is shown', 'Offsets in units of the spot, so a pure change of scale drops out.')
+bullets(s, 0.6, 1.45, 8.9, 3.75, [
+    'Linfoot F over the offset (x_c, z_c) of O′, as in Lim & Saloma’s Figs. 5–6: the misaligned PSF against the aligned one.',
+    'Offsets are divided by the size of the spot they move across: λ/NA across a beam, nλ/NA² along it; for 2PE, λ/n '
+    'along a fringe direction, since the fringes (period λ/2n) set F there.',
+    'In these units the paraxial scalar map is the same at every NA, so any change in the vector map is the effect of NA itself.',
+    '(a) the F = 0.8 contour at every NA over the scalar one; (b) F vector − F scalar at six NAs; (c) the half-widths '
+    'and area of the F ≥ 0.8 region, vector over scalar, against NA.',
+    '41 × 41 offsets per map, 20–24 NAs per case, air to 0.99 and water (open markers) to 1.2.'], 12.5)
+notes(s, 'Offsets in units of the spot, so a pure change of scale drops out.',
+      'The fidelity maps are two-dimensional, so to compare NAs we put the offsets in units of the spot. The scalar map '
+      'then does not change with NA at all, and what remains in the vector map is the effect of high NA. Each figure has '
+      'three rows: the contour overlay, the difference maps and three shape numbers against NA.',
+      r'	ilde{x} = rac{x_c\,\mathrm{NA}}{\lambda}, \qquad 	ilde{z} = rac{z_c\,\mathrm{NA}^2}{n\lambda}')
+
+
+def shape_rows(case):
+    path = os.path.join(FD, f'fidelity_shape_{case}_F.csv')
+    return np.loadtxt(path, delimiter=',', ndmin=2) if os.path.exists(path) else np.empty((0, 8))
+
+
+def ratio_at(a, na, col):
+    r = a[(np.abs(a[:, 0] - na) < 1e-6) & (a[:, 1] == 1)]
+    return r[0, col] / r[0, col + 3] if len(r) else np.nan
+
+
+for case, lab in (('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2pe_pi', '2PE, θ = π'), ('2pe_pi2', '2PE, θ = π/2')):
+    u, g = os.path.join(FD, f'fidelity_na_{case}_F.png'), os.path.join(FD, f'fidelity_na_{case}_at4_F.png')
+    a = shape_rows(case)
+    if not (os.path.exists(u) and os.path.exists(g)) or not len(a):
+        pending(f'Fidelity against NA: {lab}', 'F maps over the offset of O′ against NA from fig_lim2002_fidelity_na.py.')
+        continue
+    hx, hz, ar = (ratio_at(a, 0.9, c) for c in (2, 3, 4))
+    s = slide(f'Fidelity against NA: {lab}',
+              f'NA 0.9, vector over scalar: half-width {hx:.2f} across, {hz:.2f} along; area {ar:.2f}.')
+    for i, (path, l) in enumerate(((u, 'Uniform input'), (g, 'α_t = 4'))):
+        label(s, 0.45 + i * 4.6, 1.3, 4.5, l, GREY if i == 0 else PURPLE)
+        figure(s, path, 0.45 + i * 4.6, 1.58, 4.5, 3.65)
+    notes(s, f'{lab}: how the F ≥ 0.8 region changes shape against NA, relative to the scalar model.',
+          f'Linfoot fidelity over the offset of O prime for {lab}, uniform input on the left and a Gaussian input on the '
+          f'right. At NA 0.5 the vector region is {ratio_at(a, 0.5, 2):.2f} of the scalar across and '
+          f'{ratio_at(a, 0.5, 3):.2f} along; at NA 0.9, {hx:.2f} and {hz:.2f}, with area {ar:.2f}. Structural content C '
+          'and correlation quality Q are in the same folder, in the same layout.')
 
 # ══ 27. interpretation ═══════════════════════════════════════════════════
 s = slide('How NA changes the picture', 'Everything scales with the spot; the scalar model gets the length wrong first.')
@@ -458,7 +522,8 @@ from pptx import Presentation
 
 SHORT = ('Where Lim & Saloma’s scalar model applies', 'Main points', 'Glossary: geometry', 'Glossary: signals',
          'Geometry:', 'Check 2:', 'Fig. 2(a) against NA', 'Fig. 4(a) against NA', '20% tolerances against NA, uniform',
-         'How far the scalar model departs, uniform', 'Where the length difference comes from', 'How NA changes',
+         'How far the scalar model departs, uniform', '20% tolerances in water', 'Fidelity against NA: how',
+         'Fidelity against NA: 2CE, θ = π', 'Where the length difference comes from', 'How NA changes',
          'Next: optical pulses')
 short = Presentation(OUT)
 title_of = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
