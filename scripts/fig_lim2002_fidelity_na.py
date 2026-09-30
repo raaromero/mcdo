@@ -8,7 +8,7 @@ Maps are on offsets in spot units, so different NAs compare directly:
                    its own length, z_c across its width)
     2PE:           along a fringe direction the unit is λ/n instead (z at θ = π,
                    both at θ = π/2), since the standing-wave fringes, period λ/2n,
-                   set F there; offsets ±1 λ/n in 41 steps resolve them
+                   set F there; offsets ±0.5 λ/n (one period) at θ = π, ±1 λ/n at θ = π/2
 41 × 41 offsets per map. Linfoot's criteria as Lim & Saloma define them
 (p. 126), each PSF scaled to its own peak, averaged over the PSF window.
 
@@ -72,7 +72,7 @@ def maps(na, n, model):
     sw, sl = lam / na, n * lam / na ** 2           # spot width and length (µm)
     fr = lam / n                                   # 2PE: offsets along a fringe direction in λ/n (fringes shift by λ/2n)
     if TH == 'pi':
-        ux, uz, rx, rz = sw, (sl if PAIR == '2ce' else fr), 0.8, (2.0 if PAIR == '2ce' else 1.0)
+        ux, uz, rx, rz = sw, (sl if PAIR == '2ce' else fr), 0.8, (2.0 if PAIR == '2ce' else 0.5)   # 2PE: one fringe period
         wx, wz = 1.2 * sw, 2.5 * sl
     elif PAIR == '2ce':
         ux, uz, rx, rz = sl, sw, 2.0, 0.8            # x_c slides beam 2 along its length, z_c across its width

@@ -377,6 +377,7 @@ notes(s, 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq
       'details need care: the C and Q labels, the rotation as printed, and the caption of Fig. 6(c)–(d). Next we move to the high-NA '
       'vector focus, and after that to pulsed beams with a delay between them.')
 
-os.makedirs(os.path.dirname(OUT), exist_ok=True)
-prs.save(OUT)
-print('Saved ->', OUT, f'({len(prs.slides)} slides)')
+if not os.environ.get('DECK_APPEND'):                 # set by make_lim2002_progress_deck.py, which saves the whole report
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    prs.save(OUT)
+    print('Saved ->', OUT, f'({len(prs.slides)} slides)')

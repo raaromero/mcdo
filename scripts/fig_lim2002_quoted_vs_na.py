@@ -1,7 +1,7 @@
 r"""Lim & Saloma's quoted peak losses (Section 3.2), recomputed against NA: the
-vector (Richards–Wolf) focus as the line, the paper's paraxial scalar model as a
-dashed line, the paper's quoted value marked at NA 0.5, and NA ≤ 0.5 (the
-scalar model's stated range) shaded.
+vector (Richards–Wolf) focus over the full NA range, the paper's paraxial scalar
+model as a dotted line only in its stated range NA ≤ 0.5 (shaded), and the
+paper's quoted value marked up to NA 0.5.
 
 Each metric keeps the paper's offset in wavelength units, so it reads "how
 much of the peak does the same misalignment cost at this NA":
@@ -139,7 +139,8 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
         ax.axvspan(N / np.sqrt(2), max(1.0, nas[-1] + 0.02), color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                    label=f'NA > {N / np.sqrt(2):.2f}: two lenses cannot cross' + (' in air' if N == 1 else ''))
     ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='Vector (Richards–Wolf)')
-    ax.plot(nas, S, ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar')
+    lo = nas <= 0.5 + 1e-9                             # the paraxial scalar model only in its stated range
+    ax.plot(nas[lo], S[lo], ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar (NA ≤ 0.5)')
     ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3,
               label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
     ax.set_xlim(0.0, max(1.0, nas[-1] + 0.02))

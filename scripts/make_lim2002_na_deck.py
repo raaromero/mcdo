@@ -318,11 +318,11 @@ for k, (title, paper) in enumerate(QUOTED, 1):
         one(f'Quoted loss {k}: {title}', f'Lim & Saloma: {paper}% lost at NA 0.5. Vector: {v5u:.0f}% at NA 0.5, {v9u:.0f}% at NA 0.9.',
             F(f'quoted_vs_na_{k}.png'), [
                 f'NA 0.5: vector {v5u:.1f}%, scalar {s5u:.1f}%, Lim & Saloma {paper}%.',
-                f'NA 0.9: vector {v9u:.1f}%, scalar {s9u:.1f}%.',
+                f'NA 0.9: vector {v9u:.1f}% (the scalar model is shown only up to NA 0.5).',
                 'The same offset in wavelengths costs more as the spot shrinks.'],
             f'Lim & Saloma: {paper} percent lost at NA 0.5; the same offset costs more as NA grows.',
             f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. Solid: vector focus; dotted: their '
-            'paraxial scalar model; black dashed: their quoted value; shaded: the range they claim for their model.',
+            'paraxial scalar model, up to NA 0.5; black dashed: their quoted value; shaded: the range they claim for their model.',
             fw=5.0)
         continue
     v5u, s5u = Q[''][(k, 0.5)]
@@ -331,10 +331,10 @@ for k, (title, paper) in enumerate(QUOTED, 1):
     pair(f'Quoted loss {k}: {title}', f'Lim & Saloma: {paper}% lost at NA 0.5. Vector: {v5u:.0f}% at NA 0.5, {v9u:.0f}% at NA 0.9.',
          F(f'quoted_vs_na_{k}.png'), F(f'quoted_vs_na_{k}_at4.png'), ('Uniform input (Lim & Saloma’s case)', 'Gaussian input, α_t = 4'), [
              f'NA 0.5: vector {v5u:.1f}%, scalar {s5u:.1f}%, Lim & Saloma {paper}%; with α_t = 4 the vector loss is {v5g:.1f}%.',
-             f'NA 0.9: vector {v9u:.1f}%, scalar {s9u:.1f}%. The same offset in wavelengths costs more as the spot shrinks.'],
+             f'NA 0.9: vector {v9u:.1f}%. The same offset in wavelengths costs more as the spot shrinks.'],
          f'Lim & Saloma: {paper} percent lost at NA 0.5; the same offset costs more as NA grows.',
          f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. The solid line is the vector focus, the '
-         'dotted line their paraxial scalar model, the black dashed line their quoted value. The shaded band is the '
+         'dotted line their paraxial scalar model up to NA 0.5, the black dashed line their quoted value. The shaded band is the '
          'range they claim for their model. Right: the same with a Gaussian input, truncation 4, which enlarges the spot and '
          'so lowers every loss.')
 
@@ -506,13 +506,14 @@ notes(s, 'Questions to settle before adding pulses to 2CE.',
       r"""F_{2c}(\Delta t) = \kappa_{2c} \int I_1(P,t)\, I_2(P,t-\Delta t)\, dt
 \Delta\nu \approx \frac{0.441}{\tau} < \nu_2 - \nu_1 = 57\ \mathrm{THz} \;\Rightarrow\; \tau > 8\ \mathrm{fs}""")
 
-s = slide('Other next steps', 'Two geometry choices to settle, and the Gaussian-input set.')
+s = slide('Other next steps', 'One geometry choice to settle, and the Gaussian-input set.')
 bullets(s, 0.6, 1.45, 8.9, 3.7, [
     'θ = π/2 above NA 0.71: keep as a computed trend (hatched), or move to immersion, where it is buildable.',
-    'Beam 2’s direction at θ = π/2: follow Lim & Saloma’s Fig. 1 or keep ours; it only tilts the 2PE fringes.',
     'Second set of results with a Gaussian input (α_t = 4): the quoted losses, tolerances and deviation against NA.'], 13)
-notes(s, 'Two geometry choices to settle.', 'The lens-crossing limit and the direction of beam 2 at theta = pi/2.')
+notes(s, 'The lens-crossing limit to settle.', 'Whether to keep theta = pi/2 above the lens-crossing limit as a trend.')
 
+if os.environ.get('DECK_APPEND'):                    # set by make_lim2002_progress_deck.py, which saves the whole report
+    raise SystemExit
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 prs.save(OUT)
 print('Saved ->', OUT, f'({len(prs.slides)} slides)')
