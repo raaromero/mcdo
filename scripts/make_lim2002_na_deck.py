@@ -461,14 +461,14 @@ for case, lab in (('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2
         continue
     hx, hz, ar = (ratio_at(a, 0.9, c) for c in (2, 3, 4))
     s = slide(f'Fidelity against NA: {lab}',
-              f'NA 0.9, vector over scalar: half-width {hx:.2f} across, {hz:.2f} along; area {ar:.2f}.')
+              f'NA 0.9, vector over scalar: half-width {hx:.2f} in x_c, {hz:.2f} in z_c; area {ar:.2f}.')
     for i, (path, l) in enumerate(((u, 'Uniform input'), (g, 'α_t = 4'))):
         label(s, 0.45 + i * 4.6, 1.3, 4.5, l, GREY if i == 0 else PURPLE)
         figure(s, path, 0.45 + i * 4.6, 1.58, 4.5, 3.65)
     notes(s, f'{lab}: how the F ≥ 0.8 region changes shape against NA, relative to the scalar model.',
           f'Linfoot fidelity over the offset of O prime for {lab}, uniform input on the left and a Gaussian input on the '
-          f'right. At NA 0.5 the vector region is {ratio_at(a, 0.5, 2):.2f} of the scalar across and '
-          f'{ratio_at(a, 0.5, 3):.2f} along; at NA 0.9, {hx:.2f} and {hz:.2f}, with area {ar:.2f}. Structural content C '
+          f'right. At NA 0.5 the vector region is {ratio_at(a, 0.5, 2):.2f} of the scalar in x_c and '
+          f'{ratio_at(a, 0.5, 3):.2f} in z_c; at NA 0.9, {hx:.2f} and {hz:.2f}, with area {ar:.2f}. Structural content C '
           'and correlation quality Q are in the same folder, in the same layout.')
 
 # ══ 27. interpretation ═══════════════════════════════════════════════════
