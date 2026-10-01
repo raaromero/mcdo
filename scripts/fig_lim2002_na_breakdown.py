@@ -200,8 +200,9 @@ for tag_, shape_, size_ in (('', (1, 4), (18.2, 5.6)), ('_grid', (2, 2), (8.3, 7
             a.plot(nas[lo_na], sc[lo_na], 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar')
             if fit_s:
                 a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Scalar fit')
-            a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
-                     label='Lim & Saloma, NA 0.5')            # uniform input; stated on the slide
+            if nas[0] < 0.5:                               # water starts at NA 0.5: no span to draw
+                a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
+                         label='Lim & Saloma, NA 0.5')            # uniform input; stated on the slide
             a.set_xscale('log'); a.set_yscale('log')
             if key == 'pi2' and nas[-1] > N / np.sqrt(2):
                 a.axvspan(N / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
