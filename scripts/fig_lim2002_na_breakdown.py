@@ -177,55 +177,66 @@ def powerfit(nas, v):
     return np.exp(intercept), -slope
 
 
-fig, axes = plt.subplots(1, 4, figsize=(18.2, 5.6))     # one row at twice the slide width: 24-pt text shows at 12 pt
-for r, key in enumerate(('pi2', 'pi')):
-    nas = np.array(sorted(na for (k, na) in R if k == key))
-    for c, ax_ in enumerate(('x', 'z')):
-        a = axes[2 * r + c]
-        rw = np.array([R[(key, na)][f'rw_{ax_}'] for na in nas])
-        sc = np.array([R[(key, na)][f'sc_{ax_}'] for na in nas])
-        Av, pv = powerfit(nas, rw)
-        lo_na = nas <= 0.5 + 1e-9                      # the paraxial scalar model's stated range
-        fit_s = lo_na.sum() >= 3                       # a fit needs a few points (water runs start at NA 0.5)
-        As, ps = powerfit(nas[lo_na], sc[lo_na]) if fit_s else (np.nan, np.nan)
-        fine = np.linspace(nas[0], nas[-1], 200)
-        fine_s = np.linspace(nas[0], 0.5, 100)
-        a.plot(nas, rw, 'o', color='#1f77b4', ms=10, label='Vector')
-        a.plot(fine, Av * fine ** -pv, '-', color='#1f77b4', lw=3, label='Vector fit')
-        a.plot(nas[lo_na], sc[lo_na], 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar (NA ≤ 0.5)')
-        if fit_s:
-            a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Scalar fit')
-        a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
-                 label='Lim & Saloma, NA 0.5' + (' (uniform)' if AT else ''))
-        a.set_xscale('log'); a.set_yscale('log')
-        if key == 'pi2' and nas[-1] > N / np.sqrt(2):
-            a.axvspan(N / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
-                      label='Lenses cannot cross')
-        a.set_xlim(nas[0] / 1.15, max(1.02, nas[-1] * 1.03))
-        a.set_xticks([t for t in (0.03, 0.1, 0.3, 1.0) if t >= nas[0] - 1e-9])
-        a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
-        a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-        a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
-        a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-        lo, hi = min(rw.min(), sc.min(), PAPER[(key, ax_)]) / 1.25, max(rw.max(), sc.max()) * 60
-        a.set_ylim(lo, hi)                             # room above the data for the fit formulas (in µm, as the axis)
-        a.set_yticks([t for t in (0.01, 0.1, 1, 10, 100, 1000, 10000) if lo <= t <= hi])
-        a.set_xlabel('NA')
-        if r == 0 and c == 0:
-            a.set_ylabel('Offset for 20% loss (µm)')
-        a.set_title(f'{TL[key]}, along {ax_}$_c$')
-        a.text(0.97, 0.95, f'{Av:.3g} NA$^{{{-pv:.2f}}}$', transform=a.transAxes, ha='right',
-               va='top', color='#1f77b4', fontsize=24)
-        if fit_s:
-            a.text(0.97, 0.83, f'{As:.3g} NA$^{{{-ps:.2f}}}$', transform=a.transAxes,
-                   ha='right', va='top', color='#d62728', fontsize=24)
-        print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^{-pv:.2f}, paraxial scalar {As:.3f} NA^{-ps:.2f}")
-h, l = axes[0].get_legend_handles_labels()
-fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM, fontsize=32, y=1.0)
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
-plt.tight_layout(rect=(0, 0.0, 1, 0.94), w_pad=0.8)
-fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{SUF}.png'), dpi=600, bbox_inches='tight')
-plt.close(fig)
+# one row for a full-width slide; a 2×2 grid for a figure with points beside it. Each is about twice its width on
+# the slide, so its 24-pt text shows at about 12 pt
+for tag_, shape_, size_ in (('', (1, 4), (18.2, 5.6)), ('_grid', (2, 2), (8.3, 7.6))):
+    grid_ = shape_ == (2, 2)                       # beside the slide's points, which state the fits
+    fig, axes = plt.subplots(*shape_, figsize=size_)
+    axes = axes.ravel()
+    for r, key in enumerate(('pi2', 'pi')):
+        nas = np.array(sorted(na for (k, na) in R if k == key))
+        for c, ax_ in enumerate(('x', 'z')):
+            a = axes[2 * r + c]
+            rw = np.array([R[(key, na)][f'rw_{ax_}'] for na in nas])
+            sc = np.array([R[(key, na)][f'sc_{ax_}'] for na in nas])
+            Av, pv = powerfit(nas, rw)
+            lo_na = nas <= 0.5 + 1e-9                      # the paraxial scalar model's stated range
+            fit_s = lo_na.sum() >= 3                       # a fit needs a few points (water runs start at NA 0.5)
+            As, ps = powerfit(nas[lo_na], sc[lo_na]) if fit_s else (np.nan, np.nan)
+            fine = np.linspace(nas[0], nas[-1], 200)
+            fine_s = np.linspace(nas[0], 0.5, 100)
+            a.plot(nas, rw, 'o', color='#1f77b4', ms=10, label='Vector')
+            a.plot(fine, Av * fine ** -pv, '-', color='#1f77b4', lw=3, label='Vector fit')
+            a.plot(nas[lo_na], sc[lo_na], 's', color='#d62728', ms=10, mfc='none', mew=2.5, label='Paraxial scalar')
+            if fit_s:
+                a.plot(fine_s, As * fine_s ** -ps, ':', color='#d62728', lw=3, label='Scalar fit')
+            a.hlines(PAPER[(key, ax_)], nas[0], 0.5, colors='k', linestyles='--', lw=3,
+                     label='Lim & Saloma, NA 0.5')            # uniform input; stated on the slide
+            a.set_xscale('log'); a.set_yscale('log')
+            if key == 'pi2' and nas[-1] > N / np.sqrt(2):
+                a.axvspan(N / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
+                          label='Lenses cannot cross')
+            a.set_xlim(nas[0] / 1.15, max(1.02, nas[-1] * 1.03))
+            a.set_xticks([t for t in ((0.03, 0.3) if grid_ else (0.03, 0.1, 0.3, 1.0)) if t >= nas[0] - 1e-9])
+            a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+            a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+            a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+            a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+            lo, hi = min(rw.min(), sc.min(), PAPER[(key, ax_)]) / 1.25, max(rw.max(), sc.max()) * (1.6 if grid_ else 60)
+            a.set_ylim(lo, hi)                             # room above the data for the fit formulas (in µm, as the axis)
+            a.set_yticks([t for t in (((0.3, 1, 3) if hi / lo < 100 else (0.1, 1, 10, 100)) if grid_ else (0.01, 0.1, 1, 10, 100, 1000, 10000)) if lo <= t <= hi])
+            if shape_ == (1, 4) or r == 1:
+                a.set_xlabel('NA')
+            if c == 0 and r == 0 and not grid_:
+                a.set_ylabel('Offset for 20% loss (µm)')
+            a.set_title(f'{TL[key]}, {ax_}$_c$' if grid_ else f'{TL[key]}, along {ax_}$_c$', fontsize=28 if grid_ else None)
+            if not grid_:
+                a.text(0.97, 0.95, f'{Av:.3g} NA$^{{{-pv:.2f}}}$', transform=a.transAxes, ha='right',
+                       va='top', color='#1f77b4', fontsize=24)
+            if fit_s and not grid_:
+                a.text(0.97, 0.83, f'{As:.3g} NA$^{{{-ps:.2f}}}$', transform=a.transAxes,
+                       ha='right', va='top', color='#d62728', fontsize=24)
+            print(f"fit {TL[key]} {ax_}_c: vector {Av:.3f} NA^{-pv:.2f}, paraxial scalar {As:.3f} NA^{-ps:.2f}")
+    h, l = axes[0].get_legend_handles_labels()
+    if grid_:                                      # the slide title carries the title; one shared y label
+        fig.supylabel('Offset for 20% loss (µm)', fontsize=28)
+    else:
+        fig.suptitle('2CE: offset of O′ costing 20% of the peak' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM, fontsize=32, y=1.0)
+    fig.legend(h, l, loc='lower center', ncol=3 if shape_ == (1, 4) else 2, bbox_to_anchor=(0.5, -0.2 if shape_ == (1, 4) else -0.17),
+               frameon=False)
+    plt.tight_layout(rect=(0, 0.0, 1, 0.94), w_pad=0.8)
+    fig.savefig(os.path.join(OUT, f'na_breakdown_metrics{tag_}{SUF}.png'), dpi=600, bbox_inches='tight')
+    plt.close(fig)
 
 # ── severity of the scalar model's defect ──
 fig, axes = plt.subplots(1, 2, figsize=(10.6, 6.0), sharey=True)   # twice its width on the slide

@@ -62,9 +62,10 @@ def part(no, title, what):
     if PART is None:
         s = navy(f'Part {no}: {title}', [(what, 14, PALE)])
     else:
-        s = navy(f'Part {no}: {title[0].upper() + title[1:]}', [
+        s = navy('Progress Report', [
             ('Roland Albert A. Romero', 18, WHITE),
-            ('Progress report on Lim & Saloma (2002): two-color excitation with misaligned foci', 13, PALE),
+            ('National Institute of Physics, University of the Philippines Diliman', 13, PALE),
+            (f'Part {no}: {title[0].upper() + title[1:]}', 13, PALE),
             ('M. Lim & C. Saloma, Opt. Commun. 207, 121–130 (2002)', 13, PALE)])
     notes(s, f'Part {no}: {title}.', what)
 
@@ -191,12 +192,10 @@ SUMMARY = [   # (part, colour, main point, supporting points as short phrases)
     ('Next', GREY, 'Pulses and a time delay.', 'signal = time overlap of the pulses · gated along z at θ = π'),
 ]
 if PART is None:
-    s = navy('Lim & Saloma (2002): replication, high NA and pulses', [
+    s = navy('Progress Report', [
         ('Roland Albert A. Romero', 18, WHITE),
         ('National Institute of Physics, University of the Philippines Diliman', 13, PALE),
-        ('Progress report on two-color excitation with misaligned foci', 13, PALE),
-        ('M. Lim & C. Saloma, Opt. Commun. 207, 121–130 (2002)', 13, PALE)],
-        chips=(('Replication', PURPLE), ('High NA', RED), ('Polarization', ORANGE)))
+        ('M. Lim & C. Saloma, Opt. Commun. 207, 121–130 (2002)', 13, PALE)])
     notes(s, 'The paper rebuilt, its model tested against the vector model at high NA, and the choices that remain.',
           'This report collects the work on Lim and Saloma (2002). First the replication of the paper itself; then how far its '
           'scalar model carries as the numerical aperture grows; then the choices that remain.')
@@ -458,7 +457,8 @@ glossary(PART)
 if PART:                                                          # a part deck opens with its main points, then the background
     ids = prs.slides._sldIdLst
     for sl, el in list(zip(prs.slides, list(ids))):
-        if el not in getattr(ds, 'DROP', []) and title_of(sl) in ('Summary', 'Main points', 'Gaussian input: main points'):
+        if el not in getattr(ds, 'DROP', []) and title_of(sl) in ('Summary', 'Main points', 'Gaussian input: main points') \
+                and list(ids).index(el) > 1:
             ids.remove(el); ids.insert(1, el)
             break
 

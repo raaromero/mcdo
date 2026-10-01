@@ -326,13 +326,8 @@ wide('Check 2: scalar and vector agree at low NA', 'At every truncation the thre
     'Scalar and vector on-axis profiles for truncation 0 and 4 at NA 0.1, 0.3 and 0.5, with the Richards–Wolf '
     'engine used throughout the rest of the analysis overlaid. The numbers we project come from identical optics.')
 
-s = slide('Discussion: crossed beams above NA 0.71', 'In air, two lenses cannot cross at θ = π/2 above NA 1/√2.')
+s = slide('The θ = π/2 lens problem', 'Above NA 0.71 in air, two lenses cannot cross at θ = π/2.')
 figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit_air.png'), 0.45, 1.35, 5.4, 3.85)
-bullets(s, 6.0, 1.45, 3.5, 3.75, [
-    'Each lens focuses a cone of half-angle α, with NA = n sin α.',
-    'At θ = π/2 the cones fit side by side only while α ≤ 45°.',
-    'Above that, the two lenses and their rays occupy the same directions from the focus.',
-    'At θ = 0 (one shared lens) and θ = π (facing lenses) there is no such limit.'], 12)
 notes(s, 'In air, two lenses cannot cross at theta = pi/2 above NA 1 over root 2.',
       'The limit is geometric. Each lens fills a cone of directions around its axis. With the axes at right angles, the '
       'cones stop overlapping only while each half-angle is at most 45 degrees, which in air is NA 0.71.',
@@ -401,18 +396,25 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
     if suf not in B or suf not in SUFS:                                # α_t = 4 is a next step until its sweep is run
         continue
     b = B[suf]
-    wide(f'20% tolerances against NA, {lab}', 'Vector (solid) against the paraxial scalar model (dotted); black dashed: Lim & Saloma at NA 0.5.',
-        F(f'na_breakdown_metrics{suf}.png'), [
-            f'θ = π, axial: vector {b[("pi", 0.5)]["rz"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rz"]:.2f} µm at NA 0.9.',
-            f'θ = π, in-plane: vector {b[("pi", 0.5)]["rx"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rx"]:.2f} µm at NA 0.9.',
-            'Hatched: θ = π/2 above NA 0.71, not buildable in air.'],
-        'Tolerances shrink with the spot; the scalar model gives larger length-set ones than the vector model.',
-        f'The offset costing twenty percent of the two-color peak, along x_c and z_c, at theta = pi and pi/2, for {lab}. '
-        'The vector model is the reference; the dotted line is the paraxial scalar model. The gap between them is the next slide.',
-        fw=5.4)
+    def slope(key, col):                           # exponent p of the power law A·NA^(−p), fitted as in the figure
+        nas_ = np.array(sorted(na for (k, na) in b if k == key))
+        return -np.polyfit(np.log(nas_), np.log([b[(key, na)][col] for na in nas_]), 1)[0]
+    s = slide(f'20% tolerances against NA, {lab}', 'Each tolerance shrinks as NA grows, following a power law in NA.')
+    figure(s, F(f'na_breakdown_metrics_grid{suf}.png'), 0.45, 1.35, 4.9, 3.85)
+    bullets(s, 5.55, 1.45, 3.95, 3.75, [
+        'Tolerance: offset of O′ that costs 20% of the two-color peak.',
+        'Each tolerance shrinks as NA grows, following a power law in NA.',
+        f'θ = π: the tolerance across the axis falls as NA^{{−{slope("pi", "rx"):.2f}}} and the one along the axis as '
+        f'NA^{{−{slope("pi", "rz"):.2f}}}.',
+        f'θ = π/2: both tolerances fall as about NA^{{−{(slope("pi2", "rx") + slope("pi2", "rz")) / 2:.1f}}}.',
+        'Dashed: Lim & Saloma at NA 0.5' + (' (uniform input)' if suf else '') + '; red: paraxial scalar, NA ≤ 0.5; '
+        'hatched: lenses cannot cross.'], 12)
+    notes(s, 'Tolerances shrink with the spot; the scalar model gives larger length-set ones than the vector model.',
+          f'The offset costing twenty percent of the two-color peak, along x_c and z_c, at theta = pi and pi/2, for {lab}. '
+          'The vector model is the reference; the dotted line is the paraxial scalar model. The gap between them is the next slide.')
     rows = [(f'θ = {"π" if key == "pi" else "π/2"}, {nm}', fmt_na(first_above(b, key, m, 5)), fmt_na(first_above(b, key, m, 10)))
-            for key in ('pi', 'pi2') for m, nm in (('z', 'tolerance z_c'), ('x', 'tolerance x_c'), ('wz', 'length'), ('wx', 'width'))]
-    s = slide(f'How far the scalar model departs, {lab}', 'NA at which the scalar–vector deviation first exceeds 5% and 10%.')
+            for key in ('pi', 'pi2') for m, nm in (('z', 'tolerance z_c'), ('x', 'tolerance x_c'), ('wz', 'depth of focus'), ('wx', 'lateral width'))]
+    s = slide(f'Severity of the scalar–vector deviation, {lab}', 'NA at which the scalar–vector deviation first exceeds 5% and 10%.')
     figure(s, F(f'na_breakdown_severity{suf}.png'), 0.45, 1.35, 5.4, 3.85)
     for j, h in enumerate(('', '5%', '10%')):
         text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.42, 1.7 if j == 0 else 0.75, 0.25, h, 10, GREY, True,
@@ -596,6 +598,23 @@ bullets(s, 0.6, 1.45, 8.9, 3.7, [
     'θ = π/2 above NA 0.71: keep as a computed trend (hatched), or move to immersion, where it is buildable.',
     'Second set of results with a Gaussian input (α_t = 4): the quoted losses, tolerances and deviation against NA.'], 13)
 notes(s, 'The lens-crossing limit to settle.', 'Whether to keep theta = pi/2 above the lens-crossing limit as a trend.')
+
+# ── the story, in the order of the Sep 29 progress report; everything else follows as supporting slides ──
+STORY = ('Main points', 'Gaussian input: main points', 'Gaussian input: the pupil', 'Geometry:', 'The single-beam field',
+         'Fig. 2(', 'Fig. 3(', '20% tolerances against NA', 'Severity of', '20% tolerances in water', 'The θ = π/2 lens problem')
+if SECTION in ('high_na', 'gaussian'):
+    sup = slide('Supporting slides', 'Checks, Lim & Saloma’s quoted losses, peak maps and profiles.')
+    notes(sup, 'Supporting slides.', 'The slides after this one back the story above.')
+    ttl = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
+    ids = prs.slides._sldIdLst
+    run = list(zip(prs.slides, list(ids)))[START + 1:]
+    def rank(k_sl):
+        k, (sl, _) = k_sl
+        t = ttl(sl)
+        pos = next((i for i, p in enumerate(STORY) if t.startswith(p)), None)
+        return (0, pos, k) if pos is not None else (1, 0 if t == 'Supporting slides' else 1, k)
+    for _, (sl, el) in sorted(enumerate(run), key=rank):
+        ids.remove(el); ids.append(el)
 
 if SECTION:                                          # keep only this section's slides of this run
     title_ = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
