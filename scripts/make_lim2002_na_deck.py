@@ -72,8 +72,8 @@ def first_above(d, key, m, thr):
 
 
 have = lambda name: os.path.exists(F(name))
-SECTION = os.environ.get('SECTION')                 # progress report: 'uniform' (Parts 2–3) or 'gaussian' (Part 4); unset: standalone
-SUFS = {'uniform': ('',), 'gaussian': ('_at4',)}.get(SECTION, ('', '_at4'))
+SECTION = os.environ.get('SECTION')                 # progress report: 'high_na', 'fidelity', 'gaussian' or 'foundations'
+SUFS = ('_at4',) if SECTION == 'gaussian' else ('',) if SECTION else ('', '_at4')
 GT = ' (α_t = 4)' if SECTION == 'gaussian' else ''  # marks Part 4's result slides
 Q = {suf: q for suf in ('', '_at4') if len(q := load_quoted(suf)) and all((k, 0.5) in q and (k, 0.9) in q for k in range(1, 6))}
 B = {suf: b for suf in ('', '_at4') if len(b := load_breakdown(suf)) and all((t, 0.5) in b and (t, 0.9) in b for t in ('pi', 'pi2'))}
@@ -598,14 +598,21 @@ bullets(s, 0.6, 1.45, 8.9, 3.7, [
 notes(s, 'The lens-crossing limit to settle.', 'Whether to keep theta = pi/2 above the lens-crossing limit as a trend.')
 
 if SECTION:                                          # keep only this section's slides of this run
-    keep_out = (('Gaussian input', 'Check 1') if SECTION == 'uniform' else
-                ('Where Lim', 'Main points', 'Glossary', 'Geometry:', 'The single-beam field', 'Check 2', 'Discussion:',
-                 'Where the length difference', 'Profiles at', 'Fidelity against NA: how', 'How NA changes'))
-    keep_out += ('Next: optical', 'Other next steps')
+    title_ = lambda sl: next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
+    LATER = ('Next: optical', 'Other next steps', 'Glossary')       # the report has its own next steps and glossary
+    if SECTION == 'foundations':                     # what a standalone part needs: the geometry and the two field models
+        keep = lambda t: t.startswith(('Geometry:', 'The single-beam field'))
+    elif SECTION == 'fidelity':
+        keep = lambda t: t.startswith('Fidelity against NA')
+    elif SECTION == 'high_na':
+        keep = lambda t: not t.startswith(('Gaussian input', 'Check 1', 'Fidelity against NA') + LATER)
+    else:                                            # 'gaussian'
+        keep = lambda t: not t.startswith(('Where Lim', 'Main points', 'Geometry:', 'The single-beam field', 'Check 2',
+                                           'Discussion:', 'Where the length difference', 'Profiles at',
+                                           'Fidelity against NA: how', 'How NA changes') + LATER)
     ds.DROP = getattr(ds, 'DROP', [])                  # marked here, removed once by the caller after every slide is added
     for sl, el in list(zip(prs.slides, prs.slides._sldIdLst))[START + 1:]:   # the run's own title is the caller's to replace
-        t = next((sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()), '')
-        if t.startswith(keep_out):
+        if not keep(title_(sl)):
             ds.DROP.append(el)
 if os.environ.get('DECK_APPEND'):                    # set by make_lim2002_progress_deck.py, which saves the whole report
     raise SystemExit
