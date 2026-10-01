@@ -400,4 +400,32 @@ for sl in prs.slides:
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 prs.save(OUT)
 shutil.copy(OUT, os.path.expanduser('~/Downloads'))
+
+# ── one deck per part, cut from the full report: each starts at its divider and is renumbered ──
+from pptx import Presentation as _Pres
+
+
+def renumber(pres):
+    for i, sl in enumerate(pres.slides, 1):
+        for sh in sl.shapes:
+            if sh.has_text_frame and abs(sh.left / 914400 - 9.0) < 0.01 and abs(sh.top / 914400 - 5.28) < 0.01 \
+                    and sh.text_frame.text.strip().isdigit():
+                sh.text_frame.paragraphs[0].runs[0].text = str(i)
+
+
+full = _Pres(OUT)
+titles = [title_of(sl) for sl in full.slides]
+starts = [i for i, t in enumerate(titles) if t.startswith('Part ')]
+NAMES = ['replication', 'high_na', 'fidelity', 'gaussian', 'polarization', 'pulses_next']
+for k, (a_, b_) in enumerate(zip(starts, starts[1:] + [len(titles)])):
+    part_ = _Pres(OUT)
+    ids = list(part_.slides._sldIdLst)
+    for i in reversed(range(len(ids))):
+        if not a_ <= i < b_:
+            part_.part.drop_rel(ids[i].rId)
+            part_.slides._sldIdLst.remove(ids[i])
+    renumber(part_)
+    path = OUT.replace('.pptx', f'_part{k + 1}_{NAMES[k]}.pptx')
+    part_.save(path)
+    print(f'Saved -> {os.path.basename(path)} ({len(part_.slides)} slides)')
 print('Saved ->', OUT, f'({len(prs.slides)} slides), copied to ~/Downloads')
