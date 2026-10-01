@@ -31,7 +31,7 @@ from mcdo.deckstyle import (CARD, FIG, GREY, NAVY, ORANGE, PALE, PURPLE, RED, WH
                             slide, text)
 
 OUT = os.path.expanduser('~/Downloads/Research/two_color/lim2002_na_study.pptx')
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
+ds.CITE = ''                     # cited on the title slide; no footer on every slide
 F = lambda name: os.path.join(FIG, name)
 QUOTED = [  # metric number: (title, paper %)
     ('2CE, θ = π/2, x_c = 1.33 λ_1', 11), ('2CE, θ = π, x_c = 0.37 λ_1', 20),
@@ -166,8 +166,7 @@ notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 a
 def main_point(title, main, support, size=13):
     """Bantang's format: the main point in bold, then the supporting points as short phrases."""
     s = slide(title, main)
-    text(s, 0.6, 1.4, 8.9, 0.5, main, 15, NAVY, True, 'Cambria')
-    bullets(s, 0.6, 2.05, 8.9, 3.1, support, size)
+    bullets(s, 0.6, 1.45, 8.9, 3.75, [main] + ['– ' + x for x in support], size)
     return s
 
 
@@ -642,7 +641,4 @@ OUT15 = OUT.replace('.pptx', '_15min.pptx')
 short.save(OUT15)
 print('Saved ->', OUT15, f'({len(short.slides)} slides)')
 
-import shutil
-for f in (OUT, OUT15):                               # copies at the top of Downloads, for now
-    shutil.copy(f, os.path.expanduser('~/Downloads'))
-print('Copied both to ~/Downloads')
+

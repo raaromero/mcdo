@@ -14,7 +14,7 @@ saving their own files); their title slides give way to section dividers.
 Every number is read from the saved results, so a rerun updates the report.
 
     python scripts/make_lim2002_progress_deck.py
-    -> ~/Downloads/Research/two_color/lim2002_progress_report.pptx (and a copy in ~/Downloads)
+    -> ~/Downloads/Research/two_color/lim2002_progress_report.pptx and one deck per part beside it
 """
 
 import os
@@ -56,11 +56,12 @@ def part(no, title, what):
 
 
 # ══ title and overview ═══════════════════════════════════════════════════
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002): progress report'
+ds.CITE = ''                                                   # the paper is cited on the title slide only
 s = navy('Lim & Saloma (2002): replication, high NA and pulses', [
     ('Roland Albert A. Romero', 18, WHITE),
     ('National Institute of Physics, University of the Philippines Diliman', 13, PALE),
-    ('Progress report on two-color excitation with misaligned foci', 13, PALE)],
+    ('Progress report on two-color excitation with misaligned foci', 13, PALE),
+    ('M. Lim & C. Saloma, Opt. Commun. 207, 121–130 (2002)', 13, PALE)],
     chips=(('Replication', PURPLE), ('High NA', RED), ('Polarization', ORANGE)))
 notes(s, 'The paper rebuilt, its model tested against the vector model at high NA, and the choices that remain.',
       'This report collects the work on Lim and Saloma (2002). First the replication of the paper itself; then how far its '
@@ -81,11 +82,10 @@ SUMMARY = [   # (part, colour, main point, supporting points as short phrases)
     ('Next', GREY, 'Pulses and a time delay.', 'signal = time overlap of the pulses · gated along z at θ = π'),
 ]
 s = slide('Summary', 'One main point per part; supporting points beneath.')
-for i, (head, col, main, support) in enumerate(SUMMARY):
-    t = 1.3 + i * 0.64
-    text(s, 0.5, t, 1.75, 0.3, head, 12, col, True)
-    text(s, 2.3, t, 7.2, 0.3, main, 12.5, NAVY, True)
-    text(s, 2.3, t + 0.29, 7.2, 0.3, support, 11, GREY)
+items = []
+for head, _, main, support in SUMMARY:
+    items += [f'{head.split(". ", 1)[-1]}: {main}', '– ' + support.replace(' · ', '; ')]
+bullets(s, 0.6, 1.35, 8.9, 3.85, items, 12)
 notes(s, 'One main point per part.',
       ' '.join(f'{h}: {m} Supporting: {sup.replace(" · ", "; ")}.' for h, _, m, sup in SUMMARY))
 
@@ -97,7 +97,6 @@ ds.DROP = [list(prs.slides._sldIdLst)[at]]                      # its own title 
 
 # ══ Parts 2–3: the NA deck, uniform input (high NA, then fidelity) ═════════
 part(2, 'high NA', SUMMARY[1][2] + ' Lim & Saloma’s metrics, vector model, NA 0.03 to 1.2, uniform input.')
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
 
 
 def na_deck(section):
@@ -121,12 +120,10 @@ ids.insert(first_fid, el)
 
 # ══ Part 4: Gaussian input ═══════════════════════════════════════════════
 part(4, 'Gaussian input, α_t = 4', SUMMARY[3][2] + ' The same study, Gaussian input on both lenses.')
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA, Gaussian input'
 na_deck('gaussian')
 del os.environ['SECTION']
 
 # ══ decision: polarization ═══════════════════════════════════════════════
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA: polarization'
 LIM = FIG
 
 
@@ -300,7 +297,6 @@ notes(s, 'Proposed: 2CE with circular polarization and 2PE with s–s as the mai
 
 # ══ next time: pulses, what the model must account for ═══════════════════
 part(6, 'next time: pulses and a time delay', 'What the pulsed model has to account for.')
-ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), with pulses'
 
 s = slide('The two-color signal with pulses', 'The signal is the time overlap of the two pulses, not a product of averages.')
 bullets(s, 0.6, 1.45, 8.9, 3.75, [
@@ -399,7 +395,6 @@ for sl in prs.slides:
         done[id(part)] = True
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 prs.save(OUT)
-shutil.copy(OUT, os.path.expanduser('~/Downloads'))
 
 # ── one deck per part, cut from the full report: each starts at its divider and is renumbered ──
 from pptx import Presentation as _Pres
@@ -428,4 +423,4 @@ for k, (a_, b_) in enumerate(zip(starts, starts[1:] + [len(titles)])):
     path = OUT.replace('.pptx', f'_part{k + 1}_{NAMES[k]}.pptx')
     part_.save(path)
     print(f'Saved -> {os.path.basename(path)} ({len(part_.slides)} slides)')
-print('Saved ->', OUT, f'({len(prs.slides)} slides), copied to ~/Downloads')
+print('Saved ->', OUT, f'({len(prs.slides)} slides)')

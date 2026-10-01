@@ -69,20 +69,21 @@ def text(s, l, t, w, h, txt, size, color=NAVY, bold=False, font='Calibri',
     return tf
 
 
-def bullets(s, l, t, w, h, items, size=12.5, color=NAVY):
-    """Bulleted list as in the style deck: • with hanging indent, 8 pt after."""
+def bullets(s, l, t, w, h, items, size=12.5, color=NAVY, bold=False):
+    """Bulleted list as in the style deck: • with hanging indent, 8 pt after; '– ' items are sub-bullets."""
     tf = s.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h)).text_frame
     tf.word_wrap = True
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
     for i, it in enumerate(items):
+        sub = it.startswith('– ')                         # '– text': a sub-bullet under the item above
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         pPr = p._p.get_or_add_pPr()
-        pPr.set('marL', '228600'); pPr.set('indent', '-228600')
-        spc = pPr.makeelement(qn('a:spcAft'), {}); pts = spc.makeelement(qn('a:spcPts'), {'val': '700'})
+        pPr.set('marL', '457200' if sub else '228600'); pPr.set('indent', '-228600')
+        spc = pPr.makeelement(qn('a:spcAft'), {}); pts = spc.makeelement(qn('a:spcPts'), {'val': '300' if sub else '700'})
         spc.append(pts); pPr.append(spc)
         pPr.append(pPr.makeelement(qn('a:buSzPct'), {'val': '100000'}))
-        pPr.append(pPr.makeelement(qn('a:buChar'), {'char': '•'}))
-        runs(p, it, size, color)
+        pPr.append(pPr.makeelement(qn('a:buChar'), {'char': '–' if sub else '•'}))
+        runs(p, it[2:] if sub else it, size - 1 if sub else size, GREY if sub else color, bold=bold and not sub)
     return tf
 
 
@@ -124,7 +125,8 @@ def slide(title, takeaway):
     dots(s, 0.5, 0.42, 0.13, 0.2)
     text(s, 1.2, 0.28, 8.6, 0.45, title, 24, NAVY, True, 'Cambria', MSO_ANCHOR.MIDDLE)
     text(s, 0.5, 0.78, 9.0, 0.5, takeaway, 13, PURPLE)
-    text(s, 0.5, 5.28, 6.0, 0.22, CITE, 8.5, GREY)
+    if CITE:                                         # a deck may leave the footer citation off (empty CITE)
+        text(s, 0.5, 5.28, 6.0, 0.22, CITE, 8.5, GREY)
     text(s, 9.0, 5.28, 0.5, 0.22, str(PAGE[0] + 1), 8.5, GREY)
     return s
 

@@ -22,7 +22,7 @@ from mcdo.deckstyle import (BLANK, CARD, FIG, GREEN, GREY, H, NAVY, ORANGE, ORIG
                             label, notes, numbered, prs, shape, slide, stat, text, verdict)
 
 OUT = os.path.expanduser('~/Downloads/Research/two_color/lim2002_replication.pptx')
-ds.CITE = 'Replication of Lim & Saloma, Opt. Commun. 207, 121–130 (2002)'
+ds.CITE = ''                     # cited on the title slide; no footer on every slide
 
 P = lambda name: os.path.join(PAN, name)
 LINFOOT_TEX = r'''
@@ -52,10 +52,11 @@ notes(s, 'We rebuilt every figure of Lim & Saloma (2002) from its equations; the
 
 # ══ 2. main points ═══════════════════════════════════════════════════════
 s = slide('Main points', 'The paper’s conclusion reproduces; three details of the paper do not.')
-numbered(s, 1, PURPLE, 1.45, 'Every number in the paper’s Section 3.2 and 22 of its 24 figure panels reproduce, within a few percent.')
-numbered(s, 2, RED, 2.15, 'The labels C and Q are swapped in Figs. 5–6 and in the text: the paper’s own identity F = 2Q − C proves it.')
-numbered(s, 3, ORANGE, 2.85, 'Beam 2 must be rotated in real space; the optical-coordinate rotation printed as Eq. (2) gives a 3.5× steeper loss.')
-numbered(s, 4, NAVY, 3.55, 'Figs. 6(c)–(d), captioned θ = π/2, match our θ = 0 surfaces instead.')
+bullets(s, 0.6, 1.45, 8.9, 2.9, [
+    'Every number in the paper’s Section 3.2 and 22 of its 24 figure panels reproduce, within a few percent.',
+    'The labels C and Q are swapped in Figs. 5–6 and in the text: the paper’s own identity F = 2Q − C proves it.',
+    'Beam 2 must be rotated in real space; the optical-coordinate rotation printed as Eq. (2) gives a 3.5× steeper loss.',
+    'Figs. 6(c)–(d), captioned θ = π/2, match our θ = 0 surfaces instead.'], 13)
 text(s, 0.6, 4.5, 8.9, 0.4, 'Next: the same study with the high-NA vector (Richards–Wolf) focus; later, pulses and a time delay.', 12, GREY)
 notes(s, 'The paper’s conclusion reproduces; three details of the paper do not.',
       'Four points. First, the reconstruction reproduces every number the paper quotes in Section 3.2 and 22 of its 24 panels. '
@@ -367,10 +368,11 @@ notes(s, 'With O prime at (0.4, 1.0) micrometres the 2CE peak lands in the same 
 
 # ══ 15. conclusions ══════════════════════════════════════════════════════
 s = slide('Conclusions', 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.')
-numbered(s, 1, PURPLE, 1.45, '2CE tolerates misalignment better than two-beam 2PE, most of all at θ = π/2: confirmed.')
-numbered(s, 2, RED, 2.15, 'Figs. 5–6 plot Q where they say C; the text repeats the swap.')
-numbered(s, 3, ORANGE, 2.85, 'Beam 2 is rotated in real space; Eq. (2) as printed does not generate the figures.')
-numbered(s, 4, NAVY, 3.55, 'Figs. 6(c)–(d) are most likely θ = 0, not θ = π/2.')
+bullets(s, 0.6, 1.45, 8.9, 2.9, [
+    '2CE tolerates misalignment better than two-beam 2PE, most of all at θ = π/2: confirmed.',
+    'Figs. 5–6 plot Q where they say C; the text repeats the swap.',
+    'Beam 2 is rotated in real space; Eq. (2) as printed does not generate the figures.',
+    'Figs. 6(c)–(d) are most likely θ = 0, not θ = π/2.'], 13)
 text(s, 0.6, 4.5, 8.9, 0.4, 'Next: high-NA vector model (Richards–Wolf); then pulses and a time delay, the temporal half of simultaneity.', 12, GREY)
 notes(s, 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.',
       'The paper’s conclusion stands: two-color excitation is more tolerant of misalignment, most of all with crossed beams. Three '
