@@ -215,17 +215,73 @@ if os.path.exists(pl) and q3p is not None:
               '(Lim & Saloma: 30%).')
     figure(s, pl, 0.45, 1.35, 9.1, 2.3)
     bullets(s, 0.6, 3.8, 8.9, 1.4, [
-        'The 2CE losses shift by a few percent between the three choices, most at high NA and across the axis.',
+        f'2CE across the axis (θ = π, x_c = 0.37 λ_1) at NA 0.9: {qrow("_pols", 2, 0.9):.0f}% for s–s, {qrow("", 2, 0.9):.0f}% '
+        f'unpolarized, {qrow("_polp", 2, 0.9):.0f}% for p–p; along the axis the three are identical.',
         'The 2PE crossed-beam loss depends on the choice entirely: with p–p the two fields are perpendicular, the beams no '
         'longer interfere, and there are no fringes to lose.',
         'So Lim & Saloma’s 2PE result assumes, implicitly, fields that stay parallel: s–s.'], 11.5)
     notes(s, 'The 2PE crossed-beam result depends entirely on the polarization.',
           'Lim and Saloma’s five quoted losses against NA for the three choices. For two-color excitation the choice moves the '
-          'numbers by a few percent. For two-photon excitation with crossed beams it decides whether the beams interfere at '
+          'losses across the axis, by up to about twenty points at NA 0.9, and leaves the losses along the axis unchanged. For two-photon excitation with crossed beams it decides whether the beams interfere at '
           'all: with both polarizations in the plane the fields are perpendicular and the fringes vanish.')
 else:
     s = slide('Lim & Saloma’s quoted losses by polarization', 'Result still computing; this slide fills in when the report is rebuilt.')
     notes(s, 'Pending result.', 'From fig_lim2002_quoted_vs_na.py with POL = s and p.')
+
+# ── what polarization changes in Parts 2–4, one row per earlier result ──
+def fid_area(case, na, pol):
+    """Area with F ≥ 0.8, vector over scalar, from a saved fidelity map (as in fig_lim2002_fidelity_na_plot.py)."""
+    from scipy.interpolate import RectBivariateSpline
+    from scipy.ndimage import label as lab_
+    path = os.path.join(FIG, 'fidelity', f'{case}{pol}_na{na:.3f}_n1.npz')
+    if not os.path.exists(path):
+        return None
+    d = np.load(path)
+    xt, zt = d['xt'], d['zt']
+
+    def area(M):
+        f = RectBivariateSpline(zt, xt, M)(np.linspace(zt[0], zt[-1], 20 * len(zt)), np.linspace(xt[0], xt[-1], 20 * len(xt)))
+        L, _ = lab_(f >= 0.8)
+        c = L[L.shape[0] // 2, L.shape[1] // 2]
+        return np.count_nonzero(L == c) if c else 0
+    return area(d['F_vec']) / area(d['F_sca'])
+
+
+def pct(v, ref):
+    return '—' if v is None or ref is None else f'{v:.3g} ({100 * (v / ref - 1):+.0f}%)'
+
+
+def tol(suf, key, na, col):
+    r = brow(suf, key, na)
+    return None if r is None else 1000 * r[col]
+
+
+TROWS = [
+    ('2: tolerance θ = π, x_c, NA 0.9 (nm)', [tol(p_, 'pi', 0.9, 3) for p_ in ('', '_pols', '_polp')]),
+    ('2: tolerance θ = π, z_c, NA 0.9 (nm)', [tol(p_, 'pi', 0.9, 4) for p_ in ('', '_pols', '_polp')]),
+    ('2: tolerance θ = π/2, x_c, NA 0.9 (nm)', [tol(p_, 'pi2', 0.9, 3) for p_ in ('', '_pols', '_polp')]),
+    ('2: quoted loss 2, NA 0.9 (%)', [qrow(p_, 2, 0.9) for p_ in ('', '_pols', '_polp')]),
+    ('2: quoted loss 3 (2PE), NA 0.9 (%)', [None, qrow('', 3, 0.9), qrow('_polp', 3, 0.9)]),
+    ('2: water, tolerance θ = π, x_c, NA 1.2 (nm)', [tol(p_, 'pi', 1.2, 3) for p_ in ('_n1.33', '_n1.33_pols', '_n1.33_polp')]),
+    ('3: fidelity area / scalar, 2CE θ = π, NA 0.9', [fid_area('2ce_pi', 0.9, p_) for p_ in ('', '_pols', '_polp')]),
+    ('3: fidelity area / scalar, 2CE θ = π/2, NA 0.9', [fid_area('2ce_pi2', 0.9, p_) for p_ in ('', '_pols', '_polp')]),
+    ('3: fidelity area / scalar, 2PE θ = π/2, NA 0.9', [None, fid_area('2pe_pi2', 0.9, ''), fid_area('2pe_pi2', 0.9, '_polp')]),
+    ('4: α_t = 4, tolerance θ = π, x_c, NA 0.9 (nm)', [tol(p_, 'pi', 0.9, 3) for p_ in ('_at4', '_at4_pols', '_at4_polp')]),
+]
+s = slide('What polarization changes in Parts 2–4', 'Change against the unpolarized (circular) result; 2PE compares p–p with s–s.')
+for j, h in enumerate(('Result', 'A: unpolarized', 's–s', 'p–p')):
+    text(s, (0.5, 4.6, 6.2, 7.8)[j], 1.3, (4.0, 1.5, 1.5, 1.7)[j], 0.28, h, 10.5, GREY, True)
+for i, (name, (va, vs, vp)) in enumerate(TROWS):
+    ref = va if va is not None else vs                          # 2PE: s–s is the reference
+    t = 1.62 + i * 0.335
+    text(s, 0.5, t, 4.0, 0.3, name, 10, NAVY, True)
+    text(s, 4.6, t, 1.5, 0.3, '—' if va is None else f'{va:.3g}', 10, NAVY)
+    text(s, 6.2, t, 1.5, 0.3, pct(vs, ref) if va is not None else ('—' if vs is None else f'{vs:.3g}'), 10, NAVY)
+    text(s, 7.8, t, 1.7, 0.3, pct(vp, ref), 10, NAVY)
+notes(s, 'Which earlier results move with the polarization, and by how much.',
+      'One row per earlier result, at the highest NA of each part, where polarization matters most. Each linear choice is '
+      'compared with the unpolarized result used so far, which is circular polarization. For two-photon excitation the '
+      'comparison is p–p against s–s, the polarization used so far. A dash means the case does not exist or has not been run.')
 
 s = slide('The decision', 'Proposed: 2CE with circular (A) and 2PE with s–s as the main result; linear 2CE as bounds.')
 bullets(s, 0.6, 1.45, 8.9, 3.75, [
@@ -296,6 +352,26 @@ for i, sl in enumerate(prs.slides, 1):
         if sh.has_text_frame and abs(sh.left / 914400 - 9.0) < 0.01 and abs(sh.top / 914400 - 5.28) < 0.01 \
                 and sh.text_frame.text.strip().isdigit():
             sh.text_frame.paragraphs[0].runs[0].text = str(i)
+# ── embed each figure at 600 dpi of its size on the slide (the figure files keep their own resolution) ──
+import io
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
+done = {}
+for sl in prs.slides:
+    for sh in sl.shapes:
+        if sh.shape_type != 13:                                 # pictures only
+            continue
+        part = sh.part.related_part(sh._element.blipFill.blip.rEmbed)
+        if id(part) in done:
+            continue
+        im = Image.open(io.BytesIO(part.blob))
+        w = int(round(600 * sh.width / 914400))
+        if im.size[0] > 1.05 * w:
+            im = im.convert('RGB').resize((w, int(round(w * im.size[1] / im.size[0]))), Image.LANCZOS)
+            buf = io.BytesIO()
+            im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
+            part._blob = buf.getvalue()
+        done[id(part)] = True
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 prs.save(OUT)
 shutil.copy(OUT, os.path.expanduser('~/Downloads'))

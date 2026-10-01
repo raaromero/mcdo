@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 
 from mcdo.style import apply as _apply_style
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 30,
+matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'axes.labelsize': 28, 'xtick.labelsize': 24,
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
@@ -72,7 +72,7 @@ for ax, na in zip(axes, (0.5, 0.9)):
     ax.set_xlabel('x (µm)'); ax.set_ylabel('Intensity (normalized)')
     print(f'NA {na}: focal FWHM along x, s {fw[np.pi / 2]:.3f} µm, p {fw[0.0]:.3f} µm')
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False, fontsize=22)
+fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False, fontsize=24)
 fig.suptitle('One beam at focus, 750 nm: the spot is wider along the polarization', fontsize=32, y=1.03)
 plt.tight_layout()
 save(fig, 'polarization_spot.png')
@@ -101,7 +101,7 @@ for r, key in enumerate(('pi2', 'pi')):
         if c == 0:
             ax.set_ylabel('Offset for 20% loss (µm)')
 h, l = axes[0, 0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.06), frameon=False, fontsize=22)
+fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.06), frameon=False, fontsize=24)
 fig.suptitle('2CE: offset of O′ costing 20% of the peak, by polarization', fontsize=32, y=1.0)
 plt.tight_layout()
 save(fig, 'polarization_tolerances.png')
@@ -118,7 +118,7 @@ for k, ax in enumerate(axes, 1):
             continue
         a = a[(a[:, 0] >= 0.1 - 1e-9) & (a[:, 0] <= 0.95 + 1e-9)]
         ax.plot(a[:, 0], a[:, 1], ls, color=colr, lw=3.5, label=name)
-    ax.set_title(QUOTED[k - 1], fontsize=24)
+    ax.set_title(QUOTED[k - 1])
     ax.set_xlabel('NA'); ax.set_ylim(0, 100); ax.set_xlim(0.1, 0.95)
     if k == 1:
         ax.set_ylabel('Peak lost (%)')

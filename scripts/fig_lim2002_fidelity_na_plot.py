@@ -35,9 +35,9 @@ from scipy.ndimage import label
 
 from mcdo.style import apply as _apply_style
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28,
-                            'axes.labelsize': 28, 'xtick.labelsize': 22,
-                            'ytick.labelsize': 22, 'legend.fontsize': 22})
+matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
+                            'axes.labelsize': 28, 'xtick.labelsize': 24,
+                            'ytick.labelsize': 24, 'legend.fontsize': 24})
 
 DIR = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'fidelity')
 LEVEL = 0.8
@@ -91,7 +91,7 @@ def figure(pair, th, suf, key, runs):
     nas = np.array([r[0] for r in runs]); lo, hi = nas.min(), nas.max()
     col = lambda na: cmap((na - lo) / max(hi - lo, 1e-9))
     fig = plt.figure(figsize=(30.0, 26.0))
-    gs = GridSpec(3, 6, figure=fig, height_ratios=(1.25, 0.8, 0.9), hspace=0.5, wspace=0.5)
+    gs = GridSpec(3, 6, figure=fig, height_ratios=(1.25, 0.8, 0.9), hspace=0.5, wspace=0.9)
 
     ax = fig.add_subplot(gs[0, 1:4])
     for na, n, d in runs:
@@ -138,7 +138,7 @@ def figure(pair, th, suf, key, runs):
         ax.ticklabel_format(axis='y', useOffset=False)
     fig.text(0.1, 0.30, '(c) shape against NA; open markers: water, n = 1.33', fontsize=28)
     fig.suptitle(f'{NAMES[key]} over the offset of O′ against NA: {PAIRS[pair]}, {THETAS[th]}'
-                 + (', α$_t$ = 4' if suf else ', uniform input'), fontsize=34, y=0.95)
+                 + (', α$_t$ = 4' if suf else ', uniform input'), fontsize=32, y=0.95)
     path = os.path.join(DIR, f'fidelity_na_{pair}_{th}{suf}_{key}.png')
     fig.savefig(path, dpi=600, bbox_inches='tight')
     plt.close(fig)

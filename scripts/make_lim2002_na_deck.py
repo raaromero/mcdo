@@ -238,6 +238,20 @@ glossary('Glossary: signals, models and measures', 'What is computed and how it 
     ('Linfoot F', 'fidelity of the misaligned PSF against the aligned one, each scaled to its peak (Lim & Saloma)'),
 ])
 
+glossary('Glossary: fidelity, input, polarization and pulses', 'The symbols of the fidelity maps and of the later parts.', [
+    ('x̃, z̃', 'offsets in units of the spot: x_c NA/λ across a beam, z_c NA^2/(nλ) along it'),
+    ('F, C, Q', 'Linfoot fidelity, structural content, correlation quality, as Lim & Saloma define them'),
+    ('ΔF', 'F with the vector focus minus F with the paraxial scalar focus, at the same NA'),
+    ('F ≥ 0.8 region', 'the offsets of O′ that keep F ≥ 0.8; its half-widths and area describe its shape'),
+    ('A(ϑ)', 'pupil amplitude of a Gaussian input, exp(−α_t sin^2ϑ / sin^2α); the same on both lenses'),
+    ('ψ', 'input polarization angle about a beam’s own axis'),
+    ('s–s / p–p', 'both beams polarized perpendicular to / in the plane of the two lens axes'),
+    ('Unpolarized', 'each beam averaged over two perpendicular input polarizations: exactly circular polarization'),
+    ('τ, Δt', 'pulse length (intensity FWHM); delay of pulse 2 after pulse 1'),
+    ('Gate', 'where the two pulses overlap in time; FWHM c√2 τ/2n along z at θ = π'),
+    ('n sin(θ/2)', 'the largest NA at which two lenses with axes at angle θ fit side by side'),
+])
+
 # ══ 5. geometry ══════════════════════════════════════════════════════════
 one('Geometry: x_c, z_c and θ', 'Beam 2’s focus O′ is displaced from O by x_c across and z_c along L1’s axis.',
     F('fig1_geometry.png'), [

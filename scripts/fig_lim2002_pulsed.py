@@ -80,7 +80,7 @@ if PART == 'maps':
             F = 100 * F / F.max()
             ax = axes[r, c]
             cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=2.0)
-            ax.clabel(cs, fmt='%d', fontsize=18)
+            ax.clabel(cs, fmt='%d', fontsize=24)
             ax.set_box_aspect(1.0)
             ax.set_xticks([-1, 0, 1]); ax.set_yticks([-4, -2, 0, 2, 4])
             ax.set_xlabel('x (µm)')
