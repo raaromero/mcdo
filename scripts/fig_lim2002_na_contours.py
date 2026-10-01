@@ -40,6 +40,7 @@ AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform
 SUF = '' if AT == 0 else f'_at{AT:g}'
 APOD = lambda na: gaussian(AT, na ** 2) if AT else None
 LEVELS = [1, 10, 20, 40, 60, 80]
+REPLOT = os.environ.get('REPLOT') == '1'             # redraw from the saved PSFs
 x = np.linspace(-1.0, 1.0, 201)
 z = np.linspace(-5.0, 5.0, 401)
 X, Z = np.meshgrid(x, z)
@@ -66,25 +67,28 @@ def psf(pair, na, theta, xc, zc):
 
 for fig_no, (xc, zc), where in ((2, (0.0, 0.0), 'aligned'), (3, (0.4, 1.0), 'O′ = (0.4, 1.0) µm')):
     for tag, pair, th, lab in PANELS:
-        fig, axes = plt.subplots(1, 3, figsize=(21.0, 8.2))
+        fig, axes = plt.subplots(1, 3, figsize=(18.2, 7.0))  # twice its width on the slide: 24-pt text shows at 12 pt
         data = {}
+        saved = np.load(os.path.join(OUT, f'na_contours_fig{fig_no}{tag}{SUF}.npz')) if REPLOT else None
         for ax, na in zip(axes, NAS[th]):
-            F = psf(pair, na, th, xc, zc)
-            data[f'F_na{na:g}'] = F
-            np.savez_compressed(os.path.join(OUT, f'na_contours_fig{fig_no}{tag}{SUF}.npz'),
-                                x_um=x, z_um=z, **data)
+            if REPLOT:
+                F = saved[f'F_na{na:g}']
+            else:
+                F = psf(pair, na, th, xc, zc)
+                data[f'F_na{na:g}'] = F
+                np.savez_compressed(os.path.join(OUT, f'na_contours_fig{fig_no}{tag}{SUF}.npz'),
+                                    x_um=x, z_um=z, **data)
             F = 100 * F / F.max()
-            cs = ax.contour(x, z, F, levels=LEVELS, colors='k', linewidths=2.0)
-            ax.clabel(cs, fmt='%d', fontsize=20)
+            cs = ax.contour(x, z, F, levels=LEVELS, cmap='viridis', linewidths=3.0)   # levels: shared colorbar
             ax.set_xlabel('x (µm)'); ax.set_ylabel('z (µm)')
             ax.set_box_aspect(1.0)
             ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks([-4, -2, 0, 2, 4])
             ax.set_title(f'NA {na}')
             iz, ix = np.unravel_index(np.argmax(F), F.shape)
             print(f'Fig. {fig_no}({tag}) {lab}, {where}, NA {na}: peak at ({x[ix]:+.2f}, {z[iz]:+.2f}) µm', flush=True)
-        fig.suptitle(f'Fig. {fig_no}({tag}): {lab}, {where}, vector' + (f', α$_t$ = {AT:g}' if AT else ''),
-                     fontsize=32, y=1.03)
         plt.tight_layout()
+        fig.colorbar(cs, ax=list(axes), fraction=0.02, pad=0.02, ticks=LEVELS).set_label('% of peak')
+        fig.suptitle(f'{lab}, {where}' + (f', α$_t$ = {AT:g}' if AT else ''), fontsize=32, y=1.03)
         fig.savefig(os.path.join(OUT, f'na_contours_fig{fig_no}{tag}{SUF}.png'), dpi=600, bbox_inches='tight')
         plt.close(fig)
 print('Saved -> na_contours_fig2a..3d.png')

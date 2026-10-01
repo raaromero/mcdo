@@ -27,10 +27,10 @@ matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'ytick.labelsize': 24, 'legend.fontsize': 22})
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color')
-MEDIA = [(1.0, 'air, n = 1', '#1f77b4'), (1.33, 'water, n = 1.33', '#2ca02c'), (1.515, 'oil, n = 1.515', '#d62728')]
+MEDIA = [(1.0, 'Air, n = 1', '#1f77b4'), (1.33, 'Water, n = 1.33', '#2ca02c'), (1.515, 'Oil, n = 1.515', '#d62728')]
 
 theta = np.linspace(0, 180, 361)
-fig, ax = plt.subplots(figsize=(11.0, 8.0))
+fig, ax = plt.subplots(figsize=(9.0, 6.4))              # twice its width on the slide: 24-pt text shows at 12 pt
 for n, lab, col in MEDIA:
     ax.plot(theta, n * np.sin(np.radians(theta / 2)), '-', color=col, lw=4, label=lab)
     v = n * np.sin(np.radians(45))
@@ -43,7 +43,7 @@ ax.set_xlim(0, 180); ax.set_ylim(0, 1.6)
 ax.set_xticks([0, 45, 90, 135, 180])
 ax.set_xlabel('Angle between the two lens axes, θ (degrees)')
 ax.set_ylabel('Largest NA with no overlap')
-ax.set_title('Two lenses fit only while NA ≤ n sin(θ/2)')
+ax.set_title('Two lenses fit only while NA ≤ n sin(θ/2)', fontsize=28)
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.17), ncol=2, frameon=False)
 path = os.path.join(OUT, 'na_crossing_general.png')
 fig.savefig(path, dpi=600, bbox_inches='tight')

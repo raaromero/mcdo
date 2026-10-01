@@ -31,10 +31,10 @@ from mcdo.twobeam import beam_field, intensity
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 LAM = 0.750
 
-fig, axes = plt.subplots(1, 3, figsize=(21.0, 7.5))
+fig, axes = plt.subplots(1, 3, figsize=(18.2, 6.0))     # twice its width on the slide: 24-pt text shows at 12 pt
 for a, na in zip(axes, (0.5, 0.7, 0.9)):
     z = np.linspace(-3.0 * 2 * LAM / na ** 2, 3.0 * 2 * LAM / na ** 2, 1201)
-    for at, lab, col, ls in ((0, 'uniform input (α$_t$ = 0)', 'k', '-'), (4, 'Gaussian input, α$_t$ = 4', '#d62728', '--')):
+    for at, lab, col, ls in ((0, 'Uniform input (α$_t$ = 0)', 'k', '-'), (4, 'Gaussian input, α$_t$ = 4', '#d62728', '--')):
         ap = gaussian(at, na ** 2) if at else None
         I = intensity(beam_field(0 * z, z, LAM, na, model='rw', psi=0.0, apodization=ap))
         a.plot(z, I / I.max(), ls, color=col, lw=4, label=lab)
@@ -43,7 +43,8 @@ for a, na in zip(axes, (0.5, 0.7, 0.9)):
     a.set_ylim(0, 1.05)
 axes[0].set_ylabel('On-axis intensity, normalized')
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.1))
-plt.tight_layout(rect=(0, 0.06, 1, 1))
+fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.14), frameon=False)
+fig.suptitle('Vector focus on axis, 750 nm: uniform against Gaussian input', fontsize=32, y=1.04)
+plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'axial_gaussian_vs_uniform.png'), dpi=600, bbox_inches='tight')
 print('Saved -> axial_gaussian_vs_uniform.png')

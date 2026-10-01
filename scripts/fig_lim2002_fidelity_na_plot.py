@@ -14,7 +14,8 @@ one figure in three rows:
       markers; for θ = π/2 the band above NA 0.71 (lenses overlap in air) is hatched.
 
     python scripts/fig_lim2002_fidelity_na_plot.py
-    -> output/08_two_color/lim2002/fidelity/fidelity_na_{pair}_{theta}[_at4]_{F,C,Q}.png
+    -> output/08_two_color/lim2002/fidelity/fidelity_na_{pair}_{theta}[_at4]_{F,C,Q}.png  (a) and (c)
+       fidelity_dF_{pair}_{theta}[_at4]_{F,C,Q}.png  (b)
        and fidelity_shape_{pair}_{theta}[_at4]_{F,C,Q}.csv (the numbers in (c))
 """
 
@@ -85,64 +86,71 @@ UNITS = {('2ce', 'pi'): ('x$_c$ NA/λ', 'z$_c$ NA²/nλ'), ('2ce', 'pi2'): ('x$_
 
 
 def figure(pair, th, suf, key, runs):
+    """Two figures, each at twice its width on the slide (24/28/32-pt text shows at 12/14/16 pt):
+    fidelity_na_*: (a) the contour at every NA and (c) the shape against NA, in one row;
+    fidelity_dF_*: (b) Δ = vector − scalar at six NAs."""
     xt, zt = runs[0][2]['xt'], runs[0][2]['zt']
     ulx, ulz = UNITS[(pair, th)]
     cmap = plt.get_cmap('viridis')
     nas = np.array([r[0] for r in runs]); lo, hi = nas.min(), nas.max()
     col = lambda na: cmap((na - lo) / max(hi - lo, 1e-9))
-    fig = plt.figure(figsize=(30.0, 26.0))
-    gs = GridSpec(3, 6, figure=fig, height_ratios=(1.25, 0.8, 0.9), hspace=0.5, wspace=0.9)
+    case = f'{PAIRS[pair]}, {THETAS[th]}' + (', α$_t$ = 4' if suf else ', uniform input')
 
-    ax = fig.add_subplot(gs[0, 1:4])
+    fig, axes = plt.subplots(1, 4, figsize=(18.2, 5.6), gridspec_kw=dict(width_ratios=(1.25, 1, 1, 1)))
+    ax = axes[0]
     for na, n, d in runs:
         ax.contour(xt, zt, d[f'{key}_vec'], levels=[LEVEL], colors=[col(na)], linewidths=2.5,
                    linestyles='-' if n == 1 else '--')
     ref = min(runs, key=lambda r: abs(r[0] - 0.5))
     ax.contour(xt, zt, ref[2][f'{key}_sca'], levels=[LEVEL], colors='#d62728', linewidths=4, linestyles=':')
     ax.set_xlabel(ulx); ax.set_ylabel(ulz)
-    ax.set_title(f'(a) {key} = {LEVEL} contour, vector at every NA; red dotted: paraxial scalar, NA {ref[0]:g}', pad=24)
+    ax.set_title(f'{key} = {LEVEL} contour', fontsize=28)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(lo, hi))
-    fig.colorbar(sm, ax=ax, fraction=0.04, pad=0.03).set_label('NA (dashed: water)')
-
-    idx = np.unique(np.round(np.linspace(0, len(runs) - 1, min(6, len(runs)))).astype(int))
-    pick = [runs[i] for i in idx]
-    # colour scale from where the aligned-ness is meaningful (scalar value ≥ 0); saturates outside
-    vmax = max(np.abs(d[f'{key}_vec'] - d[f'{key}_sca'])[d[f'{key}_sca'] >= 0].max() for _, _, d in pick) or 1e-3
-    for i, (na, n, d) in enumerate(pick):
-        ax = fig.add_subplot(gs[1, i])
-        pm = ax.pcolormesh(xt, zt, d[f'{key}_vec'] - d[f'{key}_sca'], cmap='RdBu_r', vmin=-vmax, vmax=vmax,
-                           shading='nearest')
-        ax.set_title(f'NA {na:g}' + ('' if n == 1 else ', water'))
-        ax.set_xlabel(ulx)
-        if i == 0:
-            ax.set_ylabel(ulz)
-    fig.colorbar(pm, ax=[fig.axes[-len(pick) + j] for j in range(len(pick))], fraction=0.012, pad=0.01).set_label(f'Δ{key}')
-    fig.text(0.1, 0.585, f'(b) Δ{key} = {key} vector − {key} paraxial scalar, same NA', fontsize=28)
+    fig.colorbar(sm, ax=ax, fraction=0.06, pad=0.03).set_label('NA')
 
     S = np.array([[*shape(xt, zt, d[f'{key}_vec']), *shape(xt, zt, d[f'{key}_sca'])] for _, _, d in runs])
     water = np.array([n != 1 for _, n, _ in runs])
     np.savetxt(os.path.join(DIR, f'fidelity_shape_{pair}_{th}{suf}_{key}.csv'),
                np.column_stack([nas, [n for _, n, _ in runs], S]), delimiter=',', fmt='%.6g',
                header='NA,n,hx_vec,hz_vec,area_vec,hx_sca,hz_sca,area_sca')
-    for j, lab in enumerate(('Half-width along x$_c$', 'Half-width along z$_c$', f'Area with {key} ≥ {LEVEL}')):
-        ax = fig.add_subplot(gs[2, 2 * j:2 * j + 2])
+    for j, lab in enumerate(('Half-width in x$_c$', 'Half-width in z$_c$', f'Area, {key} ≥ {LEVEL}')):
+        ax = axes[1 + j]
         r = S[:, j] / S[:, j + 3]
-        ax.plot(nas[~water], r[~water], 'o-', color='#1f77b4', lw=4, ms=11)
+        ax.plot(nas[~water], r[~water], 'o-', color='#1f77b4', lw=4, ms=9)
         if water.any():
-            ax.plot(nas[water], r[water], 'o--', color='#1f77b4', lw=3, ms=11, mfc='none', mew=2.5)
+            ax.plot(nas[water], r[water], 'o--', color='#1f77b4', lw=3, ms=9, mfc='none', mew=2.5)
         ax.axhline(1.0, color='#d62728', lw=2.5, ls=':')
         if th == 'pi2':
             ax.axvspan(1 / np.sqrt(2), 1.0, facecolor='none', edgecolor='#999999', hatch='//', lw=0)
-        ax.set_xlabel('NA'); ax.set_ylabel(f'{lab}\nvector / scalar')
-        ax.set_xlim(0, max(1.0, hi) + 0.03)
+        ax.set_xlabel('NA'); ax.set_title(lab)
+        if j == 0:
+            ax.set_ylabel('Vector / scalar')
+        ax.set_xlim(0, max(1.0, hi) + 0.03); ax.set_xticks([0, 0.5, 1.0])
         ax.ticklabel_format(axis='y', useOffset=False)
-    fig.text(0.1, 0.30, '(c) shape against NA; open markers: water, n = 1.33', fontsize=28)
-    fig.suptitle(f'{NAMES[key]} over the offset of O′ against NA: {PAIRS[pair]}, {THETAS[th]}'
-                 + (', α$_t$ = 4' if suf else ', uniform input'), fontsize=32, y=0.95)
+    fig.suptitle(f'{NAMES[key]} against NA, {case}', fontsize=32, y=1.02)       # dotted red: scalar; open: water (slide text)
+    plt.tight_layout()
     path = os.path.join(DIR, f'fidelity_na_{pair}_{th}{suf}_{key}.png')
     fig.savefig(path, dpi=600, bbox_inches='tight')
     plt.close(fig)
-    print('Saved ->', os.path.basename(path), f'({len(runs)} NAs)')
+
+    idx = np.unique(np.round(np.linspace(0, len(runs) - 1, min(6, len(runs)))).astype(int))
+    pick = [runs[i] for i in idx]
+    # colour scale from where the aligned-ness is meaningful (scalar value ≥ 0); saturates outside
+    vmax = max(np.abs(d[f'{key}_vec'] - d[f'{key}_sca'])[d[f'{key}_sca'] >= 0].max() for _, _, d in pick) or 1e-3
+    fig, axes = plt.subplots(1, len(pick), figsize=(18.2, 5.2), sharey=True)
+    for i, (ax, (na, n, d)) in enumerate(zip(axes, pick)):
+        pm = ax.pcolormesh(xt, zt, d[f'{key}_vec'] - d[f'{key}_sca'], cmap='RdBu_r', vmin=-vmax, vmax=vmax,
+                           shading='nearest')
+        ax.set_title(f'NA {na:g}' + ('' if n == 1 else ' (w)'), fontsize=28)
+        ax.set_xlabel(ulx)
+        ax.set_xticks([xt[0], 0, xt[-1]]); ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        if i == 0:
+            ax.set_ylabel(ulz)
+    fig.colorbar(pm, ax=list(axes), fraction=0.02, pad=0.01).set_label(f'Δ{key}')
+    fig.suptitle(f'Δ{key} = vector − paraxial scalar, {case}', fontsize=32, y=1.08)   # x units, (w) = water: slide text
+    fig.savefig(os.path.join(DIR, f'fidelity_dF_{pair}_{th}{suf}_{key}.png'), dpi=600, bbox_inches='tight')
+    plt.close(fig)
+    print('Saved ->', os.path.basename(path), f'and fidelity_dF ({len(runs)} NAs)')
 
 
 for pair in PAIRS:

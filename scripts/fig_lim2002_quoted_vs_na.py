@@ -137,22 +137,22 @@ for k, (pair, th, along, off, lam, paper, title) in enumerate(METRICS, 1):
     nas, L, S = np.concatenate([np.atleast_2d(np.loadtxt(f, delimiter=',')) for f in all_csv(k)]).T
     order = np.argsort(nas); nas, L, S = nas[order], L[order], S[order]
 
-    fig, ax = plt.subplots(figsize=(10.0, 7.5))
-    ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='NA ≤ 0.5, scalar model\'s stated range')
+    fig, ax = plt.subplots(figsize=(9.4, 6.2))         # twice its width on the slide: 24-pt text shows at 12 pt
+    ax.axvspan(0, 0.5, color='#dddddd', zorder=0, label='Scalar range (NA ≤ 0.5)')
     if th == np.pi / 2:
         ax.axvspan(N / np.sqrt(2), max(1.0, nas[-1] + 0.02), color='none', hatch='//', ec='#999999', lw=0, zorder=0,
-                   label=f'NA > {N / np.sqrt(2):.2f}: two lenses cannot cross' + (' in air' if N == 1 else ''))
-    ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='Vector (Richards–Wolf)')
+                   label='Lenses cannot cross')
+    ax.plot(nas, L, '-o', color='#1f77b4', lw=4, ms=8, label='Vector')
     lo = nas <= 0.5 + 1e-9                             # the paraxial scalar model only in its stated range
-    ax.plot(nas[lo], S[lo], ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar (NA ≤ 0.5)')
+    ax.plot(nas[lo], S[lo], ':s', color='#d62728', lw=3, ms=8, mfc='none', mew=2, label='Paraxial scalar')
     ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3,
-              label='Lim & Saloma (2002), NA 0.5' + (' (uniform input)' if AT else ''))
+              label='Lim & Saloma, NA 0.5')                 # uniform input: stated on the slide
     ax.set_xlim(0.0, max(1.0, nas[-1] + 0.02))
     ax.set_xlabel('NA')
     ax.set_ylabel('Peak lost (%)')
     ax.set_title(title + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM)
     ax.set_ylim(0, 100)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=2, frameon=False, columnspacing=1.0)
     fig.savefig(os.path.join(OUT, f'quoted_vs_na_{k}{SUF}.png'), dpi=600, bbox_inches='tight')
     plt.close(fig)
 

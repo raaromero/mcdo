@@ -73,15 +73,19 @@ def peak_map(pair, na, theta):
     return ixs * DX, izs * DZ, P
 
 
+REPLOT = os.environ.get('REPLOT') == '1'             # redraw from the saved maps
 for tag, pair, th, lab in PANELS:
-    fig, axes = plt.subplots(1, 3, figsize=(21.0, 8.2))
+    fig, axes = plt.subplots(1, 3, figsize=(18.2, 7.0))  # twice its width on the slide: 24-pt text shows at 12 pt
     maps = {}
+    saved = np.load(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.npz')) if REPLOT else None
     for ax, na in zip(axes, (0.5, 0.7, 0.9)):
-        xc, zc, P = peak_map(pair, na, th)
-        maps[f'P_na{na:g}'] = P
-        np.savez_compressed(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.npz'), x_c_um=xc, z_c_um=zc, **maps)
-        cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], colors='k', linewidths=2.0)
-        ax.clabel(cs, fmt='%d', fontsize=20)
+        if REPLOT:
+            xc, zc, P = saved['x_c_um'], saved['z_c_um'], saved[f'P_na{na:g}']
+        else:
+            xc, zc, P = peak_map(pair, na, th)
+            maps[f'P_na{na:g}'] = P
+            np.savez_compressed(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.npz'), x_c_um=xc, z_c_um=zc, **maps)
+        cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], cmap='viridis', linewidths=3.0)   # levels: shared colorbar
         ax.set_xlabel('x$_c$ (µm)'); ax.set_ylabel('z$_c$ (µm)')
         ax.set_box_aspect(1.0)
         ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks([-4, -2, 0, 2, 4])
@@ -89,9 +93,10 @@ for tag, pair, th, lab in PANELS:
         i0, j0 = np.argmin(np.abs(zc)), np.argmin(np.abs(xc))
         print(f'Fig. 4({tag}) {lab}, NA {na}: peak at x_c = 0.5 µm {100 * np.interp(0.5, xc, P[i0]):.0f}%, '
               f'at z_c = 1 µm {100 * np.interp(1.0, zc, P[:, j0]):.0f}%', flush=True)
-    note = '   * not buildable in air (NA > 0.71)' if th == np.pi / 2 else ''
-    fig.suptitle(f'Fig. 4({tag}): peak surviving, % of aligned, {lab}, vector' + (f', α$_t$ = {AT:g}' if AT else '') + note, fontsize=30, y=1.03)
+    note = ';  * lenses cannot cross' if th == np.pi / 2 else ''
     plt.tight_layout()
+    fig.colorbar(cs, ax=list(axes), fraction=0.02, pad=0.02, ticks=cs.levels).set_label('Peak surviving (%)')
+    fig.suptitle(f'Peak surviving (% of aligned), {lab}' + (f', α$_t$ = {AT:g}' if AT else '') + note, fontsize=32, y=1.03)
     fig.savefig(os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.png'), dpi=600, bbox_inches='tight')
     plt.close(fig)
 print('Saved -> na_peakmaps_fig4a..d.png')

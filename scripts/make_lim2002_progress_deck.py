@@ -62,39 +62,41 @@ s = navy('Lim & Saloma (2002): replication, high NA and pulses', [
     ('National Institute of Physics, University of the Philippines Diliman', 13, PALE),
     ('Progress report on two-color excitation with misaligned foci', 13, PALE)],
     chips=(('Replication', PURPLE), ('High NA', RED), ('Polarization', ORANGE)))
-notes(s, 'The paper rebuilt, its model tested against the vector focus at high NA, and the choices that remain.',
+notes(s, 'The paper rebuilt, its model tested against the vector model at high NA, and the choices that remain.',
       'This report collects the work on Lim and Saloma (2002). First the replication of the paper itself; then how far its '
       'scalar model carries as the numerical aperture grows; then what changes when the two beams are pulses with a delay.')
 
-s = slide('Where we are', 'Main results of each part; polarization to decide; pulses next time.')
-ROWS = [('1. Replication', PURPLE, 'Every quoted number and 22 of 24 panels reproduce. Three errors in the paper: C and Q swapped, '
-         'Eq. (2) rotation, Fig. 6(c)–(d) caption.'),
-        ('2. High NA', RED, 'Vector tolerances: NA^{−0.97} across, NA^{−2.12} along (θ = π). The scalar model errs on the focal length '
-         'first: 5% from NA 0.45, 10% from 0.6; in water at 1.33× those NAs, so it follows NA/n.'),
-        ('3. Fidelity', ORANGE, 'At NA 0.9 the 2CE F ≥ 0.8 region is 17–26% smaller than the scalar one; 2PE changes by 1–3%, '
-         'its fringes set its shape.'),
-        ('4. Gaussian', NAVY, 'α_t = 4: tolerances about 1.4× looser, same power laws; the scalar model holds to NA 0.525 (5%) and 0.7 (10%).'),
-        ('5. Polarization', GREY, 'Unpolarized is exactly circular polarization. 2PE crossed beams interfere only with s–s; with p–p the '
-         'fringes vanish. To decide: which is the main result.'),
-        ('Next time', GREY, 'Pulses and a time delay: the signal is a time overlap, gated along z at θ = π.')]
-for i, (head, col, body) in enumerate(ROWS):
-    t = 1.32 + i * 0.63
-    text(s, 0.5, t, 1.75, 0.6, head, 12, col, True, anchor=MSO_ANCHOR.MIDDLE)
-    text(s, 2.3, t, 7.2, 0.6, body, 10.5, NAVY, anchor=MSO_ANCHOR.MIDDLE)
-notes(s, 'Main results of each part; polarization to decide; pulses next time.',
-      'One line per part. The replication holds with three corrections to the paper. At high NA the scalar model fails first on '
-      'the focal length, and the deviation follows NA over n. The fidelity maps change shape most for two-color excitation. A '
-      'Gaussian input loosens the tolerances and extends the scalar model. Polarization is a decision to make, and pulses are '
-      'for next time.')
+SUMMARY = [   # (part, colour, main point, supporting points as short phrases)
+    ('1. Replication', PURPLE, 'Lim & Saloma (2002) reproduces.',
+     'every number in Sec. 3.2 · 22 of 24 panels · C and Q swapped · Eq. (2) rotation wrong as printed · Fig. 6(c)–(d) is θ = 0'),
+    ('2. High NA', RED, 'The paraxial scalar model fails first on the depth of focus.',
+     'deviation 5% at NA 0.45, 10% at 0.6 · lateral width holds to NA 0.8 · tolerances ∝ NA^{−0.97} lateral, NA^{−2.12} axial '
+     '· follows NA/n (water)'),
+    ('3. Fidelity', ORANGE, 'High NA reshapes the 2CE fidelity region; 2PE is set by its fringes.',
+     '2CE F ≥ 0.8 area at NA 0.9: 17–26% below scalar · 2PE: 1–3%'),
+    ('4. Gaussian input', NAVY, 'A Gaussian input (α_t = 4) extends the paraxial scalar model’s range.',
+     'tolerances about 1.4× larger · deviation 5% at NA 0.525, 10% at 0.7 · same power laws'),
+    ('5. Polarization', GREY, 'Polarization changes only lateral results and crossed-beam 2PE.',
+     'unpolarized = circular · axial results unchanged · lateral spread up to ±20% at NA 0.9–1.2 · 2PE p–p: no interference'),
+    ('Next', GREY, 'Pulses and a time delay.', 'signal = time overlap of the pulses · gated along z at θ = π'),
+]
+s = slide('Summary', 'One main point per part; supporting points beneath.')
+for i, (head, col, main, support) in enumerate(SUMMARY):
+    t = 1.3 + i * 0.64
+    text(s, 0.5, t, 1.75, 0.3, head, 12, col, True)
+    text(s, 2.3, t, 7.2, 0.3, main, 12.5, NAVY, True)
+    text(s, 2.3, t + 0.29, 7.2, 0.3, support, 11, GREY)
+notes(s, 'One main point per part.',
+      ' '.join(f'{h}: {m} Supporting: {sup.replace(" · ", "; ")}.' for h, _, m, sup in SUMMARY))
 
 # ══ Part 1: the replication deck ═════════════════════════════════════════
-part(1, 'replication', 'Lim & Saloma (2002) rebuilt from its equations, checked number by number.')
+part(1, 'replication', SUMMARY[0][2] + ' ' + SUMMARY[0][3].replace(' · ', '; ') + '.')
 at = len(prs.slides)
 runpy.run_path(os.path.join(HERE, 'make_lim2002_replication_deck.py'), run_name='__main__')
 ds.DROP = [list(prs.slides._sldIdLst)[at]]                      # its own title slide; removed at the end
 
 # ══ Parts 2–3: the NA deck, uniform input (high NA, then fidelity) ═════════
-part(2, 'high NA', 'Where Lim & Saloma’s scalar model applies: their metrics recomputed with the vector focus, NA 0.03 to 1.2, uniform input.')
+part(2, 'high NA', SUMMARY[1][2] + ' Lim & Saloma’s metrics, vector model, NA 0.03 to 1.2, uniform input.')
 ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA'
 
 
@@ -111,14 +113,14 @@ def na_deck(section):
 
 na_deck('uniform')
 first_fid = next(i for i, sl in enumerate(prs.slides) if title_of(sl).startswith('Fidelity against NA'))
-part(3, 'fidelity against NA', 'Linfoot fidelity over the offset of O′, Lim & Saloma’s Figs. 5–6, from NA 0.1 to 1.2.')
+part(3, 'fidelity against NA', SUMMARY[2][2] + ' Linfoot F over the offset of O′, NA 0.1 to 1.2.')
 ids = prs.slides._sldIdLst
 el = list(ids)[-1]                                             # move the divider in front of the fidelity slides
 ids.remove(el)
 ids.insert(first_fid, el)
 
 # ══ Part 4: Gaussian input ═══════════════════════════════════════════════
-part(4, 'Gaussian input, α_t = 4', 'The same study with a Gaussian beam filling both lenses.')
+part(4, 'Gaussian input, α_t = 4', SUMMARY[3][2] + ' The same study, Gaussian input on both lenses.')
 ds.CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002), at high NA, Gaussian input'
 na_deck('gaussian')
 del os.environ['SECTION']
@@ -148,7 +150,7 @@ def qrow(suf, k, na):
     return r[0, 1] if len(r) else None
 
 
-part(5, 'a decision: polarization', 'Unpolarized beams, as the scalar model implies, or fixed linear polarizations, as a laser delivers?')
+part(5, 'a decision: polarization', SUMMARY[4][2] + ' To decide: unpolarized (circular) or fixed linear.')
 s = slide('Two options for the polarization of the beams', 'At low NA it does not matter; at high NA it changes the spot and the interference.')
 text(s, 0.5, 1.35, 4.35, 0.35, 'A: unpolarized (used so far for 2CE)', 13, PURPLE, True, 'Cambria')
 bullets(s, 0.5, 1.8, 4.35, 3.35, [
@@ -177,8 +179,8 @@ if os.path.exists(pl):
     fw = lambda na, psi: (lambda v: np.ptp(xx[v >= 0.5 * v.max()]))(intensity(beam_field(xx, 0 * xx, 0.750, na, model='rw', psi=psi)))
     r5, r9 = fw(0.5, 0.0) / fw(0.5, np.pi / 2), fw(0.9, 0.0) / fw(0.9, np.pi / 2)
     s = slide('Why polarization matters at high NA', f'The spot is wider along the polarization: {r5:.2f}× at NA 0.5, {r9:.2f}× at NA 0.9.')
-    figure(s, pl, 0.45, 1.35, 9.1, 3.2)
-    bullets(s, 0.6, 4.6, 8.9, 0.65, [
+    figure(s, pl, 0.45, 1.35, 9.1, 3.5)
+    bullets(s, 0.6, 4.88, 8.9, 0.35, [
         'At high NA the focused field gains a component along the axis, strongest along the polarization, which widens the spot there.'], 11)
     notes(s, 'The focal spot is wider along the polarization at high NA.',
           'One beam at focus, profile across x. With the field along y, s, the profile across x is the narrow direction; with '
@@ -193,17 +195,15 @@ rA, rS, rP = brow('', 'pi', 0.9), brow('_pols', 'pi', 0.9), brow('_polp', 'pi', 
 if os.path.exists(pl) and rS is not None and rP is not None:
     s = slide('2CE tolerances by polarization', f'θ = π, NA 0.9, along x_c: A {1000 * rA[3]:.0f} nm, s–s {1000 * rS[3]:.0f} nm, '
               f'p–p {1000 * rP[3]:.0f} nm.')
-    figure(s, pl, 0.45, 1.35, 5.0, 3.85)
+    figure(s, pl, 0.45, 1.35, 9.1, 3.5)
     qA, qS, qP = brow('', 'pi2', 0.9), brow('_pols', 'pi2', 0.9), brow('_polp', 'pi2', 0.9)
-    bullets(s, 5.65, 1.45, 3.85, 3.75, [
-        'Along z_c the three agree closely: the length of the focus hardly depends on the polarization.',
-        f'Along x_c they split at high NA: at θ = π the p–p tolerance is {rP[3] / rS[3]:.2f}× the s–s one at NA 0.9, '
-        'because the spot is wider along the polarization.',
-        f'θ = π/2, NA 0.9, along x_c: A {1000 * qA[3]:.0f}, s–s {1000 * qS[3]:.0f}, p–p {1000 * qP[3]:.0f} nm.' if qP is not None else '',
-        'The unpolarized result sits between the two.'], 11)
+    bullets(s, 0.6, 4.88, 8.9, 0.35, [
+        f'Along z_c the three coincide; along x_c (θ = π) p–p is {rP[3] / rS[3]:.2f}× s–s at NA 0.9, unpolarized between.'], 11)
     notes(s, 'The polarization moves the tolerances across the axis, not along it.',
           'The twenty percent tolerances against NA for the three choices. Along the axis they coincide; across it the linear '
-          'polarizations bracket the unpolarized result, with the tolerance wider along the polarization.')
+          'polarizations bracket the unpolarized result, with the tolerance wider along the polarization, since the spot is. '
+          + (f'At theta = pi/2, NA 0.9, along x_c: unpolarized {1000 * qA[3]:.0f}, s–s {1000 * qS[3]:.0f}, p–p {1000 * qP[3]:.0f} nm.'
+             if qP is not None else ''))
 else:
     s = slide('2CE tolerances by polarization', 'Result still computing; this slide fills in when the report is rebuilt.')
     notes(s, 'Pending result.', 'From fig_lim2002_na_breakdown.py with POL = s and p.')
@@ -213,15 +213,14 @@ q3s, q3p = qrow('', 3, 0.5), qrow('_polp', 3, 0.5)
 if os.path.exists(pl) and q3p is not None:
     s = slide('Lim & Saloma’s quoted losses by polarization', f'2PE crossed beams at NA 0.5: {q3s:.0f}% lost for s–s, {q3p:.0f}% for p–p '
               '(Lim & Saloma: 30%).')
-    figure(s, pl, 0.45, 1.35, 9.1, 2.3)
-    bullets(s, 0.6, 3.8, 8.9, 1.4, [
-        f'2CE across the axis (θ = π, x_c = 0.37 λ_1) at NA 0.9: {qrow("_pols", 2, 0.9):.0f}% for s–s, {qrow("", 2, 0.9):.0f}% '
-        f'unpolarized, {qrow("_polp", 2, 0.9):.0f}% for p–p; along the axis the three are identical.',
-        'The 2PE crossed-beam loss depends on the choice entirely: with p–p the two fields are perpendicular, the beams no '
-        'longer interfere, and there are no fringes to lose.',
-        'So Lim & Saloma’s 2PE result assumes, implicitly, fields that stay parallel: s–s.'], 11.5)
+    figure(s, pl, 0.45, 1.35, 9.1, 3.5)
+    bullets(s, 0.6, 4.88, 8.9, 0.35, [
+        f'2CE across the axis at NA 0.9: {qrow("_pols", 2, 0.9):.0f}% (s–s), {qrow("", 2, 0.9):.0f}% (unpolarized), '
+        f'{qrow("_polp", 2, 0.9):.0f}% (p–p); along the axis identical. 2PE with p–p: no fringes to lose.'], 11)
     notes(s, 'The 2PE crossed-beam result depends entirely on the polarization.',
-          'Lim and Saloma’s five quoted losses against NA for the three choices. For two-color excitation the choice moves the '
+          'Quoted losses 1 and 5, both crossed beams, move by under 0.1% at NA 0.5 and are not shown. '
+          'Lim and Saloma’s 2PE result therefore assumes, implicitly, fields that stay parallel: s–s. '
+          'Three of Lim and Saloma’s quoted losses against NA for the three choices. For two-color excitation the choice moves the '
           'losses across the axis, by up to about twenty points at NA 0.9, and leaves the losses along the axis unchanged. For two-photon excitation with crossed beams it decides whether the beams interfere at '
           'all: with both polarizations in the plane the fields are perpendicular and the fringes vanish.')
 else:
@@ -352,6 +351,32 @@ for i, sl in enumerate(prs.slides, 1):
         if sh.has_text_frame and abs(sh.left / 914400 - 9.0) < 0.01 and abs(sh.top / 914400 - 5.28) < 0.01 \
                 and sh.text_frame.text.strip().isdigit():
             sh.text_frame.paragraphs[0].runs[0].text = str(i)
+# ── legibility audit: how large a figure's smallest (24-pt) text appears on the slide ──
+FLOOR = 11.0                                                   # pt on this 10-in slide; see LEGIBILITY below
+LEGIBILITY = '''Floor for the smallest figure text as seen on the slide: a character height of 16 arcmin (ISO 9241-3's
+minimum; 20–22 arcmin preferred) for a viewer 4 slide heights away. Cap height ≈ 0.7 em, slide height 5.625 in:
+p ≥ 0.7⁻¹ · 72 · 4 · 5.625 · tan(16′) ≈ 11 pt. Figure text keeps Bantang's 24 : 28 : 32 ratio above it.'''
+import csv
+from PIL import Image as _Im
+_Im.MAX_IMAGE_PIXELS = None
+audit = []
+for path, shown in ds.FIGURES:
+    im = _Im.open(path)
+    figw = im.size[0] / (im.info.get('dpi') or (600, 600))[0]
+    audit.append((os.path.relpath(path, FIG), round(figw, 2), round(shown, 2), round(24 * shown / figw, 1)))
+with open(os.path.join(FIG, 'progress_report_legibility.csv'), 'w', newline='') as fh:
+    w_ = csv.writer(fh)
+    w_.writerow(['figure', 'figure_width_in', 'width_on_slide_in', 'smallest_text_on_slide_pt'])
+    w_.writerows(sorted(set(audit), key=lambda r: r[3]))
+# Part 1 keeps the replication figures as first shown (paper-matched layouts, side by side with the paper's panels)
+EXEMPT = ('fig1_', 'fig2_', 'fig3_', 'fig4_', 'fig5_', 'fig6_', 'panels/', 'highna_', 'labeling_')
+checked = {r for r in audit if not os.path.basename(r[0]).startswith(EXEMPT) and not r[0].startswith(EXEMPT)}
+below = sorted({r for r in checked if r[3] < FLOOR}, key=lambda r: r[3])
+print(f'legibility: {len(below)} of {len(checked)} figure placements in Parts 2–5 below {FLOOR:g} pt on the slide'
+      f' ({len(set(audit)) - len(checked)} replication placements exempt)')
+for r in below:
+    print('   ', r)
+
 # ── embed each figure at 600 dpi of its size on the slide (the figure files keep their own resolution) ──
 import io
 from PIL import Image

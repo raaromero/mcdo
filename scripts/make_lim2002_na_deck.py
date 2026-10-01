@@ -72,7 +72,7 @@ def first_above(d, key, m, thr):
 
 
 have = lambda name: os.path.exists(F(name))
-SECTION = os.environ.get('SECTION')                 # progress report: 'uniform' (Parts 2–3) or 'gaussian' (Part 4)
+SECTION = os.environ.get('SECTION')                 # progress report: 'uniform' (Parts 2–3) or 'gaussian' (Part 4); unset: standalone
 SUFS = {'uniform': ('',), 'gaussian': ('_at4',)}.get(SECTION, ('', '_at4'))
 GT = ' (α_t = 4)' if SECTION == 'gaussian' else ''  # marks Part 4's result slides
 Q = {suf: q for suf in ('', '_at4') if len(q := load_quoted(suf)) and all((k, 0.5) in q and (k, 0.9) in q for k in range(1, 6))}
@@ -124,6 +124,16 @@ def pair(title, takeaway, left, right, labels, items, main, script, latex=None):
     return s
 
 
+def wide(title, takeaway, path, items, main, script, latex=None, **_):
+    """A full-width figure (drawn at twice this width, so its text reads at 12–16 pt) and one line under it;
+    the other points go to the notes."""
+    s = slide(title, takeaway)
+    figure(s, path, 0.45, 1.35, 9.1, 3.5)
+    bullets(s, 0.6, 4.88, 8.9, 0.35, items[:1], 11)
+    notes(s, main, ' '.join([script] + [str(i) for i in items[1:]]), latex)
+    return s
+
+
 def one(title, takeaway, path, items, main, script, latex=None, fw=5.6):
     """One figure at the left, points at the right."""
     s = slide(title, takeaway)
@@ -148,35 +158,35 @@ chip(s, 0.6, 4.45, 1.15, 'NA 0.1', PURPLE)
 text(s, 1.8, 4.45, 0.35, 0.36, '→', 16, WHITE, True, anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.CENTER)
 chip(s, 2.2, 4.45, 1.15, 'NA 1.2', RED)
 text(s, 3.5, 4.45, 5.5, 0.36, 'air to NA 0.99, water to 1.2; uniform input and α_t = 4', 12, PALE, anchor=MSO_ANCHOR.MIDDLE)
-notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 and fails on focal length above it.',
+notes(s, 'Lim & Saloma’s scalar model is good to a few percent below NA 0.45 and fails on the depth of focus above it.',
       'This deck asks how far Lim and Saloma’s results carry as the numerical aperture grows. We recompute the '
-      'their quoted metrics with the vector focus, keep their model alongside, and measure the gap.')
+      'their quoted metrics with the vector model, keep their model alongside, and measure the gap.')
 
 # ══ 2. main points ═══════════════════════════════════════════════════════
+def main_point(title, main, support, size=13):
+    """Bantang's format: the main point in bold, then the supporting points as short phrases."""
+    s = slide(title, main)
+    text(s, 0.6, 1.4, 8.9, 0.5, main, 15, NAVY, True, 'Cambria')
+    bullets(s, 0.6, 2.05, 8.9, 3.1, support, size)
+    return s
+
+
 if '' in B:
     b0 = B['']
-    s = slide('Main points', 'The scalar model tracks the vector one at low NA; focal lengths depart first.')
-    bullets(s, 0.6, 1.45, 8.9, 3.75, [
-        'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
-        'of the analysis to 10^{−8}.',
-        'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
-        f'The scalar axial tolerance departs from the vector one by more than 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))} '
-        f'and by more than 10% from NA {fmt_na(first_above(b0, "pi", "z", 10))}.',
-        'That difference comes from the small-angle approximation of the phase, not from ignoring polarization.',
-        f'Quantities set by the spot width stay within 5% up to NA {fmt_na(first_above(b0, "pi", "x", 5))}.',
-        f'Lim & Saloma state their model for NA ≤ 0.5; at that edge its axial tolerance is '
-        f'{b0[("pi", 0.5)]["z"]:.0f}% above the vector one.'], 13)
+    s = main_point('Main points', 'The paraxial scalar model holds at low NA and fails first on the depth of focus.', [
+        f'Axial tolerance: deviation above 5% from NA {fmt_na(first_above(b0, "pi", "z", 5))}, above 10% from '
+        f'NA {fmt_na(first_above(b0, "pi", "z", 10))}',
+        f'Lateral tolerance: within 5% up to NA {fmt_na(first_above(b0, "pi", "x", 5))}',
+        f'At NA 0.5, the limit Lim & Saloma state: {b0[("pi", 0.5)]["z"]:.0f}% on the axial tolerance',
+        'Cause: the small-angle phase, not the missing polarization',
+        'Checks: vector engines agree to 10^{−8}; α_t → 0 recovers Lim & Saloma'])
 else:                                                 # the uniform sweep is still running: no numbers yet
-    s = slide('Main points', 'The scalar model tracks the vector one at low NA; focal lengths depart first.')
-    bullets(s, 0.6, 1.45, 8.9, 3.75, [
-        'At low NA the scalar and vector foci coincide, and our Richards–Wolf engine matches the one used in the rest '
-        'of the analysis to 10^{−8}.',
-        'Lim & Saloma’s model is the α_t → 0 limit of the Gaussian-input model, as it should be.',
-        'Tolerances set by the focal length depart first as NA grows; those set by the width hold much longer.',
-        'That difference comes from the small-angle approximation of the phase, not from ignoring polarization.',
-        '(Thresholds and percentages fill in when the dense uniform sweep finishes.)'], 13)
-notes(s, 'The scalar model tracks the vector one at low NA; focal lengths depart first.',
-      'The models and the engine check out at low NA. The metrics set by the length of the focus depart first, by more '
+    s = main_point('Main points', 'The paraxial scalar model holds at low NA and fails first on the depth of focus.', [
+        'Axial tolerances depart first; lateral ones hold much longer',
+        'Cause: the small-angle phase, not the missing polarization',
+        '(Thresholds fill in when the dense uniform sweep finishes.)'])
+notes(s, 'The scalar model tracks the vector one at low NA; the depth of focus departs first.',
+      'The models and the engine check out at low NA. The metrics set by the depth of focus depart first, by more '
       'than five percent from NA 0.45 and more than ten percent from 0.6. The cause is the paraxial phase, not '
       'polarization. Metrics set by the width stay close to about NA 0.8, and a Gaussian input reduces every difference. '
       'Lim and Saloma state their model for NA up to 0.5; this marks where it still applies.')
@@ -184,15 +194,15 @@ notes(s, 'The scalar model tracks the vector one at low NA; focal lengths depart
 # ══ Gaussian input (Part 4 of the progress report) ═══════════════════════
 if SECTION == 'gaussian' and '_at4' in B and '' in B:
     g, u = B['_at4'], B['']
-    s = slide('Gaussian input: main points', 'A Gaussian input keeps the scalar model valid to a higher NA and loosens every tolerance.')
-    bullets(s, 0.6, 1.45, 8.9, 3.75, [
-        'Both beams have the same Gaussian input, truncation α_t = 4; everything else is as in Part 2.',
-        f'Tolerances are looser: at NA 0.5, θ = π, {g[("pi", 0.5)]["rx"] / u[("pi", 0.5)]["rx"]:.2f}× across and '
-        f'{g[("pi", 0.5)]["rz"] / u[("pi", 0.5)]["rz"]:.2f}× along, because the dim pupil edge makes the focus act like a lower NA.',
-        f'The scalar axial tolerance departs from the vector one by more than 5% from NA {fmt_na(first_above(g, "pi", "z", 5))} '
-        f'and 10% from NA {fmt_na(first_above(g, "pi", "z", 10))} (uniform: {fmt_na(first_above(u, "pi", "z", 5))} and '
-        f'{fmt_na(first_above(u, "pi", "z", 10))}).',
-        'The power laws keep their exponents: about NA^{−1} across and NA^{−2} along.'], 13)
+    s = main_point('Gaussian input: main points', 'A Gaussian input (α_t = 4) extends the paraxial scalar model’s range.', [
+        'Same α_t = 4 on both lenses; everything else as in Part 2',
+        f'Tolerances at NA 0.5, θ = π: {g[("pi", 0.5)]["rx"] / u[("pi", 0.5)]["rx"]:.2f}× lateral, '
+        f'{g[("pi", 0.5)]["rz"] / u[("pi", 0.5)]["rz"]:.2f}× axial',
+        f'Axial deviation above 5% from NA {fmt_na(first_above(g, "pi", "z", 5))}, above 10% from NA '
+        f'{fmt_na(first_above(g, "pi", "z", 10))} (uniform: {fmt_na(first_above(u, "pi", "z", 5))}, '
+        f'{fmt_na(first_above(u, "pi", "z", 10))})',
+        'Same power laws: NA^{−1} lateral, NA^{−2} axial',
+        'Why: the dim pupil edge removes the steepest rays; the focus acts like a lower NA'])
     notes(s, 'A Gaussian input keeps the scalar model valid to a higher NA and loosens every tolerance.',
           'The same study with a Gaussian input on both lenses. The dim edge of the pupil removes the steepest rays, so the '
           'focus is larger, the tolerances looser, and the scalar model holds to a higher NA.')
@@ -205,7 +215,7 @@ if SECTION == 'gaussian' and '_at4' in B and '' in B:
         'The same α_t on both lenses, for both wavelengths, in every result of this part.'], 13)
     notes(s, 'Each lens is filled by a Gaussian beam truncated at alpha_t = 4.',
           'The Gaussian input multiplies the pupil of both lenses by the same apodization. In the paraxial model it reduces to '
-          'exp(−alpha_t rho squared). With truncation 4 the edge of the pupil is dim, so the high-angle rays carry little light.',
+          'exp(−alpha_t rho squared). With α_t = 4 the edge of the pupil is dim, so the high-angle rays carry little light.',
           r'A(\vartheta) = \exp\!\left(-\alpha_t \frac{\sin^2\vartheta}{\sin^2\alpha}\right), \quad \sin\alpha = \mathrm{NA}/n, \qquad A = e^{-\alpha_t \rho^2}\ (\text{paraxial})')
 
 # ══ 3–4. glossary ════════════════════════════════════════════════════════
@@ -241,7 +251,7 @@ glossary('Glossary: signals, models and measures', 'What is computed and how it 
 glossary('Glossary: fidelity, input, polarization and pulses', 'The symbols of the fidelity maps and of the later parts.', [
     ('x̃, z̃', 'offsets in units of the spot: x_c NA/λ across a beam, z_c NA^2/(nλ) along it'),
     ('F, C, Q', 'Linfoot fidelity, structural content, correlation quality, as Lim & Saloma define them'),
-    ('ΔF', 'F with the vector focus minus F with the paraxial scalar focus, at the same NA'),
+    ('ΔF', 'F with the vector model minus F with the paraxial scalar focus, at the same NA'),
     ('F ≥ 0.8 region', 'the offsets of O′ that keep F ≥ 0.8; its half-widths and area describe its shape'),
     ('A(ϑ)', 'pupil amplitude of a Gaussian input, exp(−α_t sin^2ϑ / sin^2α); the same on both lenses'),
     ('ψ', 'input polarization angle about a beam’s own axis'),
@@ -294,29 +304,27 @@ I_2 = \int_0^\alpha \sqrt{\cos\vartheta}\,\sin\vartheta\,(1-\cos\vartheta)\, J_2
 A(\vartheta) = \exp\!\left(-\alpha_t \frac{\sin^2\vartheta}{\sin^2\alpha}\right), \qquad \sin\alpha = \mathrm{NA}/n""")
 
 # ══ 6–9. checks, Gaussian input, the lens problem ═════════════════════════
-one('Check 1: Lim & Saloma is the α_t → 0 limit', 'Truncated scalar foci converge smoothly onto Lim & Saloma’s as α_t → 0.',
+wide('Check 1: Lim & Saloma is the α_t → 0 limit', 'Truncated scalar foci converge smoothly onto Lim & Saloma’s as α_t → 0.',
     F('axial_lim_vs_truncation.png'), [
-        'Single beam, 750 nm, on-axis intensity.',
-        'α_t = 0.5 already overlays the uniform (Lim & Saloma) curve.',
+        'α_t = 0.5 already overlays the uniform (Lim & Saloma) curve; single beam, 750 nm, on-axis intensity.',
         'Larger α_t lengthens the focus and fills the axial zeros, as a Gaussian pupil must.'],
     'Truncated scalar foci converge smoothly onto Lim and Saloma’s as alpha_t goes to zero.',
     'Before comparing across NA we check the truncation itself. With the same pupil function as the vector model, the '
     'scalar focus moves smoothly away from Lim and Saloma’s as truncation grows, and returns to it as truncation vanishes.')
-one('Gaussian input against uniform, vector focus', 'A Gaussian input (α_t = 4) lengthens the focus and fills its zeros at every NA.',
+wide('Gaussian input against uniform, vector model', 'A Gaussian input (α_t = 4) lengthens the focus and fills its zeros at every NA.',
     F('axial_gaussian_vs_uniform.png'), [
-        'Single beam, 750 nm, on-axis intensity, Richards–Wolf focus in air.',
-        'Black: uniform input, Lim & Saloma’s case. Red: Gaussian input, α_t = 4.',
-        'The Gaussian dims the high-angle rays, so the focus acts like a lower NA.'],
+        'The Gaussian dims the high-angle rays, so the focus acts like a lower NA (single beam, 750 nm, vector model, air).',
+        'Black: uniform input, Lim & Saloma’s case. Red: Gaussian input, α_t = 4.'],
     'A Gaussian input lengthens the focus and fills its zeros at every NA.',
-    'The vector focus with a uniform input and with a Gaussian input of truncation 4, at NA 0.5, 0.7 and 0.9. The '
+    'The vector model with a uniform input and with a Gaussian input, α_t = 4, at NA 0.5, 0.7 and 0.9. The '
     'Gaussian leaves the edge of the pupil dim, which lengthens the focus and removes the axial zeros; it is the input '
     'used for the second set of results.', fw=5.9)
-one('Check 2: scalar and vector agree at low NA', 'At every truncation the three foci coincide at low NA and part only slowly.',
+wide('Check 2: scalar and vector agree at low NA', 'At every truncation the three foci coincide at low NA and part only slowly.',
     F('axial_scalar_vs_vector_truncation.png'), [
         'Largest on-axis gap, uniform → α_t = 4: 0.2% → 0.1% at NA 0.1, 1.9% → 0.8% at 0.3, 5.7% → 2.3% at 0.5.',
         'Our vector engine (mcdo.twobeam) and the analysis engine (mcdo.rw_integrals) agree to 10^{−8}.'],
     'At every truncation the three foci coincide at low NA and part only slowly.',
-    'Scalar and vector on-axis profiles for truncation 0, 1 and 4 at NA 0.1, 0.3 and 0.5, with the Richards–Wolf '
+    'Scalar and vector on-axis profiles for truncation 0 and 4 at NA 0.1, 0.3 and 0.5, with the Richards–Wolf '
     'engine used throughout the rest of the analysis overlaid. The numbers we project come from identical optics.')
 
 s = slide('Discussion: crossed beams above NA 0.71', 'In air, two lenses cannot cross at θ = π/2 above NA 1/√2.')
@@ -372,7 +380,7 @@ for k, (title, paper) in enumerate(QUOTED, 1):
                 f'NA 0.9: vector {v9u:.1f}% (the scalar model is shown only up to NA 0.5).',
                 'The same offset in wavelengths costs more as the spot shrinks.'],
             f'Lim & Saloma: {paper} percent lost at NA 0.5; the same offset costs more as NA grows.',
-            f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. Solid: vector focus; dotted: their '
+            f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. Solid: vector model; dotted: their '
             'paraxial scalar model, up to NA 0.5; black dashed: their quoted value; shaded: the range they claim for their model.',
             fw=5.0)
         continue
@@ -384,9 +392,9 @@ for k, (title, paper) in enumerate(QUOTED, 1):
              f'NA 0.5: vector {v5u:.1f}%, scalar {s5u:.1f}%, Lim & Saloma {paper}%; with α_t = 4 the vector loss is {v5g:.1f}%.',
              f'NA 0.9: vector {v9u:.1f}%. The same offset in wavelengths costs more as the spot shrinks.'],
          f'Lim & Saloma: {paper} percent lost at NA 0.5; the same offset costs more as NA grows.',
-         f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. The solid line is the vector focus, the '
+         f'Lim and Saloma quote {paper} percent lost for {title.replace("_", " ")}. The solid line is the vector model, the '
          'dotted line their paraxial scalar model up to NA 0.5, the black dashed line their quoted value. The shaded band is the '
-         'range they claim for their model. Right: the same with a Gaussian input, truncation 4, which enlarges the spot and '
+         'range they claim for their model. Right: the same with a Gaussian input, α_t = 4, which enlarges the spot and '
          'so lowers every loss.')
 
 # ══ 13–16. tolerances and severity ═══════════════════════════════════════
@@ -394,14 +402,14 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
     if suf not in B or suf not in SUFS:                                # α_t = 4 is a next step until its sweep is run
         continue
     b = B[suf]
-    one(f'20% tolerances against NA, {lab}', 'Vector (solid) against the paraxial scalar model (dotted); black dashed: Lim & Saloma at NA 0.5.',
+    wide(f'20% tolerances against NA, {lab}', 'Vector (solid) against the paraxial scalar model (dotted); black dashed: Lim & Saloma at NA 0.5.',
         F(f'na_breakdown_metrics{suf}.png'), [
             f'θ = π, axial: vector {b[("pi", 0.5)]["rz"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rz"]:.2f} µm at NA 0.9.',
             f'θ = π, in-plane: vector {b[("pi", 0.5)]["rx"]:.2f} µm at NA 0.5, {b[("pi", 0.9)]["rx"]:.2f} µm at NA 0.9.',
             'Hatched: θ = π/2 above NA 0.71, not buildable in air.'],
         'Tolerances shrink with the spot; the scalar model gives larger length-set ones than the vector model.',
         f'The offset costing twenty percent of the two-color peak, along x_c and z_c, at theta = pi and pi/2, for {lab}. '
-        'The vector focus is the reference; the dotted line is the paraxial scalar model. The gap between them is the next slide.',
+        'The vector model is the reference; the dotted line is the paraxial scalar model. The gap between them is the next slide.',
         fw=5.4)
     rows = [(f'θ = {"π" if key == "pi" else "π/2"}, {nm}', fmt_na(first_above(b, key, m, 5)), fmt_na(first_above(b, key, m, 10)))
             for key in ('pi', 'pi2') for m, nm in (('z', 'tolerance z_c'), ('x', 'tolerance x_c'), ('wz', 'length'), ('wx', 'width'))]
@@ -415,14 +423,14 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
             text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.72 + i * 0.3, 1.7 if j == 0 else 0.75, 0.28, v,
                  9.5, NAVY, j == 0, align=None if j == 0 else PP_ALIGN.CENTER)
     notes(s, 'The scalar–vector deviation grows with NA; length-set metrics cross 5% first.',
-          f'Each line is how far the scalar model departs from the vector focus, in percent, for {lab}. The table gives the NA '
+          f'Each line is how far the scalar model departs from the vector model, in percent, for {lab}. The table gives the NA '
           'at which each first exceeds five and ten percent. Entries above 0.95 never cross in the range computed.')
 
 # ══ water, NA to 1.2 ═════════════════════════════════════════════════════
 BW = {suf: b for suf in ('_n1.33', '_at4_n1.33') if len(b := load_breakdown(suf))}
 if SECTION and have(f'na_breakdown_metrics{SUFS[0]}_n1.33.png') and f'{SUFS[0]}_n1.33' in BW:
     bw, ba = BW[f'{SUFS[0]}_n1.33'], B[SUFS[0]]
-    one(f'20% tolerances in water, NA 0.5 to 1.2{GT}', 'The scalar deviation follows NA/n: in water it starts at 1.33 times the air NA.',
+    wide(f'20% tolerances in water, NA 0.5 to 1.2{GT}', 'The scalar deviation follows NA/n: in water it starts at 1.33 times the air NA.',
         F(f'na_breakdown_metrics{SUFS[0]}_n1.33.png'), [
             f'θ = π, axial: the deviation passes 5% at NA {fmt_na(first_above(bw, "pi", "z", 5))} and 10% at NA '
             f'{fmt_na(first_above(bw, "pi", "z", 10))} (air: {fmt_na(first_above(ba, "pi", "z", 5))} and '
@@ -454,24 +462,22 @@ for tag, lab in (('a', '2CE, θ = π'), ('b', '2PE, θ = π'), ('c', '2CE, θ = 
     s = slide(f'Fig. 4({tag}) against NA{GT}: {lab}', 'Peak surviving over (x_c, z_c): the tolerance region shrinks as NA grows.')
     stacked(s, f'na_peakmaps_fig4{tag}.png')
     notes(s, 'The region of (x_c, z_c) that keeps most of the peak shrinks as NA grows.',
-          f'Lim & Saloma’s Fig. 4({tag}), {lab}, recomputed with the vector focus at NA 0.5, 0.7 and 0.9, on their '
+          f'Lim & Saloma’s Fig. 4({tag}), {lab}, recomputed with the vector model at NA 0.5, 0.7 and 0.9, on their '
           'offset axes. Each contour marks the offsets that keep that percentage of the aligned peak.')
 
 # ══ 17–18. why: the error split ══════════════════════════════════════════
-one('Where the length difference comes from', 'Keeping the exact phase fixes the length; polarization only widens the spot slightly.',
+wide('Where the length difference comes from', 'Keeping the exact phase fixes the length; polarization only widens the spot slightly.',
     F('na_profiles_theta_pi.png'), [
-        'Lim & Saloma’s model makes two simplifications: a small-angle phase and no polarization.',
-        'A third model keeps the exact phase but still ignores polarization; its spot length matches the vector one '
-        '(θ = π, NA 0.5: 3324 against 3326 nm; Lim & Saloma: 3562 nm).',
-        'So the length difference is the small-angle phase; polarization only widens the spot, by 2–13%.'],
+        'The scalar Debye length matches the vector one (NA 0.5: 3324 against 3326 nm; Lim & Saloma: 3562 nm), so the length '
+        'error is the small-angle phase; polarization only widens the spot.',
+        'The paraxial scalar model makes two simplifications: a small-angle phase and no polarization.'],
     'The length difference comes from the small-angle phase; polarization only widens the spot slightly.',
-    'Three models: Lim & Saloma’s paraxial scalar focus, the exact scalar Debye integral, and the vector focus. The '
+    'Three models: Lim & Saloma’s paraxial scalar focus, the exact scalar Debye integral, and the vector model. The '
     'scalar Debye length equals the vector length, so the length difference comes from replacing kz cos theta by its '
     'small-angle form. The width difference is polarization: at high angles part of the field turns longitudinal.', fw=3.9)
-one('Profiles at θ = π/2', 'Crossed beams see only widths, so only the smaller polarization difference appears.',
+wide('Profiles at θ = π/2', 'Crossed beams see only widths, so only the smaller polarization difference appears.',
     F('na_profiles_theta_pi2.png'), [
-        'Both FWHMs at θ = π/2 are set by lateral widths of the two beams.',
-        'Paraxial and scalar Debye agree; the vector spot is 2–3% wider up to NA 0.7.',
+        'Both scalar models give a spot 1.4–5% narrower than the vector one up to NA 0.7: only the widths of the two beams enter.',
         'Tolerances at θ = π/2 still err more, because an offset slides one beam along the other’s length.'],
     'Crossed beams see only widths, so only the smaller polarization difference appears.',
     'At theta = pi/2 the aligned spot is bounded by the two beams’ lateral widths, so its size is nearly right in the '
@@ -485,7 +491,7 @@ for fig_no, where in ((2, 'aligned'), (3, 'O′ = (0.4, 1.0) µm')):
         s = slide(f'Fig. {fig_no}({tag}) against NA{GT}: {lab}', f'{where}; NA {nas}, vector, Lim & Saloma’s axes.')
         stacked(s, f'na_contours_fig{fig_no}{tag}.png')
         notes(s, 'The same panel at three NAs: the spot shrinks and becomes less elongated.',
-              f'Lim & Saloma’s Fig. {fig_no}({tag}), {lab}, {where}, recomputed with the vector focus at NA {nas} on '
+              f'Lim & Saloma’s Fig. {fig_no}({tag}), {lab}, {where}, recomputed with the vector model at NA {nas} on '
               'their axes and contour levels. Width shrinks as lambda over NA and length as n lambda over NA squared.')
 
 # ══ fidelity maps against NA ═════════════════════════════════════════════
@@ -519,17 +525,22 @@ def ratio_at(a, na, col):
 for case, lab in (('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2pe_pi', '2PE, θ = π'), ('2pe_pi2', '2PE, θ = π/2')):
     u, g = os.path.join(FD, f'fidelity_na_{case}_F.png'), os.path.join(FD, f'fidelity_na_{case}_at4_F.png')
     a = shape_rows(case + ('_at4' if SECTION == 'gaussian' else ''))
-    if SECTION and os.path.exists(g if SECTION == 'gaussian' else u) and len(a):
+    if SECTION != 'both' and os.path.exists(g if SECTION == 'gaussian' else u) and len(a):
         hx, hz, ar = (ratio_at(a, 0.9, c) for c in (2, 3, 4))
-        s = slide(f'Fidelity against NA{GT}: {lab}', f'NA 0.9, vector over scalar: half-width {hx:.2f} in x_c, {hz:.2f} in z_c; area {ar:.2f}.')
-        figure(s, g if SECTION == 'gaussian' else u, 0.45, 1.35, 4.9, 3.9)
-        bullets(s, 5.55, 1.45, 3.95, 3.75, [
-            f'NA 0.5, vector over scalar: {ratio_at(a, 0.5, 2):.2f} in x_c, {ratio_at(a, 0.5, 3):.2f} in z_c, area {ratio_at(a, 0.5, 4):.2f}.',
-            f'NA 0.9: {hx:.2f}, {hz:.2f}, area {ar:.2f}.',
-            '(a) the F = 0.8 contour at every NA; (b) F vector − F scalar; (c) the shape against NA.'], 11.5)
-        notes(s, f'{lab}: how the F ≥ 0.8 region changes shape against NA, relative to the scalar model.',
-              f'Linfoot fidelity over the offset of O prime for {lab}{GT}. At NA 0.5 the vector region is {ratio_at(a, 0.5, 2):.2f} '
-              f'of the scalar in x_c and {ratio_at(a, 0.5, 3):.2f} in z_c; at NA 0.9, {hx:.2f} and {hz:.2f}, with area {ar:.2f}.')
+        src = g if SECTION == 'gaussian' else u
+        wide(f'Fidelity against NA{GT}: {lab}', f'NA 0.9, vector over scalar: half-width {hx:.2f} in x_c, {hz:.2f} in z_c; area {ar:.2f}.',
+             src, [f'NA 0.5: {ratio_at(a, 0.5, 2):.2f} in x_c, {ratio_at(a, 0.5, 3):.2f} in z_c, area {ratio_at(a, 0.5, 4):.2f}. '
+                   'Red dotted: the paraxial scalar; open markers: water (n = 1.33).'],
+             f'{lab}: how the F ≥ 0.8 region changes shape against NA, relative to the scalar model.',
+             f'Left, the contour F = 0.8 at every NA in spot units, over the paraxial scalar one. Right, its half-widths and '
+             f'area, vector over scalar, against NA. At NA 0.9: {hx:.2f} and {hz:.2f}, area {ar:.2f}.')
+        dsrc = src.replace('fidelity_na_', 'fidelity_dF_')
+        if os.path.exists(dsrc):
+            wide(f'Fidelity against NA{GT}: {lab}, ΔF maps', 'Where the vector fidelity differs from the scalar one, at six NAs.',
+                 dsrc, ['Red: the vector model keeps more fidelity than the scalar model predicts; blue: less. (w): water.'],
+                 f'{lab}: where vector and scalar fidelity differ.',
+                 'F with the vector model minus F with the paraxial scalar focus, over the offset of O prime, at six NAs from '
+                 'the lowest to the highest computed. The colour scale is set where the scalar fidelity is at least zero.')
         continue
     if not (os.path.exists(u) and os.path.exists(g)) or not len(a):
         pending(f'Fidelity against NA: {lab}', 'F maps over the offset of O′ against NA from fig_lim2002_fidelity_na.py.')
@@ -549,17 +560,17 @@ for case, lab in (('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2
 # ══ 27. interpretation ═══════════════════════════════════════════════════
 s = slide('How NA changes the picture', 'Everything scales with the spot; the scalar model gets the length wrong first.')
 bullets(s, 0.6, 1.45, 8.9, 3.75, [
-    'The focal spot shrinks as NA grows: its width as λ/NA and its length as nλ/NA^2, so it also becomes less elongated.',
+    'The focus shrinks as NA grows: lateral width as λ/NA, depth of focus as nλ/NA^2, so it also becomes less elongated.',
     'Every alignment tolerance shrinks with the spot, so the same offset in wavelengths costs more of the peak.',
     'Crossing the beams at θ = π/2 helps by cutting across the long axis of the spot; a less elongated spot gains '
     'less, and above NA 0.71 in air the crossing cannot be built.',
-    'Lim & Saloma’s scalar model gives longer foci than the vector model through its small-angle phase; at the edge of its stated range, NA 0.5, the difference is 7%.',
-    'Without polarization it gives slightly narrower spots, by 5% near NA 0.8.',
+    'Lim & Saloma’s scalar model gives a longer depth of focus than the vector model through its small-angle phase; at the edge of its stated range, NA 0.5, the difference is 7%.',
+    'Without polarization it gives a slightly smaller lateral width, by 5% near NA 0.8.',
     'A Gaussian input dims the high-angle rays and reduces both differences.'], 13)
 notes(s, 'Everything scales with the spot; the scalar model gets the length wrong first.',
       'Three things happen as NA grows. The spot shrinks, faster along the axis than across it, and every alignment '
       'tolerance shrinks with it. The crossed geometry loses some of its advantage because the spot is less elongated, '
-      'and above NA 0.71 in air it cannot be built at all. Lim and Saloma’s scalar model gives longer foci through its '
+      'and above NA 0.71 in air it cannot be built at all. Lim and Saloma’s scalar model gives a longer depth of focus through its '
       'paraxial phase and slightly narrower spots by ignoring polarization.')
 
 # ══ next: optical pulses ═════════════════════════════════════════════════

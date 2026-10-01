@@ -38,9 +38,9 @@ from mcdo.twobeam import beam_field, intensity
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002')
 L1, L2 = 0.750, 0.656
-MODELS = [('paraxial', 'paraxial scalar (Lim & Saloma)', '#d62728', '--'),
-          ('debye', 'scalar Debye', '#ff7f0e', ':'),
-          ('rw', 'vector Debye (Richards–Wolf)', '#1f77b4', '-')]
+MODELS = [('paraxial', 'Paraxial scalar (Lim & Saloma)', '#d62728', '--'),
+          ('debye', 'Scalar Debye', '#ff7f0e', ':'),
+          ('rw', 'Vector (Richards–Wolf)', '#1f77b4', '-')]
 CASES = {'pi': (np.pi, 'θ = π', (0.45, 0.5, 0.6, 0.8, 0.95)),
          'pi2': (np.pi / 2, 'θ = π/2', (0.45, 0.5, 0.6, 0.7))}
 
@@ -63,7 +63,8 @@ def fwhm(c, g):
 
 
 for key, (th, tl, nas) in CASES.items():
-    fig, axes = plt.subplots(len(nas), 2, figsize=(16.0, 4.6 * len(nas)))
+    fig, axes = plt.subplots(2, len(nas), figsize=(16.5, 6.0))   # rows: across, along; about twice its slide width
+    axes = axes.T                                               # axes[r] is one NA: [across, along]
     for r, na in enumerate(nas):
         hx = 1.2 * 0.5 / na
         hz = (5.0 * (0.5 / na) ** 2) if th == np.pi else 1.2 * 0.5 / na
@@ -78,20 +79,21 @@ for key, (th, tl, nas) in CASES.items():
         for c, (ax, d) in enumerate(((axes[r, 0], 'x'), (axes[r, 1], 'z'))):
             e_p = 100 * (w['paraxial'][c] / w['rw'][c] - 1)
             e_d = 100 * (w['debye'][c] / w['rw'][c] - 1)
-            ax.text(0.03, 0.95, f'NA {na}\nparaxial {e_p:+.1f}%\nscalar Debye {e_d:+.1f}%',
-                    transform=ax.transAxes, va='top', fontsize=20)
+            ax.text(0.03, 0.97, f'{e_p:+.1f}%\n{e_d:+.1f}%', transform=ax.transAxes, va='top', fontsize=24)
+            ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(3, symmetric=True))
             ax.set_xlabel(f'{d} (µm)')
-            ax.set_ylabel('2CE, normalized')
-            ax.set_ylim(0, 1.05)
+            if r == 0:
+                ax.set_ylabel('2CE, ' + ('across' if d == 'x' else 'along'))
+            if d == 'x':
+                ax.set_title(f'NA {na}')
+            ax.set_ylim(0, 1.75); ax.set_yticks([0, 0.5, 1])   # room above the peak for the numbers
         print(f'{tl} NA {na}: FWHM x paraxial/scalar Debye/vector {w["paraxial"][0]*1e3:.0f}/{w["debye"][0]*1e3:.0f}/'
               f'{w["rw"][0]*1e3:.0f} nm; z {w["paraxial"][1]*1e3:.0f}/{w["debye"][1]*1e3:.0f}/{w["rw"][1]*1e3:.0f} nm',
               flush=True)
-    axes[0, 0].set_title('Across the axis, z = 0')
-    axes[0, 1].set_title('Along the axis, x = 0')
     h, l = axes[0, 0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=1, bbox_to_anchor=(0.5, -0.07))
-    fig.suptitle(f'2CE aligned PSF profiles, {tl}; width error relative to vector', fontsize=32, y=1.01)
-    plt.tight_layout(rect=(0, 0.03, 1, 1))
+    fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.1), frameon=False)
+    fig.suptitle(f'2CE aligned profiles, {tl}; FWHM error: paraxial, scalar Debye', fontsize=32, y=1.04)
+    plt.tight_layout()
     fig.savefig(os.path.join(OUT, f'na_profiles_theta_{key}.png'), dpi=600, bbox_inches='tight')
     plt.close(fig)
 print('Saved -> na_profiles_theta_pi.png, na_profiles_theta_pi2.png')

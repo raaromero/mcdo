@@ -62,7 +62,7 @@ notes(s, 'The paper’s conclusion reproduces; three details of the paper do not
       'Second, the paper swaps the labels C and Q; its own identity F = 2Q − C shows the panel called C cannot be C. '
       'Third, the rotation of beam 2 has to be done in real space; the rotation printed in the paper, in optical coordinates, '
       'gives a quadratic loss 3.5 times too steep. Fourth, the bottom row of Fig. 6, captioned theta = pi/2, matches theta = 0. '
-      'The next steps are the high-NA vector focus, then pulses with a time delay.',
+      'The next steps are the high-NA vector model, then pulses with a time delay.',
       r'F = 2Q - C')
 
 # ══ 3. what we built ═════════════════════════════════════════════════════
@@ -286,12 +286,12 @@ b = num_table(s, 5.5, 1.35, 4.0, 'Offset that costs 20% of the peak (µm)', [
     ('θ = π, x_c', '0.30', '0.30', '0.22', '0.17'),
     ('θ = π, z_c', '2.06', '1.93', '0.91', '0.73')])
 bullets(s, 5.55, b + 0.12, 3.95, 5.2 - b - 0.12, [
-    'NA 0.5: the vector focus agrees with the paper within 7%.',
+    'NA 0.5: the vector model agrees with the paper within 7%.',
     'θ = π in-plane shrinks as λ/NA; the rest as about nλ/NA^2.',
     'Unpolarized beams; NA 0.9 needs water (n = 1.33) to cross at θ = π/2.'], 10)
 text(s, 0.45, 4.98, 4.9, 0.22, 'Peak 2CE signal against x_c (z_c = 0) and z_c (x_c = 0); dotted line: 20% lost.', 8.5, GREY)
 notes(s, 'The paper’s scalar model holds at NA 0.5; at higher NA the 2CE tolerances shrink with the spot.',
-      'A first high-NA check with our Richards–Wolf vector focus. Both beams are unpolarized: each intensity is the average over two '
+      'A first high-NA check with our Richards–Wolf vector model. Both beams are unpolarized: each intensity is the average over two '
       'orthogonal input polarizations, which is what the scalar model implicitly describes. At NA 0.5 the vector curves sit on the '
       'paper’s scalar ones, within 7 percent, so the paper’s model is adequate at its own NA. At NA 0.7 in air, close to the largest '
       'NA at which two cones can cross at right angles, and at NA 0.9 in water, every tolerance shrinks. The in-plane tolerance at '
@@ -344,7 +344,7 @@ bullets(s, 6.6, b + 0.12, 2.9, 5.2 - b - 0.12, [
     'NA 0.5 values are our reconstruction of the paper’s panels.'], 9.5)
 text(s, 0.2, 5.1, 6.2, 0.2, 'Same axes (±1 × ±5 µm) and contours (1–80%) in every panel; RW = Richards–Wolf, unpolarized.', 8, GREY)
 notes(s, 'Higher NA shrinks the 2CE spot; crossed beams still give the shortest spot along z.',
-      'Left column: the paper’s own panels at NA 0.5. Middle and right: our Richards–Wolf vector focus at NA 0.7 in air and NA 0.9 '
+      'Left column: the paper’s own panels at NA 0.5. Middle and right: our Richards–Wolf vector model at NA 0.7 in air and NA 0.9 '
       'in water, unpolarized, on the same axes and contour levels. The spot shrinks in every direction: across the axis as lambda over '
       'NA, 520, 385, 300 nanometres at theta = pi; along it as n lambda over NA squared, 3.6, 1.6, 1.3 micrometres. The comparison the '
       'paper draws between the angles does not change: at every NA, crossing the beams at pi/2 gives a spot three to five times shorter '
@@ -371,11 +371,11 @@ numbered(s, 1, PURPLE, 1.45, '2CE tolerates misalignment better than two-beam 2P
 numbered(s, 2, RED, 2.15, 'Figs. 5–6 plot Q where they say C; the text repeats the swap.')
 numbered(s, 3, ORANGE, 2.85, 'Beam 2 is rotated in real space; Eq. (2) as printed does not generate the figures.')
 numbered(s, 4, NAVY, 3.55, 'Figs. 6(c)–(d) are most likely θ = 0, not θ = π/2.')
-text(s, 0.6, 4.5, 8.9, 0.4, 'Next: high-NA vector focus (Richards–Wolf); then pulses and a time delay, the temporal half of simultaneity.', 12, GREY)
+text(s, 0.6, 4.5, 8.9, 0.4, 'Next: high-NA vector model (Richards–Wolf); then pulses and a time delay, the temporal half of simultaneity.', 12, GREY)
 notes(s, 'The physics of Lim & Saloma (2002) reproduces; read Figs. 5–6 and Eq. (2) with care.',
       'The paper’s conclusion stands: two-color excitation is more tolerant of misalignment, most of all with crossed beams. Three '
       'details need care: the C and Q labels, the rotation as printed, and the caption of Fig. 6(c)–(d). Next we move to the high-NA '
-      'vector focus, and after that to pulsed beams with a delay between them.')
+      'vector model, and after that to pulsed beams with a delay between them.')
 
 if not os.environ.get('DECK_APPEND'):                 # set by make_lim2002_progress_deck.py, which saves the whole report
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

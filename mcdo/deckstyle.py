@@ -138,6 +138,9 @@ def card(s, l, t, w, h, heading, hcolor, items, size=12, bulleted=True):
         text(s, l + 0.2, t + 0.55, w - 0.4, h - 0.65, '\n'.join(items), size)
 
 
+FIGURES = []                                        # (path, width on the slide in inches) of every figure placed
+
+
 def figure(s, path, l, t, w, h):
     """Image inside a thin grey frame, as in the style deck; returns the frame box."""
     iw, ih = Image.open(path).size
@@ -146,6 +149,7 @@ def figure(s, path, l, t, w, h):
     fl = l + (w - fw) / 2
     shape(s, MSO_SHAPE.RECTANGLE, fl, t, fw, fh, WHITE, FRAME, 0.75)
     s.shapes.add_picture(path, Inches(fl + 0.05), Inches(t + 0.05), Inches(iw * k), Inches(ih * k))
+    FIGURES.append((path, iw * k))                     # source and width on the slide (in), for the legibility audit
     return fl, t, fw, fh
 
 

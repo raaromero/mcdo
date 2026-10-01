@@ -56,32 +56,33 @@ def axial(na, at, model):
 
 
 # ── set 1: Lim & Saloma against truncation, scalar ──
-fig, axes = plt.subplots(1, 2, figsize=(20.0, 8.0))
+fig, axes = plt.subplots(1, 2, figsize=(18.2, 6.0))     # twice its width on the slide: 24-pt text shows at 12 pt
 cols = {0.5: '#ff7f0e', 1: '#2ca02c', 2: '#9467bd', 4: '#d62728'}
 for a, na in zip(axes, (0.3, 0.5)):
     z, I = axial(na, 0, 'scalar')
-    a.plot(z, I, '-', color='k', lw=5, label='Lim & Saloma (paraxial scalar, uniform)')
+    a.plot(z, I, '-', color='k', lw=5, label='Lim & Saloma (uniform)')
     for at in (0.5, 1, 2, 4):
         z, I = axial(na, at, 'scalar')
-        a.plot(z, I, '--', color=cols[at], lw=3.5, label=f'paraxial scalar, α$_t$ = {at}')
+        a.plot(z, I, '--', color=cols[at], lw=3.5, label=f'α$_t$ = {at}')
     a.set_xlabel('z (µm)'); a.set_ylabel('On-axis intensity, normalized')
     a.set_title(f'NA {na}')
     a.set_ylim(0, 1.05)
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12))
-plt.tight_layout(rect=(0, 0.08, 1, 1))
+fig.legend(h, l, loc='lower center', ncol=5, bbox_to_anchor=(0.5, -0.14), frameon=False)
+fig.suptitle('Paraxial scalar focus against the truncation α$_t$', fontsize=32, y=1.04)
+plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'axial_lim_vs_truncation.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
 
 # ── set 2: scalar against vector at the same truncation ──
-NAS, ATS = (0.1, 0.3, 0.5), (0, 1, 4)
-fig, axes = plt.subplots(len(NAS), len(ATS), figsize=(22.0, 16.0))
-for r, na in enumerate(NAS):
-    for c, at in enumerate(ATS):
+NAS, ATS = (0.1, 0.3, 0.5), (0, 4)                     # rows: uniform and α_t = 4; columns: NA
+fig, axes = plt.subplots(len(ATS), len(NAS), figsize=(15.0, 6.0))   # about twice its width on the slide
+for c, na in enumerate(NAS):
+    for r, at in enumerate(ATS):
         a = axes[r, c]
-        for model, lab, col, ls, lw in (('scalar', 'paraxial scalar', '#d62728', '-', 5),
-                                        ('rw', 'vector, mcdo.twobeam', '#1f77b4', '--', 3.5),
-                                        ('mcdo', 'vector, mcdo.rw_integrals', 'k', ':', 3.5)):
+        for model, lab, col, ls, lw in (('scalar', 'Paraxial scalar', '#d62728', '-', 5),
+                                        ('rw', 'Vector, two-beam code', '#1f77b4', '--', 3.5),
+                                        ('mcdo', 'Vector, analysis code', 'k', ':', 3.5)):
             z, I = axial(na, at, model)
             a.plot(z, I, ls, color=col, lw=lw, label=lab)
         s = axial(na, at, 'scalar')[1]; v = axial(na, at, 'rw')[1]
@@ -89,13 +90,14 @@ for r, na in enumerate(NAS):
               f'max |twobeam − rw_integrals| = {np.abs(v - axial(na, at, "mcdo")[1]).max():.2e}', flush=True)
         a.set_title(f'NA {na}, α$_t$ = {at}', fontsize=28)
         a.set_ylim(0, 1.05)
-        if r == len(NAS) - 1:
+        if r == len(ATS) - 1:
             a.set_xlabel('z (µm)')
-        if c == 0:
-            a.set_ylabel('On-axis, normalized')
+
 h, l = axes[0, 0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.05))
-plt.tight_layout(rect=(0, 0.04, 1, 1))
+fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.1), frameon=False)
+fig.supylabel('On-axis intensity, normalized', fontsize=28)
+fig.suptitle('Scalar against vector on axis, uniform and α$_t$ = 4', fontsize=32, y=1.03)
+plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'axial_scalar_vs_vector_truncation.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)
 print('Saved -> axial_lim_vs_truncation.png, axial_scalar_vs_vector_truncation.png')

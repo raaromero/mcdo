@@ -34,7 +34,7 @@ CASES = [(1.0, 0.7, 'Air, n = 1, NA 0.7'), (1.0, 0.9, 'Air, n = 1, NA 0.9'),
 if os.environ.get('AIR_ONLY') == '1':            # the air cases alone
     CASES = CASES[:2]
 
-fig, axes = plt.subplots(1, len(CASES), figsize=(10.0 * len(CASES), 12.0))
+fig, axes = plt.subplots(1, len(CASES), figsize=(5.4 * len(CASES), 6.6))   # twice its width on the slide
 for ax, (n, na, title) in zip(axes, CASES):
     a = np.degrees(np.arcsin(na / n))
     fits = a <= 45.0
@@ -42,30 +42,29 @@ for ax, (n, na, title) in zip(axes, CASES):
     ax.add_patch(Wedge((0, 0), R, -a, a, fc='#1f77b4', alpha=0.25, ec='#1f77b4', lw=3))
     if not fits:
         ax.add_patch(Wedge((0, 0), R, 90 - a, a, fc='none', ec='k', lw=3, hatch='xx'))
-        ax.annotate('cones overlap', xy=(0.22, 0.22), xytext=(0.55, 1.08), fontsize=28, ha='center',
+        ax.annotate('cones overlap', xy=(0.22, 0.22), xytext=(-0.5, -0.55), fontsize=24, ha='center',
                     arrowprops=dict(arrowstyle='->', lw=2.5, color='k'))
     h = R * np.sin(np.radians(a))
     ax.add_patch(Ellipse((0, R * np.cos(np.radians(a))), 2 * h, 0.12, fc='white', ec='k', lw=3, zorder=4))
     ax.add_patch(Ellipse((R * np.cos(np.radians(a)), 0), 0.12, 2 * h, fc='white', ec='k', lw=3, zorder=4))
-    ax.text(-h - 0.05, R * np.cos(np.radians(a)), 'L1', fontsize=28, ha='right', va='center')
-    ax.text(R * np.cos(np.radians(a)), -h - 0.07, 'L2', fontsize=28, ha='center', va='top')
+    ax.text(-h - 0.05, R * np.cos(np.radians(a)), 'L1', fontsize=24, ha='right', va='center')
+    ax.text(R * np.cos(np.radians(a)), -h - 0.07, 'L2', fontsize=24, ha='center', va='top')
     ax.add_patch(Arc((0, 0), 0.5, 0.5, theta1=90, theta2=90 + a, lw=3, color='k'))
     ax.text(-0.3 * np.sin(np.radians(a / 2)), 0.3 * np.cos(np.radians(a / 2)) + 0.03, 'α',
-            fontsize=30, ha='center')
+            fontsize=24, ha='center')
     ax.plot([0, 0], [0, R * 1.05], ':', color='#555555', lw=2)
     ax.plot([0, R * 1.05], [0, 0], ':', color='#555555', lw=2)
     ax.plot(0, 0, 'ko', ms=10)
-    ax.text(0.03, -0.06, 'O', fontsize=28, ha='left', va='top')
-    ax.text(0.5, -0.12, f'α = arcsin(NA/n) = {a:.0f}°\n'
-            + ('α ≤ 45°: the cones fit' if fits else 'α > 45°: the cones overlap'),
-            transform=ax.transAxes, ha='center', va='top', fontsize=28,
+    ax.text(0.03, -0.06, 'O', fontsize=24, ha='left', va='top')
+    ax.text(0.5, -0.06, f'α = {a:.0f}°: ' + ('the cones fit' if fits else 'they overlap'),
+            transform=ax.transAxes, ha='center', va='top', fontsize=24,
             color='#1B7F3A' if fits else '#B01E1E')
     ax.set_title(title)
     ax.set_xlim(-1.05, 1.15); ax.set_ylim(-1.05, 1.15)
     ax.set_aspect('equal'); ax.axis('off')
-fig.suptitle('Crossing at θ = π/2 needs α ≤ 45°, that is NA = n sin α ≤ n/√2 '
-             + ('(0.71 in air)' if len(CASES) == 2 else '(0.71 in air, 0.94 in water)'), fontsize=32, y=1.02)
-plt.tight_layout(rect=(0, 0.08, 1, 1))
+fig.suptitle('At θ = π/2 the cones fit only for α ≤ 45°,\nNA ≤ n/√2 ' + ('(0.71 in air)' if len(CASES) == 2 else
+             '(0.71 in air, 0.94 in water)'), fontsize=28, y=1.08)
+plt.tight_layout()
 path = os.path.join(OUT, 'na_crossing_limit_air.png' if len(CASES) == 2 else 'na_crossing_limit.png')
 fig.savefig(path, dpi=600, bbox_inches='tight')
 os.makedirs(COPY, exist_ok=True)
