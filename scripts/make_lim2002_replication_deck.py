@@ -51,8 +51,10 @@ notes(s, 'We rebuilt every figure of Lim & Saloma (2002) from its equations; the
       'three details of the paper do not, and we show the evidence for each.')
 
 # ══ 2. main points ═══════════════════════════════════════════════════════
-s = slide('Main points', 'The paper’s conclusion reproduces; three details of the paper do not.')
+s = slide('Main points', '2CE is far more tolerant of misalignment than 2PE; the paper reproduces, with three errors.')
 bullets(s, 0.6, 1.45, 8.9, 2.9, [
+    '2CE tolerates misalignment far better than 2PE, most of all with crossed beams: 20% of the peak is lost at '
+    'x_c = 0.37 λ_1 with facing lenses, only 11% at x_c = 1.33 λ_1 with crossed ones; 2PE loses 30% at 0.5 λ_{2p}.',
     'Every number in the paper’s Section 3.2 and 22 of its 24 figure panels reproduce, within a few percent.',
     'The labels C and Q are swapped in Figs. 5–6 and in the text: the paper’s own identity F = 2Q − C proves it.',
     'Beam 2 must be rotated in real space; the optical-coordinate rotation printed as Eq. (2) gives a 3.5× steeper loss.',

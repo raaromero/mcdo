@@ -175,8 +175,10 @@ def glossary(part_no=None):
 # ══ title and summary ════════════════════════════════════════════════════
 ds.CITE = ''                                                   # the paper is cited on the title slide only
 SUMMARY = [   # (part, colour, main point, supporting points as short phrases)
-    ('1. Replication', PURPLE, 'Lim & Saloma (2002) reproduces.',
-     'every number in Sec. 3.2 · 22 of 24 panels · C and Q swapped · Eq. (2) rotation wrong as printed · Fig. 6(c)–(d) is θ = 0'),
+    ('1. Replication', PURPLE, '2CE tolerates misalignment far better than 2PE, most of all with crossed beams (θ = π/2).',
+     'lateral: 20% peak loss at x_c = 0.37 λ_1 (θ = π), only 11% at x_c = 1.33 λ_1 (θ = π/2); 2PE: 30% at 0.5 λ_{2p} · '
+     'axial: 20% at z_c = 2.7 λ_1 (θ = π), 30% (θ = π/2) · all reproduced, 22 of 24 panels · '
+     'paper errors: C and Q swapped, Eq. (2) rotation, Fig. 6(c)–(d) is θ = 0'),
     ('2. High NA', RED, 'The paraxial scalar model fails first on the depth of focus.',
      'deviation 5% at NA 0.45, 10% at 0.6 · lateral width holds to NA 0.8 · tolerances ∝ NA^{−0.97} lateral, NA^{−2.12} axial '
      '· follows NA/n (water)'),
