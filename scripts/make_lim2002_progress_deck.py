@@ -189,7 +189,8 @@ SUMMARY = [   # (part, colour, main point, supporting points as short phrases)
      'tolerances about 1.4× larger · deviation 5% at NA 0.525, 10% at 0.7 · same power laws'),
     ('5. Polarization', GREY, 'Polarization changes only lateral results and crossed-beam 2PE.',
      'unpolarized = circular · axial results unchanged · lateral spread up to ±20% at NA 0.9–1.2 · 2PE p–p: no interference'),
-    ('Next', GREY, 'Pulses and a time delay.', 'signal = time overlap of the pulses · gated along z at θ = π'),
+    ('Next', GREY, 'With pulses, the 2CE signal is the time overlap of the two pulses.',
+     'the pulses meet only in a gate, c√2 τ/2n long along z at θ = π · a delay Δt moves it by cΔt/2n · crossed beams barely change'),
 ]
 if PART is None:
     s = navy('Progress Report', [
@@ -352,7 +353,7 @@ if WANT(5):
 
 
     def pct(v, ref):
-        return '—' if v is None or ref is None else f'{v:.3g} ({100 * (v / ref - 1):+.0f}%)'
+        return '—' if v is None or ref is None else f'{v:.3g} ({100 * (v / ref - 1):+.0f}%)'.replace('-', '−')
 
 
     def tol(suf, key, na, col):
@@ -393,7 +394,7 @@ if WANT(5):
         '2PE: s–s keeps the two fields parallel at any θ, which is what Lim & Saloma’s 2PE result implicitly assumes.',
         'That is the set used so far. Linear s–s and p–p for 2CE bracket it; p–p shows crossed-beam 2PE losing its fringes.',
         'Open physics: with fixed linear polarizations the dye’s transition dipole matters; for randomly oriented molecules the '
-        'signal goes as (|E_1|^2|E_2|^2 + |E_1·E_2|^2 + |E_1·E_2^*|^2)/15, 3× larger for parallel fields than perpendicular.',
+        'signal goes as (|E_1|^2|E_2|^2 + |E_1·E_2|^2 + |E_1·E_2^{*}|^2)/15, 3× larger for parallel fields than perpendicular.',
         'Question: keep A / s–s as the main result, or move to linear polarization and add the molecular factor?'], 12.5)
     notes(s, 'Proposed: 2CE with circular polarization and 2PE with s–s as the main result; linear 2CE as bounds.',
           'The decision to make. The unpolarized average we used for 2CE is exactly the intensity of circularly polarized beams, so '

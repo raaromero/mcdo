@@ -417,12 +417,12 @@ for suf, lab in (('', 'uniform input'), ('_at4', 'α_t = 4')):
     s = slide(f'Severity of the scalar–vector deviation, {lab}', 'NA at which the scalar–vector deviation first exceeds 5% and 10%.')
     figure(s, F(f'na_breakdown_severity{suf}.png'), 0.45, 1.35, 5.4, 3.85)
     for j, h in enumerate(('', '5%', '10%')):
-        text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.42, 1.7 if j == 0 else 0.75, 0.25, h, 10, GREY, True,
+        text(s, 6.0 + (0 if j == 0 else 2.15 + (j - 1) * 0.7), 1.42, 2.1 if j == 0 else 0.7, 0.28, h, 11, GREY, True,
              align=None if j == 0 else PP_ALIGN.CENTER)
     for i, row in enumerate(rows):
         for j, v in enumerate(row):
-            text(s, 6.2 + (0 if j == 0 else 1.75 + (j - 1) * 0.8), 1.72 + i * 0.3, 1.7 if j == 0 else 0.75, 0.28, v,
-                 9.5, NAVY, j == 0, align=None if j == 0 else PP_ALIGN.CENTER)
+            text(s, 6.0 + (0 if j == 0 else 2.15 + (j - 1) * 0.7), 1.76 + i * 0.36, 2.1 if j == 0 else 0.7, 0.3, v,
+                 11, NAVY, j == 0, align=None if j == 0 else PP_ALIGN.CENTER)
     notes(s, 'The scalar–vector deviation grows with NA; length-set metrics cross 5% first.',
           f'Each line is how far the scalar model departs from the vector model, in percent, for {lab}. The table gives the NA '
           'at which each first exceeds five and ten percent. Entries above 0.95 never cross in the range computed.')

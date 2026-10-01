@@ -207,7 +207,8 @@ for tag_, shape_, size_ in (('', (1, 4), (18.2, 5.6)), ('_grid', (2, 2), (8.3, 7
                 a.axvspan(N / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                           label='Lenses cannot cross')
             a.set_xlim(nas[0] / 1.15, max(1.02, nas[-1] * 1.03))
-            a.set_xticks([t for t in ((0.03, 0.3) if grid_ else (0.03, 0.1, 0.3, 1.0)) if t >= nas[0] - 1e-9])
+            a.set_xticks([t for t in ((0.03, 0.3) if grid_ else (0.03, 0.1, 0.3, 1.0) if nas[0] < 0.3 else (0.5, 0.7, 1.0))
+                          if t >= nas[0] - 1e-9])
             a.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
             a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
             a.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
@@ -267,7 +268,7 @@ for a, key in zip(axes, ('pi', 'pi2')):
     a.set_ylim(0, 50)
 axes[0].set_ylabel('Scalar – vector deviation (%)')
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.2), frameon=False)
+fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.3), frameon=False)
 fig.suptitle('2CE: scalar–vector deviation' + (f', α$_t$ = {AT:g}' if AT else '') + MEDIUM, fontsize=32, y=1.02)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, f'na_breakdown_severity{SUF}.png'), dpi=600, bbox_inches='tight')

@@ -96,7 +96,7 @@ def figure(pair, th, suf, key, runs):
     col = lambda na: cmap((na - lo) / max(hi - lo, 1e-9))
     case = f'{PAIRS[pair]}, {THETAS[th]}' + (', α$_t$ = 4' if suf else ', uniform input')
 
-    fig, axes = plt.subplots(1, 4, figsize=(18.2, 5.6), gridspec_kw=dict(width_ratios=(1.25, 1, 1, 1)))
+    fig, axes = plt.subplots(1, 4, figsize=(18.2, 5.6), gridspec_kw=dict(width_ratios=(1.6, 1, 1, 1)))
     ax = axes[0]
     for na, n, d in runs:
         ax.contour(xt, zt, d[f'{key}_vec'], levels=[LEVEL], colors=[col(na)], linewidths=2.5,
@@ -104,7 +104,7 @@ def figure(pair, th, suf, key, runs):
     ref = min(runs, key=lambda r: abs(r[0] - 0.5))
     ax.contour(xt, zt, ref[2][f'{key}_sca'], levels=[LEVEL], colors='#d62728', linewidths=4, linestyles=':')
     ax.set_xlabel(ulx); ax.set_ylabel(ulz)
-    ax.set_title(f'{key} = {LEVEL} contour', fontsize=28)
+    ax.set_title(f'{key} = {LEVEL} contour', fontsize=28, pad=14)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(lo, hi))
     fig.colorbar(sm, ax=ax, fraction=0.06, pad=0.03).set_label('NA')
 
@@ -143,7 +143,8 @@ def figure(pair, th, suf, key, runs):
                            shading='nearest')
         ax.set_title(f'NA {na:g}' + ('' if n == 1 else ' (w)'), fontsize=28)
         ax.set_xlabel(ulx)
-        ax.set_xticks([xt[0], 0, xt[-1]]); ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        ax.set_xticks([round(0.6 * xt[0], 1), 0, round(0.6 * xt[-1], 1)])   # inside the edges, so neighbours' labels do not meet
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         if i == 0:
             ax.set_ylabel(ulz)
     fig.colorbar(pm, ax=list(axes), fraction=0.02, pad=0.01).set_label(f'Δ{key}')

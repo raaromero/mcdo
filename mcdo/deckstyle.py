@@ -30,7 +30,7 @@ GREY, CARD, FRAME, PALE = (RGBColor.from_string(c) for c in ('5C6370', 'F2F3F8',
 WHITE, GREEN = RGBColor(0xFF, 0xFF, 0xFF), RGBColor.from_string('1B7F3A')
 W, H = 10.0, 5.625
 CITE = 'Lim & Saloma, Opt. Commun. 207, 121–130 (2002)'   # footer; a deck script may reset it
-TOK = re.compile(r'(_\{[^}]*\}|\^\{[^}]*\}|_[A-Za-z0-9]|\^[A-Za-z0-9])')
+TOK = re.compile(r'(_\{[^}]*\}|\^\{[^}]*\}|_[A-Za-z0-9α-ωΑ-Ω]|\^[A-Za-z0-9α-ωΑ-Ω])')
 
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(W), Inches(H)
@@ -45,7 +45,7 @@ def runs(p, text, size, color=NAVY, bold=False, font='Calibri', italic=False):
         if not part:
             continue
         base = 0
-        if part[0] in '_^' and len(part) > 1:
+        if part[0] in '_^' and len(part) > 1 and TOK.fullmatch(part):   # only a real token is raised or lowered
             base = -25000 if part[0] == '_' else 30000
             part = part[2:-1] if part[1] == '{' else part[1:]
         r = p.add_run(); r.text = part
@@ -167,7 +167,8 @@ def verdict(s, ok):
 
 def stat(s, l, t, value, vcolor, lines):
     shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, t, 2.9, 1.35, CARD)
-    text(s, l, t + 0.05, 1.45, 0.8, value, 34, vcolor, True, 'Cambria', MSO_ANCHOR.MIDDLE, PP_ALIGN.CENTER)
+    text(s, l, t + 0.05, 1.45, 0.8, value, 34 if len(value) <= 5 else 28, vcolor, True, 'Cambria', MSO_ANCHOR.MIDDLE,
+         PP_ALIGN.CENTER)                             # a longer value steps down so it stays on one line
     text(s, l + 1.45, t + 0.15, 1.4, 1.1, lines, 10.5, NAVY, True)
 
 
