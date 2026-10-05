@@ -130,6 +130,22 @@ F^p_{2c}(\pi/2) = -0.06\,x_c^2 + 1
 F^p_{2c}(0) = -0.027\,z_c^2 + 0.996
 ''')
 
+# ══ Linfoot's criteria ═══════════════════════════════════════════════════
+s = slide('Linfoot’s criteria', '')
+bullets(s, 0.6, 1.1, 8.9, 4.1, [
+    'Lim & Saloma compare the misaligned PSF a with the aligned PSF t, each scaled to its own peak; ⟨·⟩ is the mean over the '
+    'window.',
+    'Fidelity F compares the two shapes; it is 1 when they are equal and falls as they differ:',
+    '$$ F = 1 − ⟨(t − a)^2⟩ / ⟨t^2⟩',
+    'Structural content C compares their energy, and correlation quality Q their overlap; both are 1 when a = t:',
+    '$$ C = ⟨a^2⟩ / ⟨t^2⟩,     Q = ⟨t a⟩ / ⟨t^2⟩',
+    'The three are related by',
+    '$$ F = 2Q − C',
+    'Figs. 5–6 map F and the second criterion over the misalignment (x_c, z_c) of O′.'], 13)
+notes(s, 'Linfoot’s three criteria compare the misaligned PSF with the aligned one.',
+      'F is one minus the normalized mean squared difference, C the ratio of energies, Q the normalized overlap. The relation '
+      'F = 2Q − C is used two slides later to show that the panels labelled C are Q.', LINFOOT_TEX)
+
 # ══ Fig. 5 and the C/Q labels, one panel per slide ═════════════════════
 for t, (lab, ours, line) in {
         'a': ('Linfoot’s criteria, 2CE, θ = π: F', 'Ours: F', 'Fidelity F for 2CE at θ = π agrees with the paper.'),
