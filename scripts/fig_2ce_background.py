@@ -38,13 +38,13 @@ C1, C2, C3 = '#d62728', '#1f77b4', '#2ca02c'
 
 
 def save(fig, name):
-    fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(OUT, name), dpi=600, bbox_inches='tight')
     plt.close(fig)
     print('Saved ->', name)
 
 
 # ── focusing geometry ─────────────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(18.0, 11.0))
+fig, ax = plt.subplots(figsize=(11.0, 6.8))
 f = 6.0
 alpha = np.deg2rad(50)
 ax.plot([0, 0], [-f * np.sin(alpha) - 0.6, f * np.sin(alpha) + 0.6], color='k', lw=3)
@@ -55,9 +55,9 @@ ax.text(f - f * np.cos(alpha) + 0.3, f * np.sin(alpha) + 0.1, 'Reference sphere,
         fontsize=24, ha='left')
 F = np.array([f, 0.0])
 ax.plot(*F, 'o', color='k', ms=12)
-ax.text(f + 0.2, -0.5, 'Focus', fontsize=26)
+ax.text(f + 0.1, -1.0, 'Focus', fontsize=26, va='top')
 ax.plot([-3.5, f + 2.5], [0, 0], color='#999999', lw=1.4)
-ax.text(f + 2.6, 0, 'z', fontsize=28, va='center')
+ax.text(f + 2.7, 0, 'z', fontsize=28, va='center')
 for t, col in ((np.deg2rad(40), C1), (np.deg2rad(-20), C2)):
     h = f * np.sin(t)
     S = np.array([f - f * np.cos(t), h])
@@ -75,14 +75,14 @@ for t, col in ((np.deg2rad(40), C1), (np.deg2rad(-20), C2)):
                 arrowprops=dict(arrowstyle='<->', color=col, lw=2.4))
 ax.annotate('', xy=(-0.25, f * np.sin(np.deg2rad(40))), xytext=(-0.25, 0),
             arrowprops=dict(arrowstyle='<->', color='k', lw=1.6))
-ax.text(-0.4, 1.9, 'h = f sin θ', fontsize=24, ha='right', rotation=90, va='center')
+ax.text(-0.75, 1.9, 'h = f sin β', fontsize=24, ha='right', rotation=90, va='center')
 ax.add_patch(Arc(F, 3.0, 3.0, theta1=180 - 40, theta2=180, color='k', lw=2))
-ax.text(f - 1.95, 0.45, 'θ', fontsize=28)
-ax.text(-3.6, -4.2, 'Incident\npolarization:\ntransverse to z', fontsize=22, va='top')
-ax.text(3.6, -3.4, 'After the lens: transverse to each ray,\nso a component along z appears',
+ax.text(f - 1.95, 0.45, 'β', fontsize=28)
+ax.text(-0.4, -4.4, 'Incident polarization:\ntransverse to z', fontsize=22, va='top', ha='right')
+ax.text(3.0, -3.6, 'After the lens: transverse to each ray,\nso a component along z appears',
         fontsize=22, va='top')
 ax.set_aspect('equal'); ax.axis('off')
-ax.set_xlim(-3.8, f + 5.0); ax.set_ylim(-6.2, 5.8)
+ax.set_xlim(-5.5, f + 5.0); ax.set_ylim(-6.2, 5.8)
 save(fig, 'bg_focusing_geometry.png')
 
 # ── low against high NA ───────────────────────────────────────────────────
@@ -130,10 +130,10 @@ for zi in zp:
     I = intensity(beam_field(r, np.full_like(r, zi), 0.7, 0.5, 1.0, model='paraxial'))
     S1.append(np.trapezoid(I * r, r)); S2.append(np.trapezoid(I ** 2 * r, r))
 S1, S2 = np.array(S1), np.array(S2)
-fig, ax = plt.subplots(figsize=(15.0, 9.0))
+fig, ax = plt.subplots(figsize=(10.0, 6.2))
 ax.plot(zp, S1 / S1[60], '-', color=C2, lw=3.4, label='One-photon, ∫ I dA')
 ax.plot(zp, S2 / S2[60], '-', color=C1, lw=3.4, label='Two-photon, ∫ I² dA')
-ax.set_xlabel('Axial position z (µm)'); ax.set_ylabel('Signal per plane, relative to focus')
+ax.set_xlabel('Axial position z (µm)'); ax.set_ylabel('Signal per plane')
 ax.set_ylim(0, 1.1)
 fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.02), ncol=2)
 plt.tight_layout()
@@ -141,7 +141,7 @@ save(fig, 'bg_nonlinear.png')
 
 # ── energy levels ─────────────────────────────────────────────────────────
 HC = 1239.84
-fig, ax = plt.subplots(figsize=(22.0, 11.0))
+fig, ax = plt.subplots(figsize=(13.0, 7.0))
 E_e = HC / 350
 for x0, title, steps in ((0.0, 'One-photon\n350 nm', [(350, C3)]),
                          (4.0, 'Two-photon\n700 + 700 nm', [(700, C1), (700, C1)]),
@@ -169,17 +169,17 @@ save(fig, 'bg_energy_levels.png')
 c = 299.792458          # nm/fs
 t = np.linspace(0, 60, 6001)
 w1, w2 = 2 * np.pi * c / 750, 2 * np.pi * c / 656
-fig, axes = plt.subplots(1, 2, figsize=(30.0, 9.0))
+fig, axes = plt.subplots(1, 2, figsize=(13.0, 5.6))
 for ph, ls, lab in ((0.0, '-', 'relative phase 0'), (np.pi, '--', 'relative phase π')):
     E = np.exp(-1j * w1 * t) + np.exp(-1j * (w1 * t + ph))
     axes[0].plot(t, np.abs(E) ** 2, ls, color=C1, lw=3.2, label=lab)
 E = np.exp(-1j * w1 * t) + np.exp(-1j * w2 * t)
 axes[1].plot(t, np.abs(E) ** 2, '-', color=C2, lw=3.2, label='750 + 656 nm')
 axes[1].axhline(2.0, color='k', ls=':', lw=2.4, label='Time average = I$_1$ + I$_2$')
-axes[0].set_title('Same color: fields add, |E$_1$ + E$_2$|² depends on phase')
-axes[1].set_title(f'Two colors: beats at {1/(c/656 - c/750):.1f} fs, average I$_1$ + I$_2$')
+axes[0].set_title('Same color')
+axes[1].set_title('Two colors, 750 + 656 nm')
 for a in axes:
-    a.set_xlabel('Time (fs)'); a.set_ylabel('|E$_1$ + E$_2$|², I$_1$ = I$_2$ = 1'); a.set_ylim(-0.1, 4.3)
+    a.set_xlabel('Time (fs)'); a.set_ylabel('|E$_1$ + E$_2$|²'); a.set_ylim(-0.1, 4.3)
 h, l = axes[0].get_legend_handles_labels(); h2, l2 = axes[1].get_legend_handles_labels()
 fig.legend(h + h2, l + l2, loc='upper center', bbox_to_anchor=(0.5, 0.02), ncol=4)
 plt.tight_layout()

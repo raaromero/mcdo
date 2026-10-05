@@ -30,7 +30,8 @@ os.environ['DECK_APPEND'] = '1'
 from PIL import Image
 
 import mcdo.deckstyle as ds
-from mcdo.deckstyle import FIG, NAVY, PALE, WHITE, bullets, dots, figure, notes, prs, slide, text
+from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, PALE, PURPLE, RED, WHITE, bullets, card, dots, equation,
+                            figure, notes, prs, shape, slide, text, where)
 
 SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'delay_space']
 SECTION = os.environ.get('SECTION')
@@ -136,55 +137,78 @@ def geometry():
         'from O, with facing or crossed lenses.', fw=4.4)
 
 
+def eqslide(title, takeaway, eqs, main, script, latex, side=None, fig=None, size=17):
+    """Equation slide: numbered LaTeX equations, each with its 'where' line; a card or a figure at the right."""
+    s = slide(title, takeaway)
+    w = 9.0 if side is None and fig is None else (5.9 if fig is None else 5.5)
+    t = 1.4
+    for tex, wh in eqs:
+        h = equation(s, 0.55, t, w, tex, size)
+        t += h + 0.06
+        if wh:
+            t += where(s, 0.6, t, w - 0.6, wh)
+        t += 0.1
+    if side:
+        head, lines = side
+        card(s, 6.75, 1.4, 2.75, 3.7, head, RED, lines, 10.5, bulleted=False)
+    if fig:
+        figure(s, fig, 6.15, 1.35, 3.4, 3.8)
+    notes(s, main, script, latex)
+    return s
+
+
+ZB = r'z_b = (x - x_c)\sin\theta + (z - z_c)\cos\theta, \qquad x_b = (x - x_c)\cos\theta - (z - z_c)\sin\theta'
+UPAR = r'U(u,v) \propto e^{ikz}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho'
+
+
 def scalar_fields():
-    words('Field equations: scalar 2CE', [
-        'Each beam is the paraxial scalar Debye field of a lens of numerical aperture NA:',
-        '$$ U(u, v) ∝ e^{ikz} 2∫_0^1 J_0(vρ) exp(−iuρ^2/2) ρ dρ,     u = k NA^2 z/n,   v = k NA r',
-        'Beam 2 is the same field in its own coordinates, rotated by θ and centred at O′:',
-        '$$ z_b = (x − x_c) sin θ + (z − z_c) cos θ,     x_b = (x − x_c) cos θ − (z − z_c) sin θ',
-        'The 2CE signal is the product of the two intensities; in 2PE the two fields add, so they interfere:',
-        '$$ F_{2c} = κ_{2c} I_1 I_2,     F_{2p} = κ_{2p} |U_1 + U_2|^4',
-        'r, z: distance from the focus across and along the axis; ρ: radius in the pupil over its edge; k = 2πn/λ.'],
+    eqslide('Field equations: scalar 2CE', 'Each beam is the paraxial scalar Debye field; beam 2 is the same field rotated by θ '
+            'and centred at O′.', [
+        (UPAR, 'r, z = distance from the focus across and along the axis; ρ = radius in the pupil over its edge.'),
+        (r'u = \frac{k\,\mathrm{NA}^2 z}{n}, \qquad v = k\,\mathrm{NA}\, r, \qquad k = \frac{2\pi n}{\lambda}',
+         'u, v = axial and transverse optical coordinates; λ = vacuum wavelength; n = refractive index.'),
+        (ZB, 'x_b, z_b = coordinates of beam 2, rotated by θ about O′ = (x_c, z_c).'),
+        (r'F_{2c} = \kappa_{2c}\, I_1 I_2, \qquad F_{2p} = \kappa_{2p}\, |U_1 + U_2|^4', 'I = |U|^2; 2CE multiplies the two '
+         'intensities, 2PE adds the two fields.')],
         'The scalar 2CE model: paraxial fields, beam 2 rotated and shifted, 2CE as a product and 2PE as a sum.',
-        'Each beam is the paraxial scalar Debye field. Beam 2 is rotated by theta and centred at O prime. The two-color signal is '
-        'the product of the intensities; the two-photon signal is the fourth power of the summed field.',
-        r'''U(u,v) \propto e^{ikz}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho, \quad u = k\,\mathrm{NA}^2 z/n,\ v = k\,\mathrm{NA}\, r
-z_b = (x - x_c)\sin\theta + (z - z_c)\cos\theta, \qquad x_b = (x - x_c)\cos\theta - (z - z_c)\sin\theta
-F_{2c} = \kappa_{2c} I_1 I_2, \qquad F_{2p} = \kappa_{2p} |U_1 + U_2|^4''', size=12.5)
+        'The model of the paper, used for the delay study at NA 0.5.',
+        '\n'.join((UPAR, r'u = k\,\mathrm{NA}^2 z/n, \quad v = k\,\mathrm{NA}\, r', ZB,
+                   r'F_{2c} = \kappa_{2c} I_1 I_2, \qquad F_{2p} = \kappa_{2p} |U_1 + U_2|^4')), size=16)
+
+
+IM = r'I_m = \int_0^\alpha A(\beta)\sqrt{\cos\beta}\,\sin\beta\; g_m(\beta)\, J_m(kr\sin\beta)\, e^{ikz\cos\beta}\, d\beta'
+EVEC = r'\mathbf{E} \propto \left(I_0 + I_2\cos 2\phi,\;\; I_2\sin 2\phi,\;\; 2i I_1\cos\phi\right)'
+GM = r'g_0 = 1 + \cos\beta, \qquad g_1 = \sin\beta, \qquad g_2 = 1 - \cos\beta, \qquad \sin\alpha = \mathrm{NA}/n'
+UNPOL = r'I = \frac{1}{2}\left(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2\right), \qquad F_{2c} = \kappa_{2c}\, I_1 I_2'
+F2PV = r'F_{2p} = \kappa_{2p}\, |\mathbf{E}_1 + \mathbf{E}_2|^4'
 
 
 def vector_fields():
-    words('Field equations: scalar 2CE and vector 2CE', [
-        'Scalar 2CE: one scalar field, with the phase of each ray taken to small angles.',
-        '$$ U(u, v) ∝ e^{ikz} 2∫_0^1 J_0(vρ) exp(−iuρ^2/2) ρ dρ,     u = k NA^2 z/n,   v = k NA r',
-        'Vector 2CE (Richards–Wolf): the exact phase of each ray and the three components of the electric field.',
-        '$$ E ∝ (I_0 + I_2 cos 2φ,  I_2 sin 2φ,  2i I_1 cos φ)',
-        '$$ I_m = ∫_0^α A(β) √(cos β) sin β g_m(β) J_m(kr sin β) exp(ikz cos β) dβ',
-        '$$ g_0 = 1 + cos β,   g_1 = sin β,   g_2 = 1 − cos β,   sin α = NA/n',
-        'r, z: distance from the focus across and along the axis; φ: angle about the axis; β: angle of a ray; ρ: radius in the '
-        'pupil over its edge; k = 2πn/λ; A(β): pupil amplitude, 1 for uniform input.'],
-        'The paraxial scalar field and the vector Richards–Wolf field.',
-        'The paraxial field replaces the phase kz cos beta by its small-angle form and has one component. The Richards–Wolf field '
-        'keeps the exact phase, the factor root cos beta of an aplanatic lens, and the three field components; it is written for '
-        'input polarized along x. At low NA it reduces to the paraxial field.',
-        r'''U(u,v) \propto e^{ikz}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho, \quad u = k\,\mathrm{NA}^2 z/n,\ v = k\,\mathrm{NA}\, r
-\mathbf{E} \propto \left(I_0 + I_2\cos 2\phi,\ I_2 \sin 2\phi,\ 2i I_1 \cos\phi\right)
-I_m = \int_0^\alpha A(\beta)\sqrt{\cos\beta}\,\sin\beta\, g_m(\beta)\, J_m(kr\sin\beta)\, e^{ikz\cos\beta}\, d\beta
-g_0 = 1+\cos\beta,\ g_1 = \sin\beta,\ g_2 = 1-\cos\beta,\ \sin\alpha = \mathrm{NA}/n''', size=12)
-    words('Two beams: placement and signals', [
-        'Beam 2 is the same focused field in its own coordinates, rotated by θ and centred at O′:',
-        '$$ z_b = (x − x_c) sin θ + (z − z_c) cos θ,     x_b = (x − x_c) cos θ − (z − z_c) sin θ',
-        '2CE: each beam is unpolarized, its intensity averaged over two perpendicular input polarizations ψ, which equals circular '
-        'polarization; the signal is the product of the two intensities:',
-        '$$ I = ½ (|E_{ψ=0}|^2 + |E_{ψ=π/2}|^2),     F_{2c} = κ_{2c} I_1 I_2',
-        '2PE: both beams at 700 nm, polarized perpendicular to the plane of the two lens axes, so their fields add and interfere:',
-        '$$ F_{2p} = κ_{2p} |E_1 + E_2|^4',
-        'In scalar 2CE, I = |U|^2 and F_{2p} = κ_{2p} |U_1 + U_2|^4.'],
+    side('Focusing by an aplanatic lens', os.path.join(os.path.dirname(FIG), 'bg_focusing_geometry.png'), [
+        'Each ray leaves the lens toward the focus at an angle β to the axis, up to the cone half-angle α, sin α = NA/n.',
+        'After the lens the polarization is transverse to each ray, so the focused field gains a component along z.',
+        'Scalar 2CE replaces the phase kz cos β by its small-angle form and leaves out that component; the Richards–Wolf field '
+        'keeps both.'],
+        'The aplanatic lens bends each ray toward the focus and turns its polarization with it.',
+        'This is what the vector model adds: the exact phase of steep rays and the field component along the axis.', fw=5.5)
+    eqslide('Field equations: vector 2CE (Richards–Wolf)', 'The Richards–Wolf field keeps the exact phase of each ray and the '
+            'three components of the electric field.', [
+        (EVEC, 'E = focal field for input polarized along x; φ = angle about the axis.'),
+        (IM, 'β = ray angle; r, z = distance from the focus; A(β) = pupil amplitude, 1 for uniform input; √cos β = aplanatic '
+             'factor.'),
+        (GM, 'α = half-angle of the focusing cone; m = 0, 1, 2.')],
+        'The vector Richards–Wolf field.',
+        'At low NA it reduces to the paraxial scalar field.', '\n'.join((EVEC, IM, GM)),
+        side=('Against scalar 2CE', ['Exact phase kz cos β instead of its small-angle form.', '',
+                                     'Three field components; the one along z grows with NA.', '',
+                                     'At low NA it reduces to the paraxial scalar field.']), size=15)
+    eqslide('Two beams: placement and signals', 'Beam 2 is the same field rotated by θ and centred at O′; 2CE multiplies '
+            'unpolarized intensities, 2PE adds polarized fields.', [
+        (ZB, 'x_b, z_b = coordinates of beam 2, rotated by θ about O′ = (x_c, z_c).'),
+        (UNPOL, 'ψ = input polarization angle; the average over ψ = 0 and π/2 equals circular polarization.'),
+        (F2PV, 'both 2PE beams at 700 nm, polarized perpendicular to the plane of the two lens axes, so their fields add.')],
         'Beam 2 is rotated and shifted; 2CE multiplies unpolarized intensities, 2PE adds polarized fields.',
-        'The input polarization psi rotates the focal field about the beam axis. Averaging psi = 0 and pi/2 gives the intensity of '
-        'circular polarization.',
-        r'''I = \tfrac{1}{2}\left(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2\right), \qquad F_{2c} = \kappa_{2c} I_1 I_2
-F_{2p} = \kappa_{2p} |\mathbf{E}_1 + \mathbf{E}_2|^4''', size=12.5)
+        'In scalar 2CE, I = |U|^2 and F2p = kappa |U1 + U2|^4.', '\n'.join((ZB, UNPOL, F2PV)), size=16)
 
 
 def lens_problem():
@@ -198,21 +222,24 @@ def lens_problem():
         r'\mathrm{NA} \le n \sin(\theta/2)', fw=5.0)
 
 
+FCQ = (r'F = 1 - \frac{\langle (t-a)^2 \rangle}{\langle t^2 \rangle}, \qquad C = \frac{\langle a^2 \rangle}{\langle t^2 \rangle}, '
+       r'\qquad Q = \frac{\langle t\, a \rangle}{\langle t^2 \rangle}')
+SPOT = r'\tilde{x} = \frac{x_c\,\mathrm{NA}}{\lambda}, \qquad \tilde{z} = \frac{z_c\,\mathrm{NA}^2}{n\lambda}'
+
+
 def linfoot():
-    words('Linfoot’s criteria', [
-        'The aligned PSF t and the misaligned PSF a are each scaled to their own peak; ⟨·⟩ is the mean over the window.',
-        'Fidelity F compares the two shapes; it is 1 when they are equal and falls as they differ:',
-        '$$ F = 1 − ⟨(t − a)^2⟩ / ⟨t^2⟩',
-        'Structural content C compares their energy, and correlation quality Q their overlap; both are 1 when a = t:',
-        '$$ C = ⟨a^2⟩ / ⟨t^2⟩,     Q = ⟨t a⟩ / ⟨t^2⟩,     F = 2Q − C',
-        'We follow where each stays within 20% of its aligned value (F ≥ 0.8, Q ≥ 0.8, C ≤ 1.2), with the misalignment in units '
-        'of the spot, x_c NA/λ across a beam and z_c NA^2/nλ along it. For 2PE, misalignments along the fringes are in λ/n, the scale of the fringes.',
-        'In these units the scalar 2CE maps are the same at all NAs, so a change in the vector maps comes from high NA itself.'],
+    eqslide('Linfoot’s criteria', 'Fidelity, structural content and correlation quality compare the misaligned PSF with the '
+            'aligned PSF over the window.', [
+        (FCQ, 't = aligned PSF; a = misaligned PSF, each scaled to its own peak; ⟨ ⟩ = mean over the window.'),
+        (r'2Q - C = F', 'each criterion is 1 when a = t; we follow where each stays within 20%: F ≥ 0.8, Q ≥ 0.8, C ≤ 1.2.'),
+        (SPOT, 'misalignment in units of the spot; for 2PE, misalignments along the fringes are in λ/n. In these units scalar 2CE '
+               'gives the same map at all NAs.')],
         'Linfoot’s three criteria compare the misaligned PSF with the aligned one.',
-        'F is one minus the normalized mean squared difference, C the ratio of energies, Q the normalized overlap. Measured in '
-        'units of the spot, a spot that only shrinks with NA gives the same map at all NAs.',
-        r'''F = 1 - \frac{\langle (t-a)^2 \rangle}{\langle t^2 \rangle}, \quad C = \frac{\langle a^2 \rangle}{\langle t^2 \rangle}, \quad Q = \frac{\langle t\,a \rangle}{\langle t^2 \rangle}, \quad F = 2Q - C
-\tilde{x} = \frac{x_c\,\mathrm{NA}}{\lambda}, \qquad \tilde{z} = \frac{z_c\,\mathrm{NA}^2}{n\lambda}''', size=12.5)
+        'Measured in units of the spot, a spot that only shrinks with NA gives the same map at all NAs.',
+        '\n'.join((FCQ, r'2Q - C = F', SPOT)),
+        side=('F, C and Q', ['F, fidelity: overall similarity; 1 − normalized mean-squared error.', '',
+                             'C, structural content: relative energy; rises above 1 for a broader PSF.', '',
+                             'Q, correlation quality: overlap of the two PSFs.']), size=16)
 
 
 CASES = [('2ce_pi', '2CE, θ = π'), ('2ce_pi2', '2CE, θ = π/2'), ('2pe_pi', '2PE, θ = π'), ('2pe_pi2', '2PE, θ = π/2')]
@@ -511,16 +538,17 @@ elif SECTION == 'gaussian':
     title('Part 4: Vector 2CE, Gaussian input', 'Both lenses filled by a Gaussian beam, truncation parameter α_t = 4')
     summary(*SUMMARIES['gaussian'])
     geometry(); vector_fields()
-    words('Gaussian input: the pupil of both beams', [
-        'The Gaussian input multiplies the field in the pupil of each lens by',
-        '$$ A(β) = exp(−α_t sin^2β / sin^2α),     sin α = NA/n',
-        'In scalar 2CE this is exp(−α_t ρ^2), with ρ the radius in the pupil over its edge.',
-        'α_t = 0 is uniform input, as in scalar 2CE. At α_t = 4 the field at the edge of the pupil is e^{−4}, about 2% of the '
-        'centre.',
-        'The same α_t is used on both lenses and for both wavelengths.'],
+    eqslide('Gaussian input: the pupil of both beams', 'Each lens is filled by a Gaussian beam truncated at α_t = 4; the '
+            'same pupil amplitude on both lenses and for both wavelengths.', [
+        (r'A(\beta) = \exp\left(-\alpha_t\, \frac{\sin^2\beta}{\sin^2\alpha}\right), \qquad \sin\alpha = \mathrm{NA}/n',
+         'A(β) = pupil amplitude in the Richards–Wolf integrals; α_t = truncation parameter; 0 is uniform input.'),
+        (r'A(\rho) = e^{-\alpha_t \rho^2}', 'the same amplitude in scalar 2CE, with ρ = radius in the pupil over its edge.'),
+        (r'A(\rho = 1) = e^{-4} \approx 0.02 \quad (\alpha_t = 4)', 'the field at the edge of the pupil is about 2% of the '
+                                                                     'centre, so the steepest rays carry little light.')],
         'Each lens is filled by a Gaussian beam truncated at alpha_t = 4.',
-        'The apodization enters the Richards–Wolf integrals as A(beta). With alpha_t = 4 the edge of the pupil is dim.',
-        r'A(\beta) = \exp\!\left(-\alpha_t \frac{\sin^2\beta}{\sin^2\alpha}\right), \quad \sin\alpha = \mathrm{NA}/n, \qquad A = e^{-\alpha_t \rho^2}\ (\text{paraxial})')
+        'The apodization enters the Richards–Wolf integrals as A(beta).',
+        r'A(\beta) = \exp\!\left(-\alpha_t \frac{\sin^2\beta}{\sin^2\alpha}\right), \quad \sin\alpha = \mathrm{NA}/n \qquad A(\rho) = e^{-\alpha_t \rho^2}',
+        fig=SL('pupil_apodization.png'), size=17)
     wide('Check: uniform input is the limit α_t → 0', os.path.join(FIG, 'axial_lim_vs_truncation.png'), [
         'The scalar focus along the axis for several α_t. As α_t decreases the focus returns to the uniform focus; at α_t = 0.5 '
         'the two already overlap.'],
@@ -554,21 +582,18 @@ elif SECTION == 'delay':
     title('Part 5: Delay in time', 'A delay Δt between two continuous beams, scalar 2CE, NA 0.5')
     summary(*SUMMARIES['delay'])
     geometry(); scalar_fields()
-    words('Delay between continuous beams', [
-        'Delaying beam 2 by Δt multiplies its field by a phase φ = ωΔt = 2πcΔt/λ:',
-        '$$ U_2(P, t − Δt) = U_2(P, t) e^{iφ}',
-        '2CE uses the intensity of beam 2, which does not depend on φ:',
-        '$$ F_{2c} = κ_{2c} I_1 |U_2 e^{iφ}|^2 = κ_{2c} I_1 I_2',
-        '2PE adds the two fields, so φ enters through their interference:',
-        '$$ F_{2p} = κ_{2p} |U_1 + U_2 e^{iφ}|^4,     |U_1 + U_2 e^{iφ}|^2 = I_1 + I_2 + 2|U_1 U_2| cos(K·r − φ)',
-        'K is the fringe wavevector, |K| = 2k sin(θ/2): a delay moves the fringes, and nothing else.'],
+    D1 = r'U_2(P, t - \Delta t) = U_2(P, t)\, e^{i\phi}, \qquad \phi = \omega\Delta t = \frac{2\pi c\,\Delta t}{\lambda}'
+    D2 = r'F_{2c} = \kappa_{2c}\, I_1 \left|U_2 e^{i\phi}\right|^2 = \kappa_{2c}\, I_1 I_2'
+    D3 = r'\left|U_1 + U_2 e^{i\phi}\right|^2 = I_1 + I_2 + 2|U_1 U_2| \cos(\mathbf{K}\cdot\mathbf{r} - \phi)'
+    eqslide('Delay between continuous beams', 'A delay of a continuous beam is a phase: 2CE does not see it, the 2PE fringes '
+            'move with it.', [
+        (D1, 'Δt = delay of beam 2; φ = phase it adds; c = speed of light; λ = vacuum wavelength.'),
+        (D2, '2CE multiplies intensities, which do not carry the phase.'),
+        (D3, '2PE adds the fields, F_{2p} = κ_{2p}|U_1 + U_2 e^{iφ}|^4; K = fringe wavevector, |K| = 2k sin(θ/2): the delay moves '
+             'the fringes.')],
         'A delay is a phase: 2CE does not see it, 2PE fringes move with it.',
         'For continuous beams a delay is a constant phase on beam 2. The two-color signal uses only intensities. The two-photon '
-        'signal contains the interference term, whose fringes shift with the phase.',
-        r'''U_2(P,t-\Delta t) = U_2(P,t)\,e^{i\phi}, \qquad \phi = \omega\Delta t = 2\pi c\,\Delta t/\lambda
-F_{2c} = \kappa_{2c} I_1 |U_2 e^{i\phi}|^2 = \kappa_{2c} I_1 I_2
-F_{2p} = \kappa_{2p} |U_1 + U_2 e^{i\phi}|^4, \qquad |U_1 + U_2 e^{i\phi}|^2 = I_1 + I_2 + 2|U_1 U_2|\cos(\mathbf{K}\cdot\mathbf{r} - \phi)''',
-        size=12.5)
+        'signal contains the interference term, whose fringes shift with the phase.', '\n'.join((D1, D2, D3)), size=17)
     words('Choice of delays: φ = 0, π/2, π', [
         'The effect of a delay repeats with each optical period: φ = 2π is Δt = λ/c, 2.33 fs at 700 nm.',
         'φ and 2π − φ give the same loss, so φ from 0 to π covers all delays.',
@@ -590,31 +615,30 @@ elif SECTION == 'delay_space':
     title('Part 6: Delay in time against misalignment in space', 'A delay of the 2PE beams compared with a misalignment of O′')
     summary(*SUMMARIES['delay_space'])
     geometry(); scalar_fields()
-    words('Delay in time as a shift of the fringes', [
-        'The 2PE fringes vary as cos(K·r − φ), with K = k(k̂_1 − k̂_2) and |K| = 2k sin(θ/2); k̂_1, k̂_2 are the directions of the '
-        'two beams.',
-        'A delay Δt gives φ = ωΔt and moves the fringes along K by',
-        '$$ Δs = φ / |K| = cΔt / [2n sin(θ/2)]',
-        'Facing lenses (θ = π): the standing wave moves along z by cΔt/2n.',
-        'Crossed lenses (θ = π/2): the fringes take the same phase as a misalignment x_c = cΔt/n along beam 2, or z_c = cΔt/n '
-        'along beam 1.'],
+    K1 = r'\mathbf{K} = k\left(\hat{\mathbf{k}}_1 - \hat{\mathbf{k}}_2\right), \qquad |\mathbf{K}| = 2k\sin(\theta/2)'
+    K2 = r'\Delta s = \frac{\phi}{|\mathbf{K}|} = \frac{c\,\Delta t}{2n\sin(\theta/2)}'
+    K3 = r'\theta = \pi:\ \Delta z = \frac{c\,\Delta t}{2n}, \qquad \theta = \pi/2:\ x_c = z_c = \frac{c\,\Delta t}{n}'
+    eqslide('Delay in time as a shift of the fringes', 'A delay moves the 2PE fringes along K; at θ = π/2 it matches a '
+            'misalignment of cΔt/n.', [
+        (K1, 'k̂_1, k̂_2 = directions of the two beams; k = 2πn/λ; the 2PE fringes vary as cos(K·r − φ).'),
+        (K2, 'Δs = shift of the fringes along K for a delay Δt.'),
+        (K3, 'the misalignment that gives the fringes the same phase as the delay.')],
         'A delay moves the 2PE fringes by c Delta t over 2n sin(theta/2).',
         'The fringe pattern of two plane waves has wavevector K, the difference of the two wavevectors. A phase phi moves it by '
-        'phi over the magnitude of K.',
-        r'''\Delta s = \frac{\phi}{|\mathbf{K}|} = \frac{c\,\Delta t}{2n\sin(\theta/2)}, \qquad \mathbf{K} = k(\hat{\mathbf{k}}_1 - \hat{\mathbf{k}}_2)
-\theta = \pi/2: \quad x_c = z_c = c\,\Delta t/n''', size=12.5)
-    words('Misalignment in space as a phase', [
-        'Moving O′ by d changes the phase of the fringe at the centre r_c of the overlap of the two beams by',
-        '$$ φ_{eq} = K·r_c + k k̂_2·d',
-        'k k̂_2·d is the phase beam 2 gains by moving along its own direction; K·r_c is the fringe phase where the beams now '
-        'overlap.',
-        'A delay with ωΔt = φ_{eq} puts a bright fringe back on the peak.',
-        'θ = π/2: x_c = 0.5 λ_{2p} and z_c = 0.5 λ_{2p} both give φ_{eq} = π. θ = π: a misalignment along z gives φ_{eq} = 0, so the '
-        'fringe at the centre stays bright and the peak barely drops.'],
+        'phi over the magnitude of K.', '\n'.join((K1, K2, K3)), size=17)
+    P1 = r'\phi_{eq} = \mathbf{K}\cdot\mathbf{r}_c + k\,\hat{\mathbf{k}}_2\cdot\mathbf{d}'
+    P2 = r'\omega\,\Delta t = \phi_{eq}'
+    eqslide('Misalignment in space as a phase', 'A misalignment changes the phase of the fringe at the peak; a delay of the '
+            'same phase cancels it.', [
+        (P1, 'd = misalignment of O′; r_c = centre of the overlap of the two beams; k k̂_2·d = phase beam 2 gains by moving along '
+             'its own direction; K·r_c = fringe phase where the beams now overlap.'),
+        (P2, 'a delay with this phase puts a bright fringe back on the peak.')],
         'A misalignment changes the fringe phase at the peak by phi_eq; a delay can cancel it.',
         'The phase has two parts: beam 2 moving along its own direction, and the overlap of the two beams moving to another '
-        'fringe. At theta = pi the two cancel for a misalignment along z.',
-        r'\phi_{eq} = \mathbf{K}\cdot\mathbf{r}_c + k\,\hat{\mathbf{k}}_2\cdot\mathbf{d}', size=12.5)
+        'fringe. At theta = pi the two cancel for a misalignment along z.', '\n'.join((P1, P2)),
+        side=('Cases', ['θ = π/2: x_c = 0.5 λ_{2p} or z_c = 0.5 λ_{2p} gives φ_{eq} = π.', '',
+                        'θ = π, misalignment along z: the two terms cancel, φ_{eq} = 0, so the fringe at the centre stays bright '
+                        'and the peak barely drops.']), size=18)
     side('Delay and misalignment, 2PE, θ = π/2', PD('time_vs_space.png'), [
         'Peak lost against the delay Δt (bottom axis) and against a misalignment cΔt/n of the same phase (top axis). Up to half '
         'a period the curves follow each other. Beyond it the misalignment also moves the overlap of the two foci, so its loss '

@@ -215,3 +215,47 @@ def keynote_fonts():
         else:                                                          # raw theme (slide master)
             part._blob = (part.blob.replace(b'typeface="Calibri Light"', b'typeface="Helvetica Neue"')
                           .replace(b'typeface="Calibri"', b'typeface="Helvetica Neue"'))
+
+
+# ── numbered equations, rendered as LaTeX (matplotlib mathtext, STIX) ──
+EQN = [0]                                            # equation counter for the deck
+EQDIR = os.path.join(FIG, 'equations')
+
+
+def eq_image(tex, size=18):
+    """Render one LaTeX line to a transparent PNG at 600 dpi; return (path, width in, height in) at `size` pt."""
+    import hashlib
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    os.makedirs(EQDIR, exist_ok=True)
+    path = os.path.join(EQDIR, hashlib.md5(f'{tex}|{size}'.encode()).hexdigest()[:16] + '.png')
+    if not os.path.exists(path):
+        with matplotlib.rc_context({'mathtext.fontset': 'stix', 'font.family': 'STIXGeneral'}):
+            fig = plt.figure(figsize=(0.01, 0.01))
+            fig.text(0, 0, '$' + tex.replace(r'\frac', r'\dfrac') + '$', fontsize=size, color='#14213D')
+            fig.savefig(path, dpi=600, transparent=True, bbox_inches='tight', pad_inches=0.02)
+            plt.close(fig)
+    w, h = Image.open(path).size
+    return path, w / 600, h / 600
+
+
+def equation(s, l, t, w, tex, size=18, number=True):
+    """A displayed equation at (l, t) inside width w, with its number (n) right-aligned; returns its height (in)."""
+    path, iw, ih = eq_image(tex, size)
+    k = min(1.0, (w - (0.6 if number else 0)) / iw)  # shrink only if it does not fit
+    s.shapes.add_picture(path, Inches(l), Inches(t), Inches(iw * k), Inches(ih * k))
+    if number:
+        EQN[0] += 1
+        text(s, l + w - 0.55, t, 0.55, ih * k, f'({EQN[0]})', 13, GREY, anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.RIGHT)
+    return ih * k
+
+
+def where(s, l, t, w, txt, size=10):
+    """The 'where …' line under an equation, as in the style deck."""
+    lines = -(-len('where ' + txt) // int(w * 15.5 * 10 / size))     # ceiling: ~15.5 characters per inch at 10 pt
+    tf = text(s, l, t, w, 0.17 * lines, '', size, GREY)
+    p = tf.paragraphs[0]
+    runs(p, 'where ', size, NAVY, bold=True)
+    runs(p, txt, size, GREY)
+    return 0.17 * lines + 0.06                        # height used

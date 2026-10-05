@@ -83,7 +83,7 @@ def frame(ax, title):
     ax.text(0.2, 5.75, 'z', fontsize=28, va='center')
 
 
-fig, axes = plt.subplots(2, 2, figsize=(24.0, 22.0))
+fig, axes = plt.subplots(2, 2, figsize=(12.0, 11.0))
 axes = axes.ravel()
 L1TXT, L2TXT = 'λ$_1$ = 750 nm', 'λ$_2$ = 656 nm'
 
@@ -119,5 +119,5 @@ for a in axes:
 plt.tight_layout()
 save_panels(fig, fig.axes, os.path.join(OUT, 'panels'), 'setup')
 out = os.path.join(OUT, 'setup.png')
-fig.savefig(out, dpi=300, bbox_inches='tight')
+fig.savefig(out, dpi=600, bbox_inches='tight')
 print('Saved ->', out)

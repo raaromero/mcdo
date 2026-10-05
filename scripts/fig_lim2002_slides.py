@@ -342,6 +342,19 @@ def pulse_spectra():
     save(fig, 'pulse_spectra.png')
 
 
+# ── pupil amplitude of the Gaussian input (Part 4) ──
+def pupil_apodization():
+    rho = np.linspace(0, 1, 401)
+    fig, ax = plt.subplots(figsize=(6.4, 6.4))
+    for at, col, ls in ((0, 'k', '-'), (1, '#9467bd', '--'), (2, BLUE, '-.'), (4, RED, '-')):
+        ax.plot(rho, np.exp(-at * rho ** 2), ls, color=col, lw=4, label=f'α$_t$ = {at}')
+    ax.set_xlabel('Pupil radius ρ'); ax.set_ylabel('Amplitude A')
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1.05)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.45, -0.2), ncol=2, frameon=False)
+    plt.tight_layout()
+    save(fig, 'pupil_apodization.png')
+
+
 if __name__ == '__main__':
     for suf, n in (('', 1.0), ('_at4', 1.0), ('_n1.33', 1.33), ('_at4_n1.33', 1.33)):
         for key in ('pi', 'pi2'):
@@ -362,3 +375,4 @@ if __name__ == '__main__':
     axial_checks()
     polarization()
     pulse_spectra()
+    pupil_apodization()
