@@ -419,7 +419,8 @@ def peaks(suf):
 
 
 DECIDE = ['Crossed lenses above NA n sin(θ/2) (0.71 in air): report the computed values, or stop at that NA.',
-          'Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.']
+          'Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.',
+          'Optical pulses: how to account for the range of wavelengths in each pulse.']
 NEXT = ['Optical pulses: the 2CE signal as the overlap in time of two focused pulses, and how to account for the range of '
         'wavelengths in each pulse.']
 
@@ -489,23 +490,36 @@ PART_TITLE = {'replication': 'Part 1: Replication of scalar 2CE', 'vector': 'Par
 # ══ sections ═════════════════════════════════════════════════════════════
 if SECTION == 'overview':
     title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and time delay')
-    summary(*SUMMARIES['overview'])
-    s_ = slide('Summary by section', '')
-    bullets(s_, 0.6, 1.1, 8.9, 4.1, [f'{PART_TITLE[k].split(": ", 1)[1]}: {SUMMARIES[k][0]}' for k in PART_TITLE], 12)
-    notes(s_, 'The main point of each section.', ' '.join(SUMMARIES[k][3] for k in PART_TITLE))
-    words('Things to clarify', DECIDE, 'Two choices to make before the next results.',
-          'The crossed-lens limit and the polarization of the beams.')
-    wide('To clarify: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
+    words('Things done', [
+        'Part 1: Replication of scalar 2CE.',
+        '– Rebuilt from its equations, the model reproduces the figures and reported losses: 2CE is more robust against '
+        'misalignment than 2PE, most of all with crossed beams.',
+        'Part 2: Vector 2CE, uniform input, against NA.',
+        '– The alignment tolerances shrink as NA grows, as 1/NA across the axis and 1/NA^2 along it; scalar 2CE agrees within 5% '
+        'up to NA 0.45.',
+        'Part 3: Linfoot’s criteria against NA.',
+        '– At high NA the 2CE PSF keeps its shape over a smaller range of misalignments than scalar 2CE predicts.',
+        'Part 4: Vector 2CE, Gaussian input.',
+        '– The tolerances are about 1.4 times larger than with uniform input, and scalar 2CE holds to NA 0.525.',
+        'Part 5: Time delay between continuous beams.',
+        '– A time delay leaves the 2CE PSF unchanged and shifts the 2PE fringes, as a misalignment of cΔt/n does.'],
+        'Five parts, each with its main result.',
+        ' '.join(SUMMARIES[k][3] for k in PART_TITLE), size=12.5)
+    words('Next steps', NEXT, 'Next: optical pulses.', 'The pulsed 2CE study.')
+    words('Things to consider for the next steps', DECIDE, 'Three points to settle before the next results.',
+          'The crossed-lens limit, the polarization of the beams, and the wavelengths in a pulse.')
+    wide('To consider: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
         'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
         'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
         'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
-    wide('To clarify: polarization of the two beams', SL('polarization_spot.png'), [
+    wide('To consider: polarization of the two beams', SL('polarization_spot.png'), [
         'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
-        'across the axis can depend on the polarization. To decide: keep unpolarized beams, or account for linear polarization.'],
+        'across the axis depend on how the misalignment is oriented. To decide: keep unpolarized (circular) beams, or account '
+        'for linear polarization.'],
         'At high NA the spot depends on the polarization.',
-        'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 they differ.')
-    words('Next step', NEXT, 'Next: optical pulses.', 'The pulsed 2CE study.')
-    wide('Next step: optical pulses', SL('pulse_spectra.png'), [
+        'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 the spot is about 1.35 times '
+        'wider along the polarization.')
+    wide('To consider: wavelengths in an optical pulse', SL('pulse_spectra.png'), [
         'A pulse contains a range of wavelengths, wider for shorter pulses. The 750 and 656 nm spectra overlap for pulses below '
         'about 8 fs. To settle: how to account for the range of wavelengths in each pulse.'],
         'A short pulse is a range of wavelengths; how to account for it is open.',
