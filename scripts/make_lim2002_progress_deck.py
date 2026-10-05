@@ -204,7 +204,7 @@ def linfoot():
         'Structural content C compares their energy, and correlation quality Q their overlap; both are 1 when a = t:',
         '$$ C = ⟨a^2⟩ / ⟨t^2⟩,     Q = ⟨t a⟩ / ⟨t^2⟩,     F = 2Q − C',
         'We follow where each stays within 20% of its aligned value (F ≥ 0.8, Q ≥ 0.8, C ≤ 1.2), with the misalignment in units '
-        'of the spot, x_c NA/λ across a beam and z_c NA^2/nλ along it. For 2PE we use λ/n, the scale of the fringes.',
+        'of the spot, x_c NA/λ across a beam and z_c NA^2/nλ along it. For 2PE, misalignments along the fringes are in λ/n, the scale of the fringes.',
         'In these units the scalar 2CE maps are the same at all NAs, so a change in the vector maps comes from high NA itself.'],
         'Linfoot’s three criteria compare the misaligned PSF with the aligned one.',
         'F is one minus the normalized mean squared difference, C the ratio of energies, Q the normalized overlap. Measured in '
@@ -228,7 +228,7 @@ LINF = {   # (case, criterion): what the map shows, with uniform input
     ('2ce_pi2', 'Q'): 'Q ≥ 0.8 in a band around z_c = 0; the band changes little with NA near the aligned point.',
     ('2pe_pi', 'F'): 'The 2PE region F ≥ 0.8 is set by the standing-wave fringes, whose spacing λ_{2p}/2n does not depend on '
                      'NA, and changes little with NA.',
-    ('2pe_pi', 'C'): 'C stays within 20% for x_c up to about a third of λ/n, set by the fringes, and changes little with NA.',
+    ('2pe_pi', 'C'): 'C stays within 20% for x_c up to about 0.35 spot units (x_c NA/λ) and changes little with NA.',
     ('2pe_pi', 'Q'): 'Q ≥ 0.8 near the aligned point and again near the next fringes; both change little with NA.',
     ('2pe_pi2', 'F'): 'With crossed beams the regions F ≥ 0.8 repeat with the fringes, one wavelength apart, and change little '
                       'with NA.',
@@ -247,7 +247,7 @@ LINF_G = {   # the same maps with Gaussian input (α_t = 4)
                       'into an ellipse.',
     ('2ce_pi2', 'Q'): 'Q ≥ 0.8 in a band around z_c = 0, about ±0.3 spot units wide, which changes little with NA.',
     ('2pe_pi', 'F'): 'As with uniform input, the region F ≥ 0.8 is set by the standing-wave fringes and changes little with NA.',
-    ('2pe_pi', 'C'): 'C stays within 20% for x_c up to about 0.4 λ/n, set by the fringes, and changes little with NA.',
+    ('2pe_pi', 'C'): 'C stays within 20% for x_c up to about 0.4 spot units (x_c NA/λ) and changes little with NA.',
     ('2pe_pi', 'Q'): 'Q ≥ 0.8 in a band around z_c = 0, about ±0.15 λ/n wide, which changes little with NA.',
     ('2pe_pi2', 'F'): 'With crossed beams the regions F ≥ 0.8 repeat with the fringes, one wavelength apart, and change little '
                       'with NA.',
@@ -297,7 +297,10 @@ def maps(suf, tag):
     for (no, t), (lab, line) in FIGTXT.items():
         na2 = '0.7' if 'π/2' in lab else '0.9'
         where = {2: 'aligned foci', 3: 'O′ at (0.4, 1.0) µm', 4: 'peak against the misalignment (x_c, z_c)'}[no]
-        if suf:
+        if suf and no == 4:
+            line = ('With the Gaussian input the region that keeps the peak is larger than with uniform input at the same NA, '
+                    'and it shrinks in the same way as NA grows.')
+        elif suf:
             line = ('With the Gaussian input the spot is wider and longer than with uniform input at the same NA, and it shrinks '
                     'in the same way as NA grows.')
         wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line],
