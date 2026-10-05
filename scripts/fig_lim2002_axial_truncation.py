@@ -60,16 +60,15 @@ fig, axes = plt.subplots(1, 2, figsize=(18.2, 6.0))     # twice its width on the
 cols = {0.5: '#ff7f0e', 1: '#2ca02c', 2: '#9467bd', 4: '#d62728'}
 for a, na in zip(axes, (0.3, 0.5)):
     z, I = axial(na, 0, 'scalar')
-    a.plot(z, I, '-', color='k', lw=5, label='Lim & Saloma (uniform)')
+    a.plot(z, I, '-', color='k', lw=5, label='Uniform input')
     for at in (0.5, 1, 2, 4):
         z, I = axial(na, at, 'scalar')
         a.plot(z, I, '--', color=cols[at], lw=3.5, label=f'α$_t$ = {at}')
-    a.set_xlabel('z (µm)'); a.set_ylabel('On-axis intensity, normalized')
+    a.set_xlabel('z (µm)'); a.set_ylabel('On-axis intensity')
     a.set_title(f'NA {na}')
     a.set_ylim(0, 1.05)
 h, l = axes[0].get_legend_handles_labels()
 fig.legend(h, l, loc='lower center', ncol=5, bbox_to_anchor=(0.5, -0.14), frameon=False)
-fig.suptitle('Paraxial scalar focus against the truncation α$_t$', fontsize=32, y=1.04)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'axial_lim_vs_truncation.png'), dpi=600, bbox_inches='tight')
 plt.close(fig)

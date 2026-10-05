@@ -1,5 +1,5 @@
 r"""Slide style shared by the Lim & Saloma (2002) decks: 16:9 at 10 × 5.625 in,
-navy title slide, three colored dots, Cambria titles with a one-line takeaway,
+navy title slide, three colored dots, Helvetica Neue titles with a one-line takeaway,
 grey cards, framed figures and a MAIN POINT speaker script in the notes, after
 ~/Downloads/lim02_2ce_presentation.pptx.
 
@@ -39,7 +39,7 @@ BLANK = prs.slide_layouts[6]
 
 # ── primitives ────────────────────────────────────────────────────────────
 
-def runs(p, text, size, color=NAVY, bold=False, font='Calibri', italic=False):
+def runs(p, text, size, color=NAVY, bold=False, font='Helvetica Neue', italic=False):
     """Add text to paragraph p, rendering _x, _{..}, ^x, ^{..} as sub/superscripts."""
     for part in TOK.split(text):
         if not part:
@@ -55,7 +55,7 @@ def runs(p, text, size, color=NAVY, bold=False, font='Calibri', italic=False):
             f._element.set('baseline', str(base))
 
 
-def text(s, l, t, w, h, txt, size, color=NAVY, bold=False, font='Calibri',
+def text(s, l, t, w, h, txt, size, color=NAVY, bold=False, font='Helvetica Neue',
          anchor=MSO_ANCHOR.TOP, align=None, italic=False):
     tf = s.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h)).text_frame
     tf.word_wrap = True
@@ -70,11 +70,21 @@ def text(s, l, t, w, h, txt, size, color=NAVY, bold=False, font='Calibri',
 
 
 def bullets(s, l, t, w, h, items, size=12.5, color=NAVY, bold=False):
-    """Bulleted list as in the style deck: • with hanging indent, 8 pt after; '– ' items are sub-bullets."""
+    """Bulleted list as in the style deck: • with hanging indent, 8 pt after; '– ' items are sub-bullets;
+    '$$ ' items are equations on their own line, without a bullet."""
     tf = s.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h)).text_frame
     tf.word_wrap = True
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
     for i, it in enumerate(items):
+        if it.startswith('$$ '):                          # '$$ equation': a displayed line, no bullet
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            pPr = p._p.get_or_add_pPr()
+            pPr.set('marL', '457200'); pPr.set('indent', '0')
+            spc = pPr.makeelement(qn('a:spcAft'), {}); spc.append(spc.makeelement(qn('a:spcPts'), {'val': '600'}))
+            pPr.append(spc)
+            pPr.append(pPr.makeelement(qn('a:buNone'), {}))
+            runs(p, it[3:], size, color, font='STIX Two Math')
+            continue
         sub = it.startswith('– ')                         # '– text': a sub-bullet under the item above
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         pPr = p._p.get_or_add_pPr()
@@ -118,13 +128,14 @@ PAGE = [0]
 
 
 def slide(title, takeaway):
-    """White content slide: dots, Cambria title, purple takeaway, footer."""
+    """White content slide: dots, Helvetica Neue title, purple takeaway, footer."""
     s = prs.slides.add_slide(BLANK)
     s.background.fill.solid(); s.background.fill.fore_color.rgb = WHITE
     PAGE[0] += 1
     dots(s, 0.5, 0.42, 0.13, 0.2)
-    text(s, 1.2, 0.28, 8.6, 0.45, title, 24, NAVY, True, 'Cambria', MSO_ANCHOR.MIDDLE)
-    text(s, 0.5, 0.78, 9.0, 0.5, takeaway, 13, PURPLE)
+    text(s, 1.2, 0.28, 8.6, 0.45, title, 24, NAVY, True, 'Helvetica Neue', MSO_ANCHOR.MIDDLE)
+    if takeaway:                                     # most slides carry no subtitle
+        text(s, 0.5, 0.78, 9.0, 0.5, takeaway, 13, PURPLE)
     if CITE:                                         # a deck may leave the footer citation off (empty CITE)
         text(s, 0.5, 5.28, 6.0, 0.22, CITE, 8.5, GREY)
     text(s, 9.0, 5.28, 0.5, 0.22, str(PAGE[0] + 1), 8.5, GREY)
@@ -133,7 +144,7 @@ def slide(title, takeaway):
 
 def card(s, l, t, w, h, heading, hcolor, items, size=12, bulleted=True):
     shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, t, w, h, CARD)
-    text(s, l + 0.2, t + 0.12, w - 0.4, 0.35, heading, 14, hcolor, True, 'Cambria')
+    text(s, l + 0.2, t + 0.12, w - 0.4, 0.35, heading, 14, hcolor, True, 'Helvetica Neue')
     if bulleted:
         bullets(s, l + 0.2, t + 0.55, w - 0.4, h - 0.65, items, size)
     else:
@@ -167,14 +178,14 @@ def verdict(s, ok):
 
 def stat(s, l, t, value, vcolor, lines):
     shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, t, 2.9, 1.35, CARD)
-    text(s, l, t + 0.05, 1.45, 0.8, value, 34 if len(value) <= 5 else 28, vcolor, True, 'Cambria', MSO_ANCHOR.MIDDLE,
+    text(s, l, t + 0.05, 1.45, 0.8, value, 34 if len(value) <= 5 else 28, vcolor, True, 'Helvetica Neue', MSO_ANCHOR.MIDDLE,
          PP_ALIGN.CENTER)                             # a longer value steps down so it stays on one line
     text(s, l + 1.45, t + 0.15, 1.4, 1.1, lines, 10.5, NAVY, True)
 
 
 def numbered(s, n, color, t, txt, size=13):
     shape(s, MSO_SHAPE.OVAL, 0.6, t, 0.45, 0.45, color)
-    text(s, 0.6, t, 0.45, 0.45, str(n), 15, WHITE, True, 'Cambria', MSO_ANCHOR.MIDDLE, PP_ALIGN.CENTER)
+    text(s, 0.6, t, 0.45, 0.45, str(n), 15, WHITE, True, 'Helvetica Neue', MSO_ANCHOR.MIDDLE, PP_ALIGN.CENTER)
     text(s, 1.3, t - 0.02, 8.2, 0.55, txt, size, NAVY, anchor=MSO_ANCHOR.MIDDLE)
 
 
@@ -189,3 +200,18 @@ def compare(title, takeaway, orig, ours, ok, items, caption, main, script, latex
     text(s, 0.45, 4.85, 6.5, 0.4, caption, 9, GREY)
     notes(s, main, script, latex)
     return s
+
+
+def keynote_fonts():
+    """Name Helvetica Neue in every theme (the notes theme is created only with the first notes), so Keynote
+    opens the file without a missing-font warning. Call just before saving."""
+    for part in prs.part.package.iter_parts():
+        if '/theme/' not in part.partname:
+            continue
+        if hasattr(part, '_element'):                                  # parsed theme (notes master)
+            for el in part._element.iter():
+                if el.get('typeface') in ('Calibri', 'Calibri Light'):
+                    el.set('typeface', 'Helvetica Neue')
+        else:                                                          # raw theme (slide master)
+            part._blob = (part.blob.replace(b'typeface="Calibri Light"', b'typeface="Helvetica Neue"')
+                          .replace(b'typeface="Calibri"', b'typeface="Helvetica Neue"'))
