@@ -68,7 +68,7 @@ if PART in ('all', 'phase'):
         axes[1].plot(r[:, 0] / np.pi, r[:, 2], ls, color=c, lw=4)
     axes[0].set_ylabel('Peak lost (%)'); axes[1].set_ylabel('Fidelity F')
     for ax in axes:
-        ax.set_xlabel('Phase φ = ωΔt (π)'); ax.set_xlim(0, 2); ax.set_xticks([0, 0.5, 1, 1.5, 2])
+        ax.set_xlabel('Phase φ = ωΔt (π);  φ = π at Δt = 1.17 fs'); ax.set_xlim(0, 2); ax.set_xticks([0, 0.5, 1, 1.5, 2])
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False)
     plt.tight_layout()
@@ -90,28 +90,31 @@ if PART in ('all', 'space'):
     Xs, Zs = np.meshgrid(np.linspace(-1, 1, 101), np.linspace(-5, 5, 251))   # coarser: one beam 2 per misalignment
     U1, U0 = beam_field(Xs, Zs, L2P, NA, theta=0.0), beam_field(Xs, Zs, L2P, NA, theta=np.pi / 2)
     ref = (np.abs(U1 + U0) ** 4).max()
-    PHS = np.linspace(0, 2 * np.pi, 17)                         # 17 delays: each misalignment needs its own beam 2
+    PHS = np.linspace(0, 2 * np.pi, 41)
     dts = PHS / (2 * np.pi) * T
-    lost_t = [100 * (1 - (np.abs(U1 + U0 * np.exp(1j * f)) ** 4).max() / ref) for f in PHS]
     ds = C * dts                                                # equivalent misalignment cΔt/n, n = 1 (µm)
-    lost_x = [100 * (1 - (np.abs(U1 + beam_field(Xs, Zs, L2P, NA, theta=np.pi / 2, xc=d)) ** 4).max() / ref) for d in ds]
-    lost_z = [100 * (1 - (np.abs(U1 + beam_field(Xs, Zs, L2P, NA, theta=np.pi / 2, zc=d)) ** 4).max() / ref) for d in ds]
+    if os.environ.get('REPLOT') == '1':                          # redraw from the saved losses
+        _, _, lost_t, lost_x, lost_z = np.loadtxt(os.path.join(OUT, 'time_vs_space.csv'), delimiter=',').T
+    else:
+        lost_t = [100 * (1 - (np.abs(U1 + U0 * np.exp(1j * f)) ** 4).max() / ref) for f in PHS]
+        lost_x = [100 * (1 - (np.abs(U1 + beam_field(Xs, Zs, L2P, NA, theta=np.pi / 2, xc=d)) ** 4).max() / ref) for d in ds]
+        lost_z = [100 * (1 - (np.abs(U1 + beam_field(Xs, Zs, L2P, NA, theta=np.pi / 2, zc=d)) ** 4).max() / ref) for d in ds]
     with open(os.path.join(OUT, 'time_vs_space.csv'), 'w') as fh:
         fh.write('# dt_fs,equivalent_offset_um,lost_delay_pct,lost_xc_pct,lost_zc_pct\n')
         for r in zip(dts, ds, lost_t, lost_x, lost_z):
             fh.write(','.join(f'{v:.6f}' for v in r) + '\n')
 
-    fig, ax = plt.subplots(figsize=(11.0, 7.4))
-    ax.plot(dts, lost_t, '-', color='#1f77b4', lw=4, label='Delay Δt (bottom axis)')
-    ax.plot(dts, lost_x, '--', color='#d62728', lw=4, label='Misalignment x$_c$ (top axis)')
-    ax.plot(dts, lost_z, ':', color='#2ca02c', lw=4, label='Misalignment z$_c$ (top axis)')
-    for f in (0.5, 1.0, 1.5):
-        ax.axvline(f * T / 2, color='#999999', lw=1.5)
-    ax.set_xlim(0, T); ax.set_ylim(0, 35)
-    ax.set_xlabel('Delay Δt (fs)'); ax.set_ylabel('2PE peak lost (%)')
-    top = ax.secondary_xaxis('top', functions=(lambda t: C * t / L2P, lambda s: s * L2P / C))
-    top.set_xlabel('Misalignment cΔt/n (λ$_{2p}$)')
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
+    s_ = PHS / (2 * np.pi)                                      # Δt/T = misalignment/λ_2p: one shared axis
+    fig, ax = plt.subplots(figsize=(16.0, 7.6))
+    ax.plot(s_, lost_t, '-', color='#1f77b4', lw=4, label='Delay Δt, foci aligned')
+    ax.plot(s_, lost_x, '--', color='#d62728', lw=4, label='Misalignment x$_c$, no delay')
+    ax.plot(s_, lost_z, ':', color='#2ca02c', lw=4, label='Misalignment z$_c$, no delay')
+    for f in (0.25, 0.5, 0.75):
+        ax.axvline(f, color='#999999', lw=1.5)
+    ax.set_xlim(0, 1); ax.set_ylim(0, 35)
+    ax.set_xlabel('Δt / T  =  x$_c$ / λ$_{2p}$  =  z$_c$ / λ$_{2p}$        (T = 2.33 fs, λ$_{2p}$ = 0.70 µm)')
+    ax.set_ylabel('2PE peak lost (%)')
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False)
     plt.tight_layout()
     fig.savefig(os.path.join(OUT, 'time_vs_space.png'), dpi=600, bbox_inches='tight')
     i = np.argmin(np.abs(PHS - np.pi))

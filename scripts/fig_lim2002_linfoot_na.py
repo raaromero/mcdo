@@ -142,3 +142,30 @@ for pair in ('2ce', '2pe'):
             fig.savefig(os.path.join(OUT, f'linfoot_diff_{sym}_{pair}_{th}{SUF}.png'), dpi=300, bbox_inches='tight')
             plt.close(fig)
             print('Saved ->', f'linfoot_diff_{sym}_{pair}_{th}{SUF}.png', flush=True)
+
+
+# ── scalar 2CE at NA 0.5: uniform input against Gaussian input (α_t = 4) ──
+if AT:
+    for pair in ('2ce', '2pe'):
+        for th in ('pi', 'pi2'):
+            u = np.load(os.path.join(CACHE, f'{pair}_{th}_scalar_na0.5.npz'))
+            g = np.load(os.path.join(CACHE, f'{pair}_{th}_scalar_na0.5{SUF}.npz'))
+            for sym in 'FCQ':
+                fig = plt.figure(figsize=(14.0, 7.4))
+                for i, (dd, title) in enumerate(((u, 'Uniform input'), (g, 'Gaussian input, α$_t$ = 4'))):
+                    XC, ZC = np.meshgrid(dd['xc'], dd['zc']); lim = LIM[sym]
+                    ax = fig.add_subplot(1, 2, i + 1, projection='3d')
+                    ax.plot_surface(XC, ZC, np.clip(dd[sym], *lim), cmap='viridis', edgecolor='k', linewidth=0.2,
+                                    rstride=1, cstride=1)
+                    ax.set_zlim(*lim); ax.set_ylim(dd['zc'].max(), dd['zc'].min())
+                    ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 3))
+                    ax.set_zticks({'F': np.arange(-3, 1.01, 1.0), 'C': np.arange(0, 3.01, 1.0), 'Q': np.arange(0, 1.01, 0.5)}[sym])
+                    ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
+                    ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
+                    ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel(sym, labelpad=14)
+                    ax.set_title(title, fontsize=28)
+                    ax.view_init(elev=22, azim=120)
+                fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08)
+                fig.savefig(os.path.join(OUT, f'linfoot3d_{sym}_{pair}_{th}_input.png'), dpi=300, bbox_inches='tight')
+                plt.close(fig)
+                print('Saved ->', f'linfoot3d_{sym}_{pair}_{th}_input.png', flush=True)

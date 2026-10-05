@@ -412,6 +412,37 @@ def pupil_apodization():
     save(fig, 'pupil_apodization.png')
 
 
+def input_compare(stem, xkey, zkey, tag, theta, xlabel, zlabel):
+    """Scalar 2CE at NA 0.5: uniform input against Gaussian input (α_t = 4), drawn as the replication."""
+    path = os.path.join(D, f'{stem}.npz')
+    if not os.path.exists(path):
+        return
+    d = np.load(path)
+    peak = 'peakmaps' in stem
+    pair = '2ce' if tag[-1] in 'ac' else '2pe'
+    lam = (L1 if pair == '2ce' else L2P) if peak else 1.0
+    unit = ('λ$_1$' if pair == '2ce' else 'λ$_{2p}$') if peak else 'µm'
+    levels = [10, 20, 40, 60, 80] if peak else [1, 10, 20, 40, 60, 80]
+    fig, axes = plt.subplots(1, 2, figsize=(14.0, 7.4))
+    for ax, suf, title in zip(axes, ('', '_at4'), ('Uniform input', 'Gaussian input, α$_t$ = 4')):
+        if peak:
+            x, z, M = scalar_peak(pair, theta, suf)
+        else:
+            x, z = d[xkey], d[zkey]
+            M = scalar_psf(pair, theta, *((0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)), x, z, suf)
+        M = 100 * M / M.max()
+        cs = ax.contour(x / lam, z / lam, M, levels=levels, colors='k', linewidths=2.0)
+        ax.clabel(cs, fmt='%d', fontsize=22)
+        ax.contour(x / lam, z / lam, M, levels=[50], colors='#ff7f0e', linewidths=3.5)
+        ax.set_box_aspect(1.0)
+        ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-6, 7, 2) if peak else np.arange(-5, 6, 1))
+        ax.set_title(title, fontsize=26)
+        ax.set_xlabel(f'{xlabel} ({unit})')
+    axes[0].set_ylabel(f'{zlabel} ({unit})')
+    plt.tight_layout()
+    save(fig, f'{tag}_input.png')
+
+
 if __name__ == '__main__':
     for suf, n in (('', 1.0), ('_at4', 1.0), ('_n1.33', 1.33), ('_at4_n1.33', 1.33)):
         for key in ('pi', 'pi2'):

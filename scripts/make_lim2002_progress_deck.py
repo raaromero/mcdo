@@ -313,13 +313,19 @@ def linfoot_maps(suf, tag):
     for case, lab in CASES:
         for key in 'FCQ':
             t = f'{NAME[key]}{tag}: {lab}'
+            if suf:
+                wide(f'{key}: uniform against Gaussian input, {lab}', SL(f'linfoot3d_{key}_{case}_input.png'), [
+                    'Scalar 2CE at NA 0.5 with uniform input (left) and Gaussian input, α_t = 4 (right): the effect of the '
+                    'Gaussian input alone, before NA is raised.'],
+                    f'{lab}: {NAME[key].lower()}, uniform against Gaussian input.',
+                    'Same model, NA, window and offsets; only the pupil amplitude changes.')
             side3 = ('With the Gaussian input the surfaces are smoother and change less with NA than with uniform input, '
                      'because the dim pupil edge keeps the focus closer to paraxial.') if suf else SURF[(case, key)]
-            wide(t, SL(f'linfoot3d_{key}_{case}{suf}.png'), [side3],
+            wide(t, SL(f'linfoot3d_{key}_{case}{suf}.png'), [side3 + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'pi2' in case else '')],
                  f'{lab}: {NAME[key].lower()} against the misalignment, scalar 2CE and vector 2CE.',
                  'Surfaces over (x_c, z_c) on the axes of Figs. 5–6, in units of lambda_1 (2CE) or lambda_2p (2PE): scalar 2CE at '
                  'NA 0.5, then vector 2CE at NA 0.7 and 0.9. * marks crossed lenses above NA 0.71.')
-            wide(f'{NAME[key]}{tag}, vector − scalar: {lab}', SL(f'linfoot_diff_{key}_{case}{suf}.png'), [
+            wide(f'{key}{tag}, vector − scalar: {lab}', SL(f'linfoot_diff_{key}_{case}{suf}.png'), [
                 f'Δ{key} = {key} of vector 2CE minus {key} of scalar 2CE at the same NA: red where the vector value is higher, blue '
                 'where it is lower; black line: no difference. The difference grows from NA 0.7 to NA 0.9.'],
                 f'{lab}: where vector and scalar {NAME[key].lower()} differ.',
@@ -358,7 +364,13 @@ def maps(suf, tag):
         elif suf:
             line = ('With the Gaussian input the spot is wider and longer than with uniform input at the same NA, and it shrinks '
                     'in the same way as NA grows.')
-        wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line],
+        if suf:
+            wide(f'Fig. {no}({t}), uniform against Gaussian input: {lab}', SL(f'map_fig{no}{t}_input.png'), [
+                'Scalar 2CE at NA 0.5, the case of the paper, with uniform input (left) and Gaussian input, α_t = 4 (right): the '
+                'effect of the Gaussian input alone, before NA is raised.'],
+                f'Fig. {no}({t}): the effect of the Gaussian input at NA 0.5.',
+                'Same model, NA and axes; only the pupil amplitude changes. Contours in percent of the peak; orange: 50 percent.')
+        wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'π/2' in lab else '')],
              f'Fig. {no}({t}): scalar 2CE at NA 0.5 against vector 2CE at NA 0.7 and 0.9.',
              f'Fig. {no}({t}), {lab}, {where}: scalar 2CE at NA 0.5 (the replication), then vector 2CE at NA 0.7 and 0.9, on the '
              'axes of the paper. Contours in percent of the peak; orange: 50 percent.'
@@ -407,10 +419,10 @@ def peaks(suf):
         side(name, SL(f'peaklost_{k}{suf}.png'), items, f'{name}.', LEGEND)
 
 
-NEXT = ['Polarization of the two beams: whether to account for it (unpolarized against linear polarization).',
-        'Crossed lenses that do not physically fit above NA n sin(θ/2): report as computed values, or stop at that NA.',
-        'Delay in time against NA, compared with scalar 2CE.',
-        'Pulsed 2CE: how to account for the range of wavelengths in a pulse.']
+DECIDE = ['Crossed lenses above NA n sin(θ/2) (0.71 in air): report the computed values, or stop at that NA.',
+          'Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.']
+NEXT = ['Optical pulses: the 2CE signal as the overlap in time of two focused pulses, and how to account for the range of '
+        'wavelengths in each pulse.']
 
 
 SUMMARIES = {   # section: (main point, supporting, supporting, speaker script); the overview shows them all
@@ -489,24 +501,19 @@ if SECTION == 'overview':
         sl = slide(name, '')
         bullets(sl, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2], 14, bold=True)
         notes(sl, main, script)
-    words('Next steps', NEXT, 'Polarization, the crossed-lens limit, the delay against NA, then pulses.',
-          'These are the next items, in order.')
-    wide('Next steps: polarization of the two beams', SL('polarization_spot.png'), [
-        'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
-        'across the axis can depend on the polarization. To review: whether to account for it, unpolarized against linear.'],
-        'At high NA the spot depends on the polarization.',
-        'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 they differ.')
-    wide('Next steps: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
+    words('Decisions', DECIDE, 'Two choices to make before the next results.',
+          'The crossed-lens limit and the polarization of the beams.')
+    wide('Decision: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
         'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
         'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
         'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
-    side('Next steps: delay in time against NA', PD('time_vs_space.png'), [
-        'So far the delay was computed with scalar 2CE at NA 0.5 (Parts 5–6).',
-        'Next: the same delay with vector 2CE against NA, compared with scalar 2CE.',
-        'Expected: the fringe period does not depend on NA, while the overlap of the two foci does.'],
-        'The delay study, so far at NA 0.5, extended against NA.',
-        'Peak lost against the delay and against the matching misalignment, 2PE, theta = pi/2, NA 0.5.')
-    wide('Next steps: pulsed 2CE', SL('pulse_spectra.png'), [
+    wide('Decision: polarization of the two beams', SL('polarization_spot.png'), [
+        'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
+        'across the axis can depend on the polarization. To decide: keep unpolarized beams, or account for linear polarization.'],
+        'At high NA the spot depends on the polarization.',
+        'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 they differ.')
+    words('Next step', NEXT, 'Next: optical pulses.', 'The pulsed 2CE study.')
+    wide('Next step: optical pulses', SL('pulse_spectra.png'), [
         'A pulse contains a range of wavelengths, wider for shorter pulses. The 750 and 656 nm spectra overlap for pulses below '
         'about 8 fs. To settle: how to account for the range of wavelengths in each pulse.'],
         'A short pulse is a range of wavelengths; how to account for it is open.',
@@ -669,13 +676,13 @@ elif SECTION == 'delay_space':
         side=('Cases', ['θ = π/2: x_c = 0.5 λ_{2p} or z_c = 0.5 λ_{2p} gives φ_{eq} = π.', '',
                         'θ = π, misalignment along z: the two terms cancel, φ_{eq} = 0, so the fringe at the centre stays bright '
                         'and the peak barely drops.']), size=18)
-    side('Delay and misalignment, 2PE, θ = π/2', PD('time_vs_space.png'), [
-        'Peak lost against the delay Δt (bottom axis) and against a misalignment cΔt/n of the same phase (top axis). Up to half '
-        'a period the curves follow each other. Beyond it the misalignment also moves the overlap of the two foci, so its loss '
-        'peaks slightly later and does not return to zero after one wavelength, while the delay does.'],
-        'A delay and the matching misalignment cost the 2PE peak about the same.',
-        'Blue: delay, aligned foci. Red and green: misalignment x_c or z_c of c Delta t over n, no delay. Vertical lines: phi = '
-        'pi/2, pi and 3 pi/2.')
+    wide('Delay and misalignment, 2PE, θ = π/2', PD('time_vs_space.png'), [
+        'Blue: a delay Δt with the foci aligned. Red, green: a misalignment of the same fringe phase with no delay. One axis serves '
+        'both, since a delay of one period T shifts the fringes as much as a misalignment of one wavelength. Up to half a period '
+        'the losses agree; beyond it the misalignment also separates the two foci, so its loss stays above the delay’s.'],
+        'A delay and the matching misalignment cost the 2PE peak about the same up to half a period.',
+        'The delay curve is symmetric about half a period and returns to zero after one, because a full period restores the '
+        'fringes. Its sharp top is where the brightest fringe hands over from one side of the focus to the other.')
     words('Cancelling a misalignment with a delay', [
         'At θ = π/2 a misalignment x_c = 0.5 λ_{2p} reduces the 2PE peak by 26%; with a delay of φ = 0.92π the loss is 1.3%.',
         'A misalignment z_c = 0.5 λ_{2p} gives the same: 26% without the delay and 1.3% with it.',
