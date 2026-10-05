@@ -37,22 +37,24 @@ from mcdo.twobeam import beam_field
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'phase_delay')
 os.makedirs(OUT, exist_ok=True)
 NA, L1, L2, L2P = 0.5, 0.750, 0.656, 0.700
-X, Z = np.meshgrid(np.linspace(-1, 1, 201), np.linspace(-5, 5, 501))
-PHI = np.linspace(0, 2 * np.pi, 73)
+X, Z = np.meshgrid(np.linspace(-1, 1, 201), np.linspace(-5, 5, 501))     # window of the paper, for F
+XP, ZP = np.meshgrid(np.linspace(-0.4, 0.4, 161), np.linspace(-1.0, 1.0, 1001))  # fine grid near the focus, for the peak:
+PHI = np.linspace(0, 2 * np.pi, 73)                         # the fringes (0.35 µm) must be sampled finely or the peak jitters
 
 PART = os.environ.get('PART', 'all')                       # 'phase', 'space' or 'all'
 if PART in ('all', 'phase'):
     rows = []
     for th, lab in ((np.pi, 'pi'), (np.pi / 2, 'pi2')):
-        U1, U2 = beam_field(X, Z, L2P, NA, theta=0.0), beam_field(X, Z, L2P, NA, theta=th)
-        V1, V2 = beam_field(X, Z, L1, NA, theta=0.0), beam_field(X, Z, L2, NA, theta=th)
-        p2 = lambda f: np.abs(U1 + U2 * np.exp(1j * f)) ** 4
-        c2 = lambda f: np.abs(V1) ** 2 * np.abs(V2 * np.exp(1j * f)) ** 2
-        for name, sig in (('2pe', p2), ('2ce', c2)):
-            ref = sig(0.0)
+        def sigs(XX, ZZ):
+            U1, U2 = beam_field(XX, ZZ, L2P, NA, theta=0.0), beam_field(XX, ZZ, L2P, NA, theta=th)
+            V1, V2 = beam_field(XX, ZZ, L1, NA, theta=0.0), beam_field(XX, ZZ, L2, NA, theta=th)
+            return (('2pe', lambda f: np.abs(U1 + U2 * np.exp(1j * f)) ** 4),
+                    ('2ce', lambda f: np.abs(V1) ** 2 * np.abs(V2 * np.exp(1j * f)) ** 2))
+        for (name, sig), (_, sigp) in zip(sigs(X, Z), sigs(XP, ZP)):
+            ref, refp = sig(0.0), sigp(0.0)
             for f in PHI:
-                s = sig(f)
-                rows.append((name, lab, f, 100 * (1 - s.max() / ref.max()), fidelity(ref / ref.max(), s / s.max())))
+                s, sp = sig(f), sigp(f)
+                rows.append((name, lab, f, 100 * (1 - sp.max() / refp.max()), fidelity(ref / ref.max(), s / s.max())))
 
     with open(os.path.join(OUT, 'phase_delay.csv'), 'w') as fh:
         fh.write('# signal,theta,phi_rad,peak_lost_pct,F\n')
@@ -68,7 +70,7 @@ if PART in ('all', 'phase'):
         axes[1].plot(r[:, 0] / np.pi, r[:, 2], ls, color=c, lw=4)
     axes[0].set_ylabel('Peak lost (%)'); axes[1].set_ylabel('Fidelity F')
     for ax in axes:
-        ax.set_xlabel('Phase φ = ωΔt (π);  φ = π at Δt = 1.17 fs'); ax.set_xlim(0, 2); ax.set_xticks([0, 0.5, 1, 1.5, 2])
+        ax.set_xlabel('Phase φ = ωΔt (π)'); ax.set_xlim(0, 2); ax.set_xticks([0, 0.5, 1, 1.5, 2])
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False)
     plt.tight_layout()

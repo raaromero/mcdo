@@ -5,8 +5,7 @@ r"""Progress report on two-color excitation (2CE), one deck per section.
   02 vector       vector 2CE, uniform input, against NA
   03 fidelity     Linfoot's criteria F, C, Q against NA
   04 gaussian     vector 2CE, Gaussian input (α_t = 4): the results of 02 and 03
-  05 delay        a delay in time between continuous beams
-  06 delay_space  2PE: a delay in time against a misalignment in space
+  05 delay        time delay between continuous beams, and against a misalignment in space
 
 Each deck stands on its own: title, summary (main point and two supporting
 sentences), the geometry and field equations it uses, its results, and a glossary.
@@ -33,7 +32,7 @@ import mcdo.deckstyle as ds
 from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, PALE, PURPLE, RED, WHITE, bullets, card, dots, equation,
                             figure, notes, prs, shape, slide, text, where)
 
-SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'delay_space']
+SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay']
 SECTION = os.environ.get('SECTION')
 DIR = os.path.expanduser('~/Downloads/Research/two_color')
 HERE = os.path.dirname(__file__)
@@ -106,13 +105,13 @@ GLOSS = {   # term: (meaning, sections that use it)
     'Scalar 2CE': ('the paraxial scalar model (small-angle phase, no polarization)', 'all'),
     'Vector 2CE': ('the same signals with the Richards–Wolf focus (exact phase and polarization)', 'overview vector fidelity gaussian'),
     'Scalar Debye': ('scalar focus with the exact phase, no polarization', 'vector'),
-    'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'replication vector gaussian delay delay_space'),
+    'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'replication vector gaussian delay'),
     '20% tolerance': ('the misalignment x_c or z_c that reduces the 2CE peak by 20%', 'vector gaussian'),
     'F, C, Q': ('Linfoot’s criteria: fidelity, structural content and correlation quality', 'replication fidelity gaussian delay'),
     'α_t': ('truncation parameter of the Gaussian input; 0 is uniform input', 'overview gaussian'),
     'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'vector fidelity gaussian'),
-    'Δt, φ': ('delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay delay_space'),
-    'K': ('fringe wavevector of the two 2PE beams, |K| = 2k sin(θ/2)', 'delay delay_space'),
+    'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay'),
+    'K': ('fringe wavevector of the two 2PE beams, |K| = 2k sin(θ/2)', 'delay'),
 }
 
 
@@ -171,7 +170,7 @@ def scalar_fields():
         (r'F_{2c} = \kappa_{2c}\, I_1 I_2, \qquad F_{2p} = \kappa_{2p}\, |U_1 + U_2|^4', 'I = |U|^2; 2CE multiplies the two '
          'intensities, 2PE adds the two fields.')],
         'The scalar 2CE model: paraxial fields, beam 2 rotated and shifted, 2CE as a product and 2PE as a sum.',
-        'The model of the paper, used for the delay study at NA 0.5.',
+        'The model of the paper, used for the time-delay study at NA 0.5.',
         '\n'.join((UPAR, r'u = k\,\mathrm{NA}^2 z/n, \quad v = k\,\mathrm{NA}\, r', ZB,
                    r'F_{2c} = \kappa_{2c} I_1 I_2, \qquad F_{2p} = \kappa_{2p} |U_1 + U_2|^4')), size=16)
 
@@ -434,11 +433,11 @@ SUMMARIES = {   # section: (main point, supporting, supporting, speaker script);
         'Scalar 2CE agrees with vector 2CE within 5% up to NA 0.45, which validates it there; a Gaussian input makes the '
         'tolerances about 1.4 times larger.',
         'At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE predicts.',
-        'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
+        'A time delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
         'misalignment of cΔt/n in space.',
         'With vector fields, the alignment tolerances follow the width and length of the focus as NA grows. The paper is '
         'reproduced, its scalar model agrees with the vector one where the paper uses it, a Gaussian input loosens the tolerances, '
-        'and a delay acts on 2PE through its fringes while 2CE does not change.'),
+        'and a time delay acts on 2PE through its fringes while 2CE does not change.'),
     'replication': (
         'Rebuilt from its equations, the scalar 2CE model reproduces the six figures and, within a few percent, the losses '
         'reported in the paper.',
@@ -472,42 +471,35 @@ SUMMARIES = {   # section: (main point, supporting, supporting, speaker script);
         'With a Gaussian input the high-angle rays are dim, so the focus behaves like a lower NA: larger tolerances, and a '
         'paraxial model that holds to a higher NA.'),
     'delay': (
-        'A delay Δt between continuous beams is a phase ωΔt: it leaves the 2CE PSF unchanged and shifts the 2PE fringes.',
-        'The 2CE signal I_1 I_2 depends on intensities, which do not carry the phase.',
-        'For 2PE at θ = π/2, half an optical period (1.17 fs) puts the centre on a dark fringe and loses 29% of the peak; at '
-        'θ = π the peak stays but the fidelity drops to −0.85.',
+        'A time delay Δt between continuous beams is a phase ωΔt: it leaves the 2CE PSF unchanged and shifts the 2PE fringes, '
+        'as a misalignment of cΔt/n does.',
+        'The 2CE signal I_1 I_2 depends on intensities, which do not carry the phase; for 2PE at θ = π/2, half an optical period '
+        '(1.17 fs) puts the centre on a dark fringe and loses 29% of the peak.',
+        'The 2PE loss of a misalignment is mainly this fringe phase: the matching time delay brings the loss of a 0.5 λ_{2p} '
+        'misalignment from 26% to about 1%. 2CE has no fringes, so a time delay cannot change its loss.',
         'Delaying a continuous beam multiplies its field by a phase. Two-color excitation multiplies intensities, so the phase '
-        'drops out. Two-photon excitation adds fields, so the phase moves its fringes.'),
-    'delay_space': (
-        'For 2PE a delay Δt shifts the fringes by cΔt / [2n sin(θ/2)]; at θ = π/2 this equals a misalignment x_c or z_c of '
-        'cΔt/n.',
-        'The 2PE loss of a misalignment is mainly this fringe phase: the matching delay brings the loss of a 0.5 λ_{2p} '
-        'misalignment from 26% to about 1%.',
-        '2CE has no fringes, so its loss comes from how well the two foci overlap, and a delay cannot change it.',
-        'A delay and a misalignment both change the phase of the 2PE fringes at the peak. The phase of a misalignment can be '
-        'cancelled by a delay; the overlap of the two foci cannot.'),
+        'drops out. Two-photon excitation adds fields, so the phase moves its fringes, by the same amount as a misalignment of '
+        'c Delta t over n at theta = pi/2.'),
 }
 PART_TITLE = {'replication': 'Part 1: Replication of scalar 2CE', 'vector': 'Part 2: Vector 2CE, uniform input',
               'fidelity': 'Part 3: Linfoot’s criteria against NA', 'gaussian': 'Part 4: Vector 2CE, Gaussian input',
-              'delay': 'Part 5: Delay in time', 'delay_space': 'Part 6: Delay in time against misalignment in space'}
+              'delay': 'Part 5: Time delay'}
 
 
 # ══ sections ═════════════════════════════════════════════════════════════
 if SECTION == 'overview':
-    title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and delays in time')
+    title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and time delay')
     summary(*SUMMARIES['overview'])
-    for sec, name in PART_TITLE.items():                     # one summary slide per section
-        main, s1, s2, script = SUMMARIES[sec]
-        sl = slide(name, '')
-        bullets(sl, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2], 14, bold=True)
-        notes(sl, main, script)
-    words('Decisions', DECIDE, 'Two choices to make before the next results.',
+    s_ = slide('Summary by section', '')
+    bullets(s_, 0.6, 1.1, 8.9, 4.1, [f'{PART_TITLE[k].split(": ", 1)[1]}: {SUMMARIES[k][0]}' for k in PART_TITLE], 12)
+    notes(s_, 'The main point of each section.', ' '.join(SUMMARIES[k][3] for k in PART_TITLE))
+    words('Things to clarify', DECIDE, 'Two choices to make before the next results.',
           'The crossed-lens limit and the polarization of the beams.')
-    wide('Decision: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
+    wide('To clarify: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
         'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
         'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
         'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
-    wide('Decision: polarization of the two beams', SL('polarization_spot.png'), [
+    wide('To clarify: polarization of the two beams', SL('polarization_spot.png'), [
         'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
         'across the axis can depend on the polarization. To decide: keep unpolarized beams, or account for linear polarization.'],
         'At high NA the spot depends on the polarization.',
@@ -616,82 +608,78 @@ elif SECTION == 'gaussian':
     linfoot_maps('_at4', ', Gaussian input')
 
 elif SECTION == 'delay':
-    title('Part 5: Delay in time', 'A delay Δt between two continuous beams, scalar 2CE, NA 0.5')
+    title('Part 5: Time delay', 'A time delay Δt between two continuous beams, and its relation to a misalignment, scalar 2CE, NA 0.5')
     summary(*SUMMARIES['delay'])
     geometry(); scalar_fields()
     D1 = r'U_2(P, t - \Delta t) = U_2(P, t)\, e^{i\phi}, \qquad \phi = \omega\Delta t = \frac{2\pi c\,\Delta t}{\lambda}'
     D2 = r'F_{2c} = \kappa_{2c}\, I_1 \left|U_2 e^{i\phi}\right|^2 = \kappa_{2c}\, I_1 I_2'
     D3 = r'\left|U_1 + U_2 e^{i\phi}\right|^2 = I_1 + I_2 + 2|U_1 U_2| \cos(\mathbf{K}\cdot\mathbf{r} - \phi)'
-    eqslide('Delay between continuous beams', 'A delay of a continuous beam is a phase: 2CE does not see it, the 2PE fringes '
+    eqslide('Time delay between continuous beams', 'A time delay of a continuous beam is a phase: 2CE does not see it, the 2PE fringes '
             'move with it.', [
-        (D1, 'Δt = delay of beam 2; φ = phase it adds; c = speed of light; λ = vacuum wavelength.'),
+        (D1, 'Δt = time delay of beam 2; φ = phase it adds; c = speed of light; λ = vacuum wavelength.'),
         (D2, '2CE multiplies intensities, which do not carry the phase.'),
-        (D3, '2PE adds the fields, F_{2p} = κ_{2p}|U_1 + U_2 e^{iφ}|^4; K = fringe wavevector, |K| = 2k sin(θ/2): the delay moves '
+        (D3, '2PE adds the fields, F_{2p} = κ_{2p}|U_1 + U_2 e^{iφ}|^4; K = fringe wavevector, |K| = 2k sin(θ/2): the time delay moves '
              'the fringes.')],
-        'A delay is a phase: 2CE does not see it, 2PE fringes move with it.',
-        'For continuous beams a delay is a constant phase on beam 2. The two-color signal uses only intensities. The two-photon '
+        'A time delay is a phase: 2CE does not see it, 2PE fringes move with it.',
+        'For continuous beams a time delay is a constant phase on beam 2. The two-color signal uses only intensities. The two-photon '
         'signal contains the interference term, whose fringes shift with the phase.', '\n'.join((D1, D2, D3)), size=17)
-    words('Choice of delays: φ = 0, π/2, π', [
-        'The effect of a delay repeats with each optical period: φ = 2π is Δt = λ/c, 2.33 fs at 700 nm.',
-        'φ and 2π − φ give the same loss, so φ from 0 to π covers all delays.',
+    words('Choice of time delays: φ = 0, π/2, π', [
+        'The effect of a time delay repeats with each optical period: φ = 2π is Δt = λ/c, 2.33 fs at 700 nm.',
+        'φ and 2π − φ give the same loss, so φ from 0 to π covers all time delays.',
         'φ = 0 is the aligned case. φ = π/2 (Δt = 0.58 fs) moves the fringes by a quarter of their period. φ = π (Δt = 1.17 fs) '
         'moves them by half a period, so bright and dark fringes swap: the largest effect.',
-        'φ = π is the delay in time that matches the 2PE misalignment of 0.5 λ_{2p} used in scalar 2CE.'],
-        'One optical period covers every delay; pi is the largest effect.',
-        'The delays are chosen as fractions of the optical period, the time version of misalignments in fractions of a '
+        'φ = π is the time delay that matches the 2PE misalignment of 0.5 λ_{2p} used in scalar 2CE.'],
+        'One optical period covers every time delay; pi is the largest effect.',
+        'The time delays are chosen as fractions of the optical period, the time version of misalignments in fractions of a '
         'wavelength.')
-    wide('Peak lost and fidelity against the delay', PD('phase_delay.png'), [
-        'The 2CE peak and shape do not change with the delay at either angle. For 2PE at θ = π/2 the peak drops to 71% at φ = π, '
+    wide('Peak lost and fidelity against time delay', PD('phase_delay.png'), [
+        'The 2CE peak and shape do not change with the time delay at either angle. For 2PE at θ = π/2 the peak drops to 71% at φ = π, '
         'as the centre falls on a dark fringe; at θ = π a bright fringe stays near the centre, so the peak stays but F drops '
         'to −0.85 as the standing wave moves.'],
-        'The delay leaves 2CE unchanged and changes 2PE through its fringes.',
-        'Left: peak lost against phi; right: fidelity F against the aligned PSF. The small zigzag of the 2PE theta = pi peak '
-        'curve, under 1.3 percent, comes from the grid: the moving fringes fall between grid points.')
+        'A time delay leaves 2CE unchanged and changes 2PE through its fringes.',
+        'Left: peak lost against phi; right: fidelity F against the aligned PSF. phi = pi is a time delay of 1.17 fs. The peak '
+        'is found on a fine grid near the focus, so the moving fringes are resolved.')
 
-elif SECTION == 'delay_space':
-    title('Part 6: Delay in time against misalignment in space', 'A delay of the 2PE beams compared with a misalignment of O′')
-    summary(*SUMMARIES['delay_space'])
-    geometry(); scalar_fields()
     K1 = r'\mathbf{K} = k\left(\hat{\mathbf{k}}_1 - \hat{\mathbf{k}}_2\right), \qquad |\mathbf{K}| = 2k\sin(\theta/2)'
     K2 = r'\Delta s = \frac{\phi}{|\mathbf{K}|} = \frac{c\,\Delta t}{2n\sin(\theta/2)}'
     K3 = r'\theta = \pi:\ \Delta z = \frac{c\,\Delta t}{2n}, \qquad \theta = \pi/2:\ x_c = z_c = \frac{c\,\Delta t}{n}'
-    eqslide('Delay in time as a shift of the fringes', 'A delay moves the 2PE fringes along K; at θ = π/2 it matches a '
+    eqslide('Time delay as a shift of the fringes', 'A time delay moves the 2PE fringes along K; at θ = π/2 it matches a '
             'misalignment of cΔt/n.', [
         (K1, 'k̂_1, k̂_2 = directions of the two beams; k = 2πn/λ; the 2PE fringes vary as cos(K·r − φ).'),
-        (K2, 'Δs = shift of the fringes along K for a delay Δt.'),
-        (K3, 'the misalignment that gives the fringes the same phase as the delay.')],
-        'A delay moves the 2PE fringes by c Delta t over 2n sin(theta/2).',
+        (K2, 'Δs = shift of the fringes along K for a time delay Δt.'),
+        (K3, 'the misalignment that gives the fringes the same phase as the time delay.')],
+        'A time delay moves the 2PE fringes by c Delta t over 2n sin(theta/2).',
         'The fringe pattern of two plane waves has wavevector K, the difference of the two wavevectors. A phase phi moves it by '
         'phi over the magnitude of K.', '\n'.join((K1, K2, K3)), size=17)
     P1 = r'\phi_{eq} = \mathbf{K}\cdot\mathbf{r}_c + k\,\hat{\mathbf{k}}_2\cdot\mathbf{d}'
     P2 = r'\omega\,\Delta t = \phi_{eq}'
-    eqslide('Misalignment in space as a phase', 'A misalignment changes the phase of the fringe at the peak; a delay of the '
+    eqslide('Misalignment in space as a phase', 'A misalignment changes the phase of the fringe at the peak; a time delay of the '
             'same phase cancels it.', [
         (P1, 'd = misalignment of O′; r_c = centre of the overlap of the two beams; k k̂_2·d = phase beam 2 gains by moving along '
              'its own direction; K·r_c = fringe phase where the beams now overlap.'),
-        (P2, 'a delay with this phase puts a bright fringe back on the peak.')],
-        'A misalignment changes the fringe phase at the peak by phi_eq; a delay can cancel it.',
+        (P2, 'a time delay with this phase puts a bright fringe back on the peak.')],
+        'A misalignment changes the fringe phase at the peak by phi_eq; a time delay can cancel it.',
         'The phase has two parts: beam 2 moving along its own direction, and the overlap of the two beams moving to another '
         'fringe. At theta = pi the two cancel for a misalignment along z.', '\n'.join((P1, P2)),
         side=('Cases', ['θ = π/2: x_c = 0.5 λ_{2p} or z_c = 0.5 λ_{2p} gives φ_{eq} = π.', '',
                         'θ = π, misalignment along z: the two terms cancel, φ_{eq} = 0, so the fringe at the centre stays bright '
                         'and the peak barely drops.']), size=18)
-    wide('Delay and misalignment, 2PE, θ = π/2', PD('time_vs_space.png'), [
-        'Blue: a delay Δt with the foci aligned. Red, green: a misalignment of the same fringe phase with no delay. One axis serves '
-        'both, since a delay of one period T shifts the fringes as much as a misalignment of one wavelength. Up to half a period '
-        'the losses agree; beyond it the misalignment also separates the two foci, so its loss stays above the delay’s.'],
-        'A delay and the matching misalignment cost the 2PE peak about the same up to half a period.',
-        'The delay curve is symmetric about half a period and returns to zero after one, because a full period restores the '
+    wide('Time delay and misalignment, 2PE, θ = π/2', PD('time_vs_space.png'), [
+        'Blue: a time delay Δt with the foci aligned. Red, green: a misalignment of the same fringe phase with no delay. One axis serves '
+        'both, since a time delay of one period T shifts the fringes as much as a misalignment of one wavelength. Up to half a period '
+        'the losses agree; beyond it the misalignment also separates the two foci, so its loss stays above that of the time delay.'],
+        'A time delay and the matching misalignment cost the 2PE peak about the same up to half a period.',
+        'The time-delay curve is symmetric about half a period and returns to zero after one, because a full period restores the '
         'fringes. Its sharp top is where the brightest fringe hands over from one side of the focus to the other.')
-    words('Cancelling a misalignment with a delay', [
-        'At θ = π/2 a misalignment x_c = 0.5 λ_{2p} reduces the 2PE peak by 26%; with a delay of φ = 0.92π the loss is 1.3%.',
-        'A misalignment z_c = 0.5 λ_{2p} gives the same: 26% without the delay and 1.3% with it.',
+    words('Cancelling a misalignment with a time delay', [
+        'At θ = π/2 a misalignment x_c = 0.5 λ_{2p} reduces the 2PE peak by 26%; with a time delay of φ = 0.92π the loss is 1.3%.',
+        'A misalignment z_c = 0.5 λ_{2p} gives the same: 26% without the time delay and 1.3% with it.',
         'At x_c = 0.25 λ_{2p} the loss falls from 7% to 0.3% with φ = 0.46π.',
-        'The best delays are slightly below the predicted π and π/2, most likely from the Gouy phase of the focused beams, which '
+        'The best time delays are slightly below the predicted π and π/2, most likely from the Gouy phase of the focused beams, which '
         'the plane-wave form leaves out.',
         'What remains, about 1%, is the loss of overlap of the two foci: the part 2CE also has.'],
-        'The 2PE loss of a misalignment is mainly phase, and a delay removes most of it.',
-        'Scalar model, NA 0.5. The delay that best restores the peak is close to phi_eq.', size=12.5)
+        'The 2PE loss of a misalignment is mainly phase, and a time delay removes most of it.',
+        'Scalar model, NA 0.5. The time delay that best restores the peak is close to phi_eq.', size=12.5)
 
 glossary()
 
