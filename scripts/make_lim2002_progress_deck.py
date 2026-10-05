@@ -366,8 +366,7 @@ if SECTION == 'overview':
             'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
             'misalignment of cΔt/n in space.',
             'Scalar 2CE is reproduced. At high NA the tolerances shrink with the spot and the paraxial model departs above NA 0.45. '
-            'A Gaussian input loosens the tolerances. A delay acts on 2PE through its fringes and leaves 2CE unchanged. Next: '
-            + ' '.join(NEXT), after=['Next steps'] + ['– ' + x for x in NEXT])
+            'A Gaussian input loosens the tolerances. A delay acts on 2PE through its fringes and leaves 2CE unchanged.')
     words('Sections', [
         'Part 1: Replication of scalar 2CE.',
         'Part 2: Vector 2CE, uniform input, against NA.',
@@ -378,6 +377,27 @@ if SECTION == 'overview':
         'Six parts, each a deck of its own.', 'Each part has its own summary, equations and glossary.')
     words('Next steps', NEXT, 'Polarization, the crossed-lens limit, the delay against NA, then pulses.',
           'These are the next items, in order.')
+    wide('Next steps: polarization of the two beams', SL('polarization_spot.png'), [
+        'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
+        'across the axis can depend on the polarization. To review: whether to account for it, unpolarized against linear.'],
+        'At high NA the spot depends on the polarization.',
+        'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 they differ.')
+    side('Next steps: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_general.png'), [
+        'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2).',
+        'At θ = π/2 this is NA 0.71 in air and 0.94 in water.',
+        'To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
+        'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)', fw=5.0)
+    side('Next steps: delay in time against NA', PD('time_vs_space.png'), [
+        'So far the delay was computed with scalar 2CE at NA 0.5 (Parts 5–6).',
+        'Next: the same delay with vector 2CE against NA, compared with scalar 2CE.',
+        'Expected: the fringe period does not depend on NA, while the overlap of the two foci does.'],
+        'The delay study, so far at NA 0.5, extended against NA.',
+        'Peak lost against the delay and against the matching misalignment, 2PE, theta = pi/2, NA 0.5.')
+    wide('Next steps: pulsed 2CE', SL('pulse_spectra.png'), [
+        'A pulse contains a range of wavelengths, wider for shorter pulses. The 750 and 656 nm spectra overlap for pulses below '
+        'about 8 fs. To settle: how to account for the range of wavelengths in each pulse.'],
+        'A short pulse is a range of wavelengths; how to account for it is open.',
+        'Spectra of the two pulses at 5 and 20 fs, transform-limited Gaussian pulses.')
 
 elif SECTION == 'replication':
     at = len(prs.slides)

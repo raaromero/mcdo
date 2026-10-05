@@ -323,6 +323,25 @@ def polarization():
     save(fig, 'polarization_peaklost.png')
 
 
+# ── spectra of the two 2CE pulses (next steps: pulses) ──
+def pulse_spectra():
+    c = 299792.458                                      # nm·THz
+    nu = np.linspace(250, 650, 2001)
+    fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
+    for ax, tau in zip(axes, (5.0, 20.0)):
+        dnu = 0.441 / (tau * 1e-3)                      # intensity FWHM in THz for a transform-limited Gaussian pulse
+        for lam, col in ((750, RED), (656, BLUE)):
+            S = np.exp(-4 * np.log(2) * (nu - c / lam) ** 2 / dnu ** 2)
+            ax.fill_between(nu, S, color=col, alpha=0.35, lw=0)
+            ax.plot(nu, S, color=col, lw=3, label=f'{lam} nm pulse')
+        ax.set_title(f'τ = {tau:g} fs'); ax.set_xlabel('Frequency (THz)')
+    axes[0].set_ylabel('Spectral power, normalized')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    plt.tight_layout()
+    save(fig, 'pulse_spectra.png')
+
+
 if __name__ == '__main__':
     for suf, n in (('', 1.0), ('_at4', 1.0), ('_n1.33', 1.33), ('_at4_n1.33', 1.33)):
         for key in ('pi', 'pi2'):
@@ -342,3 +361,4 @@ if __name__ == '__main__':
     profiles()
     axial_checks()
     polarization()
+    pulse_spectra()
