@@ -65,9 +65,9 @@ def title(name, what):
     notes(s, name + '.', what)
 
 
-def summary(main, s1, s2, script):
+def summary(main, s1, s2, script, after=()):
     s = slide('Summary', '')
-    bullets(s, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2], 14, bold=True)
+    bullets(s, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2] + list(after), 14 if not after else 13, bold=True)
     notes(s, main, script)
 
 
@@ -350,6 +350,12 @@ def peaks(suf):
         side(name, SL(f'peaklost_{k}{suf}.png'), items, f'{name}.', LEGEND)
 
 
+NEXT = ['Polarization of the two beams: whether to account for it (unpolarized against linear polarization).',
+        'Crossed lenses that do not physically fit above NA n sin(θ/2): report as computed values, or stop at that NA.',
+        'Delay in time against NA, compared with scalar 2CE.',
+        'Pulsed 2CE: how to account for the range of wavelengths in a pulse.']
+
+
 # ══ sections ═════════════════════════════════════════════════════════════
 if SECTION == 'overview':
     title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and delays in time')
@@ -360,7 +366,8 @@ if SECTION == 'overview':
             'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
             'misalignment of cΔt/n in space.',
             'Scalar 2CE is reproduced. At high NA the tolerances shrink with the spot and the paraxial model departs above NA 0.45. '
-            'A Gaussian input loosens the tolerances. A delay acts on 2PE through its fringes and leaves 2CE unchanged.')
+            'A Gaussian input loosens the tolerances. A delay acts on 2PE through its fringes and leaves 2CE unchanged. Next: '
+            + ' '.join(NEXT), after=['Next steps'] + ['– ' + x for x in NEXT])
     words('Sections', [
         'Part 1: Replication of scalar 2CE.',
         'Part 2: Vector 2CE, uniform input, against NA.',
@@ -369,12 +376,8 @@ if SECTION == 'overview':
         'Part 5: Delay in time between continuous beams.',
         'Part 6: Delay in time against misalignment in space (2PE).'],
         'Six parts, each a deck of its own.', 'Each part has its own summary, equations and glossary.')
-    words('Next steps', [
-        'Polarization of the two beams: unpolarized (circular) against linear polarization.',
-        'Crossed lenses above NA n sin(θ/2): report as computed values, or stop at that NA.',
-        'Pulses: the 2CE signal as the overlap in time of two pulses.'],
-        'Polarization, the crossed-lens limit, then pulses.',
-        'These are the next items, in order.')
+    words('Next steps', NEXT, 'Polarization, the crossed-lens limit, the delay against NA, then pulses.',
+          'These are the next items, in order.')
 
 elif SECTION == 'replication':
     at = len(prs.slides)
