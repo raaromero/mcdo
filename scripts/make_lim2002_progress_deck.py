@@ -65,9 +65,11 @@ def title(name, what):
     notes(s, name + '.', what)
 
 
-def summary(main, s1, s2, script, after=()):
+def summary(main, *rest):
+    """Main point in bold, its supporting points beneath; the last item is the speaker script."""
+    *support, script = rest
     s = slide('Summary', '')
-    bullets(s, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2] + list(after), 14 if not after else 13, bold=True)
+    bullets(s, 0.6, 1.1, 8.9, 4.1, [main] + ['– ' + x for x in support], 14 if len(support) <= 2 else 13, bold=True)
     notes(s, main, script)
 
 
@@ -358,14 +360,18 @@ NEXT = ['Polarization of the two beams: whether to account for it (unpolarized a
 
 SUMMARIES = {   # section: (main point, supporting, supporting, speaker script); the overview shows them all
     'overview': (
-        'With vector (Richards–Wolf) fields we extend the scalar 2CE study of misalignment to high NA, a Gaussian input and '
-        'delays in time.',
-        'The alignment tolerances shrink as NA grows, as 1/NA across the axis and 1/NA^2 along it; scalar 2CE agrees with the '
-        'vector results within 5% up to NA 0.45, which validates it there.',
+        'At high NA the 2CE alignment tolerances shrink with the size of the focus: with facing lenses, as 1/NA across the axis '
+        'and 1/NA^2 along it.',
+        'Rebuilt from its equations, scalar 2CE reproduces the paper: the 2CE PSF is more robust against misalignment than the 2PE '
+        'PSF, most of all with crossed beams.',
+        'Scalar 2CE agrees with vector 2CE within 5% up to NA 0.45, which validates it there; a Gaussian input makes the '
+        'tolerances about 1.4 times larger.',
+        'At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE predicts.',
         'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
         'misalignment of cΔt/n in space.',
-        'The study of the paper, extended with vector fields. The tolerances shrink with the spot as NA grows, and the scalar model '
-        'agrees with the vector one where the paper uses it. A delay acts on 2PE through its fringes and leaves 2CE unchanged.'),
+        'With vector fields, the alignment tolerances follow the width and length of the focus as NA grows. The paper is '
+        'reproduced, its scalar model agrees with the vector one where the paper uses it, a Gaussian input loosens the tolerances, '
+        'and a delay acts on 2PE through its fringes while 2CE does not change.'),
     'replication': (
         'Rebuilt from its equations, the scalar 2CE model reproduces the six figures and, within a few percent, the losses '
         'reported in the paper.',
