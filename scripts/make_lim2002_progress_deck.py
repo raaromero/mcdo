@@ -356,25 +356,76 @@ NEXT = ['Polarization of the two beams: whether to account for it (unpolarized a
         'Pulsed 2CE: how to account for the range of wavelengths in a pulse.']
 
 
+SUMMARIES = {   # section: (main point, supporting, supporting, speaker script); the overview shows them all
+    'overview': (
+        'With vector (Richards–Wolf) fields we extend the scalar 2CE study of misalignment to high NA, a Gaussian input and '
+        'delays in time.',
+        'The alignment tolerances shrink as NA grows, as 1/NA across the axis and 1/NA^2 along it; scalar 2CE agrees with the '
+        'vector results within 5% up to NA 0.45, which validates it there.',
+        'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
+        'misalignment of cΔt/n in space.',
+        'The study of the paper, extended with vector fields. The tolerances shrink with the spot as NA grows, and the scalar model '
+        'agrees with the vector one where the paper uses it. A delay acts on 2PE through its fringes and leaves 2CE unchanged.'),
+    'replication': (
+        'Rebuilt from its equations, the scalar 2CE model reproduces the six figures and, within a few percent, the losses '
+        'reported in the paper.',
+        'What holds: the 2CE PSF is more robust against misalignment than the 2PE PSF, most of all when the two beams cross at '
+        'θ = π/2.',
+        'What differs: C and Q are swapped in Figs. 5–6, Eq. (2) has to be applied as a rotation in space, Figs. 6(c)–(d) are '
+        'most likely θ = 0, and the reported losses differ from ours by up to 3 points (20% against 18%, 30% against 27%).',
+        'The figures and losses come back, and the conclusion holds. Four things differ: the C and Q labels, the rotation as '
+        'printed, the caption of the bottom row of Fig. 6, and the reported losses by a few points.'),
+    'vector': (
+        'With vector 2CE the alignment tolerances shrink as NA grows, following the size of the focus.',
+        'With facing lenses the 20% tolerances shrink as NA^{−0.97} across the axis and NA^{−2.12} along it; with crossed lenses '
+        'both shrink as about NA^{−2.1}.',
+        'Scalar 2CE agrees with vector 2CE within 5% up to NA 0.45, which validates it there; above it, its small-angle phase '
+        'overestimates the tolerance along the axis, and in water this starts at 1.33 times the NA in air.',
+        'Recomputed with the vector focus, the tolerances follow the width and length of the focus. The paraxial model agrees to '
+        'five percent up to NA 0.45; above that, its longer focus overestimates the tolerance along the axis.'),
+    'fidelity': (
+        'At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE predicts.',
+        'In units of the spot the scalar 2CE maps are the same at all NAs, so the change comes from the vector focus.',
+        'For 2PE, Linfoot’s criteria are set by the fringes, whose spacing does not depend on NA, and change little.',
+        'Linfoot’s criteria of the paper, followed against NA. For 2CE the vector focus keeps a faithful PSF over a smaller range '
+        'of misalignments than the paraxial model predicts. For 2PE the fringes set the criteria.'),
+    'gaussian': (
+        'With a Gaussian input (α_t = 4) the alignment tolerances are about 1.4 times larger than with uniform input.',
+        'The dim edge of the pupil removes the high-angle rays, so the focus is wider and longer; at NA 0.5 the same '
+        'misalignments cost about half the peak they cost with uniform input.',
+        'Scalar 2CE agrees with vector 2CE within 5% up to NA 0.525, against 0.45 with uniform input.',
+        'With a Gaussian input the high-angle rays are dim, so the focus behaves like a lower NA: larger tolerances, and a '
+        'paraxial model that holds to a higher NA.'),
+    'delay': (
+        'A delay Δt between continuous beams is a phase ωΔt: it leaves the 2CE PSF unchanged and shifts the 2PE fringes.',
+        'The 2CE signal I_1 I_2 depends on intensities, which do not carry the phase.',
+        'For 2PE at θ = π/2, half an optical period (1.17 fs) puts the centre on a dark fringe and loses 29% of the peak; at '
+        'θ = π the peak stays but the fidelity drops to −0.85.',
+        'Delaying a continuous beam multiplies its field by a phase. Two-color excitation multiplies intensities, so the phase '
+        'drops out. Two-photon excitation adds fields, so the phase moves its fringes.'),
+    'delay_space': (
+        'For 2PE a delay Δt shifts the fringes by cΔt / [2n sin(θ/2)]; at θ = π/2 this equals a misalignment x_c or z_c of '
+        'cΔt/n.',
+        'The 2PE loss of a misalignment is mainly this fringe phase: the matching delay brings the loss of a 0.5 λ_{2p} '
+        'misalignment from 26% to about 1%.',
+        '2CE has no fringes, so its loss comes from how well the two foci overlap, and a delay cannot change it.',
+        'A delay and a misalignment both change the phase of the 2PE fringes at the peak. The phase of a misalignment can be '
+        'cancelled by a delay; the overlap of the two foci cannot.'),
+}
+PART_TITLE = {'replication': 'Part 1: Replication of scalar 2CE', 'vector': 'Part 2: Vector 2CE, uniform input',
+              'fidelity': 'Part 3: Linfoot’s criteria against NA', 'gaussian': 'Part 4: Vector 2CE, Gaussian input',
+              'delay': 'Part 5: Delay in time', 'delay_space': 'Part 6: Delay in time against misalignment in space'}
+
+
 # ══ sections ═════════════════════════════════════════════════════════════
 if SECTION == 'overview':
     title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and delays in time')
-    summary('The 2CE PSF is more robust than the 2PE PSF against misalignment in space and in time, and scalar 2CE holds up to '
-            'NA 0.45.',
-            'With the vector focus the alignment tolerances shrink as 1/NA across the axis and 1/NA^2 along it, and a Gaussian '
-            'input makes them about 1.4 times larger.',
-            'A delay between continuous beams leaves the 2CE PSF unchanged but shifts the 2PE fringes, with the same effect as a '
-            'misalignment of cΔt/n in space.',
-            'Scalar 2CE is reproduced. At high NA the tolerances shrink with the spot and the paraxial model departs above NA 0.45. '
-            'A Gaussian input loosens the tolerances. A delay acts on 2PE through its fringes and leaves 2CE unchanged.')
-    words('Sections', [
-        'Part 1: Replication of scalar 2CE.',
-        'Part 2: Vector 2CE, uniform input, against NA.',
-        'Part 3: Linfoot’s criteria against NA.',
-        'Part 4: Vector 2CE, Gaussian input.',
-        'Part 5: Delay in time between continuous beams.',
-        'Part 6: Delay in time against misalignment in space (2PE).'],
-        'Six parts, each a deck of its own.', 'Each part has its own summary, equations and glossary.')
+    summary(*SUMMARIES['overview'])
+    for sec, name in PART_TITLE.items():                     # one summary slide per section
+        main, s1, s2, script = SUMMARIES[sec]
+        sl = slide(name, '')
+        bullets(sl, 0.6, 1.1, 8.9, 4.1, [main, '– ' + s1, '– ' + s2], 14, bold=True)
+        notes(sl, main, script)
     words('Next steps', NEXT, 'Polarization, the crossed-lens limit, the delay against NA, then pulses.',
           'These are the next items, in order.')
     wide('Next steps: polarization of the two beams', SL('polarization_spot.png'), [
@@ -408,13 +459,7 @@ elif SECTION == 'replication':
 
 elif SECTION == 'vector':
     title('Part 2: Vector 2CE, uniform input', 'The results of scalar 2CE with the Richards–Wolf focus, NA 0.03 to 1.2')
-    summary('Scalar 2CE stays within 5% of vector 2CE up to NA 0.45; above it, it overestimates the tolerance along the axis.',
-            'With facing lenses the 20% tolerances shrink as NA^{−0.97} across the axis and NA^{−2.12} along it, following the '
-            'width and length of the focus; with crossed lenses both shrink as about NA^{−2.1}.',
-            'The difference comes from the small-angle phase, not from polarization, and in water it starts at 1.33 times the NA '
-            'in air.',
-            'Recomputed with the vector focus, the tolerances shrink with the spot. The paraxial model is good to five percent up '
-            'to NA 0.45; above that, its longer focus overestimates how far the second focus can move along the axis.')
+    summary(*SUMMARIES['vector'])
     geometry(); vector_fields()
     maps('', '')
     for key, lab, line in (
@@ -452,22 +497,13 @@ elif SECTION == 'vector':
 
 elif SECTION == 'fidelity':
     title('Part 3: Linfoot’s criteria against NA', 'Linfoot’s criteria (F, C and Q) of the misaligned PSF, vector 2CE and scalar 2CE, NA 0.1 to 1.2')
-    summary('At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE '
-            'predicts.',
-            'In units of the spot the scalar 2CE maps are the same at all NAs, so the change comes from the vector focus.',
-            'For 2PE, Linfoot’s criteria are set by the fringes, whose spacing does not depend on NA, and change little.',
-            'Linfoot’s criteria, followed against NA. For 2CE the vector focus keeps a faithful PSF over a smaller '
-            'range of misalignments than the paraxial model predicts. For 2PE the fringes set the criteria.')
+    summary(*SUMMARIES['fidelity'])
     geometry(); vector_fields(); linfoot()
     linfoot_maps('', '')
 
 elif SECTION == 'gaussian':
     title('Part 4: Vector 2CE, Gaussian input', 'Both lenses filled by a Gaussian beam, truncation parameter α_t = 4')
-    summary('A Gaussian input makes the tolerances about 1.4 times larger and keeps scalar 2CE within 5% up to NA 0.525.',
-            'The dim edge of the pupil removes the high-angle rays, so the focus is wider and longer, like a lens of lower NA.',
-            'At NA 0.5 the same misalignments cost about half the peak they cost with uniform input.',
-            'With a Gaussian input the high-angle rays are dim, so the focus behaves like a lower NA: larger tolerances, and a '
-            'paraxial model that holds to a higher NA.')
+    summary(*SUMMARIES['gaussian'])
     geometry(); vector_fields()
     words('Gaussian input: the pupil of both beams', [
         'The Gaussian input multiplies the field in the pupil of each lens by',
@@ -510,12 +546,7 @@ elif SECTION == 'gaussian':
 
 elif SECTION == 'delay':
     title('Part 5: Delay in time', 'A delay Δt between two continuous beams, scalar 2CE, NA 0.5')
-    summary('A delay Δt between continuous beams is a phase ωΔt: it leaves the 2CE PSF unchanged and shifts the 2PE fringes.',
-            'The 2CE signal I_1 I_2 depends on intensities, which do not carry the phase.',
-            'For 2PE at θ = π/2, half an optical period (1.17 fs) puts the centre on a dark fringe and loses 29% of the peak; at '
-            'θ = π the peak stays but the fidelity drops to −0.85.',
-            'Delaying a continuous beam multiplies its field by a phase. Two-color excitation multiplies intensities, so the phase '
-            'drops out. Two-photon excitation adds fields, so the phase moves its fringes.')
+    summary(*SUMMARIES['delay'])
     geometry(); scalar_fields()
     words('Delay between continuous beams', [
         'Delaying beam 2 by Δt multiplies its field by a phase φ = ωΔt = 2πcΔt/λ:',
@@ -551,13 +582,7 @@ F_{2p} = \kappa_{2p} |U_1 + U_2 e^{i\phi}|^4, \qquad |U_1 + U_2 e^{i\phi}|^2 = I
 
 elif SECTION == 'delay_space':
     title('Part 6: Delay in time against misalignment in space', 'A delay of the 2PE beams compared with a misalignment of O′')
-    summary('For 2PE a delay Δt shifts the fringes by cΔt / [2n sin(θ/2)]; at θ = π/2 this equals a misalignment x_c or z_c of '
-            'cΔt/n.',
-            'The 2PE loss of a misalignment is mainly this fringe phase: the matching delay brings the loss of a '
-            '0.5 λ_{2p} misalignment from 26% to about 1%.',
-            '2CE has no fringes, so its loss comes from how well the two foci overlap, and a delay cannot change it.',
-            'A delay and a misalignment both change the phase of the 2PE fringes at the peak. The phase of a misalignment can be '
-            'cancelled by a delay; the overlap of the two foci cannot.')
+    summary(*SUMMARIES['delay_space'])
     geometry(); scalar_fields()
     words('Delay in time as a shift of the fringes', [
         'The 2PE fringes vary as cos(K·r − φ), with K = k(k̂_1 − k̂_2) and |K| = 2k sin(θ/2); k̂_1, k̂_2 are the directions of the '

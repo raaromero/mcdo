@@ -57,11 +57,13 @@ notes(s, 'The replication of Lim and Saloma (2002).',
 # ══ summary: main point, two supporting sentences ═══════════════════════
 s = slide('Summary', '')
 bullets(s, 0.6, 1.1, 8.9, 4.1, [
-    'Rebuilt from its equations, the model of Lim & Saloma (2002) reproduces the six figures and the losses reported in the paper.',
-    '– The 2CE point spread function is more robust against misalignment than the 2PE one, most of all when the two beams '
-    'cross at θ = π/2.',
-    '– The labels C and Q are swapped in Figs. 5–6, the rotation printed as Eq. (2) has to be applied in space, and Figs. '
-    '6(c)–(d) are most likely θ = 0.'], 13, bold=True)
+    'Rebuilt from its equations, the model of Lim & Saloma (2002) reproduces the six figures and, within a few percent, the '
+    'losses reported in the paper.',
+    '– What holds: the 2CE PSF is more robust against misalignment than the 2PE PSF, most of all when the two beams cross at '
+    'θ = π/2.',
+    '– What differs: C and Q are swapped in Figs. 5–6, Eq. (2) has to be applied as a rotation in space, Figs. 6(c)–(d) are '
+    'most likely θ = 0, and the reported losses differ from ours by up to 3 points (20% against 18%, 30% against 27%).'],
+    14, bold=True)
 notes(s, 'Rebuilt from its equations, the scalar 2CE model reproduces the paper.',
       'The paper asks how much fluorescence a two-color excitation microscope loses when its two foci are misaligned, against '
       'two-photon excitation. Rebuilt from its equations, the model gives the same figures and losses, and the same conclusion. '
