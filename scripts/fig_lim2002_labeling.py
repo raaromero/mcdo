@@ -59,7 +59,7 @@ for v in (1.33,):
     print(f"zc = {v} λ1: F = {np.interp(v, zc, F):+.2f}, C = {np.interp(v, zc, C):+.2f}, "
           f"Q = {np.interp(v, zc, Q):+.2f}")
 
-fig, ax = plt.subplots(figsize=(16.0, 9.0))
+fig, ax = plt.subplots(figsize=(12.0, 6.75))
 ax.plot(zc, F, '-', color='#d62728', lw=3.4, label='F (fidelity)')
 ax.plot(zc, C, '-', color='#1f77b4', lw=3.4, label='C (structural content)')
 ax.plot(zc, Q, '-', color='#2ca02c', lw=3.4, label='Q (correlation quality)')

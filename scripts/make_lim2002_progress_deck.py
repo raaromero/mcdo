@@ -105,7 +105,7 @@ GLOSS = {   # term: (meaning, sections that use it)
     'Scalar Debye': ('scalar focus with the exact phase, no polarization', 'vector'),
     'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'replication vector gaussian delay delay_space'),
     '20% tolerance': ('the misalignment x_c or z_c that reduces the 2CE peak by 20%', 'vector gaussian'),
-    'F, C, Q': ('Linfoot fidelity, structural content, correlation quality', 'replication fidelity gaussian delay'),
+    'F, C, Q': ('Linfoot’s criteria: fidelity, structural content and correlation quality', 'replication fidelity gaussian delay'),
     'α_t': ('truncation parameter of the Gaussian input; 0 is uniform input', 'overview gaussian'),
     'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'vector fidelity gaussian'),
     'Δt, φ': ('delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay delay_space'),
@@ -428,11 +428,11 @@ elif SECTION == 'vector':
         'At NA 0.5 the two foci nearly coincide.', 'A single beam at 750 nm, intensity along the axis.')
 
 elif SECTION == 'fidelity':
-    title('Part 3: Linfoot’s criteria against NA', 'F, C and Q of the misaligned PSF, vector 2CE and scalar 2CE, NA 0.1 to 1.2')
+    title('Part 3: Linfoot’s criteria against NA', 'Linfoot’s criteria (F, C and Q) of the misaligned PSF, vector 2CE and scalar 2CE, NA 0.1 to 1.2')
     summary('At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE '
             'predicts.',
             'In units of the spot the scalar 2CE maps are the same at all NAs, so the change comes from the vector focus.',
-            'The 2PE criteria are set by the fringes, whose spacing does not depend on NA, and change little.',
+            'For 2PE, Linfoot’s criteria are set by the fringes, whose spacing does not depend on NA, and change little.',
             'Linfoot’s criteria, followed against NA. For 2CE the vector focus keeps a faithful PSF over a smaller '
             'range of misalignments than the paraxial model predicts. For 2PE the fringes set the criteria.')
     geometry(); vector_fields(); linfoot()
@@ -590,7 +590,7 @@ FLOOR = 11.0          # pt; 16 arcmin (ISO 9241-3) at four slide heights on a 5.
 Image.MAX_IMAGE_PIXELS = None
 low = set()
 for path, shown in ds.FIGURES:
-    if os.path.basename(os.path.dirname(path)) in ('slides', 'phase_delay'):
+    if path.endswith('.png'):                                    # every figure, assuming 24-pt text drawn at 600 dpi
         im = Image.open(path)
         pt = 24 * shown / (im.size[0] / (im.info.get('dpi') or (600, 600))[0])
         if pt < FLOOR:

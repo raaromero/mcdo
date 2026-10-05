@@ -60,7 +60,7 @@ def psf(X, Z, pair, theta, xc=0.0, zc=0.0):
 
 
 # ── Fig. 1: geometry ──────────────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(14.0, 14.0))
+fig, ax = plt.subplots(figsize=(9.5, 9.5))
 ax.set_aspect('equal'); ax.axis('off')
 ax.set_xlim(-4.2, 6.6); ax.set_ylim(5.4, -5.4)
 ax.annotate('', xy=(6.2, 0), xytext=(-3.6, 0), arrowprops=dict(arrowstyle='->', lw=2.0))
@@ -115,7 +115,7 @@ X, Z = np.meshgrid(x, z)
 PANELS = [('2ce', np.pi, 'a', '2CE, θ = π'), ('2pe', np.pi, 'b', '2PE, θ = π'),
           ('2ce', np.pi / 2, 'c', '2CE, θ = π/2'), ('2pe', np.pi / 2, 'd', '2PE, θ = π/2')]
 for fig_no, (xc, zc) in ((2, (0.0, 0.0)), (3, (0.4, 1.0))):
-    fig, axes = plt.subplots(2, 2, figsize=(22.0, 22.0))
+    fig, axes = plt.subplots(2, 2, figsize=(15.0, 15.0))
     for ax, (pair, th, tag, lab) in zip(axes.ravel(), PANELS):
         F = psf(X, Z, pair, th, xc, zc)
         F = 100 * F / F.max()
@@ -172,7 +172,7 @@ for pair in ('2ce', '2pe'):
 MAPS[('2pe', 0.0)] = offset_maps('2pe', 0.0, True)
 
 # ── Fig. 4: peak fluorescence ─────────────────────────────────────────────
-fig, axes = plt.subplots(2, 2, figsize=(22.0, 23.0))
+fig, axes = plt.subplots(2, 2, figsize=(15.0, 15.7))
 for ax, (pair, th, tag, lab) in zip(axes.ravel(), PANELS):
     xc, zc, P, *_ = MAPS[(pair, th)]
     cs = ax.contour(xc, zc, 100 * P, levels=[10, 20, 40, 60, 80], colors='k', linewidths=2.0)
@@ -204,7 +204,7 @@ note(f"2PE θ = π/2 in plane: range {row.min():.2f}–{row.max():.2f} over |xc|
 # |zc| = 1.33 λ1 (p. 128) requires C ≥ 0.8, while the panel shows ≈ 0. Q
 # reproduces that panel; C stays near 1 for a translated spot.
 def surfaces(pair, which, name, thetas=((np.pi, 'θ = π'), (np.pi / 2, 'θ = π/2'))):
-    fig = plt.figure(figsize=(26.0, 12.0 * len(thetas)))
+    fig = plt.figure(figsize=(17.0, 8.0 * len(thetas)))
     k = 1
     for th, lab in thetas:
         xc, zc, P, Fm, Cm, Qm = MAPS[(pair, th)]

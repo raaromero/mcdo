@@ -30,14 +30,14 @@ F = 2Q - C
 '''
 
 
-def pair(title, orig, ours, items, main, script, latex=None):
-    """The paper's figure and ours side by side, as large as the slide allows; a few sentences beneath."""
+def panel(title, orig, ours, line, main, script, latex=None, ours_label='Ours'):
+    """One panel of the paper and the same panel of ours, side by side at full height; one sentence beneath."""
     s = slide(title, '')
     label(s, 0.45, 0.95, 4.45, 'Lim & Saloma (2002)')
-    label(s, 5.1, 0.95, 4.45, 'Ours', PURPLE)
-    figure(s, os.path.join(ORIG, orig), 0.45, 1.22, 4.45, 3.3)
-    figure(s, ours, 5.1, 1.22, 4.45, 3.3)
-    bullets(s, 0.6, 4.6, 8.9, 0.65, items, 11.5)
+    label(s, 5.1, 0.95, 4.45, ours_label, PURPLE)
+    figure(s, os.path.join(ORIG, orig), 0.45, 1.2, 4.45, 3.8)
+    figure(s, ours, 5.1, 1.2, 4.45, 3.8)
+    bullets(s, 0.6, 5.04, 8.3, 0.3, [line], 11)
     notes(s, main, script, latex)
     return s
 
@@ -106,24 +106,14 @@ z_b = (x - x_c)\sin\theta + (z - z_c)\cos\theta, \qquad x_b = (x - x_c)\cos\thet
 F^p_{2c}(\pi/2) = -0.06\, x_c^2 + 1
 ''')
 
-# ══ Figs. 2–4 ════════════════════════════════════════════════════════════
-pair('Fig. 2: aligned PSFs', 'orig_fig2.png', os.path.join(FIG, 'fig2_contours.png'), [
-    'The aligned 2CE PSF is a single smooth spot; the 2PE PSF shows a standing wave at θ = π and tilted fringes at θ = π/2. '
-    'All four panels agree with the paper.'],
-    'All four aligned PSFs agree with the paper.',
-    'The aligned case. Two-color gives a single smooth spot at both angles; two-photon shows the standing wave at theta = pi '
-    'and tilted fringes at theta = pi/2. Left column 2CE, right 2PE; top theta = pi, bottom theta = pi/2.')
-pair('Fig. 3: misaligned PSFs', 'orig_fig3.png', os.path.join(FIG, 'fig3_contours.png'), [
-    'With O′ at (0.4, 1.0) µm, the 2CE peak at θ = π moves to the midpoint of O and O′, and at θ = π/2 it moves along z, '
-    'as the paper states. The 2PE fringes shift and distort.'],
-    'With O prime at (0.4, 1.0) micrometres the 2CE spot moves as the paper says.',
-    'At theta = pi the two-color peak sits between O and O prime, at (0.23, 0.55) micrometres against the paper’s midpoint '
-    '(0.20, 0.50). At theta = pi/2 it follows beam 2 along z only.')
-pair('Fig. 4: peak against O′', 'orig_fig4.png', os.path.join(FIG, 'fig4_peak.png'), [
-    'At θ = π the peak falls fastest when O′ moves across the axis. At θ = π/2 the 2CE peak barely depends on x_c, and the 2PE '
-    'peak varies in tilted bands from interference. All four maps agree with the paper.'],
-    'The maps of the surviving peak agree with the paper at both angles.',
-    'Each point of these maps is one misaligned PSF reduced to its peak, as a percentage of the aligned peak.')
+# ══ Figs. 2–4, one panel per slide ══════════════════════════════════════
+FIG24 = {(2, 'a'): ('2CE, θ = π', 'The aligned 2CE PSF is a single smooth spot, elongated along z, as in the paper.'), (2, 'b'): ('2PE, θ = π', 'The aligned 2PE PSF is a standing wave along z, with fringes λ_{2p}/2 apart, as in the paper.'), (2, 'c'): ('2CE, θ = π/2', 'With crossed beams the aligned 2CE spot is short along z and long along x, as in the paper.'), (2, 'd'): ('2PE, θ = π/2', 'With crossed beams the aligned 2PE PSF has tilted fringes, as in the paper.'), (3, 'a'): ('2CE, θ = π', 'With O′ at (0.4, 1.0) µm the 2CE peak moves to (0.23, 0.55) µm, close to the midpoint of O and O′ that the paper states.'), (3, 'b'): ('2PE, θ = π', 'With O′ at (0.4, 1.0) µm the 2PE fringes shift and distort, as in the paper.'), (3, 'c'): ('2CE, θ = π/2', 'With crossed beams the misaligned 2CE peak moves along z with beam 2, as the paper states.'), (3, 'd'): ('2PE, θ = π/2', 'With crossed beams the misaligned 2PE fringes shift and break up, as in the paper.'), (4, 'a'): ('2CE, θ = π', 'With facing lenses the 2CE peak falls fastest when O′ moves across the axis, as in the paper.'), (4, 'b'): ('2PE, θ = π', 'The 2PE peak map at θ = π agrees with the paper; the standing-wave fringes add weak ripples along z.'), (4, 'c'): ('2CE, θ = π/2', 'With crossed beams the 2CE peak barely depends on x_c, as in the paper.'), (4, 'd'): ('2PE, θ = π/2', 'With crossed beams the 2PE peak varies in tilted bands from interference, as in the paper.')}
+WHAT = {2: ('aligned PSF', 'contours'), 3: ('misaligned PSF, O′ at (0.4, 1.0) µm', 'contours'), 4: ('peak against O′', 'peak')}
+for (n, t), (lab, line) in FIG24.items():
+    what, key = WHAT[n]
+    panel(f'Fig. {n}({t}): {lab}', f'orig_fig{n}{t}.png', P(f'fig{n}_{key}_p{"abcd".index(t) + 1}.png'), line,
+          f'Fig. {n}({t}), {what}, {lab}: agrees with the paper.',
+          f'Fig. {n}({t}) of the paper, {what}, {lab}, next to the same panel computed from the equations of the paper.')
 
 # ══ peak lost: the values in the text ════════════════════════════════════
 s = slide('Peak lost: values in Section 3.2', '')
@@ -140,16 +130,19 @@ F^p_{2c}(\pi/2) = -0.06\,x_c^2 + 1
 F^p_{2c}(0) = -0.027\,z_c^2 + 0.996
 ''')
 
-# ══ Fig. 5 and the C/Q labels ════════════════════════════════════════════
-pair('Fig. 5: Linfoot’s criteria for 2CE', 'orig_fig5.png', os.path.join(FIG, 'fig5_linfoot.png'), [
-    'Our fidelity F and correlation quality Q reproduce the two columns of the paper; the column the paper labels C is Q.'],
-    'The surfaces agree once the second column is read as Q.',
-    'At |z_c| = 1.33 lambda_1 the paper gives F about −0.8 and C about zero; we get F = −0.91, Q = 0.04 and C = 1.00.',
-    LINFOOT_TEX)
+# ══ Fig. 5 and the C/Q labels, one panel per slide ═════════════════════
+for t, (lab, ours, line) in {
+        'a': ('Linfoot’s criteria, 2CE, θ = π: F', 'Ours: F', 'Fidelity F for 2CE at θ = π agrees with the paper.'),
+        'b': ('Linfoot’s criteria, 2CE, θ = π, labelled C', 'Ours: Q', 'The panel the paper labels C matches our correlation quality Q.'),
+        'c': ('Linfoot’s criteria, 2CE, θ = π/2: F', 'Ours: F', 'Fidelity F for 2CE at θ = π/2 agrees with the paper.'),
+        'd': ('Linfoot’s criteria, 2CE, θ = π/2, labelled C', 'Ours: Q', 'At θ = π/2 the panel labelled C also matches our Q.')}.items():
+    panel(f'Fig. 5({t}): {lab}', f'orig_fig5{t}.png', P(f'fig5_linfoot_p{"abcd".index(t) + 1}.png'), line,
+          f'Fig. 5({t}): {line}', 'Linfoot criteria of the misaligned 2CE PSF over (x_c, z_c), paper against ours.', LINFOOT_TEX,
+          ours_label=ours)
 
 s = slide('C and Q are swapped', '')
-figure(s, os.path.join(FIG, 'labeling_FCQ.png'), 0.45, 1.0, 6.2, 4.2)
-bullets(s, 6.85, 1.1, 2.65, 4.1, [
+figure(s, os.path.join(FIG, 'labeling_FCQ.png'), 0.45, 1.0, 6.4, 4.2)
+bullets(s, 7.05, 1.1, 2.45, 4.1, [
     'The paper defines F = 2Q − C. Q cannot be negative, so F cannot be lower than −C.',
     'At |z_c| = 1.33 λ_1 it reports F ≈ −0.8 with C ≈ 0, which breaks that rule.',
     'Our calculation gives C = 1.00 and Q = 0.04 there: the panel labelled C is Q.'], 11.5)
@@ -158,27 +151,20 @@ notes(s, 'The paper’s own identity rules out its C near zero; the panel is Q.'
       'about zero at the same point. Our calculation gives C = 1 there, because a shifted spot keeps its sharpness, and Q = 0.04, '
       'the paper’s number.', LINFOOT_TEX)
 
-# ══ Fig. 6 ═══════════════════════════════════════════════════════════════
-pair('Fig. 6: Linfoot’s criteria for 2PE', 'orig_fig6.png', os.path.join(FIG, 'fig6_linfoot.png'), [
-    'The θ = π row agrees with the paper. The row captioned θ = π/2 does not: crossed 700 nm beams make F change sharply with '
-    'O′, while the surfaces in the paper are smooth.'],
-    'The theta = pi row agrees; the row captioned theta = pi/2 does not.',
-    'In the bottom row the paper shows smooth surfaces, while crossed 700 nm beams give fringes that make F swing sharply as O '
-    'prime moves. The next slide shows what the bottom row matches instead.', LINFOOT_TEX)
-
-s = slide('Figs. 6(c)–(d) are θ = 0', '')
-for i, (lab, path, col) in enumerate((('Lim & Saloma (2002), captioned θ = π/2', os.path.join(ORIG, 'orig_fig6c.png'), GREY),
-                                      ('Ours, θ = π/2', P('fig6_linfoot_p3.png'), PURPLE),
-                                      ('Ours, θ = 0', P('fig6_theta0_p1.png'), PURPLE))):
-    label(s, 0.45 + i * 3.1, 0.95, 2.95, lab, col)
-    figure(s, path, 0.45 + i * 3.1, 1.22, 2.95, 3.3)
-bullets(s, 0.6, 4.6, 8.9, 0.65, [
-    'The same model at θ = 0 gives the smooth surface of the paper; at θ = π/2 it does not. The bottom row of Fig. 6 is most likely '
-    'θ = 0.'], 11.5)
-notes(s, 'The unchanged model at theta = 0 gives the paper’s smooth surface; at theta = pi/2 it does not.',
-      'Same model, same window, same normalization; only theta changes. At theta = pi/2 the crossed beams’ fringes make F spiky. '
-      'At theta = 0 the beams travel together and F becomes the smooth surface of the paper. The paper quotes no numbers for these '
-      'panels, so this rests on shape and range.', LINFOOT_TEX)
+# ══ Fig. 6, one panel per slide; its bottom row against θ = π/2 and θ = 0 ═
+for t, lab, ours, path, line in (
+        ('a', 'Linfoot’s criteria, 2PE, θ = π: F', 'Ours: F', 'fig6_linfoot_p1.png', 'Fidelity F for 2PE at θ = π agrees with the paper.'),
+        ('b', 'Linfoot’s criteria, 2PE, θ = π, labelled C', 'Ours: Q', 'fig6_linfoot_p2.png',
+         'The panel the paper labels C matches our correlation quality Q.'),
+        ('c', 'Linfoot’s criteria, captioned θ = π/2', 'Ours: F, θ = π/2', 'fig6_linfoot_p3.png',
+         'Our F at θ = π/2 changes sharply with O′, from the fringes of the crossed beams; the surface in the paper is smooth.'),
+        ('c', 'Linfoot’s criteria, against θ = 0', 'Ours: F, θ = 0', 'fig6_theta0_p1.png',
+         'At θ = 0 the same model gives the smooth surface of the paper: the bottom row of Fig. 6 is most likely θ = 0.'),
+        ('d', 'Linfoot’s criteria, against θ = 0', 'Ours: Q, θ = 0', 'fig6_theta0_p2.png',
+         'The panel labelled C in Fig. 6(d) matches our Q at θ = 0.')):
+    panel(f'Fig. 6({t}): {lab}', f'orig_fig6{t}.png', P(path), line, f'Fig. 6({t}): {line}',
+          'Same model, window and normalization as the other panels; only theta changes between the theta = pi/2 and theta = 0 '
+          'comparisons.', LINFOOT_TEX, ours_label=ours)
 
 # ══ the abstract ═════════════════════════════════════════════════════════
 s = slide('Results in the abstract', '')
