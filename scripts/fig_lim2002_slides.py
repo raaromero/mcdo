@@ -79,14 +79,14 @@ def tolerance(key, suf, n):
         sl, ic = np.polyfit(np.log(nas), np.log(rw), 1)
         ax.plot(nas, rw, 'o', color=BLUE, ms=8, label='Vector')
         ax.plot(nas, np.exp(ic) * nas ** sl, '-', color=BLUE, lw=3)
-        lo = nas <= 0.5 + 1e-9
-        if lo.sum() >= 3:
-            ax.plot(nas[lo], sc[lo], 's', color=RED, ms=8, mfc='none', mew=2.5, label='Paraxial scalar (NA ≤ 0.5)')
-        if nas[0] < 0.5:
-            ax.hlines(PAPER[(key, lab)], nas[0], 0.5, colors='k', linestyles='--', lw=3, label='Reported, NA 0.5')
+        brk = 0.5 * n                                # paraxial model stated for sin α ≤ 0.5 (NA 0.5 in air)
+        ax.axvspan(brk, nas[-1] * 1.05, color='#e6e6e6', lw=0, zorder=0, label='Paraxial breakdown')
+        ax.plot(nas, sc, 's', color=RED, ms=8, mfc='none', mew=2.5, label='Paraxial scalar')
+        if n == 1:                                   # the paper's value (air), from its text or its fit
+            ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=24, zorder=6, label='Reported, NA 0.5')
         if key == 'pi2' and nas[-1] > n / np.sqrt(2):
             ax.axvspan(n / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
-                       label='Lenses cannot cross')
+                       label='Lenses do not fit')
         logaxes(ax, nas)
         ax.set_xlim(nas[0] / 1.1, nas[-1] * 1.05)
         ax.set_title(f'Along {lab}$_c$')
@@ -94,7 +94,7 @@ def tolerance(key, suf, n):
         ax.set_xlabel('NA')
     axes[0].set_ylabel('Offset for 20% loss (µm)')
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=len(l), bbox_to_anchor=(0.5, -0.12), frameon=False)
+    fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
     save(fig, f'tolerance_{key}{suf}.png')
 
@@ -135,13 +135,12 @@ def peaklost(k, suf, pol=''):
     nas = a[:, 0]
     key, paper = METRICS[k]
     fig, ax = plt.subplots(figsize=(9.6, 7.4))
-    ax.axvspan(0, 0.5, color='#e6e6e6', zorder=0, label='Paraxial range (NA ≤ 0.5)')
+    ax.axvspan(0.5, 1.0, color='#e6e6e6', zorder=0, label='Paraxial breakdown')
     if key == 'pi2':
-        ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0, label='Lenses cannot cross')
+        ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0, label='Lenses do not fit')
     ax.plot(nas, a[:, 1], '-o', color=BLUE, lw=4, ms=7, label='Vector')
-    lo = nas <= 0.5 + 1e-9
-    ax.plot(nas[lo], a[lo, 2], ':s', color=RED, lw=3, ms=7, mfc='none', mew=2, label='Paraxial scalar')
-    ax.hlines(paper, nas[0], 0.5, colors='k', linestyles='--', lw=3, label='Reported, NA 0.5')
+    ax.plot(nas, a[:, 2], ':s', color=RED, lw=3, ms=7, mfc='none', mew=2, label='Paraxial scalar')
+    ax.plot(0.5, paper, '*', color='k', ms=24, zorder=6, label='Reported, NA 0.5')
     ax.set_xlim(0, 1.0); ax.set_ylim(0, 100)
     ax.set_xlabel('NA'); ax.set_ylabel('Peak lost (%)')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.17), ncol=2, frameon=False, columnspacing=1.0)
@@ -149,23 +148,81 @@ def peaklost(k, suf, pol=''):
 
 
 # ── PSF and peak maps: NA 0.5 against the highest NA shown, heat map with contours ──
+TH = {'pi': np.pi, 'pi2': np.pi / 2}
+
+
+def scalar_field(x, z, lam, theta=0.0, xc=0.0, zc=0.0, suf=''):
+    """Scalar 2CE field: the paraxial scalar focus at NA 0.5 in air, uniform or Gaussian input (α_t = 4)."""
+    return beam_field(x, z, lam, 0.5, 1.0, theta=theta, xc=xc, zc=zc,
+                      apodization=gaussian(4.0, 0.25) if suf == '_at4' else None)
+
+
+def scalar_psf(pair, th, xc, zc, x, z, suf):
+    X, Z = np.meshgrid(x, z)
+    if pair == '2ce':
+        return intensity(scalar_field(X, Z, L1, suf=suf)) * intensity(scalar_field(X, Z, L2, TH[th], xc, zc, suf))
+    return intensity(scalar_field(X, Z, L2P, suf=suf) + scalar_field(X, Z, L2P, TH[th], xc, zc, suf)) ** 2
+
+
+def scalar_peak(pair, th, suf):
+    """Peak against the offset of O′, as in the replication: window ±1 × ±5 µm, offsets ±1 × ±5 µm (µm)."""
+    path = os.path.join(OUT, f'_scalar_peak_{pair}_{th}{suf}.npz')
+    if os.path.exists(path):
+        d = np.load(path)
+        return d['xc'], d['zc'], d['P']
+    la, lb = (L1, L2) if pair == '2ce' else (L2P, L2P)
+    dx, dz, nx, nz = 0.02, 0.1, 50, 50
+    xw, zw = np.arange(-nx, nx) * dx, np.arange(-nz, nz) * dz
+    IX = IZ = np.arange(-50, 51, 2)
+    xe, ze = np.arange(-nx - 50, nx + 50) * dx, np.arange(-nz - 50, nz + 50) * dz
+    XW, ZW = np.meshgrid(xw, zw); XE, ZE = np.meshgrid(xe, ze)
+    U1, U2e = scalar_field(XW, ZW, la, suf=suf), scalar_field(XE, ZE, lb, TH[th], suf=suf)
+    sz, sx = XW.shape
+    sig = (lambda u2: intensity(U1) * intensity(u2)) if pair == '2ce' else (lambda u2: intensity(U1 + u2) ** 2)
+    t = sig(U2e[50:50 + sz, 50:50 + sx]).max()
+    P = np.array([[sig(U2e[50 - iz:50 - iz + sz, 50 - ix:50 - ix + sx]).max() / t for ix in IX] for iz in IZ])
+    np.savez_compressed(path, xc=IX * dx, zc=IZ * dz, P=P)
+    return IX * dx, IZ * dz, P
+
+
 def maps(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
+    """Figs. 2-4 of the paper as in the replication: scalar 2CE (NA 0.5), vector NA 0.7 and NA 0.9; black labelled
+    contours, the 50% contour in orange, square frames and the replication's axes."""
     path = os.path.join(D, f'{stem}{suf}.npz')
     if not os.path.exists(path):
         return
     d = np.load(path)
-    nas = (0.5, 0.9) if theta == 'pi' else (0.5, 0.7)
-    fig, axes = plt.subplots(1, 2, figsize=(15.0, 7.6))
-    for ax, na in zip(axes, nas):
-        M = d[key_fmt.format(na)]
+    if key_fmt.format(0.9) not in d:
+        return
+    peak = 'peakmaps' in stem
+    pair = '2ce' if tag[-1] in 'ac' else '2pe'
+    lam = (L1 if pair == '2ce' else L2P) if peak else 1.0       # Fig. 4 offsets in λ_1 (2CE) or λ_2p (2PE), as in the paper
+    unit = ('λ$_1$' if pair == '2ce' else 'λ$_{2p}$') if peak else 'µm'
+    levels = [10, 20, 40, 60, 80] if peak else [1, 10, 20, 40, 60, 80]
+    if peak:
+        xs, zs, S = scalar_peak(pair, theta, suf)
+    else:
+        xs, zs = d[xkey], d[zkey]
+        oc = (0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)
+        S = scalar_psf(pair, theta, *oc, xs, zs, suf)
+    panels = [('Scalar 2CE, NA 0.5', xs, zs, S),
+              ('Vector, NA 0.7', d[xkey], d[zkey], d[key_fmt.format(0.7)]),
+              ('Vector, NA 0.9' + (' *' if theta == 'pi2' else ''), d[xkey], d[zkey], d[key_fmt.format(0.9)])]
+    fig, axes = plt.subplots(1, 3, figsize=(19.5, 7.4))
+    for ax, (title, x, z, M) in zip(axes, panels):
         M = 100 * M / M.max()
-        pm = ax.pcolormesh(d[xkey], d[zkey], M, cmap='viridis', vmin=0, vmax=100, shading='nearest', rasterized=True)
-        ax.contour(d[xkey], d[zkey], M, levels=[20, 50, 80], colors='w', linewidths=1.2)
-        ax.set_box_aspect(1.0)
-        ax.set_title(f'NA {na}' + (';  lenses cannot cross' if theta == 'pi2' and na > 0.71 else ''))
-        ax.set_xlabel(xlabel)
-    axes[0].set_ylabel(zlabel)
-    fig.colorbar(pm, ax=list(axes), fraction=0.025, pad=0.02).set_label('% of peak')
+        cs = ax.contour(x / lam, z / lam, M, levels=levels, colors='k', linewidths=2.0)
+        ax.clabel(cs, fmt='%d', fontsize=22)
+        ax.contour(x / lam, z / lam, M, levels=[50], colors='#ff7f0e', linewidths=3.5)
+        ax.set_box_aspect(1.0)                                   # the paper's frames are square
+        if peak:
+            ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-6, 7, 2))
+        else:
+            ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-5, 6, 1))
+        ax.set_title(title, fontsize=26)
+        ax.set_xlabel(f'{xlabel} ({unit})')
+    axes[0].set_ylabel(f'{zlabel} ({unit})')
+    plt.tight_layout()
     save(fig, f'{tag}{suf}.png')
 
 
@@ -365,8 +422,8 @@ if __name__ == '__main__':
             peaklost(k, suf)
         for tag, th in (('a', 'pi'), ('b', 'pi'), ('c', 'pi2'), ('d', 'pi2')):
             for no in (2, 3):
-                maps(f'na_contours_fig{no}{tag}', 'x_um', 'z_um', 'F_na{:g}', f'map_fig{no}{tag}', th, suf, 'x (µm)', 'z (µm)')
-            maps(f'na_peakmaps_fig4{tag}', 'x_c_um', 'z_c_um', 'P_na{:g}', f'map_fig4{tag}', th, suf, 'x$_c$ (µm)', 'z$_c$ (µm)')
+                maps(f'na_contours_fig{no}{tag}', 'x_um', 'z_um', 'F_na{:g}', f'map_fig{no}{tag}', th, suf, 'x', 'z')
+            maps(f'na_peakmaps_fig4{tag}', 'x_c_um', 'z_c_um', 'P_na{:g}', f'map_fig4{tag}', th, suf, 'x$_c$', 'z$_c$')
         for pair in ('2ce', '2pe'):
             for th in ('pi', 'pi2'):
                 for key in 'FCQ':

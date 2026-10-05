@@ -27,7 +27,7 @@ matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 32,
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color')
-COPY = os.path.expanduser('~/Downloads/Research/two_color')
+COPY = os.path.join(os.path.expanduser('~/Downloads/Research/two_color'), 'figures')
 R = 1.0
 CASES = [(1.0, 0.7, 'Air, n = 1, NA 0.7'), (1.0, 0.9, 'Air, n = 1, NA 0.9'),
          (1.33, 0.9, 'Water, n = 1.33, NA 0.9')]
@@ -62,8 +62,6 @@ for ax, (n, na, title) in zip(axes, CASES):
     ax.set_title(title)
     ax.set_xlim(-1.05, 1.15); ax.set_ylim(-1.05, 1.15)
     ax.set_aspect('equal'); ax.axis('off')
-fig.suptitle('At θ = π/2 the cones fit only for α ≤ 45°,\nNA ≤ n/√2 ' + ('(0.71 in air)' if len(CASES) == 2 else
-             '(0.71 in air, 0.94 in water)'), fontsize=28, y=1.08)
 plt.tight_layout()
 path = os.path.join(OUT, 'na_crossing_limit_air.png' if len(CASES) == 2 else 'na_crossing_limit.png')
 fig.savefig(path, dpi=600, bbox_inches='tight')

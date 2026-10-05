@@ -212,14 +212,14 @@ def vector_fields():
 
 
 def lens_problem():
-    side('The θ = π/2 lens problem', os.path.join(os.path.dirname(FIG), 'na_crossing_general.png'), [
-        'Each lens fills a cone of half-angle α around its axis, with sin α = NA/n.',
-        'Two lenses with axes at an angle θ fit side by side while α ≤ θ/2, that is NA ≤ n sin(θ/2).',
-        'At θ = π/2 this is NA 0.71 in air, 0.94 in water and 1.07 in oil.',
-        'Crossed-beam results above these values are hatched: they assume both full cones reach the focus.'],
-        'Crossed lenses fit up to NA n sin(theta/2).',
-        'The limit is geometric: two cones meeting at a right angle overlap once their half-angles exceed 45 degrees.',
-        r'\mathrm{NA} \le n \sin(\theta/2)', fw=5.0)
+    s = slide('The θ = π/2 lens problem', 'Two lenses with crossed axes fit side by side while each cone half-angle is at '
+              'most 45°.')
+    figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), 0.45, 1.3, 9.1, 3.2)
+    h = equation(s, 0.55, 4.6, 5.2, r'\alpha \leq \theta/2 \;\Leftrightarrow\; \mathrm{NA} \leq n\sin(\theta/2)', 17)
+    bullets(s, 5.9, 4.6, 3.6, 0.7, ['θ = π/2: NA 0.71 in air, 0.94 in water. Results above this are marked * or hatched.'], 10.5)
+    notes(s, 'Crossed lenses fit up to NA n sin(theta/2).',
+          'Each lens fills a cone of half-angle alpha, sin alpha = NA/n. Two cones meeting at a right angle overlap once their '
+          'half-angles exceed 45 degrees: NA 0.71 in air, 0.94 in water.', r'\mathrm{NA} \le n \sin(\theta/2)')
 
 
 FCQ = (r'F = 1 - \frac{\langle (t-a)^2 \rangle}{\langle t^2 \rangle}, \qquad C = \frac{\langle a^2 \rangle}{\langle t^2 \rangle}, '
@@ -230,13 +230,13 @@ SPOT = r'\tilde{x} = \frac{x_c\,\mathrm{NA}}{\lambda}, \qquad \tilde{z} = \frac{
 def linfoot():
     eqslide('Linfoot’s criteria', 'Fidelity, structural content and correlation quality compare the misaligned PSF with the '
             'aligned PSF over the window.', [
-        (FCQ, 't = aligned PSF; a = misaligned PSF, each scaled to its own peak; ⟨ ⟩ = mean over the window.'),
-        (r'2Q - C = F', 'each criterion is 1 when a = t; we follow where each stays within 20%: F ≥ 0.8, Q ≥ 0.8, C ≤ 1.2.'),
-        (SPOT, 'misalignment in units of the spot; for 2PE, misalignments along the fringes are in λ/n. In these units scalar 2CE '
-               'gives the same map at all NAs.')],
+        (FCQ, 't = aligned PSF; a = misaligned PSF, each scaled to its own peak; ⟨ ⟩ = mean over the 100 × 100 x–z window.'),
+        (r'2Q - C = F', 'each criterion is 1 when a = t.'),
+        (r'\Delta F = F_{\mathrm{vector}} - F_{\mathrm{scalar}} \quad (\mathrm{same\ NA})',
+         'the difference maps compare vector and scalar 2CE at the same NA, so they isolate the exact phase and polarization.')],
         'Linfoot’s three criteria compare the misaligned PSF with the aligned one.',
-        'Measured in units of the spot, a spot that only shrinks with NA gives the same map at all NAs.',
-        '\n'.join((FCQ, r'2Q - C = F', SPOT)),
+        'Shown as surfaces over the offset of O prime, as in Figs. 5–6 of the paper, then as differences from scalar 2CE.',
+        '\n'.join((FCQ, r'2Q - C = F', r'\Delta F = F_{vector} - F_{scalar}')),
         side=('F, C and Q', ['F, fidelity: overall similarity; 1 − normalized mean-squared error.', '',
                              'C, structural content: relative energy; rises above 1 for a broader PSF.', '',
                              'Q, correlation quality: overlap of the two PSFs.']), size=16)
@@ -287,44 +287,70 @@ LEV = {'F': 'F = 0.8', 'C': 'C = 1.2', 'Q': 'Q = 0.8'}
 NAME = {'F': 'Fidelity', 'C': 'Structural content', 'Q': 'Correlation quality'}
 
 
+SURF = {   # (case, criterion): what the surfaces show, scalar 2CE at NA 0.5 against vector 2CE at NA 0.7 and 0.9
+    ('2ce_pi', 'F'): 'The peak of F around the aligned point narrows along z_c as NA grows, and F falls below −1 over most of the '
+                     'misalignments: the spot is smaller, so the same misalignment changes its shape more.',
+    ('2ce_pi', 'C'): 'C rises above 1 as O′ moves away; the region near 1 shrinks to a small well around the aligned point at '
+                     'high NA.',
+    ('2ce_pi', 'Q'): 'Q dips next to the aligned point and returns toward 1 farther out; the pattern becomes finer as NA '
+                     'grows.',
+    ('2ce_pi2', 'F'): 'With crossed beams F stays high along x_c in scalar 2CE; at NA 0.9 the high region closes in x_c as well.',
+    ('2ce_pi2', 'C'): 'C stays near 1 in a band around z_c = 0; at high NA the band becomes uneven along x_c.',
+    ('2ce_pi2', 'Q'): 'Q ≥ 0.8 in a band around z_c = 0 in scalar 2CE; at NA 0.9 the band becomes a closed region.',
+    ('2pe_pi', 'F'): 'The 2PE F is set by the standing-wave fringes; at high NA the region near the aligned point narrows and the '
+                     'side structure becomes finer.',
+    ('2pe_pi', 'C'): 'C rises steeply as O′ moves across the axis; at high NA the well around the aligned point narrows.',
+    ('2pe_pi', 'Q'): 'Q dips near the aligned point and returns toward 1 at the next fringes; the dip narrows as NA grows.',
+    ('2pe_pi2', 'F'): 'With crossed beams F peaks at each bright fringe, about one wavelength apart in x_c; the peaks stay at the '
+                      'same places as NA grows.',
+    ('2pe_pi2', 'C'): 'C follows the tilted fringes and rises quickly away from them.',
+    ('2pe_pi2', 'Q'): 'Q is high near the aligned point and near the next fringes, one wavelength apart.',
+}
+
+
 def linfoot_maps(suf, tag):
+    """For each case and criterion: the 3D surfaces (scalar 2CE, NA 0.7, NA 0.9), then the difference from scalar 2CE."""
     for case, lab in CASES:
         for key in 'FCQ':
-            path = SL(f'fidelity_{case}{suf}.png' if key == 'F' else f'linfoot{key}_{case}{suf}.png')
-            what = LINF_G[(case, key)] if suf else LINF[(case, key)]
-            side(f'{NAME[key]}{tag}: {lab}' if suf else f'{NAME[key]} against NA: {lab}', path, [
-                f'Each line is the contour {LEV[key]} at one NA, from low NA (dark) to NA 1.2 (yellow), in units of the spot.',
-                what],
-                f'{lab}: {NAME[key].lower()} against NA.',
-                'Solid: vector 2CE in air, to NA 0.99; dashed: water, to NA 1.2; red dotted: scalar 2CE, the same at all NAs in '
-                'these units.', fw=5.3)
+            t = f'{NAME[key]}{tag}: {lab}'
+            side3 = ('With the Gaussian input the surfaces are smoother and change less with NA than with uniform input, '
+                     'because the dim pupil edge keeps the focus closer to paraxial.') if suf else SURF[(case, key)]
+            wide(t, SL(f'linfoot3d_{key}_{case}{suf}.png'), [side3],
+                 f'{lab}: {NAME[key].lower()} against the misalignment, scalar 2CE and vector 2CE.',
+                 'Surfaces over (x_c, z_c) on the axes of Figs. 5–6, in units of lambda_1 (2CE) or lambda_2p (2PE): scalar 2CE at '
+                 'NA 0.5, then vector 2CE at NA 0.7 and 0.9. * marks crossed lenses above NA 0.71.')
+            wide(f'{NAME[key]}{tag}, vector − scalar: {lab}', SL(f'linfoot_diff_{key}_{case}{suf}.png'), [
+                f'Δ{key} = {key} of vector 2CE minus {key} of scalar 2CE at the same NA: red where the vector value is higher, blue '
+                'where it is lower; black line: no difference. The difference grows from NA 0.7 to NA 0.9.'],
+                f'{lab}: where vector and scalar {NAME[key].lower()} differ.',
+                'Both computed at the same NA, so the difference is the effect of the exact phase and polarization alone. The '
+                'colour scale covers 98 percent of the points; the arrows mark values beyond it.')
 
 
 FIGTXT = {
-    (2, 'a'): ('2CE, θ = π', 'At NA 0.9 the aligned 2CE spot is a little over half as wide and about a third as long as at '
-               'NA 0.5, so it is less elongated.'),
+    (2, 'a'): ('2CE, θ = π', 'From scalar 2CE at NA 0.5 to vector 2CE at NA 0.9 the aligned 2CE spot becomes a little over half '
+               'as wide and about a third as long, so it is less elongated.'),
     (2, 'b'): ('2PE, θ = π', 'The 2PE standing wave keeps its fringe spacing, λ_{2p}/2, while the spot around it shrinks; at '
                'NA 0.9 it holds a few fringes.'),
-    (2, 'c'): ('2CE, θ = π/2', 'With crossed beams the aligned 2CE spot is set by the widths of the two beams, so it changes '
-               'little between NA 0.5 and 0.7.'),
-    (2, 'd'): ('2PE, θ = π/2', 'The tilted 2PE fringes remain; at NA 0.7 the side fringes are weaker as the spot shrinks.'),
-    (3, 'a'): ('2CE, θ = π', 'With O′ at (0.4, 1.0) µm the 2CE spot still forms between O and O′; at NA 0.9 it is smaller and '
+    (2, 'c'): ('2CE, θ = π/2', 'With crossed beams the aligned 2CE spot is set by the widths of the two beams; it shrinks in both '
+               'directions as NA grows.'),
+    (2, 'd'): ('2PE, θ = π/2', 'The 2PE PSF keeps its tilted fringes and shrinks as NA grows; the weak 1% halo of scalar 2CE disappears.'),
+    (3, 'a'): ('2CE, θ = π', 'With O′ at (0.4, 1.0) µm the 2CE spot still forms between O and O′; at high NA it is smaller and '
                'tilted toward O′.'),
     (3, 'b'): ('2PE, θ = π', 'At NA 0.9 the misaligned 2PE spot breaks into a few separate fringes between O and O′.'),
-    (3, 'c'): ('2CE, θ = π/2', 'With crossed beams the misaligned 2CE spot follows beam 2 along z at both NAs.'),
-    (3, 'd'): ('2PE, θ = π/2', 'The misaligned 2PE spot breaks into separate pieces along the fringes at both NAs.'),
-    (4, 'a'): ('2CE, θ = π', 'The misalignments that keep 80% of the 2CE peak reach about ±2 µm along the axis at NA 0.5 and '
-               'about ±0.5 µm at NA 0.9.'),
+    (3, 'c'): ('2CE, θ = π/2', 'With crossed beams the misaligned 2CE peak follows beam 2 along z; at NA 0.9 it also moves toward O′ in x.'),
+    (3, 'd'): ('2PE, θ = π/2', 'The misaligned 2PE PSF breaks into separate pieces along the fringes; at NA 0.9 a second maximum appears near O.'),
+    (4, 'a'): ('2CE, θ = π', 'The misalignments that keep 80% of the 2CE peak reach about ±2.7 λ_1 along the axis in scalar 2CE and '
+               'about ±0.7 λ_1 at NA 0.9.'),
     (4, 'b'): ('2PE, θ = π', 'The 2PE peak map shrinks in the same way; the standing-wave fringes make it vary slightly along z.'),
-    (4, 'c'): ('2CE, θ = π/2', 'With crossed beams the 2CE peak barely depends on x_c at either NA; the range along z_c shrinks '
-               'as the beams narrow.'),
-    (4, 'd'): ('2PE, θ = π/2', 'The tilted bands of the 2PE peak map, from interference, narrow at NA 0.7.'),
+    (4, 'c'): ('2CE, θ = π/2', 'In scalar 2CE the peak barely depends on x_c; with vector 2CE at high NA the region that keeps the '
+               'peak closes in x_c as well as in z_c.'),
+    (4, 'd'): ('2PE, θ = π/2', 'The tilted bands of the 2PE peak map, from interference, narrow as NA grows.'),
 }
 
 
 def maps(suf, tag):
     for (no, t), (lab, line) in FIGTXT.items():
-        na2 = '0.7' if 'π/2' in lab else '0.9'
         where = {2: 'aligned foci', 3: 'O′ at (0.4, 1.0) µm', 4: 'peak against the misalignment (x_c, z_c)'}[no]
         if suf and no == 4:
             line = ('With the Gaussian input the region that keeps the peak is larger than with uniform input at the same NA, '
@@ -333,10 +359,11 @@ def maps(suf, tag):
             line = ('With the Gaussian input the spot is wider and longer than with uniform input at the same NA, and it shrinks '
                     'in the same way as NA grows.')
         wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line],
-             f'Fig. {no}({t}) of scalar 2CE at NA 0.5 and {na2}.',
-             f'Fig. {no}({t}) of scalar 2CE, {lab}, {where}, with vector 2CE at NA 0.5 and {na2}, on the same axes. Heat '
-             'map: percent of the peak; white lines: 20, 50 and 80 percent. Crossed beams stop at NA 0.7, where the lenses '
-             'still fit in air.')
+             f'Fig. {no}({t}): scalar 2CE at NA 0.5 against vector 2CE at NA 0.7 and 0.9.',
+             f'Fig. {no}({t}), {lab}, {where}: scalar 2CE at NA 0.5 (the replication), then vector 2CE at NA 0.7 and 0.9, on the '
+             'axes of the paper. Contours in percent of the peak; orange: 50 percent.'
+             + (' At theta = pi/2, NA 0.9 (marked *) is above NA 0.71, where the two lenses no longer fit in air.'
+                if 'π/2' in lab else ''))
 
 
 PEAK = [
@@ -362,7 +389,8 @@ PEAK = [
      'of misalignments is too coarse for the long focus, so those points are left out.'),
 ]
 PEAK_G = [(51, 'about 6%'), (24, 'about 8%'), (38, 'about 14%'), (72, 'about 11%'), (75, 'about 19%')]
-LEGEND = ('Blue: vector 2CE; red: scalar 2CE, up to NA 0.5 (grey band); dashed: the reported scalar 2CE loss at NA 0.5.')
+LEGEND = ('Blue: vector 2CE; red: scalar 2CE; star: the loss reported at NA 0.5; grey: NA above 0.5, where the paraxial model '
+          'is expected to break down.')
 
 
 def peaks(suf):
@@ -417,11 +445,13 @@ SUMMARIES = {   # section: (main point, supporting, supporting, speaker script);
         'Recomputed with the vector focus, the tolerances follow the width and length of the focus. The paraxial model agrees to '
         'five percent up to NA 0.45; above that, its longer focus overestimates the tolerance along the axis.'),
     'fidelity': (
-        'At high NA the 2CE PSF keeps its shape over a smaller range of misalignments along the axis than scalar 2CE predicts.',
-        'In units of the spot the scalar 2CE maps are the same at all NAs, so the change comes from the vector focus.',
-        'For 2PE, Linfoot’s criteria are set by the fringes, whose spacing does not depend on NA, and change little.',
-        'Linfoot’s criteria of the paper, followed against NA. For 2CE the vector focus keeps a faithful PSF over a smaller range '
-        'of misalignments than the paraxial model predicts. For 2PE the fringes set the criteria.'),
+        'At high NA the 2CE PSF keeps its shape over a smaller range of misalignments than scalar 2CE predicts.',
+        'With facing lenses the region of high fidelity narrows along z_c from scalar 2CE to vector NA 0.9; with crossed lenses '
+        'it also closes in x_c.',
+        'For 2PE, Linfoot’s criteria are set by the fringes, whose spacing does not depend on NA; the vector−scalar differences '
+        'follow the fringes.',
+        'Linfoot’s criteria of the paper, as surfaces against the misalignment for scalar 2CE and vector 2CE at NA 0.7 and 0.9, '
+        'and as differences from scalar 2CE at the same NA.'),
     'gaussian': (
         'With a Gaussian input (α_t = 4) the alignment tolerances are about 1.4 times larger than with uniform input.',
         'The dim edge of the pupil removes the high-angle rays, so the focus is wider and longer; at NA 0.5 the same '
@@ -466,11 +496,10 @@ if SECTION == 'overview':
         'across the axis can depend on the polarization. To review: whether to account for it, unpolarized against linear.'],
         'At high NA the spot depends on the polarization.',
         'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 they differ.')
-    side('Next steps: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_general.png'), [
-        'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2).',
-        'At θ = π/2 this is NA 0.71 in air and 0.94 in water.',
-        'To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
-        'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)', fw=5.0)
+    wide('Next steps: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
+        'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
+        'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
+        'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
     side('Next steps: delay in time against NA', PD('time_vs_space.png'), [
         'So far the delay was computed with scalar 2CE at NA 0.5 (Parts 5–6).',
         'Next: the same delay with vector 2CE against NA, compared with scalar 2CE.',
@@ -503,7 +532,8 @@ elif SECTION == 'vector':
         wide(f'20% tolerances against NA, {lab}', SL(f'tolerance_{key}.png'), [
             'The tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. ' + line],
             f'At {lab} the 20% tolerances shrink as a power of NA.',
-            'Blue: vector 2CE; red: scalar 2CE, up to NA 0.5; dashed: the reported scalar 2CE tolerance at NA 0.5.')
+            'Blue: vector 2CE; red: scalar 2CE; star: the tolerance reported at NA 0.5; grey: NA above 0.5, where the paraxial model is '
+            'expected to break down.')
     wide('Scalar 2CE against vector 2CE, 20% tolerances', SL('deviation.png'), [
         'The difference between the 20% tolerances of scalar and vector 2CE passes 5% at NA 0.45 and 10% at NA 0.6 along the '
         'axis, and with crossed beams in both directions. Across the axis at θ = π it stays within 5% up to NA 0.8.'],
@@ -511,7 +541,7 @@ elif SECTION == 'vector':
         'The paraxial focus is longer than the vector one, so it overestimates the tolerance along the axis. Across the axis the two '
         'differ through polarization, which is small up to NA 0.8. The vertical line is NA 0.5, the value used in scalar 2CE.')
     wide('20% tolerances in water, θ = π', SL('tolerance_pi_n1.33.png'), [
-        'In water (n = 1.33) the tolerances follow the same power laws. Scalar 2CE (not drawn) departs by 5% at NA 0.6 and 10% '
+        'In water (n = 1.33) the tolerances follow the same power laws. Scalar 2CE departs by 5% at NA 0.6 and 10% '
         'at NA 0.8, 1.33 times the values in air: the difference is set by the angle of the cone, sin α = NA/n.'],
         'In water scalar 2CE holds to 1.33 times the NA it holds to in air.',
         'The same 20% tolerances in water, up to NA 1.2.')
@@ -529,7 +559,7 @@ elif SECTION == 'vector':
         'At NA 0.5 the two foci nearly coincide.', 'A single beam at 750 nm, intensity along the axis.')
 
 elif SECTION == 'fidelity':
-    title('Part 3: Linfoot’s criteria against NA', 'Linfoot’s criteria (F, C and Q) of the misaligned PSF, vector 2CE and scalar 2CE, NA 0.1 to 1.2')
+    title('Part 3: Linfoot’s criteria against NA', 'Linfoot’s criteria (F, C and Q) of the misaligned PSF: scalar 2CE, and vector 2CE at NA 0.7 and 0.9')
     summary(*SUMMARIES['fidelity'])
     geometry(); vector_fields(); linfoot()
     linfoot_maps('', '')
@@ -561,7 +591,7 @@ elif SECTION == 'gaussian':
     for key, lab in (('pi', 'θ = π'), ('pi2', 'θ = π/2')):
         wide(f'20% tolerances, Gaussian input, {lab}', SL(f'tolerance_{key}_at4.png'), [
             'With α_t = 4 the tolerances follow the same power laws as with uniform input and are about 1.4 times larger. The '
-            'dashed line is the reported uniform-input scalar 2CE value at NA 0.5.'],
+            'star is the value reported for uniform input at NA 0.5.'],
             f'Gaussian input: the tolerances at {lab} are larger by about 1.4.',
             'Blue: vector 2CE; red: scalar 2CE up to NA 0.5.')
     wide('Scalar 2CE against vector 2CE, Gaussian input', SL('deviation_at4.png'), [
@@ -570,7 +600,7 @@ elif SECTION == 'gaussian':
         'With a Gaussian input the paraxial focus holds to a higher NA.',
         'The difference between scalar and vector 20% tolerances, Gaussian input.')
     wide('20% tolerances in water, Gaussian input, θ = π', SL('tolerance_pi_at4_n1.33.png'), [
-        'In water with α_t = 4 the tolerances follow the same power laws. Scalar 2CE (not drawn) departs by 5% at NA 0.7 and 10% '
+        'In water with α_t = 4 the tolerances follow the same power laws. Scalar 2CE departs by 5% at NA 0.7 and 10% '
         'at NA 0.9.'],
         'In water with a Gaussian input scalar 2CE holds to NA 0.7.', 'The same tolerances in water, up to NA 1.2.')
     lens_problem()
