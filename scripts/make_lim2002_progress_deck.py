@@ -635,7 +635,7 @@ for sl in prs.slides:
             ipart._blob = buf.getvalue()
         done.add(id(ipart))
 OUT = os.path.join(DIR, f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
-os.makedirs(DIR, exist_ok=True)
+os.makedirs(os.path.join(DIR, 'pdfs'), exist_ok=True)
 ds.keynote_fonts()
 prs.save(OUT)
 # Keynote rejects the file as written by python-pptx; a re-save through PowerPoint makes it load. Also export the PDF.
@@ -643,7 +643,7 @@ tmp = OUT.replace('.pptx', '.resaved.pptx')
 subprocess.run(['osascript', '-e', f'''tell application "Microsoft PowerPoint"
 open POSIX file "{OUT}"
 save active presentation in POSIX file "{tmp}" as save as Open XML presentation
-save active presentation in POSIX file "{OUT[:-5]}.pdf" as save as PDF
+save active presentation in POSIX file "{os.path.join(DIR, 'pdfs', os.path.basename(OUT)[:-5])}.pdf" as save as PDF
 close active presentation saving no
 end tell'''], capture_output=True)
 if os.path.getsize(tmp) if os.path.exists(tmp) else 0:
