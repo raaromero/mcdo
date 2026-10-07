@@ -359,6 +359,43 @@ def polarization():
     plt.tight_layout()
     save(fig, 'polarization_tolerance_pi.png')
 
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+    for ax, col, lab in ((axes[0], 3, 'x'), (axes[1], 4, 'z')):
+        for suf, name, c, ls in POLS:
+            a = rows(os.path.join(D, f'na_breakdown{suf}_pi2.csv'))
+            a = a[(a[:, 0] >= 0.1 - 1e-9) & (a[:, 0] <= 0.95 + 1e-9)]
+            ax.plot(a[:, 0], a[:, col], ls, color=c, lw=4, label=name)
+        ax.axvspan(1 / np.sqrt(2), 0.95, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
+        logaxes(ax, np.array([0.1, 0.95])); ax.set_title(f'θ = π/2, along {lab}$_c$'); ax.set_xlabel('NA')
+        ax.set_xticks((0.1, 0.2, 0.5)); ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5)))
+    axes[0].set_ylabel('Offset for 20% loss (µm)')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    plt.tight_layout()
+    save(fig, 'polarization_tolerance_pi2.png')
+
+    # s and p: the field of each beam perpendicular to (s) or in (p) the plane of the two lens axes (θ = π/2)
+    from matplotlib.patches import Circle
+    fig, axes = plt.subplots(1, 2, figsize=(8.0, 4.6))
+    for ax, (lab, kind) in zip(axes, (('s–s', 's'), ('p–p', 'p'))):
+        ax.set_aspect('equal'); ax.axis('off'); ax.set_xlim(-1.4, 4.4); ax.set_ylim(2.2, -3.6)
+        ax.annotate('', xy=(4.1, 0), xytext=(-1.2, 0), arrowprops=dict(arrowstyle='->', color='#888888', lw=1.5))
+        ax.annotate('', xy=(0, 2.0), xytext=(0, -3.4), arrowprops=dict(arrowstyle='->', color='#888888', lw=1.5))
+        ax.text(4.15, 0.25, 'x', fontsize=24); ax.text(0.2, 2.15, 'z', fontsize=24)
+        ax.annotate('', xy=(0, -0.35), xytext=(0, -3.0), arrowprops=dict(arrowstyle='-|>', color=RED, lw=3.5, mutation_scale=28))
+        ax.annotate('', xy=(0.35, 0), xytext=(3.8, 0), arrowprops=dict(arrowstyle='-|>', color=BLUE, lw=3.5, mutation_scale=28))
+        for (px, pz, col, along) in ((-0.9, -1.7, RED, 'x'), (2.1, 0.9, BLUE, 'z')):
+            if kind == 's':
+                ax.add_patch(Circle((px, pz), 0.32, fc='white', ec=col, lw=3)); ax.plot(px, pz, 'o', color=col, ms=6)
+            else:
+                d = (0.6, 0) if along == 'x' else (0, 0.6)
+                ax.annotate('', xy=(px + d[0], pz + d[1]), xytext=(px - d[0], pz - d[1]),
+                            arrowprops=dict(arrowstyle='<->', color=col, lw=3, mutation_scale=22))
+        ax.plot(0, 0, 'ko', ms=8)
+        ax.set_title(lab, fontsize=28)
+    plt.tight_layout()
+    save(fig, 'polarization_sp_diagram.png')
+
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
     for ax, k, title in ((axes[0], 2, '2CE, θ = π, x$_c$ = 0.37 λ$_1$'), (axes[1], 3, '2PE, θ = π/2, x$_c$ = 0.5 λ$_{2p}$')):
         for suf, name, c, ls in POLS:

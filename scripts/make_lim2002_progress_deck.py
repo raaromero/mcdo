@@ -6,6 +6,7 @@ r"""Progress report on two-color excitation (2CE), one deck per section.
   03 fidelity     Linfoot's criteria F, C, Q against NA
   04 gaussian     vector 2CE, Gaussian input (α_t = 4): the results of 02 and 03
   05 delay        time delay between continuous beams, and against a misalignment in space
+  06 polarization s–s and p–p linear polarization against unpolarized beams
 
 Each deck stands on its own: title, summary (main point and two supporting
 sentences), the geometry and field equations it uses, its results, and a glossary.
@@ -32,7 +33,7 @@ import mcdo.deckstyle as ds
 from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, PALE, PURPLE, RED, WHITE, bullets, card, dots, equation,
                             figure, notes, prs, shape, slide, text, where)
 
-SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay']
+SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'polarization']
 SECTION = os.environ.get('SECTION')
 DIR = os.path.expanduser('~/Downloads/Research/two_color')
 HERE = os.path.dirname(__file__)
@@ -103,13 +104,14 @@ GLOSS = {   # term: (meaning, sections that use it)
     '2CE, 2PE': ('two-color excitation, signal ∝ I_1 I_2; two-photon excitation, signal ∝ |U_1 + U_2|^4', 'all'),
     'PSF': ('point spread function: the fluorescence from one point, scaled to its peak', 'all'),
     'Scalar 2CE': ('the paraxial scalar model (small-angle phase, no polarization)', 'all'),
-    'Vector 2CE': ('the same signals with the Richards–Wolf focus (exact phase and polarization)', 'overview vector fidelity gaussian'),
+    'Vector 2CE': ('the same signals with the Richards–Wolf focus (exact phase and polarization)', 'overview vector fidelity gaussian polarization'),
     'Scalar Debye': ('scalar focus with the exact phase, no polarization', 'vector'),
-    'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'overview replication vector gaussian delay'),
-    '20% tolerance': ('the misalignment x_c or z_c that reduces the 2CE peak by 20%', 'overview vector gaussian'),
+    'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'overview replication vector gaussian delay polarization'),
+    '20% tolerance': ('the misalignment x_c or z_c that reduces the 2CE peak by 20%', 'overview vector gaussian polarization'),
     'F, C, Q': ('Linfoot’s criteria: fidelity, structural content and correlation quality', 'overview replication fidelity gaussian delay'),
     'α_t': ('truncation parameter of the Gaussian input; 0 is uniform input', 'overview gaussian'),
-    'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'overview vector fidelity gaussian'),
+    'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'overview vector fidelity gaussian polarization'),
+    's–s, p–p': ('both beams polarized perpendicular to (s) or in (p) the plane of the two lens axes', 'polarization'),
     'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay'),
     'K': ('fringe wavevector of the two 2PE beams, |K| = 2k sin(θ/2)', 'delay'),
 }
@@ -695,6 +697,70 @@ elif SECTION == 'delay':
         'The 2PE loss of a misalignment is mainly phase, and a time delay removes most of it.',
         'Scalar model, NA 0.5. The time delay that best restores the peak is close to phi_eq.', size=12.5)
 
+elif SECTION == 'polarization':
+    title('Part 6: Polarization, s and p', 'Linear polarization of the two beams against unpolarized (circular) beams, vector 2CE')
+    summary('At high NA, linear polarization changes the 2CE results across the axis with facing lenses, and decides whether '
+            'crossed-beam 2PE interferes; results along the axis do not change.',
+            'At NA 0.9, θ = π, a misalignment of 0.37 λ_1 across the axis reduces the 2CE peak by about 51% for s–s, 42% '
+            'unpolarized and 32% for p–p: the spot is wider along the polarization.',
+            'For 2PE with crossed beams, p–p fields are perpendicular and barely interfere: a misalignment of 0.5 λ_{2p} costs a '
+            'few percent of the peak up to NA 0.7, against 26–44% for s–s.',
+            'Unpolarized beams give a round spot. Linear polarization makes the spot wider along the field, so results across the '
+            'axis depend on the orientation of the misalignment. For 2PE the relative orientation of the two fields decides the '
+            'interference.')
+    geometry()
+    eqslide('s and p polarization', 'Each beam’s input field is linear, at angle ψ about its own axis; s is perpendicular to the '
+            'plane of the two lens axes, p is in it.', [
+        (r'\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_{x} + \sin\psi\,\mathbf{E}_{y}',
+         'E_x, E_y = Richards–Wolf focal fields for input polarized along the beam’s own x and y; ψ = π/2 is s, ψ = 0 is p.'),
+        (r'I_{\mathrm{unpol}} = \frac{1}{2}\left(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2\right)',
+         'unpolarized: the average of the two, equal to circular polarization; the spot is round.'),
+        (r'F_{2c} = \kappa_{2c}\, |\mathbf{E}_1|^2 |\mathbf{E}_2|^2, \qquad F_{2p} = \kappa_{2p}\, |\mathbf{E}_1 + \mathbf{E}_2|^4',
+         '2PE interferes through E_1·E_2: parallel fields (s–s) interfere fully; perpendicular fields (p–p at θ = π/2) do not. '
+         'Diagram: s, field out of the page (⊙); p, field in the x–z plane (↔).')],
+        's is perpendicular to the plane of the two lens axes, p lies in it.',
+        'Same Richards-Wolf fields as Parts 2-4, with a fixed input polarization instead of the average.',
+        r"""\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_x + \sin\psi\,\mathbf{E}_y
+I_{unpol} = \tfrac{1}{2}(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2)""",
+        fig=SL('polarization_sp_diagram.png'), size=15)
+    wide('Focal spot and polarization', SL('polarization_spot.png'), [
+        'One beam at focus, across x. At NA 0.5 the two polarizations nearly coincide; at NA 0.9 the spot is about 1.35 times '
+        'wider along the field than across it, because the focused field gains a component along z, strongest along the '
+        'polarization.'],
+        'At high NA the focal spot is wider along the polarization.',
+        'Blue: field along y (s), so x is across the polarization. Red: field along x (p).')
+    wide('20% tolerances and polarization, θ = π', SL('polarization_tolerance_pi.png'), [
+        'Along the axis the three give the same tolerance. Across the axis, at NA 0.9, the tolerance is about 160 nm for s–s, '
+        '180 nm unpolarized and 210 nm for p–p: wider along the polarization, as the spot is.'],
+        'With facing lenses polarization changes the tolerance across the axis only.',
+        'The 20 percent tolerances against NA for unpolarized, s–s and p–p beams.')
+    wide('20% tolerances and polarization, θ = π/2', SL('polarization_tolerance_pi2.png'), [
+        'With crossed beams the three nearly coincide in both directions: a misalignment in x_c is along the axis of beam 2, so '
+        'it follows the length of the focus, which polarization barely changes (335, 328 and 346 nm at NA 0.9).'],
+        'With crossed beams polarization barely changes the tolerances.',
+        'Hatched: crossed lenses above NA 0.71.')
+    wide('Peak lost and polarization', SL('polarization_peaklost.png'), [
+        'Left: at NA 0.9, θ = π, a misalignment of 0.37 λ_1 across the axis costs about 51% (s–s), 42% (unpolarized) and 32% '
+        '(p–p) of the 2CE peak. Right: for crossed-beam 2PE, p–p fields barely interfere, so a misalignment of 0.5 λ_{2p} costs '
+        'a few percent up to NA 0.7, against 26–44% for s–s.'],
+        'Polarization changes the losses across the axis, and for crossed-beam 2PE decides whether the beams interfere.',
+        'Above NA 0.7 the p–p loss rises because the focused fields gain components that are no longer perpendicular.')
+    words('How the earlier results change with s or p', [
+        'Part 2, facing lenses: tolerances and losses across the axis move by up to about ±20% at NA 0.9; along the axis they do '
+        'not change.',
+        'Part 2, crossed lenses: 2CE tolerances change by a few percent at most.',
+        '2PE with crossed beams: with p–p the fringes vanish, so the 2PE loss of a misalignment, and its link to a time delay '
+        '(Part 5), largely disappear; s–s is the case the paper describes.',
+        'Part 4, Gaussian input: the same pattern, smaller, since the Gaussian focus is closer to paraxial.',
+        'With linear polarization the orientation of the dye molecules also enters; for randomly oriented molecules the 2CE '
+        'signal is proportional to',
+        '$$ (|E_1|^2 |E_2|^2 + |E_1·E_2|^2 + |E_1·E_2^*|^2) / 15',
+        'which is three times larger for parallel fields than for perpendicular ones.'],
+        'Linear polarization moves the results across the axis and removes crossed-beam 2PE interference for p–p.',
+        'A summary of what would change in each earlier part if the beams were linearly polarized.',
+        r'\langle |\mathbf{E}_1\cdot\hat{d}|^2 |\mathbf{E}_2\cdot\hat{d}|^2 \rangle = \frac{|\mathbf{E}_1|^2|\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2^*|^2}{15}',
+        size=12.5)
+
 glossary()
 
 # ── renumber, check legibility, embed at 600 dpi, save ──
@@ -732,14 +798,14 @@ OUT = os.path.join(DIR, f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
 os.makedirs(os.path.join(DIR, 'pdfs'), exist_ok=True)
 ds.keynote_fonts()
 prs.save(OUT)
-# Keynote rejects the file as written by python-pptx; a re-save through PowerPoint makes it load. Also export the PDF.
-tmp = OUT.replace('.pptx', '.resaved.pptx')
+# Keynote rejects the file as written by python-pptx; a re-save in place through PowerPoint makes it load. Opening through
+# Finder (open -a) lets the sandboxed PowerPoint access a new file. Then export the PDF.
+subprocess.run(['open', '-a', 'Microsoft PowerPoint', OUT])
+import time as _time
+_time.sleep(8)
 subprocess.run(['osascript', '-e', f'''tell application "Microsoft PowerPoint"
-open POSIX file "{OUT}"
-save active presentation in POSIX file "{tmp}" as save as Open XML presentation
+save active presentation
 save active presentation in POSIX file "{os.path.join(DIR, 'pdfs', os.path.basename(OUT)[:-5])}.pdf" as save as PDF
 close active presentation saving no
 end tell'''], capture_output=True)
-if os.path.getsize(tmp) if os.path.exists(tmp) else 0:
-    os.replace(tmp, OUT)
 print(f'Saved -> {OUT} ({len(prs.slides)} slides)' + (f'; below {FLOOR:g} pt: {sorted(low)}' if low else ''))
