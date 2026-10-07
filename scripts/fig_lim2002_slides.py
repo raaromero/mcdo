@@ -376,7 +376,7 @@ def polarization():
 
     # s and p: the field of each beam perpendicular to (s) or in (p) the plane of the two lens axes (θ = π/2)
     from matplotlib.patches import Circle
-    fig, axes = plt.subplots(1, 2, figsize=(8.0, 4.6))
+    fig, axes = plt.subplots(1, 2, figsize=(7.4, 4.3))
     for ax, (lab, kind) in zip(axes, (('s–s', 's'), ('p–p', 'p'))):
         ax.set_aspect('equal'); ax.axis('off'); ax.set_xlim(-1.4, 4.4); ax.set_ylim(2.2, -3.6)
         ax.annotate('', xy=(4.1, 0), xytext=(-1.2, 0), arrowprops=dict(arrowstyle='->', color='#888888', lw=1.5))

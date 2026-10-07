@@ -717,7 +717,7 @@ elif SECTION == 'polarization':
          'unpolarized: the average of the two, equal to circular polarization; the spot is round.'),
         (r'F_{2c} = \kappa_{2c}\, |\mathbf{E}_1|^2 |\mathbf{E}_2|^2, \qquad F_{2p} = \kappa_{2p}\, |\mathbf{E}_1 + \mathbf{E}_2|^4',
          '2PE interferes through E_1·E_2: parallel fields (s–s) interfere fully; perpendicular fields (p–p at θ = π/2) do not. '
-         'Diagram: s, field out of the page (⊙); p, field in the x–z plane (↔).')],
+         'Diagram: s, field out of the page; p, field in the x–z plane.')],
         's is perpendicular to the plane of the two lens axes, p lies in it.',
         'Same Richards-Wolf fields as Parts 2-4, with a fixed input polarization instead of the average.',
         r"""\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_x + \sin\psi\,\mathbf{E}_y
