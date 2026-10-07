@@ -222,20 +222,46 @@ EQN = [0]                                            # equation counter for the 
 EQDIR = os.path.join(FIG, 'equations')
 
 
+LATEX_DOC = r"""\documentclass[border=1.5pt]{standalone}
+\usepackage{amsmath}
+\usepackage{stix2}
+\usepackage{bm}
+\usepackage{xcolor}
+\definecolor{navy}{HTML}{14213D}
+\begin{document}
+\color{navy}\fontsize{%(size)s}{%(lead)s}\selectfont
+$\displaystyle %(tex)s$
+\end{document}
+"""
+
+
 def eq_image(tex, size=18):
-    """Render one LaTeX line to a transparent PNG at 600 dpi; return (path, width in, height in) at `size` pt."""
+    """Render one equation with LaTeX (tectonic, STIX Two) to a transparent PNG at 600 dpi;
+    return (path, width in, height in) at `size` pt. Falls back to matplotlib mathtext if LaTeX fails."""
     import hashlib
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
+    import subprocess
+    import tempfile
     os.makedirs(EQDIR, exist_ok=True)
-    path = os.path.join(EQDIR, hashlib.md5(f'{tex}|{size}'.encode()).hexdigest()[:16] + '.png')
+    key = hashlib.md5(f'latex|{tex}|{size}'.encode()).hexdigest()[:16]
+    path = os.path.join(EQDIR, key + '.png')
     if not os.path.exists(path):
-        with matplotlib.rc_context({'mathtext.fontset': 'stix', 'font.family': 'STIXGeneral'}):
-            fig = plt.figure(figsize=(0.01, 0.01))
-            fig.text(0, 0, '$' + tex.replace(r'\frac', r'\dfrac') + '$', fontsize=size, color='#14213D')
-            fig.savefig(path, dpi=600, transparent=True, bbox_inches='tight', pad_inches=0.02)
-            plt.close(fig)
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, 'eq.tex'), 'w') as fh:
+                fh.write(LATEX_DOC % dict(size=size, lead=round(size * 1.2, 1), tex=tex))
+            r = subprocess.run(['tectonic', 'eq.tex'], cwd=tmp, capture_output=True, text=True)
+            if r.returncode == 0:
+                subprocess.run(['pdftocairo', '-png', '-r', '600', '-transp', '-singlefile', 'eq.pdf', path[:-4]],
+                               cwd=tmp, check=True)
+            else:
+                print('LaTeX failed, using mathtext:', tex[:60])
+                import matplotlib
+                matplotlib.use('Agg')
+                import matplotlib.pyplot as plt
+                with matplotlib.rc_context({'mathtext.fontset': 'stix', 'font.family': 'STIXGeneral'}):
+                    fig = plt.figure(figsize=(0.01, 0.01))
+                    fig.text(0, 0, '$' + tex.replace(r'\dfrac', r'\frac') + '$', fontsize=size, color='#14213D')
+                    fig.savefig(path, dpi=600, transparent=True, bbox_inches='tight', pad_inches=0.02)
+                    plt.close(fig)
     w, h = Image.open(path).size
     return path, w / 600, h / 600
 

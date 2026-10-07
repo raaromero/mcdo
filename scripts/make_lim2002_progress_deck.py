@@ -126,6 +126,23 @@ def glossary():
         notes(s, 'Glossary.', ' '.join(page))
 
 
+def checks_slide(part):
+    """The physics checks of one part, from scripts/check_lim2002_physics.py."""
+    import csv as _csv
+    path = os.path.join(FIG, 'physics_checks.csv')
+    parts = part if isinstance(part, tuple) else (part,)
+    if not os.path.exists(path) or not part:
+        return
+    rows_ = [r for r in _csv.DictReader(open(path)) if r['part'] in parts]
+    if not rows_:
+        return
+    s = slide('Physics checks', '')
+    bullets(s, 0.6, 1.1, 8.9, 4.1, [f"{r['check']}: expected {r['expected']}, obtained {r['obtained']}"
+                                    + ('' if r['passed'] == 'yes' else ' (fails)') for r in rows_], 12)
+    notes(s, 'Each result is checked against an analytic limit, a symmetry or an independent calculation.',
+          ' '.join(f"{r['check']}: {r['obtained']}." for r in rows_))
+
+
 # ── shared setup slides ──
 def geometry():
     side('Geometry: x_c, z_c and θ', os.path.join(FIG, 'fig1_geometry.png'), [
@@ -751,16 +768,21 @@ I_{unpol} = \tfrac{1}{2}(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2)"
         'Part 2, crossed lenses: 2CE tolerances change by a few percent at most.',
         '2PE with crossed beams: with p–p the fringes vanish, so the 2PE loss of a misalignment, and its link to a time delay '
         '(Part 5), largely disappear; s–s is the case the paper describes.',
-        'Part 4, Gaussian input: the same pattern, smaller, since the Gaussian focus is closer to paraxial.',
-        'With linear polarization the orientation of the dye molecules also enters; for randomly oriented molecules the 2CE '
-        'signal is proportional to',
-        '$$ (|E_1|^2 |E_2|^2 + |E_1·E_2|^2 + |E_1·E_2^*|^2) / 15',
-        'which is three times larger for parallel fields than for perpendicular ones.'],
+        'Part 4, Gaussian input: the same pattern, smaller, since the Gaussian focus is closer to paraxial.'],
         'Linear polarization moves the results across the axis and removes crossed-beam 2PE interference for p–p.',
-        'A summary of what would change in each earlier part if the beams were linearly polarized.',
-        r'\langle |\mathbf{E}_1\cdot\hat{d}|^2 |\mathbf{E}_2\cdot\hat{d}|^2 \rangle = \frac{|\mathbf{E}_1|^2|\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2^*|^2}{15}',
-        size=12.5)
+        'A summary of what would change in each earlier part if the beams were linearly polarized.', size=13)
+    MOL = (r'\langle |\mathbf{E}_1\cdot\hat{\mathbf{d}}|^2\, |\mathbf{E}_2\cdot\hat{\mathbf{d}}|^2 \rangle = \frac{|\mathbf{E}_1|^2'
+           r'|\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2|^2 + |\mathbf{E}_1\cdot\mathbf{E}_2^{*}|^2}{15}')
+    eqslide('Orientation of the dye molecules', 'With linear polarization the orientation of each molecule’s transition '
+            'dipole also enters the 2CE signal.', [
+        (MOL, 'd̂ = direction of the molecule’s transition dipole; ⟨ ⟩ = average over randomly oriented molecules.'),
+        (r'\text{parallel fields: } \tfrac{3}{15}\,|\mathbf{E}_1|^2|\mathbf{E}_2|^2, \qquad \text{perpendicular fields: } '
+         r'\tfrac{1}{15}\,|\mathbf{E}_1|^2|\mathbf{E}_2|^2',
+         'the signal is three times larger for parallel fields; the unpolarized product I_1 I_2 assumes this does not matter.')],
+        'With linear polarization the molecular orientation factor enters the signal.',
+        'For randomly oriented molecules the average of the two dipole projections gives this factor.', MOL, size=16)
 
+checks_slide({'replication': 'replication', 'vector': 'vector', 'fidelity': 'fidelity', 'gaussian': 'gaussian', 'delay': ('delay', 'pulses'), 'polarization': 'polarization'}.get(SECTION, ()))
 glossary()
 
 # ── renumber, check legibility, embed at 600 dpi, save ──
@@ -789,7 +811,7 @@ for sl in prs.slides:
         im = Image.open(io.BytesIO(ipart.blob))
         w = int(round(600 * sh.width / 914400))
         if im.size[0] > 1.05 * w:
-            im = im.convert('RGB').resize((w, int(round(w * im.size[1] / im.size[0]))), Image.LANCZOS)
+            im = im.convert('RGBA' if im.mode in ('RGBA', 'LA', 'P') else 'RGB').resize((w, int(round(w * im.size[1] / im.size[0]))), Image.LANCZOS)
             buf = io.BytesIO()
             im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
             ipart._blob = buf.getvalue()

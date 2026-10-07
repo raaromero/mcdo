@@ -12,7 +12,7 @@ Per model and pulse duration τ it saves, for 2CE and 2PE at θ = π and π/2:
   peak, F, C, Q  peak and Linfoot's criteria against the offset of O′ (Figs. 4–6), offsets ±1 × ±5 µm
   delay        peak lost and F against the time delay Δt/τ, aligned foci
   delay_z      (θ = π) peak against the offset z_c and the time delay
-Offsets of O′ use the translation of beam 2's field on an extended grid, as in the replication.
+Offsets of O′ (zero included) use the translation of beam 2's field on an extended grid, as in the replication.
 
     MODEL=scalar python scripts/run_pulsed_lim2002.py           # scalar 2CE, NA 0.5 (stage 1)
     MODEL=rw NA=0.7 python scripts/run_pulsed_lim2002.py        # vector, unpolarized 2CE, s-polarized 2PE (stage 2)
@@ -40,7 +40,8 @@ TH = {'pi': np.pi, 'pi2': np.pi / 2}
 DX, DZ = 0.02, 0.05                       # window steps (µm): ±1 × ±5 µm
 NXW, NZW = 50, 100
 SX, SZ = 4, 8                             # offset steps in window samples: 0.08 µm, 0.4 µm
-OX, OZ = np.arange(-50, 51, SX), np.arange(-100, 101, SZ)   # offsets ±1 × ±5 µm (26 × 26)
+OX, OZ = np.arange(-48, 49, SX), np.arange(-96, 97, SZ)     # offsets ±0.96 × ±4.8 µm (25 × 25), zero included
+O3 = (20, 20)                                                 # Fig. 3: O′ = (0.4, 1.0) µm, in window samples (z, x)
 DELAYS = np.array([-2, -1.5, -1, -0.5, -0.25, 0, 0.25, 0.5, 1, 1.5, 2])   # Δt/τ
 PX, PZ = OX.max(), OZ.max()
 
@@ -82,6 +83,7 @@ def run(pair, th, tau):
     nzw, nxw = XW.shape
     sl = lambda f, iz, ix: f[..., PZ - iz:PZ - iz + nzw, PX - ix:PX - ix + nxw]
     S = np.zeros((OZ.size, OX.size, nzw, nxw))                 # signal for every offset of O′
+    S3 = np.zeros((nzw, nxw))                                    # Fig. 3 offset
     Sd = np.zeros((DELAYS.size, nzw, nxw))                     # aligned, every time delay
     Sdz = np.zeros((DELAYS.size, OZ.size, nzw, nxw)) if th == 'pi' else None
     for ti in t:
@@ -91,6 +93,7 @@ def run(pair, th, tau):
             for i, iz in enumerate(OZ):
                 for j, ix in enumerate(OX):
                     S[i, j] += I1 * sl(I2, iz, ix)
+            S3 += I1 * sl(I2, *O3)
             for k, d in enumerate(DELAYS):
                 I2d = sum(inten(at_time(b, ti - d * tau)) for b in B2) / len(B2)
                 Sd[k] += I1 * sl(I2d, 0, 0)
@@ -102,13 +105,15 @@ def run(pair, th, tau):
             for i, iz in enumerate(OZ):
                 for j, ix in enumerate(OX):
                     S[i, j] += inten(E1 + sl(E2, iz, ix)) ** 2
+            S3 += inten(E1 + sl(E2, *O3)) ** 2
             for k, d in enumerate(DELAYS):
                 E2d = at_time(B2[0], ti - d * tau) * np.exp(1j * w0 * d * tau)
                 Sd[k] += inten(E1 + sl(E2d, 0, 0)) ** 2
                 if Sdz is not None:
                     for i, iz in enumerate(OZ):
                         Sdz[k, i] += inten(E1 + sl(E2d, iz, 0)) ** 2
-    i0, j0 = np.searchsorted(OZ, 0), np.searchsorted(OX, 0)
+    i0, j0 = int(np.flatnonzero(OZ == 0)[0]), int(np.flatnonzero(OX == 0)[0])
+    assert np.allclose(S[i0, j0], Sd[int(np.flatnonzero(DELAYS == 0)[0])], rtol=1e-4)   # aligned map = zero time delay
     tref = S[i0, j0]; tn = tref / tref.max(); t2 = np.mean(tn ** 2)
     P = S.reshape(OZ.size, OX.size, -1).max(axis=2) / tref.max()
     an = S / S.reshape(OZ.size, OX.size, -1).max(axis=2)[..., None, None]
@@ -117,7 +122,7 @@ def run(pair, th, tau):
     Q = (an * tn).mean(axis=(2, 3)) / t2
     dn = Sd / Sd.reshape(DELAYS.size, -1).max(axis=1)[:, None, None]
     out = dict(x=XW[0], z=ZW[:, 0], xc=OX * DX, zc=OZ * DZ, delays=DELAYS * tau,
-               psf2=tn, psf3=S[np.searchsorted(OZ, 20), np.searchsorted(OX, 20)],
+               psf2=tn, psf3=S3 / S3.max(),
                peak=P, F=F, C=C, Q=Q,
                delay_peak=Sd.reshape(DELAYS.size, -1).max(axis=1) / tref.max(),
                delay_F=1 - ((tn - dn) ** 2).mean(axis=(1, 2)) / t2)
