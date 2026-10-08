@@ -53,7 +53,7 @@ def parseval(tau):
 
 
 rows = []
-fig, ax = plt.subplots(figsize=(7.2, 6.0))
+fig, ax = plt.subplots(figsize=(5.8, 6.2))
 for tau, col in ((100, '#1f77b4'), (20, '#d62728'), (10, '#2ca02c')):
     W, S = pair_spectrum(tau)
     lam = 2 * np.pi * C / W
@@ -64,7 +64,7 @@ for tau, col in ((100, '#1f77b4'), (20, '#d62728'), (10, '#2ca02c')):
 ax.axvline(350, color='k', lw=2, ls='--')
 ax.set_xlim(335, 365); ax.set_xlabel('Pair wavelength λ$_e$ (nm)')
 ax.set_ylabel('Pairs, normalized')
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'pulse_pairs_spectrum.png'), dpi=600, bbox_inches='tight'); plt.close(fig)
 
