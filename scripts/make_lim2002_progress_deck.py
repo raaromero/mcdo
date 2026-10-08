@@ -544,7 +544,7 @@ if SECTION == 'overview':
         'To decide: keep unpolarized beams, or account for linear (s or p) polarization.'],
         'Polarization is the direction of the field; s is perpendicular to the plane of the lens axes, p lies in it.',
         'The definitions of s and p, and why the choice matters at high NA.', size=12.5)
-    wide('To consider: polarization of the two beams (focal spot)', SL('polarization_spot.png'), [
+    wide('To consider: polarization, focal spot', SL('polarization_spot.png'), [
         'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
         'across the axis depend on how the misalignment is oriented.'],
         'At high NA the spot depends on the polarization.',
@@ -775,8 +775,8 @@ elif SECTION == 'polarization':
         'The scalar model has no direction for the field; the vector model does, so polarization enters at high NA.', size=13)
     side('s and p polarization', SL('polarization_sp_diagram.png'), [
         'The two lens axes lie in one plane, the x–z plane of the geometry.',
-        's (German senkrecht, perpendicular): the field is perpendicular to that plane, along y, out of the page (⊙).',
-        'p (parallel): the field lies in that plane, perpendicular to each beam (↔ for beam 1, ↕ for beam 2).',
+        's (German senkrecht, perpendicular): the field is perpendicular to that plane, along y, out of the page.',
+        'p (parallel): the field lies in that plane, perpendicular to each beam: along x for beam 1, along z for beam 2.',
         's–s: both beams s; their fields are parallel for any θ.',
         'p–p: both beams p; with crossed beams (θ = π/2) their fields are perpendicular.'],
         's is perpendicular to the plane of the two lens axes, p lies in it.',
