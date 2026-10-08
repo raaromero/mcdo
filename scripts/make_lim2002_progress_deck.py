@@ -439,7 +439,7 @@ def peaks(suf):
 
 DECIDE = ['Crossed lenses above NA n sin(θ/2) (0.71 in air): report the computed values, or stop at that NA.',
           'Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.',
-          'Optical pulses: how to account for the range of wavelengths in each pulse.']
+          'Optical pulses: weight the photon pairs by the dye’s absorption (which dye, which band).']
 NEXT = ['Optical pulses: the 2CE signal as the overlap in time of two focused pulses, and how to account for the range of '
         'wavelengths in each pulse.']
 
@@ -531,18 +531,54 @@ if SECTION == 'overview':
         'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
         'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
         'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
-    wide('To consider: polarization of the two beams', SL('polarization_spot.png'), [
+    words('To consider: polarization of the two beams', [
+        'Polarization is the direction in which a beam’s electric field oscillates; it is always perpendicular to the direction '
+        'the beam travels.',
+        'The two lens axes lie in one plane (the x–z plane of the geometry). s polarization: the field is perpendicular to that '
+        'plane (out of the page). p polarization: the field lies in that plane. s–s and p–p mean both beams are s, or both p.',
+        'So far each 2CE beam is unpolarized (averaged over both directions, the same as circular polarization), which gives a '
+        'round focal spot.',
+        'At high NA a linearly polarized spot is wider along its field, so results across the axis depend on the direction of '
+        'the misalignment. For 2PE with crossed beams, s–s fields are parallel and interfere; p–p fields are perpendicular and '
+        'barely interfere.',
+        'To decide: keep unpolarized beams, or account for linear (s or p) polarization.'],
+        'Polarization is the direction of the field; s is perpendicular to the plane of the lens axes, p lies in it.',
+        'The definitions of s and p, and why the choice matters at high NA.', size=12.5)
+    wide('To consider: polarization of the two beams (focal spot)', SL('polarization_spot.png'), [
         'One beam at focus, across x. At high NA the focused spot is wider along the polarization than across it, so results '
-        'across the axis depend on how the misalignment is oriented. To decide: keep unpolarized (circular) beams, or account '
-        'for linear polarization.'],
+        'across the axis depend on how the misalignment is oriented.'],
         'At high NA the spot depends on the polarization.',
         'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 the spot is about 1.35 times '
         'wider along the polarization.')
     wide('To consider: wavelengths in an optical pulse', SL('pulse_spectra.png'), [
-        'A pulse contains a range of wavelengths, wider for shorter pulses. The 750 and 656 nm spectra overlap for pulses below '
-        'about 8 fs. To settle: how to account for the range of wavelengths in each pulse.'],
-        'A short pulse is a range of wavelengths; how to account for it is open.',
-        'Spectra of the two pulses at 5 and 20 fs, transform-limited Gaussian pulses.')
+        'A pulse contains a range of wavelengths, wider for shorter pulses: about 730–770 nm and 640–672 nm at 20 fs. The two '
+        'spectra overlap below about 8 fs, where the two colors would also interfere.'],
+        'A short pulse is a range of wavelengths.', 'Spectra of the two pulses at 5 and 20 fs, transform-limited Gaussian pulses.')
+    PAIR = r'\frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}'
+    eqslide('To consider: which photon pairs excite the dye', 'One photon from each pulse; the pair excites the molecule '
+            'according to the wavelength its energies add up to.', [
+        (PAIR, 'λ_a from the 750 nm pulse, λ_b from the 656 nm pulse; λ_e = wavelength the pair reaches.'),
+        (r'750 + 656,\ \ 740 + 664,\ \ 760 + 649\ \mathrm{nm} \;\rightarrow\; 350\ \mathrm{nm}',
+         'pairs that reach the design transition at 350 nm.'),
+        (r'740 + 649\ \mathrm{nm} \rightarrow 346\ \mathrm{nm}, \qquad 760 + 664\ \mathrm{nm} \rightarrow 354\ \mathrm{nm}',
+         'pairs that reach nearby wavelengths: at 20 fs the pairs spread over about 12 nm around 350 nm, at 100 fs over 2.5 nm.')],
+        'Each pair of photons reaches the wavelength set by the sum of their energies.',
+        'Examples of photon pairs from the two pulses and where they land.', PAIR, fig=SL('pulse_pairs_spectrum.png'), size=15)
+    RATE = r'\text{rate} \propto \int g(\Omega)\, \bigl|\tilde{P}(\Omega)\bigr|^2 d\Omega, \qquad P(t) = E_1(t)\, E_2(t)'
+    eqslide('To consider: weighting the pairs by the dye', 'The dye’s absorption g weights each pair by its total frequency; a '
+            'flat g gives the time-overlap signal used so far.', [
+        (RATE, 'Ω = ω_1 + ω_2 = total frequency of a pair; g(Ω) = absorption of the dye; P̃ = spectrum of the product field.'),
+        (r'g = \text{const.}: \quad \int g\,|\tilde{P}|^2 d\Omega \;\propto\; \int I_1(t)\, I_2(t)\, dt',
+         'Parseval: a flat absorption gives exactly the current signal (checked numerically: equal to 6 digits).'),
+        (r'\text{equal Gaussian pulses: } |\tilde{P}(\Omega)|^2 \propto e^{-(\Omega-\Omega_0)^2 \tau^2/8\ln 2}\ \text{at every point}',
+         'the pair spectrum has the same shape everywhere, so weighting scales the signal by one factor and leaves the PSF '
+         'shapes and tolerances unchanged.')],
+        'Weighting by the dye changes how much signal there is, not the shape of the PSF, for equal Gaussian pulses.',
+        'The weighted rate integrates the dye absorption against the spectrum of the product field.', RATE, size=14)
+    wide('To consider: how much signal the weighting keeps', SL('pulse_pairs_weight.png'), [
+        'Signal kept when the dye absorbs in a Gaussian band around 350 nm, relative to a flat band. At 100 fs nearly all '
+        'pairs fall within a 10 nm band; at 20 fs about 60% do, and at 10 fs about 35%. To decide: which dye, and so which g.'],
+        'Short pulses waste pairs outside the dye band.', 'Gaussian absorption bands of FWHM 2, 5, 10 and 20 nm centred at 350 nm.')
 
 elif SECTION == 'replication':
     at = len(prs.slides)
@@ -716,8 +752,9 @@ elif SECTION == 'delay':
 
 elif SECTION == 'polarization':
     title('Part 6: Polarization, s and p', 'Linear polarization of the two beams against unpolarized (circular) beams, vector 2CE')
-    summary('At high NA, linear polarization changes the 2CE results across the axis with facing lenses, and decides whether '
-            'crossed-beam 2PE interferes; results along the axis do not change.',
+    summary('At high NA, linear polarization (s: field perpendicular to the plane of the lens axes; p: field in it) changes the '
+            '2CE results across the axis with facing lenses, and decides whether crossed-beam 2PE interferes; results along the '
+            'axis do not change.',
             'At NA 0.9, θ = π, a misalignment of 0.37 λ_1 across the axis reduces the 2CE peak by about 51% for s–s, 42% '
             'unpolarized and 32% for p–p: the spot is wider along the polarization.',
             'For 2PE with crossed beams, p–p fields are perpendicular and barely interfere: a misalignment of 0.5 λ_{2p} costs a '
@@ -726,20 +763,41 @@ elif SECTION == 'polarization':
             'axis depend on the orientation of the misalignment. For 2PE the relative orientation of the two fields decides the '
             'interference.')
     geometry()
-    eqslide('s and p polarization', 'Each beam’s input field is linear, at angle ψ about its own axis; s is perpendicular to the '
-            'plane of the two lens axes, p is in it.', [
-        (r'\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_{x} + \sin\psi\,\mathbf{E}_{y}',
-         'E_x, E_y = Richards–Wolf focal fields for input polarized along the beam’s own x and y; ψ = π/2 is s, ψ = 0 is p.'),
-        (r'I_{\mathrm{unpol}} = \frac{1}{2}\left(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2\right)',
-         'unpolarized: the average of the two, equal to circular polarization; the spot is round.'),
-        (r'F_{2c} = \kappa_{2c}\, |\mathbf{E}_1|^2 |\mathbf{E}_2|^2, \qquad F_{2p} = \kappa_{2p}\, |\mathbf{E}_1 + \mathbf{E}_2|^4',
-         '2PE interferes through E_1·E_2: parallel fields (s–s) interfere fully; perpendicular fields (p–p at θ = π/2) do not. '
-         'Diagram: s, field out of the page; p, field in the x–z plane.')],
+    words('What polarization is', [
+        'Light is a transverse wave: its electric field oscillates in a direction perpendicular to the direction the beam travels. '
+        'That direction of oscillation is the polarization.',
+        'A laser beam is usually linearly polarized: the field oscillates along one fixed direction.',
+        'Circular polarization: the field direction rotates once per optical period, so on average no direction is preferred.',
+        'Unpolarized light, or the average over two perpendicular linear polarizations, gives the same time-averaged intensity '
+        'as circular polarization.',
+        'In the paraxial scalar model of the paper the field has no direction at all, so polarization cannot enter.'],
+        'Polarization is the direction in which the electric field oscillates.',
+        'The scalar model has no direction for the field; the vector model does, so polarization enters at high NA.', size=13)
+    side('s and p polarization', SL('polarization_sp_diagram.png'), [
+        'The two lens axes lie in one plane, the x–z plane of the geometry.',
+        's (German senkrecht, perpendicular): the field is perpendicular to that plane, along y, out of the page (⊙).',
+        'p (parallel): the field lies in that plane, perpendicular to each beam (↔ for beam 1, ↕ for beam 2).',
+        's–s: both beams s; their fields are parallel for any θ.',
+        'p–p: both beams p; with crossed beams (θ = π/2) their fields are perpendicular.'],
         's is perpendicular to the plane of the two lens axes, p lies in it.',
+        'Diagram: crossed beams, beam 1 (red) travelling along z, beam 2 (blue) along x.', fw=4.6)
+    eqslide('Polarization in the field equations', 'The input polarization sets the direction of the focused field; the '
+            'unpolarized case averages two perpendicular directions.', [
+        (r'\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_{x} + \sin\psi\,\mathbf{E}_{y}',
+         'E_x, E_y = Richards–Wolf focal fields for input polarized along x and along y of the beam’s own frame; ψ = input '
+         'polarization angle: ψ = π/2 is s, ψ = 0 is p.'),
+        (r'I_{\mathrm{unpol}} = \frac{1}{2}\left(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2\right)',
+         'unpolarized: the average of the two, equal to circular polarization; the focal spot is round.'),
+        (r'F_{2c} = \kappa_{2c}\, |\mathbf{E}_1|^2\, |\mathbf{E}_2|^2', '2CE uses the two intensities, so it depends on '
+         'polarization only through the shape of each spot.'),
+        (r'F_{2p} = \kappa_{2p}\, |\mathbf{E}_1 + \mathbf{E}_2|^4 \;\ni\; 2\,\mathrm{Re}\,(\mathbf{E}_1\cdot\mathbf{E}_2^{*})',
+         '2PE interferes through E_1·E_2*: full interference for parallel fields (s–s), almost none for perpendicular fields '
+         '(p–p at θ = π/2).')],
+        'The input polarization angle psi enters the vector field; 2PE interference depends on E1 dot E2.',
         'Same Richards-Wolf fields as Parts 2-4, with a fixed input polarization instead of the average.',
         r"""\mathbf{E}_\psi = \cos\psi\,\mathbf{E}_x + \sin\psi\,\mathbf{E}_y
-I_{unpol} = \tfrac{1}{2}(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2)""",
-        fig=SL('polarization_sp_diagram.png'), size=15)
+I_{unpol} = \tfrac{1}{2}(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2)
+F_{2p} \ni 2\,\mathrm{Re}(\mathbf{E}_1\cdot\mathbf{E}_2^*)""", size=15)
     wide('Focal spot and polarization', SL('polarization_spot.png'), [
         'One beam at focus, across x. At NA 0.5 the two polarizations nearly coincide; at NA 0.9 the spot is about 1.35 times '
         'wider along the field than across it, because the focused field gains a component along z, strongest along the '
@@ -782,7 +840,7 @@ I_{unpol} = \tfrac{1}{2}(|\mathbf{E}_{\psi=0}|^2 + |\mathbf{E}_{\psi=\pi/2}|^2)"
         'With linear polarization the molecular orientation factor enters the signal.',
         'For randomly oriented molecules the average of the two dipole projections gives this factor.', MOL, size=16)
 
-checks_slide({'replication': 'replication', 'vector': 'vector', 'fidelity': 'fidelity', 'gaussian': 'gaussian', 'delay': ('delay', 'pulses'), 'polarization': 'polarization'}.get(SECTION, ()))
+pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
 
 # ── renumber, check legibility, embed at 600 dpi, save ──
