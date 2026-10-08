@@ -636,14 +636,14 @@ elif SECTION == 'gaussian':
     title('Part 4: Vector 2CE, Gaussian input', 'Both lenses filled by a Gaussian beam, truncation parameter α_t = 4')
     summary(*SUMMARIES['gaussian'])
     geometry(); vector_fields()
-    eqslide('Gaussian input: the pupil of both beams', 'Each lens is filled by a Gaussian beam truncated at α_t = 4; the '
+    eqslide('Gaussian input: the pupil of both beams', 'Each lens is filled by a Gaussian beam with α_t = 4, which the aperture barely truncates; the '
             'same pupil amplitude on both lenses and for both wavelengths.', [
         (r'A(\beta) = \exp\left(-\alpha_t\, \frac{\sin^2\beta}{\sin^2\alpha}\right), \qquad \sin\alpha = \mathrm{NA}/n',
          'A(β) = pupil amplitude in the Richards–Wolf integrals; α_t = truncation parameter; 0 is uniform input.'),
         (r'A(\rho) = e^{-\alpha_t \rho^2}', 'the same amplitude in scalar 2CE, with ρ = radius in the pupil over its edge.'),
         (r'A(\rho = 1) = e^{-4} \approx 0.02 \quad (\alpha_t = 4)', 'the field at the edge of the pupil is about 2% of the '
-                                                                     'centre, so the steepest rays carry little light.')],
-        'Each lens is filled by a Gaussian beam truncated at alpha_t = 4.',
+                                                                     'centre and the aperture cuts off about 0.03% of the beam power: nearly untruncated.')],
+        'Each lens is filled by a nearly untruncated Gaussian beam, alpha_t = 4.',
         'The apodization enters the Richards–Wolf integrals as A(beta).',
         r'A(\beta) = \exp\!\left(-\alpha_t \frac{\sin^2\beta}{\sin^2\alpha}\right), \quad \sin\alpha = \mathrm{NA}/n \qquad A(\rho) = e^{-\alpha_t \rho^2}',
         fig=SL('pupil_apodization.png'), size=17)
