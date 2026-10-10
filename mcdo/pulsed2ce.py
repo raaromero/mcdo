@@ -130,3 +130,19 @@ def gate_fwhm(tau1, tau2=None, n=1.0, theta=np.pi):
     tau2 = tau1 if tau2 is None else tau2
     tc = np.hypot(tau1, tau2)               # FWHM of the cross-correlation of two Gaussian intensities
     return C_UM_FS * tc / (2 * n) if np.isclose(theta, np.pi) else C_UM_FS * tc / (np.sqrt(2) * n)
+
+
+def closed_form_2ce(I1, I2, z_b1, z_b2, delay, tau1, tau2=None, n=1.0):
+    """Closed form of the pulsed 2CE signal for transform-limited Gaussian pulses (envelope approximation).
+
+    Pulse i reaches point P at t_i = n z_bi / c (z_bi = distance along beam i from its focus), pulse 2 a time
+    ``delay`` later. The time overlap of two Gaussian intensities of FWHM τ1, τ2 is a Gaussian of FWHM
+    √(τ1² + τ2²) in their arrival-time difference, so
+
+        F_2c(P, Δt) ∝ I_1(P) I_2(P) exp[−4 ln2 (n (z_b1 − z_b2)/c − Δt)² / (τ1² + τ2²)]
+
+    with I_1, I_2 the continuous-beam intensities. It neglects the change of spot size across the spectrum.
+    """
+    tau2 = tau1 if tau2 is None else tau2
+    s = n * (np.asarray(z_b1) - np.asarray(z_b2)) / C_UM_FS - delay
+    return I1 * I2 * np.exp(-4 * np.log(2) * s ** 2 / (tau1 ** 2 + tau2 ** 2))

@@ -33,7 +33,7 @@ import mcdo.deckstyle as ds
 from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, PALE, PURPLE, RED, WHITE, bullets, card, dots, equation,
                             figure, notes, prs, shape, slide, text, where)
 
-SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'polarization']
+SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'polarization', 'pulses']
 SECTION = os.environ.get('SECTION')
 DIR = os.path.expanduser('~/Downloads/Research/two_color')
 HERE = os.path.dirname(__file__)
@@ -112,7 +112,8 @@ GLOSS = {   # term: (meaning, sections that use it)
     'α_t': ('truncation parameter of the Gaussian input; 0 is uniform input', 'overview gaussian'),
     'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'overview vector fidelity gaussian polarization'),
     's–s, p–p': ('both beams polarized perpendicular to (s) or in (p) the plane of the two lens axes', 'polarization'),
-    'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay'),
+    'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay pulses'),
+    'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses'),
     'K': ('fringe wavevector of the two 2PE beams, |K| = 2k sin(θ/2)', 'delay'),
 }
 
@@ -394,6 +395,10 @@ def maps(suf, tag):
              'axes of the paper. Contours in percent of the peak; orange: 50 percent.'
              + (' At theta = pi/2, NA 0.9 (marked *) is above NA 0.71, where the two lenses no longer fit in air.'
                 if 'π/2' in lab else ''))
+        wide(f'Fig. {no}({t}), scalar and vector at the same NA{tag}: {lab}', SL(f'map_fig{no}{t}_samena{suf}.png'), [
+            'Scalar 2CE and vector 2CE at the same NA, 0.7 and 0.9: the difference between the two models alone, without the '
+            'change of NA.' + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'π/2' in lab else '')],
+            f'Fig. {no}({t}): scalar against vector at equal NA.', 'Same NA, same axes; contours in percent of the peak.')
 
 
 PEAK = [
@@ -839,6 +844,210 @@ F_{2p} \ni 2\,\mathrm{Re}(\mathbf{E}_1\cdot\mathbf{E}_2^*)""", size=15)
          'the signal is three times larger for parallel fields; the unpolarized product I_1 I_2 assumes this does not matter.')],
         'With linear polarization the molecular orientation factor enters the signal.',
         'For randomly oriented molecules the average of the two dipole projections gives this factor.', MOL, size=16)
+
+elif SECTION == 'pulses':
+    PS = SL
+    title('Part 7: Optical pulses and time delay', 'Gaussian pulses, derived step by step; scalar 2CE at NA 0.5 and vector 2CE '
+          'at NA 0.7 and 0.9; τ = 10, 20 and 100 fs')
+    summary('With pulses, the 2CE signal is the continuous-beam PSF multiplied by the overlap in time of the two pulses; a time '
+            'delay moves or lowers that overlap.',
+            'Facing lenses: the pulses meet on a thin slab of length c√2 τ/2n, which a time delay slides along the axis; for '
+            '10–20 fs pulses the slab is shorter than the focus and the PSF shrinks to it.',
+            'Crossed lenses: the overlap region is wider than the spot, so a time delay lowers the whole PSF by '
+            'exp(−2 ln2 (Δt/τ)²) without changing its shape: 71% at τ/2, 25% at τ.',
+            'The closed form is the continuous-beam product times a Gaussian factor in the difference of the arrival times. It '
+            'agrees with the full sum over wavelengths to within 0.6% for crossed beams and 3.5% for facing beams at 10 fs.')
+    geometry(); scalar_fields()
+    eqslide('Step 1: a pulse in time', 'A pulse is a fast oscillation (the carrier) inside a slowly varying envelope.', [
+        (r'E(t) = A(t)\,\cos(\omega_0 t)', 'ω_0 = carrier frequency (2πc/750 nm, one oscillation every 2.5 fs); A(t) = '
+                                           'envelope, which sets how long the pulse lasts.'),
+        (r'I(t) = A(t)^2', 'intensity: what the molecule responds to, averaged over each fast oscillation.')],
+        'A pulse is a carrier wave inside an envelope.',
+        'The envelope is the slow shape; the carrier is the fast oscillation. Only the envelope matters for when the pulse is '
+        'present.', r'E(t) = A(t)\cos(\omega_0 t), \qquad I(t) = A(t)^2', fig=PS('pulse_in_time.png'), size=18)
+    eqslide('Step 2: a Gaussian envelope', 'We take the envelope to be a Gaussian in t; its intensity is then a Gaussian of '
+            'full width at half maximum τ.', [
+        (r'A(t) = \exp\left(-\frac{2\ln 2\; t^2}{\tau^2}\right)', 'Gaussian envelope, largest at t = 0.'),
+        (r'I(t) = A(t)^2 = \exp\left(-\frac{4\ln 2\; t^2}{\tau^2}\right)', 'squaring doubles the exponent.'),
+        (r'I\!\left(\tfrac{\tau}{2}\right) = \exp\left(-\frac{4\ln 2}{\tau^2}\cdot\frac{\tau^2}{4}\right) = e^{-\ln 2} = '
+         r'\frac{1}{2}', 'at t = ±τ/2 the intensity is half its peak: τ is the full width at half maximum, the pulse duration.')],
+        'The Gaussian envelope gives an intensity of FWHM tau.',
+        'The constant 4 ln 2 is chosen so that tau is the full width at half maximum of the intensity.',
+        r'A(t) = e^{-2\ln 2\, t^2/\tau^2}, \quad I(t) = e^{-4\ln 2\, t^2/\tau^2}, \quad I(\tau/2) = 1/2', size=18)
+    eqslide('Step 3: a pulse is a sum of frequencies', 'A short pulse needs a range of frequencies; a Gaussian spread of '
+            'frequencies adds up to a Gaussian pulse.', [
+        (r'E(t) = \int a(\omega)\, e^{-i\omega t}\, d\omega', 'each frequency ω is a continuous wave; a(ω) = its amplitude.'),
+        (r'a(\omega) = \exp\left(-\frac{(\omega-\omega_0)^2\,\tau^2}{8\ln 2}\right)', 'Gaussian spectrum centred on ω_0; its '
+         'width is set by 1/τ.'),
+        (r'\Delta\nu \approx \frac{0.441}{\tau}', 'spectral width (FWHM): about 22 THz at 20 fs, so a 750 nm pulse spans about '
+                                                 '730–770 nm.')],
+        'Adding many frequencies with a Gaussian spread gives a Gaussian pulse.',
+        'With few frequencies the waves never cancel; with many they cancel everywhere except near t = 0, which is the pulse.',
+        r'E(t) = \int a(\omega) e^{-i\omega t}\, d\omega, \quad a(\omega) = e^{-(\omega-\omega_0)^2\tau^2/8\ln 2}', size=17)
+    wide('Step 3: adding frequencies, seen', PS('pulse_sum_of_frequencies.png'), [
+        'Three frequencies added give a wave that never dies out. Nine give a pulse that repeats. Many frequencies with a '
+        'Gaussian spread give one Gaussian pulse of duration τ = 20 fs.'],
+        'Many frequencies make one pulse.', 'Same carrier, Gaussian weights, 3, 9 and 201 frequencies.')
+    eqslide('Step 4: the pulse travels through the focus', 'Each frequency is focused by the lens; added together, the focused '
+            'pulse moves through the focus at c/n.', [
+        (r't_i(P) = \frac{n\, z_{b,i}}{c}', 'the time pulse i passes point P; z_{b,i} = distance of P along beam i from its '
+                                            'focus (pulse i is at its focus at t = 0).'),
+        (r'I_i(P, t) = I_i^{\mathrm{CW}}(P)\; \exp\left(-\frac{4\ln 2\,\left(t - t_i(P)\right)^2}{\tau^2}\right)',
+         'the focused pulse: the continuous-beam intensity I^CW (the focal spot of the paper), switched on only while the '
+         'pulse passes.'),
+        (r't_2(P) = \frac{n\, z_{b,2}}{c} + \Delta t', 'beam 2 is sent a time Δt later: the time delay.')],
+        'At each point the focused pulse is the continuous-beam spot, switched on while the pulse passes.',
+        'This separates space and time: I^CW carries the shape of the focus, the Gaussian carries when the pulse is there. It '
+        'neglects the small change of spot size across the spectrum.',
+        r't_i = n z_{b,i}/c, \quad I_i(P,t) = I_i^{CW}(P)\, e^{-4\ln 2 (t-t_i)^2/\tau^2}, \quad t_2 = n z_{b,2}/c + \Delta t',
+        size=16)
+    eqslide('Step 5: the 2CE signal is an overlap in time', 'A molecule needs one photon from each pulse at the same time, so '
+            'the signal adds up, over time, the product of the two intensities.', [
+        (r'F_{2c}(P, \Delta t) = \kappa_{2c} \int_{-\infty}^{\infty} I_1(P, t)\, I_2(P, t)\, dt', 'with continuous beams the '
+         'integrand is constant in time and this is the I_1 I_2 of the paper.'),
+        (r'= \kappa_{2c}\, I_1^{\mathrm{CW}} I_2^{\mathrm{CW}} \int e^{-a (t-t_1)^2}\, e^{-a (t-t_2)^2}\, dt, \qquad '
+         r'a = \frac{4\ln 2}{\tau^2}', 'substituting Step 4: the spatial part comes out of the integral.')],
+        'The 2CE signal is the overlap in time of the two pulses at each point.',
+        'Only the time integral of two Gaussians is left to do.',
+        r'F_{2c} = \kappa_{2c} \int I_1 I_2\, dt = \kappa_{2c} I_1^{CW} I_2^{CW} \int e^{-a(t-t_1)^2} e^{-a(t-t_2)^2} dt', size=17)
+    eqslide('Step 6: the Gaussian integral, line by line', 'Complete the square in t; one Gaussian integral is left.', [
+        (r'(t-t_1)^2 + (t-t_2)^2 = 2\left(t - \bar{t}\right)^2 + \frac{(t_1 - t_2)^2}{2}, \qquad \bar{t} = \frac{t_1+t_2}{2}',
+         'expand both squares and regroup: the cross terms collect into the second term.'),
+        (r'\int e^{-a(t-t_1)^2} e^{-a(t-t_2)^2} dt = e^{-a (t_1-t_2)^2/2} \int e^{-2a (t-\bar{t})^2} dt',
+         'the second term does not depend on t, so it leaves the integral.'),
+        (r'\int_{-\infty}^{\infty} e^{-2a u^2} du = \sqrt{\frac{\pi}{2a}}', 'standard Gaussian integral, u = t − t̄: a '
+         'constant, the same at every point.'),
+        (r'\Rightarrow\; \int I_1 I_2\, dt \;\propto\; \exp\left(-\frac{2\ln 2\,(t_1 - t_2)^2}{\tau^2}\right)',
+         'with a = 4 ln2/τ², a/2 = 2 ln2/τ².')],
+        'The time integral of two Gaussians is a Gaussian in the difference of their arrival times.',
+        'Completing the square separates a part that depends on t from one that depends only on t1 − t2.',
+        r'(t-t_1)^2+(t-t_2)^2 = 2(t-\bar t)^2 + (t_1-t_2)^2/2; \int e^{-2au^2}du = \sqrt{\pi/2a}', size=15)
+    CF = (r'F_{2c}(P, \Delta t) \propto I_1^{\mathrm{CW}}(P)\, I_2^{\mathrm{CW}}(P)\; \exp\left(-\frac{2\ln 2}{\tau^2}\left('
+          r'\frac{n\,(z_{b,1} - z_{b,2})}{c} - \Delta t\right)^2\right)')
+    eqslide('Step 7: closed form of the pulsed 2CE PSF', 'The pulsed PSF is the continuous-beam PSF of the paper multiplied by '
+            'a Gaussian gate in the difference of arrival times.', [
+        (CF, 'I^CW_1 I^CW_2 = the 2CE PSF of the paper; the exponential = the time gate.'),
+        (r'\tau_1 \ne \tau_2:\quad \frac{2\ln 2}{\tau^2} \;\rightarrow\; \frac{4\ln 2}{\tau_1^2 + \tau_2^2}',
+         'for two pulses of different durations.'),
+        (r'\tau \to \infty:\quad F_{2c} \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}', 'long pulses recover the '
+         'continuous-beam result of the paper.')],
+        'Pulsed PSF = continuous-beam PSF times a time gate.', 'Steps 4 to 6 combined.', CF, size=15)
+    eqslide('Step 8: where the pulses meet', 'The gate depends on z_{b,1} − z_{b,2}, which differs for facing and crossed '
+            'lenses.', [
+        (r'\theta = \pi:\ z_{b,1} = z,\ z_{b,2} = -z \;\Rightarrow\; \text{gate peaks at } z = \frac{c\,\Delta t}{2n},\ '
+         r'\mathrm{FWHM} = \frac{c\sqrt{2}\,\tau}{2n}',
+         'facing pulses meet on a thin slab that a time delay slides along the axis: 4.2 µm long at 20 fs, 2.1 µm at 10 fs.'),
+        (r'\theta = \pi/2:\ z_{b,1} = z,\ z_{b,2} = x \;\Rightarrow\; \text{gate} = \exp\left(-\frac{2\ln 2}{\tau^2}'
+         r'\left(\frac{n(z - x)}{c} - \Delta t\right)^2\right)',
+         'crossed pulses meet along a diagonal band, much wider than the crossed spot.'),
+        (r'\text{at the focus: } \exp\left(-2\ln 2\,(\Delta t/\tau)^2\right) = 0.71,\ 0.25\ \text{at}\ \Delta t = \tau/2,\ \tau',
+         'how much a time delay lowers the PSF where the band is wider than the spot.')],
+        'Facing pulses meet on a thin moving slab; crossed pulses on a wide band.', 'The gate for each geometry.',
+        r'\theta=\pi: z = c\Delta t/2n,\ \mathrm{FWHM} = c\sqrt{2}\tau/2n', size=14)
+    wide('Step 8: facing pulses meet, seen', PS('pulse_facing_meet.png'), [
+        'Pulse 1 (red) travels toward +z and pulse 2 (blue) toward −z. Both are present at the same place only near z = 0, '
+        'around t = 0 (green): that is where 2CE happens.'],
+        'Facing pulses overlap only where they meet.', 'τ = 20 fs, no time delay.')
+    wide('Step 8: the gate against the time delay', PS('pulse_overlap.png'), [
+        'Left: crossed beams, the overlap at the focus falls as exp(−2 ln2 (Δt/τ)²). Right: facing beams, a time delay slides '
+        'the meeting slab along the axis by cΔt/2n.'],
+        'A time delay lowers the crossed overlap and moves the facing slab.', 'From Step 8.')
+    words('Check: closed form against the full calculation', [
+        'The full calculation focuses every frequency of each pulse separately and adds them with their phases, then integrates '
+        'the overlap in time.',
+        'Crossed lenses: the closed form agrees within 0.6% over the window at 10, 20 and 100 fs.',
+        'Facing lenses: within 0.3% at 100 fs, 2% at 20 fs and 3.5% at 10 fs; the difference is the change of spot size across '
+        'the spectrum, which the closed form leaves out.',
+        'At the focus, a time delay of τ leaves an overlap of 0.250, the value exp(−2 ln2).'],
+        'The closed form matches the full sum over wavelengths.', 'Scalar 2CE, NA 0.5.', size=13)
+    eqslide('2PE with pulses', '2PE adds the two fields, so with pulses it has two kinds of terms: each beam alone, and the '
+            'interference of the two.', [
+        (r'F_{2p}(P, \Delta t) = \kappa_{2p} \int \left|E_1(P,t) + E_2(P,t)\right|^4 dt', 'both beams at 700 nm; E_2 is '
+                                                                                         'delayed by Δt.'),
+        (r'\ni\ \int \left(I_1^2 + I_2^2\right) dt', 'each pulse alone excites 2PE, whether or not the pulses overlap.'),
+        (r'\Delta t \gg \tau:\quad \frac{F_{2p}}{F_{2p}(\Delta t = 0)} \to \frac{1^2 + 1^2}{2^4} = \frac{1}{8}',
+         'at the aligned peak the two fields add to twice one field, so 2PE never falls below 1/8 of its peak.')],
+        '2PE keeps a floor of 1/8 because each beam alone excites it.',
+        'The interference terms need the pulses to overlap; the single-beam terms do not.',
+        r'F_{2p} = \kappa_{2p}\int |E_1+E_2|^4 dt \ni \int (I_1^2 + I_2^2) dt', size=17)
+    TXT = {('2ce', 'pi'): 'With facing lenses the 2CE PSF shrinks along z as the pulses get shorter: at 10 fs the meeting slab '
+                          '(2.1 µm) is shorter than the focus.',
+           ('2ce', 'pi2'): 'With crossed lenses the 2CE PSF does not change with the pulse duration: the overlap band is wider '
+                           'than the spot.',
+           ('2pe', 'pi'): 'With facing lenses the 2PE standing wave is confined to where the pulses meet.',
+           ('2pe', 'pi2'): 'With crossed lenses the 2PE PSF keeps its fringes; pulses barely change it.'}
+    for key, no, what in (('psf2', 2, 'aligned'), ('psf3', 3, 'O′ at (0.4, 1.0) µm')):
+        for pair, lab2 in (('2ce', '2CE'), ('2pe', '2PE')):
+            for th, lab in (('pi', 'θ = π'), ('pi2', 'θ = π/2')):
+                wide(f'Pulsed Fig. {no}: {lab2}, {lab}', PS(f'pulse_{key}_{pair}_{th}.png'), [TXT[(pair, th)]],
+                     f'Pulsed Fig. {no}, {lab2}, {lab}.', f'Scalar 2CE, NA 0.5, {what}, no time delay; continuous beams (CW) '
+                     'and tau = 100, 20, 10 fs. Contours in percent of the peak; orange: 50 percent.')
+    for pair, lab2 in (('2ce', '2CE'), ('2pe', '2PE')):
+        for th, lab in (('pi', 'θ = π'), ('pi2', 'θ = π/2')):
+            wide(f'Pulsed Fig. 4: {lab2}, {lab}', PS(f'pulse_peakmap_{pair}_{th}.png'), [
+                'With no time delay the peak against the misalignment of O′ changes little with the pulse duration: each pulse '
+                'is timed to reach its own focus, so the pulses meet midway between the two foci.'],
+                f'Pulsed Fig. 4, {lab2}, {lab}.', 'Scalar 2CE, NA 0.5, tau = 100, 20, 10 fs.')
+    wide('Peak against time delay: 2CE', PS('pulse_delay_peak_2ce.png'), [
+        'Crossed lenses: the peak follows the overlap at the focus, exp(−2 ln2 (Δt/τ)²), for every pulse duration. Facing '
+        'lenses: with short pulses the peak falls more slowly, because the meeting slab moves to a part of the focus that is '
+        'still bright.'],
+        'A time delay of tau costs 2CE about 75% of its peak, less for short pulses with facing lenses.',
+        'Scalar 2CE, NA 0.5. Dashed: overlap at the focus from the closed form.')
+    wide('Fidelity against time delay: 2CE', PS('pulse_delay_F_2ce.png'), [
+        'Crossed lenses: F stays near 1, because a time delay lowers the PSF without changing its shape. Facing lenses: with '
+        'short pulses F drops quickly, because the moving slab changes where the PSF is.'],
+        'A time delay changes the shape of the facing-lens PSF, not the crossed one.', 'Scalar 2CE, NA 0.5.')
+    wide('Peak against time delay: 2PE', PS('pulse_delay_peak_2pe.png'), [
+        'The 2PE peak falls with the time delay but levels off at 1/8 (dotted), where each pulse alone excites 2PE and only the '
+        'interference is lost.'],
+        '2PE keeps a floor of 1/8 when the pulses no longer overlap.', 'Scalar model, NA 0.5.')
+    wide('Time delay and axial misalignment: 2CE, θ = π', PS('pulse_delay_z.png'), [
+        'Peak against the axial misalignment z_c and the time delay. The contours are not tilted: a time delay cannot cancel an '
+        'axial misalignment, because each pulse is timed to its own focus and the slab always forms midway between them.'],
+        'A time delay and an axial misalignment cost 2CE independently.', 'Scalar 2CE, NA 0.5, tau = 100, 20, 10 fs.')
+    wide('Vector 2CE: peak against time delay, θ = π', PS('pulse_delay_vector.png'), [
+        'At high NA the focus is shorter than the meeting slab (about 1 µm at NA 0.9 against 2.1 µm at 10 fs), so the peak '
+        'follows the overlap at the focus; scalar 2CE at NA 0.5 has a longer focus and loses less.'],
+        'At high NA the time delay costs the full overlap factor.', 'Facing lenses, tau = 20 and 10 fs.')
+    PAIR = r'\frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}'
+    eqslide('Which photon pairs excite the dye', 'One photon from each pulse; the pair excites the molecule according to the '
+            'wavelength its energies add up to.', [
+        (PAIR, 'λ_a from the 750 nm pulse, λ_b from the 656 nm pulse; λ_e = wavelength the pair reaches.'),
+        (r'750 + 656,\ \ 740 + 664,\ \ 760 + 649\ \mathrm{nm} \;\rightarrow\; 350\ \mathrm{nm}',
+         'pairs that reach the design transition at 350 nm.'),
+        (r'740 + 649\ \mathrm{nm} \rightarrow 346\ \mathrm{nm}, \qquad 760 + 664\ \mathrm{nm} \rightarrow 354\ \mathrm{nm}',
+         'pairs that reach nearby wavelengths: at 20 fs the pairs spread over about 12 nm around 350 nm, at 100 fs over 2.5 nm.')],
+        'Each pair of photons reaches the wavelength set by the sum of their energies.', 'Examples of photon pairs.', PAIR,
+        fig=SL('pulse_pairs_spectrum.png'), size=15)
+    wide('Photon pairs on (λ_a, λ_b) axes', SL('pulse_pairs_2d.png'), [
+        'Grey: how often each pair of wavelengths occurs, one photon from each pulse. Red: lines of constant pair wavelength λ_e. '
+        'Adding up the grey along each red line gives how many pairs reach that λ_e; shorter pulses spread the grey over more '
+        'lines.'],
+        'Every photon pair lands on a line of constant lambda_e.', 'Transform-limited Gaussian pulses at 750 and 656 nm.')
+    RATE = r'\text{rate} \propto \int g(\Omega)\, \bigl|\tilde{P}(\Omega)\bigr|^2 d\Omega, \qquad P(t) = E_1(t)\, E_2(t)'
+    eqslide('Weighting the pairs by the dye', 'The dye’s absorption g weights each pair by its total frequency; a flat g gives '
+            'the time-overlap signal of Step 5.', [
+        (RATE, 'Ω = ω_1 + ω_2 = total frequency of a pair; g(Ω) = absorption of the dye; P̃ = spectrum of the product field.'),
+        (r'g = \text{const.}: \quad \int g\,|\tilde{P}|^2 d\Omega \;\propto\; \int I_1(t)\, I_2(t)\, dt',
+         'Parseval: a flat absorption gives exactly the signal of Steps 5–7 (checked numerically to 6 digits).'),
+        (r'|\tilde{P}(\Omega)|^2 \propto e^{-(\Omega-\Omega_0)^2 \tau^2/8\ln 2}\ \text{at every point}',
+         'for equal Gaussian pulses: weighting scales the signal by one factor and leaves the PSF shapes unchanged.')],
+        'Weighting by the dye changes how much signal there is, not the shape of the PSF.', 'The weighted rate.', RATE, size=14)
+    wide('How much signal the weighting keeps', SL('pulse_pairs_weight.png'), [
+        'Shorter pulses spread the photon pairs over more wavelengths, so a dye that absorbs only near 350 nm uses fewer of '
+        'them: with a 10 nm band, about 97% is kept at 100 fs, 60% at 20 fs and 35% at 10 fs.'],
+        'Short pulses waste pairs outside the dye band.', 'Gaussian absorption bands of FWHM 2, 5, 10 and 20 nm at 350 nm.')
+    words('Conclusions: optical pulses', [
+        'With Gaussian pulses the 2CE PSF is the continuous-beam PSF of the paper multiplied by a Gaussian gate in the '
+        'difference of the arrival times of the two pulses.',
+        'Crossed lenses: a time delay lowers the PSF uniformly, by 29% at τ/2 and 75% at τ, without changing its shape.',
+        'Facing lenses: the pulses meet on a slab that a time delay moves along the axis; for 10–20 fs pulses this reshapes '
+        'the PSF, and at high NA the peak follows the overlap factor.',
+        'A time delay cannot cancel a misalignment in 2CE; for 2PE it can cancel the fringe phase (Part 5), and 2PE keeps a '
+        'floor of 1/8 from each beam alone.',
+        'Open: which dye absorption band to weight the photon pairs with.'],
+        'Pulsed 2CE = continuous-beam PSF times a time gate.', 'Summary of the pulsed study.', size=12.5)
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()

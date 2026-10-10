@@ -151,22 +151,22 @@ def peaklost(k, suf, pol=''):
 TH = {'pi': np.pi, 'pi2': np.pi / 2}
 
 
-def scalar_field(x, z, lam, theta=0.0, xc=0.0, zc=0.0, suf=''):
+def scalar_field(x, z, lam, theta=0.0, xc=0.0, zc=0.0, suf='', na=0.5):
     """Scalar 2CE field: the paraxial scalar focus at NA 0.5 in air, uniform or Gaussian input (α_t = 4)."""
-    return beam_field(x, z, lam, 0.5, 1.0, theta=theta, xc=xc, zc=zc,
-                      apodization=gaussian(4.0, 0.25) if suf == '_at4' else None)
+    return beam_field(x, z, lam, na, 1.0, theta=theta, xc=xc, zc=zc,
+                      apodization=gaussian(4.0, na ** 2) if suf == '_at4' else None)
 
 
-def scalar_psf(pair, th, xc, zc, x, z, suf):
+def scalar_psf(pair, th, xc, zc, x, z, suf, na=0.5):
     X, Z = np.meshgrid(x, z)
     if pair == '2ce':
-        return intensity(scalar_field(X, Z, L1, suf=suf)) * intensity(scalar_field(X, Z, L2, TH[th], xc, zc, suf))
-    return intensity(scalar_field(X, Z, L2P, suf=suf) + scalar_field(X, Z, L2P, TH[th], xc, zc, suf)) ** 2
+        return intensity(scalar_field(X, Z, L1, suf=suf, na=na)) * intensity(scalar_field(X, Z, L2, TH[th], xc, zc, suf, na))
+    return intensity(scalar_field(X, Z, L2P, suf=suf, na=na) + scalar_field(X, Z, L2P, TH[th], xc, zc, suf, na)) ** 2
 
 
-def scalar_peak(pair, th, suf):
+def scalar_peak(pair, th, suf, na=0.5):
     """Peak against the offset of O′, as in the replication: window ±1 × ±5 µm, offsets ±1 × ±5 µm (µm)."""
-    path = os.path.join(OUT, f'_scalar_peak_{pair}_{th}{suf}.npz')
+    path = os.path.join(OUT, f'_scalar_peak_{pair}_{th}{suf}' + ('' if na == 0.5 else f'_na{na:g}') + '.npz')
     if os.path.exists(path):
         d = np.load(path)
         return d['xc'], d['zc'], d['P']
@@ -176,7 +176,7 @@ def scalar_peak(pair, th, suf):
     IX = IZ = np.arange(-50, 51, 2)
     xe, ze = np.arange(-nx - 50, nx + 50) * dx, np.arange(-nz - 50, nz + 50) * dz
     XW, ZW = np.meshgrid(xw, zw); XE, ZE = np.meshgrid(xe, ze)
-    U1, U2e = scalar_field(XW, ZW, la, suf=suf), scalar_field(XE, ZE, lb, TH[th], suf=suf)
+    U1, U2e = scalar_field(XW, ZW, la, suf=suf, na=na), scalar_field(XE, ZE, lb, TH[th], suf=suf, na=na)
     sz, sx = XW.shape
     sig = (lambda u2: intensity(U1) * intensity(u2)) if pair == '2ce' else (lambda u2: intensity(U1 + u2) ** 2)
     t = sig(U2e[50:50 + sz, 50:50 + sx]).max()
@@ -478,6 +478,40 @@ def input_compare(stem, xkey, zkey, tag, theta, xlabel, zlabel):
     axes[0].set_ylabel(f'{zlabel} ({unit})')
     plt.tight_layout()
     save(fig, f'{tag}_input.png')
+
+
+def maps_same_na(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
+    """Scalar and vector 2CE at the same NA (0.7 and 0.9), drawn as the replication."""
+    path = os.path.join(D, f'{stem}{suf}.npz')
+    if not os.path.exists(path):
+        return
+    d = np.load(path)
+    peak = 'peakmaps' in stem
+    pair = '2ce' if tag[-1] in 'ac' else '2pe'
+    lam = (L1 if pair == '2ce' else L2P) if peak else 1.0
+    unit = ('λ$_1$' if pair == '2ce' else 'λ$_{2p}$') if peak else 'µm'
+    levels = [10, 20, 40, 60, 80] if peak else [1, 10, 20, 40, 60, 80]
+    panels = []
+    for na in (0.7, 0.9):
+        if peak:
+            xs, zs, S = scalar_peak(pair, theta, suf, na)
+        else:
+            xs, zs = d[xkey], d[zkey]
+            S = scalar_psf(pair, theta, *((0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)), xs, zs, suf, na)
+        star = ' *' if theta == 'pi2' and na > 0.71 else ''
+        panels += [(f'Scalar, NA {na}{star}', xs, zs, S), (f'Vector, NA {na}{star}', d[xkey], d[zkey], d[key_fmt.format(na)])]
+    fig, axes = plt.subplots(1, 4, figsize=(19.5, 7.0))
+    for ax, (title, x, z, M) in zip(axes, panels):
+        M = 100 * M / M.max()
+        cs = ax.contour(x / lam, z / lam, M, levels=levels, colors='k', linewidths=1.8)
+        ax.clabel(cs, fmt='%d', fontsize=18)
+        ax.contour(x / lam, z / lam, M, levels=[50], colors='#ff7f0e', linewidths=3)
+        ax.set_box_aspect(1.0)
+        ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 2) if peak else np.arange(-4, 5, 2))
+        ax.set_title(title, fontsize=24); ax.set_xlabel(f'{xlabel} ({unit})')
+    axes[0].set_ylabel(f'{zlabel} ({unit})')
+    plt.tight_layout()
+    save(fig, f'{tag}_samena{suf}.png')
 
 
 if __name__ == '__main__':
