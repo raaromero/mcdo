@@ -20,7 +20,7 @@ C, LN2 = 299.792458, np.log(2)                     # nm/fs
 w1, w2 = 2 * np.pi * C / 750, 2 * np.pi * C / 656  # rad/fs
 spec = lambda w, w0, tau: np.exp(-(w - w0) ** 2 * tau ** 2 / (4 * LN2))     # intensity spectrum of a τ-fs pulse
 
-fig, axes = plt.subplots(1, 2, figsize=(17.0, 7.6), gridspec_kw={'width_ratios': [1, 1.15]})
+fig, axes = plt.subplots(1, 2, figsize=(22.0, 10.0))
 ax = axes[0]
 tau = 20.0
 s = 2 * np.sqrt(LN2) / tau
@@ -35,9 +35,8 @@ for le in (345, 350, 355):
     ax.text(xt, we - xt + 0.012, f'{le} nm', color='#d62728', fontsize=22, rotation=-45, rotation_mode='anchor',
             ha='center', va='bottom')
 ax.set_xlim(W1.min(), W1.max()); ax.set_ylim(W2.min(), W2.max())
-ax.set_xlabel('ω$_1$ (rad/fs), 750 nm pulse'); ax.set_ylabel('ω$_2$ (rad/fs), 656 nm pulse')
+ax.set_xlabel('ω$_1$ (rad/fs)'); ax.set_ylabel('ω$_2$ (rad/fs)')
 ax.set_title('Pairs, τ = 20 fs')
-ax.set_aspect('equal')
 
 ax = axes[1]
 le = np.linspace(330, 370, 801); we = 2 * np.pi * C / le
@@ -46,9 +45,9 @@ for tau, col in ((100, '#1f77b4'), (20, '#d62728'), (10, '#2ca02c')):
     Pe = np.array([np.sum(spec(w, w1, tau) * spec(x - w, w2, tau)) * dw for x in we])
     ax.plot(le, Pe / Pe.max(), color=col, lw=4, label=f'τ = {tau} fs')
 ax.axvline(350, color='k', lw=2, ls='--')
-ax.set_xlabel('λ$_e$ (nm)'); ax.set_ylabel('pairs reaching λ$_e$'); ax.set_ylim(0, 1.05); ax.set_xlim(330, 370)
+ax.set_xlabel('λ$_e$ (nm)'); ax.set_ylabel('pairs'); ax.set_ylim(0, 1.05); ax.set_xlim(330, 370)
 ax.set_title('Integral along each line')
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.13), ncol=3, frameon=False)
 plt.tight_layout()
 fig.savefig(os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'slides',
                          'pulse_pairs_omega.png'), dpi=600, bbox_inches='tight')
