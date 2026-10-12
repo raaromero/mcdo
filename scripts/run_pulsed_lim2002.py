@@ -14,25 +14,37 @@ Per model and pulse duration τ it saves, for 2CE and 2PE at θ = π and π/2:
   delay_z      (θ = π) peak against the offset z_c and the time delay
 Offsets of O′ (zero included) use the translation of beam 2's field on an extended grid, as in the replication.
 
+SIGNAL=pairs counts the photon pairs that reach the transition, ω_a + ω_b = ω_e (2CE only):
+
+    A(P) = Σ_k a_1(ω_a,k) a_2(ω_b,k) E_1(P, ω_a,k) E_2(P, ω_b,k) e^{iω_b,k Δt} Δω,   F_2c(P) ∝ |A(P)|²
+
+with NPAIRS wavelengths per pulse (25: the PSF changes by less than 1e-6 of its peak beyond it,
+scripts/check_pair_count.py) and the time delay in steps of τ/8. It also saves the PSF at every delay and
+Linfoot's C and Q against the delay, and the aligned peak for unit-energy pulses (abs_peak).
+
     MODEL=scalar python scripts/run_pulsed_lim2002.py           # scalar 2CE, NA 0.5 (stage 1)
     MODEL=rw NA=0.7 python scripts/run_pulsed_lim2002.py        # vector, unpolarized 2CE, s-polarized 2PE (stage 2)
-    -> output/08_two_color/lim2002/pulsed_lim2002/{model}_na{NA}_tau{τ}.npz
+    SIGNAL=pairs MODEL=rw NA=0.9 python scripts/run_pulsed_lim2002.py
+    -> output/08_two_color/lim2002/pulsed_lim2002/{model}_na{NA}_tau{τ}[_pairs].npz
 """
 
 import os
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 
-from mcdo.pulsed2ce import C_UM_FS, spectrum
+from mcdo.pulsed2ce import C_UM_FS, pair_grid, pair_signal, spectrum
 from mcdo.twobeam import beam_field
 
 MODEL = os.environ.get('MODEL', 'scalar')
 NA = float(os.environ.get('NA', '0.5'))
 TAUS = [float(t) for t in os.environ.get('TAUS', '100,20,10').split(',')]
+SIGNAL = os.environ.get('SIGNAL', 'overlap')     # 'overlap': ∫ I1 I2 dt, every pair; 'pairs': the pairs that reach ω_e
+NPAIRS = int(os.environ.get('NPAIRS', '25'))
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'pulsed_lim2002')
 os.makedirs(OUT, exist_ok=True)
 LAMS = {'2ce': (0.750, 0.656), '2pe': (0.700, 0.700)}
@@ -43,6 +55,7 @@ SX, SZ = 4, 8                             # offset steps in window samples: 0.08
 OX, OZ = np.arange(-48, 49, SX), np.arange(-96, 97, SZ)     # offsets ±0.96 × ±4.8 µm (25 × 25), zero included
 O3 = (20, 20)                                                 # Fig. 3: O′ = (0.4, 1.0) µm, in window samples (z, x)
 DELAYS = np.array([-2, -1.5, -1, -0.5, -0.25, 0, 0.25, 0.5, 1, 1.5, 2])   # Δt/τ
+DELAYS_PAIRS = np.arange(-16, 17) / 8                         # Δt/τ in steps of τ/8 (pairs)
 PX, PZ = OX.max(), OZ.max()
 
 
@@ -131,16 +144,65 @@ def run(pair, th, tau):
     return out
 
 
-for tau in TAUS:
-    path = os.path.join(OUT, f'{MODEL}_na{NA:g}_tau{tau:g}.npz')
-    if os.path.exists(path):
-        continue
-    res = {}
-    for pair in ('2ce', '2pe'):
-        for th in ('pi', 'pi2'):
-            t0 = time.time()
-            for k, v in run(pair, th, tau).items():
-                res[f'{pair}_{th}_{k}'] = v
-            print(f'{MODEL} NA {NA:g} τ {tau:g} fs {pair} {th}: {time.time() - t0:.0f} s', flush=True)
-    np.savez_compressed(path, **res)
-    print('Saved ->', path, flush=True)
+def _field(args):
+    lam, theta, X, Z, kw = args
+    return beam_field(X, Z, lam, NA, 1.0, theta=theta, **kw).astype(np.complex64)
+
+
+def run_pairs(th, tau, pool):
+    """2CE from the photon pairs that reach ω_e: every offset of O′, and every delay (aligned; and with z_c at θ = π)."""
+    (XW, ZW), (XE, ZE) = grids()
+    wa, wb, wt, u = pair_grid(*LAMS['2ce'], tau, None, NPAIRS, 10.0)
+    psis = (0.0, np.pi / 2) if MODEL == 'rw' else (None,)
+
+    def fields(ws, theta, X, Z, psi):
+        kw = dict(model='rw', psi=psi) if MODEL == 'rw' else {}
+        return np.stack(list(pool.map(_field, [(2 * np.pi * C_UM_FS / w, theta, X, Z, kw) for w in ws])))
+    F1 = [fields(wa, 0.0, XW, ZW, p) for p in psis]
+    F2 = [fields(wb, TH[th], XE, ZE, p) for p in psis]
+    nzw, nxw = XW.shape
+    sl = lambda f, iz, ix: f[..., PZ - iz:PZ - iz + nzw, PX - ix:PX - ix + nxw]
+
+    def sig(c, iz, ix):
+        return sum(pair_signal(c, E1, sl(E2, iz, ix), MODEL == 'rw') for E1 in F1 for E2 in F2) / (len(F1) * len(F2))
+    D = DELAYS_PAIRS * tau
+    cs = [wt * np.exp(-1j * u * d) for d in D]                    # e^{iω_bΔt} up to a common phase
+    S = np.array([[sig(wt, iz, ix) for ix in OX] for iz in OZ])
+    S3 = sig(wt, *O3)
+    Sd = np.array([sig(c, 0, 0) for c in cs])
+    Sdz = np.array([[sig(c, iz, 0) for iz in OZ] for c in cs]) if th == 'pi' else None
+    i0, j0 = int(np.flatnonzero(OZ == 0)[0]), int(np.flatnonzero(OX == 0)[0])
+    assert np.allclose(S[i0, j0], Sd[int(np.flatnonzero(D == 0)[0])], rtol=1e-4)   # aligned map = zero time delay
+    tref = S[i0, j0]; tn = tref / tref.max(); t2 = np.mean(tn ** 2)
+    an = S / S.reshape(OZ.size, OX.size, -1).max(axis=2)[..., None, None]
+    dn = Sd / Sd.reshape(D.size, -1).max(axis=1)[:, None, None]
+    out = dict(x=XW[0], z=ZW[:, 0], xc=OX * DX, zc=OZ * DZ, delays=D,
+               psf2=tn, psf3=S3 / S3.max(), abs_peak=tref.max(),
+               peak=S.reshape(OZ.size, OX.size, -1).max(axis=2) / tref.max(),
+               F=1 - ((tn - an) ** 2).mean(axis=(2, 3)) / t2, C=(an ** 2).mean(axis=(2, 3)) / t2,
+               Q=(an * tn).mean(axis=(2, 3)) / t2,
+               delay_psf=(Sd / tref.max()).astype(np.float32),
+               delay_peak=Sd.reshape(D.size, -1).max(axis=1) / tref.max(),
+               delay_F=1 - ((tn - dn) ** 2).mean(axis=(1, 2)) / t2, delay_C=(dn ** 2).mean(axis=(1, 2)) / t2,
+               delay_Q=(dn * tn).mean(axis=(1, 2)) / t2)
+    if Sdz is not None:
+        out['delay_z_peak'] = Sdz.reshape(D.size, OZ.size, -1).max(axis=2) / tref.max()
+    return out
+
+
+if __name__ == '__main__':
+    with ProcessPoolExecutor(int(os.environ.get('WORKERS', '6'))) as pool:
+        for tau in TAUS:
+            path = os.path.join(OUT, f'{MODEL}_na{NA:g}_tau{tau:g}' + ('_pairs' if SIGNAL == 'pairs' else '') + '.npz')
+            if os.path.exists(path):
+                continue
+            res = {}
+            for pair in (('2ce',) if SIGNAL == 'pairs' else ('2ce', '2pe')):
+                for th in ('pi', 'pi2'):
+                    t0 = time.time()
+                    out = run_pairs(th, tau, pool) if SIGNAL == 'pairs' else run(pair, th, tau)
+                    for k, v in out.items():
+                        res[f'{pair}_{th}_{k}'] = v
+                    print(f'{MODEL} NA {NA:g} τ {tau:g} fs {SIGNAL} {pair} {th}: {time.time() - t0:.0f} s', flush=True)
+            np.savez_compressed(path, **res)
+            print('Saved ->', path, flush=True)

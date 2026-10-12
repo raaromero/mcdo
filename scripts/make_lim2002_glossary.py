@@ -87,7 +87,19 @@ GROUPS = [
         (r'\Delta s = \dfrac{c\,\Delta t}{2n\sin(\theta/2)}', 'shift of the 2PE fringes for a time delay Δt'),
         (r'\phi_{eq} = \mathbf{K}\cdot\mathbf{r}_c + k\,\hat{\mathbf{k}}_2\cdot\mathbf{d}', 'fringe phase of a misalignment d; r_c is the centre of the overlap'),
         (r'\tau', 'pulse duration (intensity FWHM)'),
-        (r'F_{2c} \propto \int I_1(t)\, I_2(t - \Delta t)\, dt', '2CE signal with pulses: overlap in time of the two pulses'),
+        (r'O(P, \Delta t) = \int I_1(P, t)\, I_2(P, t)\, dt', 'overlap in time of the two pulses at P; t_1, t_2 = times they pass P'),
+        (r'\text{20\% tolerance in time}', 'the time delay Δt that reduces the 2CE peak by 20%'),
+    ]),
+    ('Glossary: photon pairs', [
+        (r'\nu_a + \nu_b = \nu_e', 'two-photon resonance: a photon from each pulse; ν = c/λ, ν_e for 350 nm'),
+        (r'p_i(\nu)', 'spectral probability density of a photon of laser i (1: 750 nm, 2: 656 nm)'),
+        (r'\Delta\nu = 0.441/\tau', 'spectral width (FWHM) of a Gaussian pulse of duration τ'),
+        (r'P(\nu_a) = p_1(\nu_a)\, p_2(\nu_e - \nu_a)', 'joint probability of the resonant pair whose 750 nm photon has frequency ν_a'),
+        (r'\delta = \nu_e - (\nu_1 + \nu_2)', 'detuning of the transition from the design pair 750 + 656 nm'),
+        (r'A(P) = \int \sqrt{P(\nu_a)}\, U_1 U_2\, d\nu_a', 'two-photon amplitude: the resonant pairs added with their phases'),
+        (r'F_{2c} \propto |A|^2 \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}\, e^{-2\ln 2\, \delta^2/\Delta\nu^2}\, '
+         r'e^{-2\ln 2\, (t_1 - t_2)^2/\tau^2}', 'pulsed 2CE: continuous-beam PSF × pair probability × overlap in time'),
+        (r'N', 'wavelengths sampled per pulse (25)'),
     ]),
 ]
 

@@ -1,7 +1,20 @@
-r"""Two-color excitation with pulses: the time overlap of two focused pulses.
+r"""Two-color excitation with pulses: photon pairs from two focused pulses.
 
-With pulses the two-color signal is the time overlap of the two intensities
-at a delay Δt [LS02]_ (their Eq. 2 with time-dependent intensities):
+A 2CE event takes one photon from each pulse, ω_a from beam 1 and ω_b from beam 2,
+and excites the transition ω_e when ω_a + ω_b = ω_e. The two-photon amplitude adds
+these pairs with their phases, and the signal is its square
+(:func:`two_color_pairs`, a transition narrower than the pulse spectra):
+
+.. math::
+
+    A(P) = \int \tilde{E}_1(P, \omega)\, \tilde{E}_2(P, \omega_e - \omega)\, d\omega,
+    \qquad F_{2c}(P) \propto |A(P)|^2 .
+
+For Gaussian pulses |A|² is the probability that a pair reaches ω_e times the
+overlap in time of the two pulses, times the continuous-beam product I₁I₂.
+Summed over all transition frequencies (a flat absorption band) |A|² gives the
+time overlap of the two intensities at a delay Δt (Parseval), the signal of
+[LS02]_ Eq. 2 with time-dependent intensities (:func:`two_color_pulsed`):
 
 .. math::
 
@@ -110,6 +123,69 @@ def two_color_pulsed(x, z, na, n=1.0, theta=np.pi, xc=0.0, zc=0.0, tau1=20.0, ta
         I1 = sum(_intensity_t(*f, tt) for f in B1) / len(B1)
         for i, d in enumerate(delays):
             S[i] += I1 * (sum(_intensity_t(*f, tt - d) for f in B2) / len(B2)) * dt
+    return S if np.ndim(delay) else S[0]
+
+
+def pair_grid(lam1=0.750, lam2=0.656, tau1=20.0, tau2=None, n_pairs=41, span=10.0, detuning=0.0):
+    """The photon pairs that reach the transition: ω_a from beam 1 and ω_b = ω_e − ω_a from beam 2.
+
+    The transition sits at ω_e = ω_1 + ω_2 + δ (δ = ``detuning``, rad/fs). Each amplitude spectrum has unit
+    energy, ∫|a_i(ω)|² dω = 1, and carries the Debye prefactor ω/ω_i. Their product a_1(ω_a) a_2(ω_e − ω_a) is
+    a Gaussian in ω_a of standard deviation s_p = s_1 s_2 / √(s_1² + s_2²) (s_i = 2√ln2/τ_i); ``n_pairs``
+    samples cover ``span`` standard deviations of it. Returns ω_a, ω_b, the pair weights a_1 a_2 dω and the
+    offsets u = ω_a − ω_1.
+    """
+    tau2 = tau1 if tau2 is None else tau2
+    w1, w2 = 2 * np.pi * C_UM_FS / lam1, 2 * np.pi * C_UM_FS / lam2
+    s1, s2 = 2 * np.sqrt(np.log(2)) / tau1, 2 * np.sqrt(np.log(2)) / tau2
+    sp = s1 * s2 / np.hypot(s1, s2)
+    u = detuning * s1 ** 2 / (s1 ** 2 + s2 ** 2) + np.linspace(-span / 2, span / 2, n_pairs) * sp
+    wa, wb = w1 + u, w2 + detuning - u
+    a1 = (np.pi * s1 ** 2) ** -0.25 * np.exp(-u ** 2 / (2 * s1 ** 2)) * wa / w1
+    a2 = (np.pi * s2 ** 2) ** -0.25 * np.exp(-(detuning - u) ** 2 / (2 * s2 ** 2)) * wb / w2
+    return wa, wb, a1 * a2 * (u[1] - u[0]), u
+
+
+def pair_signal(c, E1, E2, vector):
+    """|A|², A = Σ_k c_k E1_k E2_k over the pairs k, for scalar fields (n_pairs, ...); Σ_ij |A_ij|² over the
+    field components for vector fields (n_pairs, 3, ...)."""
+    if not vector:
+        return np.abs(np.tensordot(c, E1 * E2, axes=(0, 0))) ** 2
+    A = np.einsum('k,kip,kjp->ijp', c, E1.reshape(E1.shape[:2] + (-1,)), E2.reshape(E2.shape[:2] + (-1,)))
+    return (np.abs(A) ** 2).sum(axis=(0, 1)).reshape(E1.shape[2:])
+
+
+def two_color_pairs(x, z, na, n=1.0, theta=np.pi, xc=0.0, zc=0.0, tau1=20.0, tau2=None, delay=0.0,
+                    lam1=0.750, lam2=0.656, model='rw', apodization=None, n_pairs=41, span=10.0, detuning=0.0):
+    """Pulsed 2CE signal from the photon pairs that reach the transition, ω_a + ω_b = ω_e (narrow line).
+
+    The two-photon amplitude at P sums every pair coherently,
+
+        A(P) = ∫ Ẽ_1(P, ω) Ẽ_2(P, ω_e − ω) e^{i(ω_e − ω)Δt} dω,      F_2c(P) ∝ |A(P)|²,
+
+    with Ẽ_i(P, ω) = a_i(ω) E_ω(P) (unit-energy spectra, :func:`pair_grid`). Beam 2's pulse arrives ``delay``
+    after beam 1's (a phase ω_b Δt on each of its photons). For ``model='rw'`` the components add as
+    Σ_ij |A_ij|² and each beam is unpolarized (average over two perpendicular input polarizations), so a long
+    pulse gives the continuous-wave product I_1 I_2. Integrating |A|² over ω_e gives the time overlap
+    ∫ I_1 I_2 dt of :func:`two_color_pulsed` (all pairs, Parseval).
+    """
+    wa, wb, wt, u = pair_grid(lam1, lam2, tau1, tau2, n_pairs, span, detuning)
+    delays = np.atleast_1d(np.asarray(delay, float))
+    x, z = np.broadcast_arrays(np.asarray(x, float), np.asarray(z, float))
+    psis = (0.0, np.pi / 2) if model == 'rw' else (None,)
+
+    def fields(ws, th, a, b, psi):
+        kw = {} if model == 'paraxial' else dict(model=model)
+        if model == 'rw':
+            kw['psi'] = psi
+        return np.stack([beam_field(x, z, 2 * np.pi * C_UM_FS / w, na, n, theta=th, xc=a, zc=b,
+                                    apodization=apodization, **kw) for w in ws])
+    F1 = [fields(wa, 0.0, 0.0, 0.0, p) for p in psis]
+    F2 = [fields(wb, theta, xc, zc, p) for p in psis]
+    S = np.zeros((len(delays),) + x.shape)
+    for i, d in enumerate(delays):
+        c = wt * np.exp(-1j * u * d)                 # e^{iω_bΔt} up to a common phase
+        S[i] = sum(pair_signal(c, E1, E2, model == 'rw') for E1 in F1 for E2 in F2) / (len(F1) * len(F2))
     return S if np.ndim(delay) else S[0]
 
 

@@ -12,6 +12,7 @@ figure sizes, so text stays readable when a figure is projected.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 #: Deck standard. Everything below is multiplied by this.
 FONT_SCALE = 1.45
@@ -59,3 +60,22 @@ def outside_legend(ax, **kwargs):
     kwargs.setdefault("frameon", False)
     kwargs.setdefault("borderaxespad", 0.0)
     return ax.legend(**kwargs)
+
+
+def ring_labels(ax, cs, center, angles, fontsize):
+    """Label nested contour rings at set angles around ``center``, so labels on close rings do not sit side by side.
+
+    ``angles`` maps a contour level to the angle (degrees, in data coordinates) of its label; levels left out stay
+    unlabelled. Each label goes on the longest piece of its contour.
+    """
+    levels, pos = [], []
+    for level, segs in zip(cs.levels, cs.allsegs):
+        if level not in angles or not segs:
+            continue
+        v = max(segs, key=len)
+        a = np.degrees(np.arctan2(v[:, 1] - center[1], v[:, 0] - center[0]))
+        k = int(np.argmin(np.abs((a - angles[level] + 180.0) % 360.0 - 180.0)))
+        levels.append(level)
+        pos.append((v[k, 0], v[k, 1]))
+    if levels:
+        ax.clabel(cs, levels, manual=pos, fmt='%d', fontsize=fontsize)
