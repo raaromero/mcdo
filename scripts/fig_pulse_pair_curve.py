@@ -27,18 +27,18 @@ def band(lam0, tau):                                           # spectral FWHM o
 
 la = np.linspace(690, 820, 2601); lb = pair(la)
 fig, ax = plt.subplots(figsize=(13.0, 10.0))
-ax.plot(la, lb, color='#bbbbbb', lw=3)
 rows = []
-for tau, col, lw in ((10, '#2ca02c', 16), (20, '#d62728', 10), (100, '#1f77b4', 5)):
+for tau, col in ((10, '#2ca02c'), (20, '#d62728'), (100, '#1f77b4')):
     A, B = band(750, tau), band(656, tau)
+    ax.add_patch(plt.Rectangle((A[0], B[0]), A[1] - A[0], B[1] - B[0], fc=col, alpha=0.10, ec=col, lw=2.5,
+                               label=f'τ = {tau} fs'))
     ok = (la >= A[0]) & (la <= A[1]) & (lb >= B[0]) & (lb <= B[1])
-    ax.plot(la[ok], lb[ok], color=col, lw=lw, solid_capstyle='butt', label=f'τ = {tau} fs')
-    for i in (0, -1):
-        ax.plot(la[ok][i], lb[ok][i], 'o', color=col, ms=14, mec='k', mew=1.5)
+    ax.plot([la[ok][0], la[ok][-1]], [lb[ok][0], lb[ok][-1]], 'o', color=col, ms=11, zorder=5)
     rows.append((tau, la[ok][0], lb[ok][0], la[ok][-1], lb[ok][-1]))
+ax.plot(la, lb, color='k', lw=3, zorder=4)
 ax.set_xlabel('λ$_a$, 750 nm pulse (nm)'); ax.set_ylabel('λ$_b$, 656 nm pulse (nm)')
 ax.set_xlim(690, 820); ax.set_ylim(615, 700)
-ax.legend(loc='upper right', frameon=False)
+ax.legend(loc='upper right', frameon=False, handlelength=1.2)
 plt.tight_layout()
 out = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'slides', 'pulse_pair_curve.png')
 fig.savefig(out, dpi=600, bbox_inches='tight')
