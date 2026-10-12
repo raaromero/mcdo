@@ -1,8 +1,8 @@
-r"""How the pair-wavelength distribution is built, for each pulse duration.
+r"""Which photons of the two pulses pair up to reach the 350 nm transition, for each pulse duration.
 
-Each photon of the 750 nm pulse at wavelength λ_a pairs with the whole 656 nm pulse, giving a Gaussian in λ_e
-(thin curves, coloured by λ_a and weighted by how many λ_a photons there are). Their sum (black) is the distribution
-of λ_e the two pulses deliver. Shorter pulses: more λ_a photons, each spread wider, so the sum is wider.
+Red and blue: spectra of the 750 nm and 656 nm pulses (transform-limited Gaussians of duration τ). Matching markers:
+pairs (λ_a on the red spectrum, λ_b on the blue) with 1/λ_a + 1/λ_b = 1/350 nm; each colour is one pair. Shorter
+pulses have wider spectra, so pairs farther from 750 + 656 nm still have photons on both sides.
 
     python scripts/fig_pulse_pairs_build.py  -> output/08_two_color/lim2002/slides/pulse_pairs_build.png
 """
@@ -16,27 +16,25 @@ from mcdo.style import apply
 apply()
 matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
                             'ytick.labelsize': 24})
-C, LN2 = 299792.458, np.log(2)                     # nm·THz
-n1, n2 = C / 750, C / 656
-le = np.linspace(330, 370, 2001); ne = C / le      # pair frequency ν_e = ν_a + ν_b
-g = lambda x, x0, fw: np.exp(-4 * LN2 * (x - x0) ** 2 / fw ** 2)
+C, LN2, LE = 299792.458, np.log(2), 350.0          # nm·THz
+lam = np.linspace(590, 830, 4001)
+spec = lambda l, l0, tau: np.exp(-4 * LN2 * (C / l - C / l0) ** 2 / (0.441 / (tau * 1e-3)) ** 2)
+partner = lambda a: 1 / (1 / LE - 1 / a)
+PAIRS = (720, 735, 750, 765, 780)                    # λ_a of the marked pairs (nm)
+cols = plt.get_cmap('viridis')(np.linspace(0, 0.9, len(PAIRS)))
 fig, axes = plt.subplots(1, 3, figsize=(30.0, 9.0), sharey=True)
-cmap = plt.get_cmap('coolwarm')
 for ax, tau in zip(axes, (100, 20, 10)):
-    dnu = 0.441 / (tau * 1e-3)                      # FWHM of each pulse's spectrum (THz)
-    na = n1 + np.linspace(-1.2, 1.2, 13) * dnu       # photons of the 750 nm pulse
-    total = np.zeros_like(le)
-    parts = [(x, g(x, n1, dnu) * g(ne - x, n2, dnu)) for x in na]   # partner from the 656 nm pulse
-    peak = max(p.max() for _, p in parts)
-    nb = n1 + np.linspace(-3, 3, 601) * dnu
-    tot = sum(g(x, n1, dnu) * g(ne - x, n2, dnu) for x in nb) * (nb[1] - nb[0])
-    for x, p in parts:
-        ax.plot(le, p / peak, color=cmap((x - na[0]) / np.ptp(na)), lw=2.5)
-    ax.plot(le, tot / tot.max(), color='k', lw=5)
-    ax.axvline(350, color='k', lw=1.5, ls='--')
-    ax.set_title(f'τ = {tau} fs'); ax.set_xlabel('λ$_e$ (nm)'); ax.set_xlim(330, 370); ax.set_ylim(0, 1.05)
-axes[0].set_ylabel('pairs')
-sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(C / (n1 + 1.2 * 0.441 / 0.01), C / (n1 - 1.2 * 0.441 / 0.01)))
+    ax.plot(lam, spec(lam, 750, tau), color='#d62728', lw=3.5)
+    ax.plot(lam, spec(lam, 656, tau), color='#1f77b4', lw=3.5)
+    for a, c in zip(PAIRS, cols):
+        b = partner(a)
+        ya, yb = spec(a, 750, tau), spec(b, 656, tau)
+        if ya > 0.02 and yb > 0.02:                  # both photons present in their pulse
+            ax.plot([a, b], [ya, yb], 'o', color=c, ms=18, mec='k', mew=1.5, zorder=5)
+    ax.set_title(f'τ = {tau} fs'); ax.set_xlabel('wavelength (nm)'); ax.set_xlim(590, 830); ax.set_ylim(0, 1.08)
+axes[0].set_ylabel('spectrum')
 plt.tight_layout()
 fig.savefig(os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'slides',
                          'pulse_pairs_build.png'), dpi=600, bbox_inches='tight')
+for a in PAIRS:
+    print(f'{a} + {partner(a):.0f} nm')
