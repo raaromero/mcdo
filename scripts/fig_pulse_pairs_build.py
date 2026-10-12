@@ -22,22 +22,22 @@ spec = lambda l, l0, tau: np.exp(-4 * LN2 * (C / l - C / l0) ** 2 / (0.441 / (ta
 partner = lambda a: 1 / (1 / LE - 1 / a)
 cmap = plt.get_cmap('viridis')
 TH = 0.05                                            # a photon has a partner if the partner's spectrum is above 5% of peak
-fig, axes = plt.subplots(1, 3, figsize=(30.0, 9.0), sharey=True)
-for ax, tau in zip(axes, (100, 20, 10)):
-    ax.plot(lam, spec(lam, 750, tau), color='#d62728', lw=3)
-    ax.plot(lam, spec(lam, 656, tau), color='#1f77b4', lw=3)
-    la = lam[(lam > 600) & (lam < 830)]
-    lb = partner(la)
+TAUS = (150, 100, 50)                                # typical Ti:sapphire pulse durations (fs)
+fig, axes = plt.subplots(len(TAUS), 2, figsize=(20.0, 18.0), sharey=True)
+for row, tau in zip(axes, TAUS):
+    la = np.linspace(720, 780, 6001); lb = partner(la)
     ok = (spec(la, 750, tau) > TH) & (spec(lb, 656, tau) > TH)
     la, lb = la[ok], lb[ok]
-    if la.size:
-        cv = (la - la.min()) / max(np.ptp(la), 1e-9)
-        for i in range(la.size - 1):                 # same colour on both spectra = partners
+    cv = (la - la.min()) / np.ptp(la)
+    for ax, l0, col, xs in ((row[0], 656, '#1f77b4', lb), (row[1], 750, '#d62728', la)):
+        x = np.linspace(l0 - 25, l0 + 25, 2001)
+        ax.plot(x, spec(x, l0, tau), color=col, lw=3)
+        for i in range(xs.size - 1):                 # same colour on both spectra = partners
             c = cmap(0.1 + 0.8 * cv[i])
-            ax.fill_between(la[i:i + 2], spec(la[i:i + 2], 750, tau), color=c, lw=0.6, ec=c)
-            ax.fill_between(lb[i:i + 2], spec(lb[i:i + 2], 656, tau), color=c, lw=0.6, ec=c)
-    ax.set_title(f'τ = {tau} fs'); ax.set_xlabel('wavelength (nm)'); ax.set_xlim(590, 830); ax.set_ylim(0, 1.08)
-axes[0].set_ylabel('spectrum')
+            ax.fill_between(xs[i:i + 2], spec(xs[i:i + 2], l0, tau), color=c, lw=0.6, ec=c)
+        ax.set_xlim(l0 - 25, l0 + 25); ax.set_ylim(0, 1.08)
+    row[0].set_ylabel(f'τ = {tau} fs')
+axes[-1][0].set_xlabel('656 nm pulse, wavelength (nm)'); axes[-1][1].set_xlabel('750 nm pulse, wavelength (nm)')
 plt.tight_layout()
 fig.savefig(os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'slides',
                          'pulse_pairs_build.png'), dpi=600, bbox_inches='tight')
