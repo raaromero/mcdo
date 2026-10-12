@@ -114,6 +114,8 @@ GLOSS = {   # term: (meaning, sections that use it)
     's–s, p–p': ('both beams polarized perpendicular to (s) or in (p) the plane of the two lens axes', 'polarization'),
     'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay pulses'),
     'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses'),
+    'ν_a, ν_b, ν_e': ('photon frequencies from the 750 and 656 nm lasers, and of the transition (ν = c/λ)', 'pulses'),
+    'p_i(ν)': ('spectral probability density of a photon of laser i', 'pulses'),
     'K': ('fringe wavevector of the two 2PE beams, |K| = 2k sin(θ/2)', 'delay'),
 }
 
@@ -1010,21 +1012,50 @@ elif SECTION == 'pulses':
         'At high NA the focus is shorter than the meeting slab (about 1 µm at NA 0.9 against 2.1 µm at 10 fs), so the peak '
         'follows the overlap at the focus; scalar 2CE at NA 0.5 has a longer focus and loses less.'],
         'At high NA the time delay costs the full overlap factor.', 'Facing lenses, tau = 20 and 10 fs.')
-    PAIR = r'\frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}'
-    eqslide('Which photon pairs excite the dye', 'One photon from each pulse; the pair excites the molecule according to the '
-            'wavelength its energies add up to.', [
-        (PAIR, 'λ_a from the 750 nm pulse, λ_b from the 656 nm pulse; λ_e = wavelength the pair reaches.'),
-        (r'750 + 656,\ \ 740 + 664,\ \ 760 + 649\ \mathrm{nm} \;\rightarrow\; 350\ \mathrm{nm}',
-         'pairs that reach the design transition at 350 nm.'),
-        (r'740 + 649\ \mathrm{nm} \rightarrow 346\ \mathrm{nm}, \qquad 760 + 664\ \mathrm{nm} \rightarrow 354\ \mathrm{nm}',
-         'pairs that reach nearby wavelengths: at 20 fs the pairs spread over about 12 nm around 350 nm, at 100 fs over 2.5 nm.')],
-        'Each pair of photons reaches the wavelength set by the sum of their energies.', 'Examples of photon pairs.', PAIR,
-        fig=SL('pulse_pairs_spectrum.png'), size=15)
-    wide('Photon pairs on (λ_a, λ_b) axes', SL('pulse_pairs_2d.png'), [
-        'Grey: how often each pair of wavelengths occurs, one photon from each pulse. Red: lines of constant pair wavelength λ_e. '
-        'Adding up the grey along each red line gives how many pairs reach that λ_e; shorter pulses spread the grey over more '
-        'lines.'],
-        'Every photon pair lands on a line of constant lambda_e.', 'Transform-limited Gaussian pulses at 750 and 656 nm.')
+    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), [
+        '(a) Spectral probability density of each pulse at 20 fs. (b) Joint probability of the photon pairs at the two-photon '
+        'resonance ν_a + ν_b = ν_e (λ_e = 350 nm), against the 750 nm photon (red axis) and its partner from the 656 nm laser '
+        '(blue axis). Shorter pulses bring in more pairs; continuous beams have the single pair 750 + 656 nm.'],
+        'The resonant photon pairs form a Gaussian that narrows as the pulses get longer.',
+        'Independent lasers, so the joint probability is the product of the two spectral probabilities. Derivation on the next '
+        'slides.')
+    R1 = r'h\nu_a + h\nu_b = h\nu_e \;\Leftrightarrow\; \frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}'
+    R2 = r'p_i(\nu) \propto \exp\left(-\frac{4\ln 2\,(\nu - \nu_i)^2}{\Delta\nu^2}\right), \qquad \Delta\nu = \frac{0.441}{\tau}'
+    R3 = r'P(\nu_a) = p_1(\nu_a)\; p_2(\nu_e - \nu_a)'
+    eqslide('Closed form, step 1: resonance and joint probability', 'A pair excites the 350 nm transition when its photon '
+            'energies add up to the transition energy; photons of the two lasers are independent.', [
+        (R1, 'two-photon resonance (energy conservation); ν = c/λ is the photon frequency.'),
+        (R2, 'spectral probability density of laser i (i = 1: 750 nm, i = 2: 656 nm) for a τ-long Gaussian pulse (Step 3).'),
+        (R3, 'joint probability of the resonant pair whose 750 nm photon has frequency ν_a: independent lasers, so the '
+             'probabilities multiply.')],
+        'Resonant pairs: energies add up to the transition; independent photons, so probabilities multiply.',
+        'Step 1 of the closed form for which photon pairs reach the transition.', '\n'.join((R1, R2, R3)), size=16)
+    S1 = r'\delta = \nu_e - (\nu_1 + \nu_2)'
+    S2 = (r'(\nu_a - \nu_1)^2 + (\nu_a - \nu_1 - \delta)^2 = 2\left(\nu_a - \nu_1 - \tfrac{\delta}{2}\right)^2 '
+          r'+ \tfrac{\delta^2}{2}')
+    S3 = (r'P(\nu_a) \propto \exp\left(-\frac{8\ln 2\,(\nu_a - \nu_1 - \delta/2)^2}{\Delta\nu^2}\right)\, '
+          r'\exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right)')
+    eqslide('Closed form, step 2: complete the square', 'The product of two Gaussians is a Gaussian; δ measures how far the '
+            'target sits from the design pair.', [
+        (S1, 'detuning of the target ν_e from the design pair 750 + 656 nm; δ = 0 for λ_e = 350 nm.'),
+        (S2, 'the two exponents of P(ν_a), with ν_e − ν_a − ν_2 = ν_1 + δ − ν_a, expanded and regrouped.'),
+        (S3, 'a Gaussian in ν_a centred at ν_1 + δ/2, times a factor that depends only on δ.')],
+        'The resonant pairs form a Gaussian.', 'Complete the square in nu_a.', '\n'.join((S1, S2, S3)), size=16)
+    T1 = r'\mathrm{FWHM}_{\nu_a} = \frac{\Delta\nu}{\sqrt{2}}'
+    T2 = (r'\int P(\nu_a)\, d\nu_a \;\propto\; \exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right) = '
+          r'\exp\left(-\frac{4\ln 2\,\delta^2}{(\sqrt{2}\,\Delta\nu)^2}\right)')
+    T3 = (r'\Delta\lambda_a \approx \frac{\lambda_1^2}{c}\,\frac{\Delta\nu}{\sqrt{2}} \approx \frac{585\ \mathrm{nm\,fs}}{\tau}, '
+          r'\quad \Delta\lambda_b \approx \frac{448\ \mathrm{nm\,fs}}{\tau}, \quad '
+          r'\Delta\lambda_e \approx \frac{255\ \mathrm{nm\,fs}}{\tau}')
+    eqslide('Closed form, step 3: which pairs, and how many', 'The resonant pairs are √2 narrower than either pulse; the '
+            'probability of reaching ν_e is a Gaussian √2 wider.', [
+        (T1, 'spread of the 750 nm photons in resonant pairs, and of their partners: the exponent 8 ln2/Δν² of step 2.'),
+        (T2, 'probability of reaching ν_e, summed over all pairs: a Gaussian in δ of FWHM √2 Δν, the spread of pair '
+             'frequencies.'),
+        (T3, 'in wavelength (|dλ| = λ²dν/c): 29, 22 and 13 nm at 20 fs; 6, 4.5 and 2.5 nm at 100 fs. τ → ∞ gives the single '
+             'pair 750 + 656 nm.')],
+        'Which pairs, and how many, in closed form.', 'Width of the resonant pairs and of the pair frequencies.',
+        '\n'.join((T1, T2, T3)), size=15)
     RATE = r'\text{rate} \propto \int g(\Omega)\, \bigl|\tilde{P}(\Omega)\bigr|^2 d\Omega, \qquad P(t) = E_1(t)\, E_2(t)'
     eqslide('Weighting the pairs by the dye', 'The dye’s absorption g weights each pair by its total frequency; a flat g gives '
             'the time-overlap signal of Step 5.', [
