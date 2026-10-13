@@ -25,7 +25,8 @@ Linfoot's C and Q against the delay, and the aligned peak for unit-energy pulses
     MODEL=scalar python scripts/run_pulsed_lim2002.py           # scalar 2CE, NA 0.5 (stage 1)
     MODEL=rw NA=0.7 python scripts/run_pulsed_lim2002.py        # vector, unpolarized 2CE, s-polarized 2PE (stage 2)
     SIGNAL=pairs MODEL=rw NA=0.9 python scripts/run_pulsed_lim2002.py
-    -> output/08_two_color/lim2002/pulsed_lim2002/{model}_na{NA}_tau{τ}[_pairs].npz
+    SIGNAL=pairs MODEL=rw NA=0.9 N_MED=1.33 THETAS=pi2 python scripts/run_pulsed_lim2002.py   # crossed lenses in water
+    -> output/08_two_color/lim2002/pulsed_lim2002/{model}_na{NA}[_n{n}]_tau{τ}[_pairs].npz
 """
 
 import os
@@ -45,6 +46,8 @@ NA = float(os.environ.get('NA', '0.5'))
 TAUS = [float(t) for t in os.environ.get('TAUS', '100,20,10').split(',')]
 SIGNAL = os.environ.get('SIGNAL', 'overlap')     # 'overlap': ∫ I1 I2 dt, every pair; 'pairs': the pairs that reach ω_e
 NPAIRS = int(os.environ.get('NPAIRS', '25'))
+N = float(os.environ.get('N_MED', '1'))         # medium index: 1 air, 1.33 water (crossed lenses above NA 0.71)
+THETAS = os.environ.get('THETAS', 'pi,pi2').split(',')
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'lim2002', 'pulsed_lim2002')
 os.makedirs(OUT, exist_ok=True)
 LAMS = {'2ce': (0.750, 0.656), '2pe': (0.700, 0.700)}
@@ -69,7 +72,7 @@ def spectral_fields(lam0, tau, theta, X, Z, tw, psi):
     """Frequency offsets, weights and the focal field of each frequency on (X, Z)."""
     w, a, dw = spectrum(lam0, tau, t_window=2 * tw)
     kw = dict(model='rw', psi=psi) if MODEL == 'rw' else {}
-    E = np.stack([beam_field(X, Z, 2 * np.pi * C_UM_FS / wm, NA, 1.0, theta=theta, **kw) for wm in w]).astype(np.complex64)
+    E = np.stack([beam_field(X, Z, 2 * np.pi * C_UM_FS / wm, NA, N, theta=theta, **kw) for wm in w]).astype(np.complex64)
     return (w - w.mean()).astype(np.float32), (a * dw).astype(np.complex64), E
 
 
@@ -85,7 +88,7 @@ def inten(f):
 def run(pair, th, tau):
     (XW, ZW), (XE, ZE) = grids()
     la, lb = LAMS[pair]
-    reach = np.hypot(XE.max(), ZE.max()) / C_UM_FS
+    reach = N * np.hypot(XE.max(), ZE.max()) / C_UM_FS
     tw = 3 * tau + reach + 2 * tau
     dt = tau / 15
     t = np.arange(-tw, tw + dt / 2, dt)
@@ -146,7 +149,7 @@ def run(pair, th, tau):
 
 def _field(args):
     lam, theta, X, Z, kw = args
-    return beam_field(X, Z, lam, NA, 1.0, theta=theta, **kw).astype(np.complex64)
+    return beam_field(X, Z, lam, NA, N, theta=theta, **kw).astype(np.complex64)
 
 
 def run_pairs(th, tau, pool):
@@ -193,12 +196,13 @@ def run_pairs(th, tau, pool):
 if __name__ == '__main__':
     with ProcessPoolExecutor(int(os.environ.get('WORKERS', '6'))) as pool:
         for tau in TAUS:
-            path = os.path.join(OUT, f'{MODEL}_na{NA:g}_tau{tau:g}' + ('_pairs' if SIGNAL == 'pairs' else '') + '.npz')
+            path = os.path.join(OUT, f'{MODEL}_na{NA:g}' + ('' if N == 1 else f'_n{N:g}') + f'_tau{tau:g}'
+                                + ('_pairs' if SIGNAL == 'pairs' else '') + '.npz')
             if os.path.exists(path):
                 continue
             res = {}
             for pair in (('2ce',) if SIGNAL == 'pairs' else ('2ce', '2pe')):
-                for th in ('pi', 'pi2'):
+                for th in THETAS:
                     t0 = time.time()
                     out = run_pairs(th, tau, pool) if SIGNAL == 'pairs' else run(pair, th, tau)
                     for k, v in out.items():

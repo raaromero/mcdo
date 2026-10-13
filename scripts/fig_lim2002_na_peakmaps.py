@@ -11,6 +11,7 @@ shrinking tolerance reads directly; contours at 10–80% of the aligned peak.
 
     python scripts/fig_lim2002_na_peakmaps.py
     ALPHA_T=4 python scripts/fig_lim2002_na_peakmaps.py   # Gaussian input, suffix _at4
+    WATER=1 python scripts/fig_lim2002_na_peakmaps.py     # adds θ = π/2 at NA 0.9 in water (P_na0.9_n1.33)
     -> output/08_two_color/lim2002/na_peakmaps_fig4{a,b,c,d}.png, and the maps themselves in
        na_peakmaps_fig4{a,b,c,d}.npz (x_c_um, z_c_um, P_na0.5, P_na0.7, P_na0.9; saved after each NA)
 """
@@ -38,7 +39,7 @@ OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'l
 L1, L2, L2P = 0.750, 0.656, 0.700
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
 SUF = '' if AT == 0 else f'_at{AT:g}'
-APOD = lambda na: gaussian(AT, na ** 2) if AT else None
+APOD = lambda na, n=1.0: gaussian(AT, (na / n) ** 2) if AT else None
 DX, DZ = 0.02, 0.05                     # µm, PSF grid
 NX, NZ = 60, 110                        # window ±1.2 × ±5.5 µm
 SX, SZ = 2, 4                           # offset steps: 0.04 µm across, 0.2 µm along
@@ -55,15 +56,15 @@ def chunked(f, X, Z, chunk=15000):
     return np.concatenate([f(fx[i:i + chunk], fz[i:i + chunk]) for i in range(0, fx.size, chunk)]).reshape(X.shape)
 
 
-def peak_map(pair, na, theta):
+def peak_map(pair, na, theta, n=1.0):
     s0, s1 = XW.shape
     if pair == '2ce':
         I = lambda X, Z, lam, th: chunked(lambda x, z: 0.5 * sum(
-            intensity(beam_field(x, z, lam, na, 1.0, theta=th, apodization=APOD(na), model='rw', psi=p)) for p in (0.0, np.pi / 2)), X, Z)
+            intensity(beam_field(x, z, lam, na, n, theta=th, apodization=APOD(na, n), model='rw', psi=p)) for p in (0.0, np.pi / 2)), X, Z)
         I1, I2 = I(XW, ZW, L1, 0.0), I(XE, ZE, L2, theta)
         sig = lambda ix, iz: I1 * I2[MZ - iz:MZ - iz + s0, MX - ix:MX - ix + s1]
     else:
-        E = lambda X, Z, th, k: np.stack([chunked(lambda x, z: beam_field(x, z, L2P, na, 1.0, theta=th, apodization=APOD(na), model='rw',
+        E = lambda X, Z, th, k: np.stack([chunked(lambda x, z: beam_field(x, z, L2P, na, n, theta=th, apodization=APOD(na, n), model='rw',
                                                                           psi=np.pi / 2)[c], X, Z) for c in range(3)])
         E1, E2 = E(XW, ZW, 0.0, 0), E(XE, ZE, theta, 0)
         sig = lambda ix, iz: np.sum(np.abs(E1 + E2[:, MZ - iz:MZ - iz + s0, MX - ix:MX - ix + s1]) ** 2, axis=0) ** 2
@@ -73,6 +74,14 @@ def peak_map(pair, na, theta):
     return ixs * DX, izs * DZ, P
 
 
+if os.environ.get('WATER') == '1':                  # crossed lenses at NA 0.9 do not fit in air: water, n = 1.33
+    for tag, pair, th, lab in PANELS[2:]:
+        path = os.path.join(OUT, f'na_peakmaps_fig4{tag}{SUF}.npz')
+        data = dict(np.load(path))
+        data['P_na0.9_n1.33'] = peak_map(pair, 0.9, th, 1.33)[2]
+        np.savez_compressed(path, **data)
+        print(f'Fig. 4({tag}) {lab}, NA 0.9 in water: saved', flush=True)
+    sys.exit(0)
 REPLOT = os.environ.get('REPLOT') == '1'             # redraw from the saved maps
 for tag, pair, th, lab in PANELS:
     fig, axes = plt.subplots(1, 3, figsize=(18.2, 7.0))  # twice its width on the slide: 24-pt text shows at 12 pt

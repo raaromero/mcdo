@@ -12,6 +12,7 @@ Fig. 3 panels have O′ = (0.4, 1.0) µm.
 
     python scripts/fig_lim2002_na_contours.py
     ALPHA_T=4 python scripts/fig_lim2002_na_contours.py   # Gaussian input, suffix _at4; PSFs saved as .npz
+    WATER=1 python scripts/fig_lim2002_na_contours.py     # adds θ = π/2 at NA 0.9 in water (F_na0.9_n1.33)
     -> output/08_two_color/lim2002/na_contours_fig2a.png ... na_contours_fig3d.png
 """
 
@@ -38,7 +39,7 @@ OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'l
 L1, L2, L2P = 0.750, 0.656, 0.700
 AT = float(os.environ.get('ALPHA_T', '0'))       # input truncation; 0 = uniform, Lim & Saloma's case
 SUF = '' if AT == 0 else f'_at{AT:g}'
-APOD = lambda na: gaussian(AT, na ** 2) if AT else None
+APOD = lambda na, n=1.0: gaussian(AT, (na / n) ** 2) if AT else None
 LEVELS = [1, 10, 20, 40, 60, 80]
 REPLOT = os.environ.get('REPLOT') == '1'             # redraw from the saved PSFs
 x = np.linspace(-1.0, 1.0, 201)
@@ -54,16 +55,26 @@ def chunked(f, chunk=15000):
     return np.concatenate([f(fx[i:i + chunk], fz[i:i + chunk]) for i in range(0, fx.size, chunk)]).reshape(X.shape)
 
 
-def psf(pair, na, theta, xc, zc):
+def psf(pair, na, theta, xc, zc, n=1.0):
     if pair == '2ce':
         I = lambda lam, th, a, b: chunked(lambda px, pz: 0.5 * sum(
-            intensity(beam_field(px, pz, lam, na, 1.0, theta=th, xc=a, zc=b, apodization=APOD(na), model='rw', psi=p))
+            intensity(beam_field(px, pz, lam, na, n, theta=th, xc=a, zc=b, apodization=APOD(na, n), model='rw', psi=p))
             for p in (0.0, np.pi / 2)))
         return I(L1, 0.0, 0.0, 0.0) * I(L2, theta, xc, zc)
     return chunked(lambda px, pz: intensity(
-        beam_field(px, pz, L2P, na, 1.0, apodization=APOD(na), model='rw', psi=np.pi / 2)
-        + beam_field(px, pz, L2P, na, 1.0, theta=theta, xc=xc, zc=zc, apodization=APOD(na), model='rw', psi=np.pi / 2)) ** 2)
+        beam_field(px, pz, L2P, na, n, apodization=APOD(na, n), model='rw', psi=np.pi / 2)
+        + beam_field(px, pz, L2P, na, n, theta=theta, xc=xc, zc=zc, apodization=APOD(na, n), model='rw', psi=np.pi / 2)) ** 2)
 
+
+if os.environ.get('WATER') == '1':                  # crossed lenses at NA 0.9 do not fit in air: water, n = 1.33
+    for fig_no, (xc, zc) in ((2, (0.0, 0.0)), (3, (0.4, 1.0))):
+        for tag, pair, th, lab in PANELS[2:]:
+            path = os.path.join(OUT, f'na_contours_fig{fig_no}{tag}{SUF}.npz')
+            data = dict(np.load(path))
+            data['F_na0.9_n1.33'] = psf(pair, 0.9, th, xc, zc, 1.33)
+            np.savez_compressed(path, **data)
+            print(f'Fig. {fig_no}({tag}) {lab}, NA 0.9 in water: saved', flush=True)
+    sys.exit(0)
 
 for fig_no, (xc, zc), where in ((2, (0.0, 0.0), 'aligned'), (3, (0.4, 1.0), 'O′ = (0.4, 1.0) µm')):
     for tag, pair, th, lab in PANELS:

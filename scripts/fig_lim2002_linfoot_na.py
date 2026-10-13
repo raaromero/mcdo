@@ -9,8 +9,8 @@ same definitions as fig_lim2002.py:
 
 with t the aligned and a the misaligned PSF, each scaled to its own peak. 2CE beams are
 unpolarized (average over two perpendicular input polarizations); 2PE beams are both polarized
-perpendicular to the plane of the lens axes. θ = π/2 at NA 0.9 is above the lens-crossing limit
-in air (marked *). Maps are cached as .npz.
+perpendicular to the plane of the lens axes. Crossed lenses (θ = π/2) above NA 0.71 do not fit in air;
+they are computed in water (n = 1.33), where they fit up to NA 0.94. Maps are cached as .npz.
 
     python scripts/fig_lim2002_linfoot_na.py              # uniform input
     ALPHA_T=4 python scripts/fig_lim2002_linfoot_na.py    # Gaussian input, suffix _at4
@@ -46,16 +46,26 @@ TH = {'pi': np.pi, 'pi2': np.pi / 2}
 dx, dz, nx, nz, P = 0.02, 0.1, 50, 50, 50          # window ±1 × ±5 µm; offsets ±P steps of 2
 
 
-def fields(lam, na, model, theta, X, Z):
+def medium(th, na):
+    """Refractive index: water (1.33) for crossed lenses above NA 0.71, where they do not fit in air."""
+    return 1.33 if th == 'pi2' and na > 1 / np.sqrt(2) else 1.0
+
+
+def fields(lam, na, model, theta, X, Z, n=1.0):
     """Intensity (2CE, unpolarized) or field (2PE, polarized perpendicular to the plane of the axes) of one beam."""
-    apod = gaussian(AT, na ** 2) if AT else None
+    apod = gaussian(AT, (na / n) ** 2) if AT else None
     if model == 'scalar':
-        return beam_field(X, Z, lam, na, 1.0, theta=theta, apodization=apod)
-    return [beam_field(X, Z, lam, na, 1.0, theta=theta, apodization=apod, model='rw', psi=p) for p in (0.0, np.pi / 2)]
+        return beam_field(X, Z, lam, na, n, theta=theta, apodization=apod)
+    return [beam_field(X, Z, lam, na, n, theta=theta, apodization=apod, model='rw', psi=p) for p in (0.0, np.pi / 2)]
+
+
+def where(th, na):
+    return ', water' if medium(th, na) != 1 else ''
 
 
 def maps(pair, th, model, na):
-    path = os.path.join(CACHE, f'{pair}_{th}_{model}_na{na:g}{SUF}.npz')
+    n = medium(th, na)
+    path = os.path.join(CACHE, f'{pair}_{th}_{model}_na{na:g}' + ('' if n == 1 else f'_n{n:g}') + f'{SUF}.npz')
     if os.path.exists(path):
         d = np.load(path)
         return d['xc'], d['zc'], d['F'], d['C'], d['Q']
@@ -63,7 +73,7 @@ def maps(pair, th, model, na):
     xw, zw = np.arange(-nx, nx) * dx, np.arange(-nz, nz) * dz
     xe, ze = np.arange(-nx - P, nx + P) * dx, np.arange(-nz - P, nz + P) * dz
     XW, ZW = np.meshgrid(xw, zw); XE, ZE = np.meshgrid(xe, ze)
-    f1, f2 = fields(la, na, model, 0.0, XW, ZW), fields(lb, na, model, TH[th], XE, ZE)
+    f1, f2 = fields(la, na, model, 0.0, XW, ZW, n), fields(lb, na, model, TH[th], XE, ZE, n)
     sz, sx = XW.shape
     if pair == '2ce':
         avg = (lambda f: intensity(f)) if model == 'scalar' else (lambda f: 0.5 * sum(intensity(g) for g in f))
@@ -107,7 +117,7 @@ for pair in ('2ce', '2pe'):
                 ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
                 ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
                 ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel(sym, labelpad=14)
-                ax.set_title(title + (' *' if th == 'pi2' and na > 0.71 else ''))
+                ax.set_title(title + where(th, na))
                 ax.view_init(elev=22, azim=120)                                # as in the replication
             fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08)
             fig.savefig(os.path.join(OUT, f'linfoot3d_{sym}_{pair}_{th}{SUF}.png'), dpi=300, bbox_inches='tight')
@@ -136,7 +146,7 @@ for pair in ('2ce', '2pe'):
                 ax.set_box_aspect(1.0)
                 ax.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0]); ax.set_yticks(np.arange(-6, 7, 2))
                 ax.set_xlabel(f'x$_c$ ({unit})')
-                ax.set_title(f'NA {na}' + (' *' if th == 'pi2' and na > 0.71 else ''))
+                ax.set_title(f'NA {na}' + where(th, na))
             axes[0].set_ylabel(f'z$_c$ ({unit})')
             fig.colorbar(pm, ax=list(axes), fraction=0.03, pad=0.03, extend='both').set_label(f'Δ{sym} = vector − scalar')
             fig.savefig(os.path.join(OUT, f'linfoot_diff_{sym}_{pair}_{th}{SUF}.png'), dpi=300, bbox_inches='tight')

@@ -49,8 +49,8 @@ MAX_POINTS = 2.5e6                               # skip an NA whose extended gri
 air = [round(v, 3) for v in np.arange(0.1 if PAIR == '2ce' else 0.3, 0.951, 0.05)] + [0.99]
 water = [1.0, 1.05, 1.1, 1.15, 1.2]
 PLAN = [(na, 1.0) for na in air] + [(na, 1.33) for na in water]
-if os.environ.get('NA_LIST'):                      # a few NAs only, in air, e.g. 0.3,0.5,0.7,0.9
-    PLAN = [(float(v), 1.0) for v in os.environ['NA_LIST'].split(',')]
+if os.environ.get('NA_LIST'):                      # a few NAs only, e.g. 0.3,0.5,0.7,0.9; in air unless N_MED is set
+    PLAN = [(float(v), float(os.environ.get('N_MED', '1'))) for v in os.environ['NA_LIST'].split(',')]
 
 
 def chunked(f, X, Z, chunk=15000):

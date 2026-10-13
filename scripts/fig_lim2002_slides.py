@@ -67,12 +67,28 @@ def logaxes(ax, nas):
         a.set_minor_formatter(matplotlib.ticker.NullFormatter())
 
 
+# ── crossed lenses above NA 0.71 (they do not fit in air) are computed in water, n = 1.33 (fits to NA 0.94) ──
+AIR_LIM, WATER_LIM = 1 / np.sqrt(2), 1.33 / np.sqrt(2)
+
+
+def with_water(a, path_water):
+    """Air rows up to NA 0.71 and water rows from there to NA 0.94 (crossed lenses), or (a, None) if no water file."""
+    w = rows(path_water)
+    if w is None:
+        return a, None
+    return a[a[:, 0] <= AIR_LIM + 1e-9], w[(w[:, 0] > AIR_LIM) & (w[:, 0] <= WATER_LIM + 1e-9)]
+
+
 # ── 20% tolerances: one figure per angle, x_c and z_c side by side ──
 def tolerance(key, suf, n):
     a = rows(os.path.join(D, f'na_breakdown{suf}_{key}.csv'))
     if a is None:
         return
+    w = None
+    if key == 'pi2' and n == 1:
+        a, w = with_water(a, os.path.join(D, f'na_breakdown{suf}_n1.33_{key}.csv'))
     nas = a[:, 0]
+    alln = nas if w is None else np.concatenate([nas, w[:, 0]])
     fig, axes = plt.subplots(1, 2, figsize=WIDE)
     for ax, col, lab in ((axes[0], 3, 'x'), (axes[1], 4, 'z')):
         rw, sc = a[:, col], a[:, col - 2]
@@ -80,15 +96,17 @@ def tolerance(key, suf, n):
         ax.plot(nas, rw, 'o', color=BLUE, ms=8, label='Vector')
         ax.plot(nas, np.exp(ic) * nas ** sl, '-', color=BLUE, lw=3)
         brk = 0.5 * n                                # paraxial model stated for sin α ≤ 0.5 (NA 0.5 in air)
-        ax.axvspan(brk, nas[-1] * 1.05, color='#e6e6e6', lw=0, zorder=0, label='Paraxial breakdown')
+        ax.axvspan(brk, alln[-1] * 1.05, color='#e6e6e6', lw=0, zorder=0, label='Paraxial breakdown')
         ax.plot(nas, sc, 's', color=RED, ms=8, mfc='none', mew=2.5, label='Paraxial scalar')
+        if w is not None:
+            ax.plot(w[:, 0], w[:, col], 'o', color=BLUE, ms=10, mfc='none', mew=2.5, label='Vector, in water')
         if n == 1:                                   # the paper's value (air), from its text or its fit
             ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=24, zorder=6, label='Reported, NA 0.5')
-        if key == 'pi2' and nas[-1] > n / np.sqrt(2):
+        if key == 'pi2' and w is None and nas[-1] > n / np.sqrt(2):
             ax.axvspan(n / np.sqrt(2), nas[-1] * 1.03, color='none', hatch='//', ec='#999999', lw=0, zorder=0,
                        label='Lenses do not fit')
-        logaxes(ax, nas)
-        ax.set_xlim(nas[0] / 1.1, nas[-1] * 1.05)
+        logaxes(ax, alln)
+        ax.set_xlim(alln[0] / 1.1, alln[-1] * 1.05)
         ax.set_title(f'Along {lab}$_c$')
         ax.text(0.96, 0.95, f'∝ NA$^{{{sl:.2f}}}$', transform=ax.transAxes, ha='right', va='top', color=BLUE, fontsize=28)
         ax.set_xlabel('NA')
@@ -102,21 +120,29 @@ def tolerance(key, suf, n):
 # ── how far the paraxial scalar tolerance departs from the vector one ──
 def deviation(suf):
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
+    dev = lambda a, col: 100 * np.abs(a[:, col - 2] / a[:, col] - 1)
     for ax, key in zip(axes, ('pi', 'pi2')):
         a = rows(os.path.join(D, f'na_breakdown{suf}_{key}.csv'))
         if a is None:
             continue
+        w = None
+        if key == 'pi2':
+            a, w = with_water(a, os.path.join(D, f'na_breakdown{suf}_n1.33_{key}.csv'))
         for col, lab, c in ((3, 'Across the axis (x$_c$)', BLUE), (4, 'Along the axis (z$_c$)', '#9467bd')):
-            ax.plot(a[:, 0], 100 * np.abs(a[:, col - 2] / a[:, col] - 1), '-', color=c, lw=4, label=lab)
+            ax.plot(a[:, 0], dev(a, col), '-', color=c, lw=4, label=lab)
+            if w is not None:
+                ax.plot(w[:, 0], dev(w, col), '--o', color=c, lw=3, ms=8, mfc='none', mew=2)
         for t in (5, 10):
             ax.axhline(t, color='#999999', lw=2, ls=':')
         ax.axvline(0.5, color='#999999', lw=2)
-        if key == 'pi2':
+        if key == 'pi2' and w is None:
             ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0)
-        ax.set_title(TH[key]); ax.set_xlabel('NA'); ax.set_ylim(0, 50); ax.set_xlim(0, 1.0)
+        ax.set_title({'pi': 'θ = π', 'pi2': 'θ = π/2'}[key]); ax.set_xlabel('NA'); ax.set_ylim(0, 50); ax.set_xlim(0, 1.0)
     axes[0].set_ylabel('Scalar vs vector (%)')
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=2, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    h.append(matplotlib.lines.Line2D([], [], color='#555555', ls='--', marker='o', mfc='none', lw=3, ms=8, mew=2))
+    l.append('θ = π/2 in water, above NA 0.71')
+    fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False)
     plt.tight_layout()
     save(fig, f'deviation{suf}.png')
 
@@ -132,14 +158,19 @@ def peaklost(k, suf, pol=''):
         return
     if k in LOWCUT:                             # below this NA the grid of offsets is too coarse for the peak
         a = a[a[:, 0] >= LOWCUT[k] - 1e-9]
-    nas = a[:, 0]
     key, paper = METRICS[k]
+    w = None
+    if key == 'pi2' and not pol:
+        a, w = with_water(a, os.path.join(D, f'quoted_vs_na{suf}_n1.33_m{k}.csv'))
+    nas = a[:, 0]
     fig, ax = plt.subplots(figsize=(9.6, 7.4))
     ax.axvspan(0.5, 1.0, color='#e6e6e6', zorder=0, label='Paraxial breakdown')
-    if key == 'pi2':
+    if key == 'pi2' and w is None:
         ax.axvspan(1 / np.sqrt(2), 1.0, color='none', hatch='//', ec='#999999', lw=0, zorder=0, label='Lenses do not fit')
     ax.plot(nas, a[:, 1], '-o', color=BLUE, lw=4, ms=7, label='Vector')
     ax.plot(nas, a[:, 2], ':s', color=RED, lw=3, ms=7, mfc='none', mew=2, label='Paraxial scalar')
+    if w is not None:
+        ax.plot(w[:, 0], w[:, 1], '--o', color=BLUE, lw=3, ms=9, mfc='none', mew=2.5, label='Vector, in water')
     ax.plot(0.5, paper, '*', color='k', ms=24, zorder=6, label='Reported, NA 0.5')
     ax.set_xlim(0, 1.0); ax.set_ylim(0, 100)
     ax.set_xlabel('NA'); ax.set_ylabel('Peak lost (%)')
@@ -151,22 +182,29 @@ def peaklost(k, suf, pol=''):
 TH = {'pi': np.pi, 'pi2': np.pi / 2}
 
 
-def scalar_field(x, z, lam, theta=0.0, xc=0.0, zc=0.0, suf='', na=0.5):
-    """Scalar 2CE field: the paraxial scalar focus at NA 0.5 in air, uniform or Gaussian input (α_t = 4)."""
-    return beam_field(x, z, lam, na, 1.0, theta=theta, xc=xc, zc=zc,
-                      apodization=gaussian(4.0, na ** 2) if suf == '_at4' else None)
+def scalar_field(x, z, lam, theta=0.0, xc=0.0, zc=0.0, suf='', na=0.5, n=1.0):
+    """Scalar 2CE field: the paraxial scalar focus (NA 0.5 in air unless stated), uniform or Gaussian input (α_t = 4)."""
+    return beam_field(x, z, lam, na, n, theta=theta, xc=xc, zc=zc,
+                      apodization=gaussian(4.0, (na / n) ** 2) if suf == '_at4' else None)
 
 
-def scalar_psf(pair, th, xc, zc, x, z, suf, na=0.5):
+def scalar_psf(pair, th, xc, zc, x, z, suf, na=0.5, n=1.0):
     X, Z = np.meshgrid(x, z)
     if pair == '2ce':
-        return intensity(scalar_field(X, Z, L1, suf=suf, na=na)) * intensity(scalar_field(X, Z, L2, TH[th], xc, zc, suf, na))
-    return intensity(scalar_field(X, Z, L2P, suf=suf, na=na) + scalar_field(X, Z, L2P, TH[th], xc, zc, suf, na)) ** 2
+        return (intensity(scalar_field(X, Z, L1, suf=suf, na=na, n=n))
+                * intensity(scalar_field(X, Z, L2, TH[th], xc, zc, suf, na, n)))
+    return intensity(scalar_field(X, Z, L2P, suf=suf, na=na, n=n) + scalar_field(X, Z, L2P, TH[th], xc, zc, suf, na, n)) ** 2
 
 
-def scalar_peak(pair, th, suf, na=0.5):
+def water(th, na):
+    """Crossed lenses do not fit in air above NA 1/√2 = 0.71; there they are in water (n = 1.33), which fits to 0.94."""
+    return th == 'pi2' and na > 1 / np.sqrt(2)
+
+
+def scalar_peak(pair, th, suf, na=0.5, n=1.0):
     """Peak against the offset of O′, as in the replication: window ±1 × ±5 µm, offsets ±1 × ±5 µm (µm)."""
-    path = os.path.join(OUT, f'_scalar_peak_{pair}_{th}{suf}' + ('' if na == 0.5 else f'_na{na:g}') + '.npz')
+    path = os.path.join(OUT, f'_scalar_peak_{pair}_{th}{suf}' + ('' if na == 0.5 else f'_na{na:g}')
+                        + ('' if n == 1 else f'_n{n:g}') + '.npz')
     if os.path.exists(path):
         d = np.load(path)
         return d['xc'], d['zc'], d['P']
@@ -176,7 +214,7 @@ def scalar_peak(pair, th, suf, na=0.5):
     IX = IZ = np.arange(-50, 51, 2)
     xe, ze = np.arange(-nx - 50, nx + 50) * dx, np.arange(-nz - 50, nz + 50) * dz
     XW, ZW = np.meshgrid(xw, zw); XE, ZE = np.meshgrid(xe, ze)
-    U1, U2e = scalar_field(XW, ZW, la, suf=suf, na=na), scalar_field(XE, ZE, lb, TH[th], suf=suf, na=na)
+    U1, U2e = scalar_field(XW, ZW, la, suf=suf, na=na, n=n), scalar_field(XE, ZE, lb, TH[th], suf=suf, na=na, n=n)
     sz, sx = XW.shape
     sig = (lambda u2: intensity(U1) * intensity(u2)) if pair == '2ce' else (lambda u2: intensity(U1 + u2) ** 2)
     t = sig(U2e[50:50 + sz, 50:50 + sx]).max()
@@ -205,9 +243,12 @@ def maps(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
         xs, zs = d[xkey], d[zkey]
         oc = (0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)
         S = scalar_psf(pair, theta, *oc, xs, zs, suf)
+    k9 = key_fmt.format(0.9) + ('_n1.33' if water(theta, 0.9) else '')
+    if k9 not in d:
+        return
     panels = [('Scalar 2CE, NA 0.5', xs, zs, S),
               ('Vector, NA 0.7', d[xkey], d[zkey], d[key_fmt.format(0.7)]),
-              ('Vector, NA 0.9' + (' *' if theta == 'pi2' else ''), d[xkey], d[zkey], d[key_fmt.format(0.9)])]
+              ('Vector, NA 0.9' + (', water' if water(theta, 0.9) else ''), d[xkey], d[zkey], d[k9])]
     fig, axes = plt.subplots(1, 3, figsize=(19.5, 7.4))
     for ax, (title, x, z, M) in zip(axes, panels):
         M = 100 * M / M.max()
@@ -493,13 +534,17 @@ def maps_same_na(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
     levels = [10, 20, 40, 60, 80] if peak else [1, 10, 20, 40, 60, 80]
     panels = []
     for na in (0.7, 0.9):
+        n = 1.33 if water(theta, na) else 1.0
+        key = key_fmt.format(na) + ('' if n == 1 else '_n1.33')
+        if key not in d:
+            return
         if peak:
-            xs, zs, S = scalar_peak(pair, theta, suf, na)
+            xs, zs, S = scalar_peak(pair, theta, suf, na, n)
         else:
             xs, zs = d[xkey], d[zkey]
-            S = scalar_psf(pair, theta, *((0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)), xs, zs, suf, na)
-        star = ' *' if theta == 'pi2' and na > 0.71 else ''
-        panels += [(f'Scalar, NA {na}{star}', xs, zs, S), (f'Vector, NA {na}{star}', d[xkey], d[zkey], d[key_fmt.format(na)])]
+            S = scalar_psf(pair, theta, *((0.4, 1.0) if 'fig3' in stem else (0.0, 0.0)), xs, zs, suf, na, n)
+        med = ', water' if n != 1 else ''
+        panels += [(f'Scalar, NA {na}{med}', xs, zs, S), (f'Vector, NA {na}{med}', d[xkey], d[zkey], d[key])]
     fig, axes = plt.subplots(1, 4, figsize=(19.5, 7.0))
     for ax, (title, x, z, M) in zip(axes, panels):
         M = 100 * M / M.max()

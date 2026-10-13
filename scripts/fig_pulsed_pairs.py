@@ -167,7 +167,7 @@ NACOL = {'0.5': 'k', '0.7': '#1f77b4', '0.9': '#d62728'}
 for ax, (th, title) in zip(axes, GEOM):
     for kind, ls, mlab in (('scalar', '--', 'scalar 2CE'), ('rw', '-', 'vector 2CE')):
         for na in ('0.5', '0.7', '0.9'):
-            model = f'{kind}_na{na}'
+            model = f'{kind}_na{na}' + ('_n1.33' if th == 'pi2' and float(na) > 0.71 else '')   # crossed: water
             tt = [(tau, t20(d[f'2ce_{th}_delays'] / tau, d[f'2ce_{th}_delay_peak']) * tau)
                   for tau in TAUS if (d := load(model, tau)) is not None]
             if tt:
@@ -177,7 +177,7 @@ for ax, (th, title) in zip(axes, GEOM):
     ax.plot(tg, np.sqrt(np.log(1.25) / (2 * LN2)) * tg, ':', color='#ff7f0e', lw=3, label='at the focus, Δt = 0.40 τ')
     ax.set_xscale('log'); ax.set_yscale('log'); ax.set_xlim(7, 140)
     ax.set_xticks(TAUS); ax.set_xticklabels([str(t) for t in TAUS]); ax.minorticks_off()
-    ax.set_xlabel('pulse duration τ (fs)'); ax.set_title(title)
+    ax.set_xlabel('pulse duration τ (fs)'); ax.set_title(title + (', NA 0.9 in water' if th == 'pi2' else ''))
 axes[0].set_ylabel('time delay for\n20% peak loss (fs)')
 axes[0].set_yticks([3, 10, 30, 100]); axes[0].set_yticklabels(['3', '10', '30', '100'])
 h, l = axes[0].get_legend_handles_labels()

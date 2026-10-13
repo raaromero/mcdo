@@ -242,10 +242,12 @@ def lens_problem():
               'most 45°.')
     figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), 0.45, 1.3, 9.1, 3.2)
     h = equation(s, 0.55, 4.6, 5.2, r'\alpha \leq \theta/2 \;\Leftrightarrow\; \mathrm{NA} \leq n\sin(\theta/2)', 17)
-    bullets(s, 5.9, 4.6, 3.6, 0.7, ['θ = π/2: NA 0.71 in air, 0.94 in water. Results above this are marked * or hatched.'], 10.5)
+    bullets(s, 5.9, 4.6, 3.6, 0.7, ['θ = π/2: NA 0.71 in air, 0.94 in water. Above NA 0.71 our crossed lenses are in water.'], 10.5)
     notes(s, 'Crossed lenses fit up to NA n sin(theta/2).',
           'Each lens fills a cone of half-angle alpha, sin alpha = NA/n. Two cones meeting at a right angle overlap once their '
-          'half-angles exceed 45 degrees: NA 0.71 in air, 0.94 in water.', r'\mathrm{NA} \le n \sin(\theta/2)')
+          'half-angles exceed 45 degrees: NA 0.71 in air, 0.94 in water. Above NA 0.71 the crossed lenses are computed in '
+          'water (n = 1.33). A medium raises the NA but not the cone angle, so in water at NA 0.9 the crossed focus has the '
+          'shape of the focus in air at NA 0.68 (0.9/1.33), 1.33 times smaller.', r'\mathrm{NA} \le n \sin(\theta/2)')
 
 
 FCQ = (r'F = 1 - \frac{\langle (t-a)^2 \rangle}{\langle t^2 \rangle}, \qquad C = \frac{\langle a^2 \rangle}{\langle t^2 \rangle}, '
@@ -347,10 +349,10 @@ def linfoot_maps(suf, tag):
                     'Same model, NA, window and offsets; only the pupil amplitude changes.')
             side3 = ('With the Gaussian input the surfaces are smoother and change less with NA than with uniform input, '
                      'because the dim pupil edge keeps the focus closer to paraxial.') if suf else SURF[(case, key)]
-            wide(t, SL(f'linfoot3d_{key}_{case}{suf}.png'), [side3 + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'pi2' in case else '')],
+            wide(t, SL(f'linfoot3d_{key}_{case}{suf}.png'), [side3 + (' At θ = π/2, NA 0.9 is in water (n = 1.33): two crossed lenses do not fit in air above NA 0.71.' if 'pi2' in case else '')],
                  f'{lab}: {NAME[key].lower()} against the misalignment, scalar 2CE and vector 2CE.',
                  'Surfaces over (x_c, z_c) on the axes of Figs. 5–6, in units of lambda_1 (2CE) or lambda_2p (2PE): scalar 2CE at '
-                 'NA 0.5, then vector 2CE at NA 0.7 and 0.9. * marks crossed lenses above NA 0.71.')
+                 'NA 0.5, then vector 2CE at NA 0.7 and 0.9. Crossed lenses at NA 0.9 are in water (n = 1.33).')
             wide(f'{key}{tag}, vector − scalar: {lab}', SL(f'linfoot_diff_{key}_{case}{suf}.png'), [
                 f'Δ{key} = {key} of vector 2CE minus {key} of scalar 2CE at the same NA: red where the vector value is higher, blue '
                 'where it is lower; black line: no difference. The difference grows from NA 0.7 to NA 0.9.'],
@@ -396,15 +398,15 @@ def maps(suf, tag):
                 'effect of the Gaussian input alone, before NA is raised.'],
                 f'Fig. {no}({t}): the effect of the Gaussian input at NA 0.5.',
                 'Same model, NA and axes; only the pupil amplitude changes. Contours in percent of the peak; orange: 50 percent.')
-        wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'π/2' in lab else '')],
+        wide(f'Fig. {no}({t}) against NA{tag}: {lab}', SL(f'map_fig{no}{t}{suf}.png'), [line + (' At θ = π/2, NA 0.9 is in water (n = 1.33): two crossed lenses do not fit in air above NA 0.71.' if 'π/2' in lab else '')],
              f'Fig. {no}({t}): scalar 2CE at NA 0.5 against vector 2CE at NA 0.7 and 0.9.',
              f'Fig. {no}({t}), {lab}, {where}: scalar 2CE at NA 0.5 (the replication), then vector 2CE at NA 0.7 and 0.9, on the '
              'axes of the paper. Contours in percent of the peak; orange: 50 percent.'
-             + (' At theta = pi/2, NA 0.9 (marked *) is above NA 0.71, where the two lenses no longer fit in air.'
+             + (' At theta = pi/2, NA 0.9 is in water (n = 1.33): the two lenses do not fit in air above NA 0.71.'
                 if 'π/2' in lab else ''))
         wide(f'Fig. {no}({t}), scalar and vector at the same NA{tag}: {lab}', SL(f'map_fig{no}{t}_samena{suf}.png'), [
             'Scalar 2CE and vector 2CE at the same NA, 0.7 and 0.9: the difference between the two models alone, without the '
-            'change of NA.' + (' * NA 0.9 is above NA 0.71, where two crossed lenses no longer fit in air.' if 'π/2' in lab else '')],
+            'change of NA.' + (' At θ = π/2, NA 0.9 is in water (n = 1.33): two crossed lenses do not fit in air above NA 0.71.' if 'π/2' in lab else '')],
             f'Fig. {no}({t}): scalar against vector at equal NA.', 'Same NA, same axes; contours in percent of the peak.')
 
 
@@ -445,12 +447,11 @@ def peaks(suf):
         else:
             items, name = [how, low, high], f'Peak lost against NA: {lab}'
         if 'π/2' in lab:
-            items.append('Above NA 0.71 (hatched) the two lenses do not fit in air.')
+            items.append('Above NA 0.71 the two lenses do not fit in air; open circles: the lenses in water (n = 1.33).')
         side(name, SL(f'peaklost_{k}{suf}.png'), items, f'{name}.', LEGEND)
 
 
-DECIDE = ['Crossed lenses above NA n sin(θ/2) (0.71 in air): report the computed values, or stop at that NA.',
-          'Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.',
+DECIDE = ['Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.',
           'Optical pulses: weight the photon pairs by the dye’s absorption (which dye, which band).']
 NEXT = ['Optical pulses: the 2CE signal as the overlap in time of two focused pulses, and how to account for the range of '
         'wavelengths in each pulse.']
@@ -537,11 +538,11 @@ if SECTION == 'overview':
         'Five parts, each with its main result.',
         ' '.join(SUMMARIES[k][3] for k in PART_TITLE), size=12.5)
     words('Next steps', NEXT, 'Next: optical pulses.', 'The pulsed 2CE study.')
-    words('Things to consider for the next steps', DECIDE, 'Three points to settle before the next results.',
-          'The crossed-lens limit, the polarization of the beams, and the wavelengths in a pulse.')
-    wide('To consider: crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
+    words('Things to consider for the next steps', DECIDE, 'Two points to settle before the next results.',
+          'The polarization of the beams, and the dye that weights the photon pairs.')
+    wide('Crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
         'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
-        'water. To decide: report crossed-beam results above this NA as computed values, or stop at that NA.'],
+        'water. Above NA 0.71 the crossed lenses are placed in water (n = 1.33).'],
         'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
     words('To consider: polarization of the two beams', [
         'Polarization is the direction in which a beam’s electric field oscillates; it is always perpendicular to the direction '
@@ -607,8 +608,9 @@ elif SECTION == 'vector':
     for key, lab, line in (
             ('pi', 'θ = π', 'Across the axis the tolerance falls as NA^{−0.97}, close to 1/NA, as the width of the spot does; '
              'along the axis it falls as NA^{−2.12}, close to 1/NA^2, as its length does.'),
-            ('pi2', 'θ = π/2', 'With crossed beams both tolerances fall as about NA^{−2.1}: a misalignment in x_c is along the axis '
-             'of beam 2 and one in z_c is along the axis of beam 1, so both follow the length of the focus.')):
+            ('pi2', 'θ = π/2', 'With crossed beams both tolerances fall as about NA^{−2}: a misalignment in x_c is along the axis '
+             'of beam 2 and one in z_c is along the axis of beam 1, so both follow the length of the focus. Above NA 0.71 the '
+             'lenses are in water (open circles), where the focus is 1.33 times longer at the same NA.')):
         wide(f'20% tolerances against NA, {lab}', SL(f'tolerance_{key}.png'), [
             'The tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. ' + line],
             f'At {lab} the 20% tolerances shrink as a power of NA.',
@@ -616,7 +618,8 @@ elif SECTION == 'vector':
             'expected to break down.')
     wide('Scalar 2CE against vector 2CE, 20% tolerances', SL('deviation.png'), [
         'The difference between the 20% tolerances of scalar and vector 2CE passes 5% at NA 0.45 and 10% at NA 0.6 along the '
-        'axis, and with crossed beams in both directions. Across the axis at θ = π it stays within 5% up to NA 0.8.'],
+        'axis, and with crossed beams in both directions. Across the axis at θ = π it stays within 5% up to NA 0.8. With '
+        'crossed lenses in water (dashed), the difference at NA 0.9 is 14%, as in air at NA 0.68: it follows the cone angle.'],
         'Scalar 2CE is within 5% up to NA 0.45; along the axis it departs first.',
         'The paraxial focus is longer than the vector one, so it overestimates the tolerance along the axis. Across the axis the two '
         'differ through polarization, which is small up to NA 0.8. The vertical line is NA 0.5, the value used in scalar 2CE.')
