@@ -453,9 +453,6 @@ def peaks(suf):
 
 DECIDE = ['Polarization of the two beams: keep unpolarized (circular) beams, or account for linear polarization.',
           'Optical pulses: weight the photon pairs by the dye’s absorption (which dye, which band).']
-NEXT = ['Optical pulses: the 2CE signal as the overlap in time of two focused pulses, and how to account for the range of '
-        'wavelengths in each pulse.']
-
 
 SUMMARIES = {   # section: (main point, supporting, supporting, speaker script); the overview shows them all
     'overview': (
@@ -521,29 +518,30 @@ PART_TITLE = {'replication': 'Part 1: Replication of scalar 2CE', 'vector': 'Par
 
 # ══ sections ═════════════════════════════════════════════════════════════
 if SECTION == 'overview':
-    title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, and time delay')
+    title('Progress Report', 'Two-color excitation: scalar 2CE, vector 2CE, time delay and optical pulses')
     words('Things done', [
         'Part 1: Replication of scalar 2CE.',
         '– Rebuilt from its equations, the model reproduces the figures and reported losses: 2CE is more robust against '
         'misalignment than 2PE, most of all with crossed beams.',
         'Part 2: Vector 2CE, uniform input, against NA.',
         '– The alignment tolerances shrink as NA grows, as 1/NA across the axis and 1/NA^2 along it; scalar 2CE agrees within 5% '
-        'up to NA 0.45.',
+        'up to NA 0.45. Crossed lenses above NA 0.71 do not fit in air and are computed in water.',
         'Part 3: Linfoot’s criteria against NA.',
         '– At high NA the 2CE PSF keeps its shape over a smaller range of misalignments than scalar 2CE predicts.',
         'Part 4: Vector 2CE, Gaussian input.',
         '– The tolerances are about 1.4 times larger than with uniform input, and scalar 2CE holds to NA 0.525.',
         'Part 5: Time delay between continuous beams.',
-        '– A time delay leaves the 2CE PSF unchanged and shifts the 2PE fringes, as a misalignment of cΔt/n does.'],
-        'Five parts, each with its main result.',
-        ' '.join(SUMMARIES[k][3] for k in PART_TITLE), size=12.5)
-    words('Next steps', NEXT, 'Next: optical pulses.', 'The pulsed 2CE study.')
-    words('Things to consider for the next steps', DECIDE, 'Two points to settle before the next results.',
+        '– A time delay leaves the 2CE PSF unchanged and shifts the 2PE fringes, as a misalignment of cΔt/n does.',
+        'Part 6: Polarization, s and p.',
+        '– At high NA linear polarization changes the 2CE results across the axis with facing lenses, and decides whether '
+        'crossed-beam 2PE interferes; results along the axis do not change.',
+        'Part 7: Optical pulses and time delay.',
+        '– A time delay lowers 2CE because the photon pairs that reach the transition add out of phase where the two pulses do '
+        'not arrive together; with crossed lenses 20% of the peak is lost at a delay of 0.4 τ.'],
+        'Seven parts, each with its main result.',
+        ' '.join(SUMMARIES[k][3] for k in PART_TITLE), size=11.5)
+    words('Next steps: points to settle', DECIDE, 'Two points to settle before the next results.',
           'The polarization of the beams, and the dye that weights the photon pairs.')
-    wide('Crossed lenses at high NA', os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), [
-        'Two lenses with axes at an angle θ fit side by side while NA ≤ n sin(θ/2): at θ = π/2, NA 0.71 in air and 0.94 in '
-        'water. Above NA 0.71 the crossed lenses are placed in water (n = 1.33).'],
-        'Crossed lenses fit up to NA n sin(theta/2).', 'The limit is geometric.', r'\mathrm{NA} \le n \sin(\theta/2)')
     words('To consider: polarization of the two beams', [
         'Polarization is the direction in which a beam’s electric field oscillates; it is always perpendicular to the direction '
         'the beam travels.',
@@ -563,20 +561,6 @@ if SECTION == 'overview':
         'At high NA the spot depends on the polarization.',
         'Blue: field along y; red: field along x. At NA 0.5 the two nearly coincide; at NA 0.9 the spot is about 1.35 times '
         'wider along the polarization.')
-    wide('To consider: wavelengths in an optical pulse', SL('pulse_spectra.png'), [
-        'A pulse contains a range of wavelengths, wider for shorter pulses: about 730–770 nm and 640–672 nm at 20 fs. The two '
-        'spectra overlap below about 8 fs, where the two colors would also interfere.'],
-        'A short pulse is a range of wavelengths.', 'Spectra of the two pulses at 5 and 20 fs, transform-limited Gaussian pulses.')
-    PAIR = r'\frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}'
-    eqslide('To consider: which photon pairs excite the dye', 'One photon from each pulse; the pair excites the molecule '
-            'according to the wavelength its energies add up to.', [
-        (PAIR, 'λ_a from the 750 nm pulse, λ_b from the 656 nm pulse; λ_e = wavelength the pair reaches.'),
-        (r'750 + 656,\ \ 740 + 664,\ \ 760 + 649\ \mathrm{nm} \;\rightarrow\; 350\ \mathrm{nm}',
-         'pairs that reach the design transition at 350 nm.'),
-        (r'740 + 649\ \mathrm{nm} \rightarrow 346\ \mathrm{nm}, \qquad 760 + 664\ \mathrm{nm} \rightarrow 354\ \mathrm{nm}',
-         'pairs that reach nearby wavelengths: at 20 fs the pairs spread over about 12 nm around 350 nm, at 100 fs over 2.5 nm.')],
-        'Each pair of photons reaches the wavelength set by the sum of their energies.',
-        'Examples of photon pairs from the two pulses and where they land.', PAIR, fig=SL('pulse_pairs_spectrum.png'), size=15)
     RATE = r'\text{rate} \propto \int g(\Omega)\, \bigl|\tilde{P}(\Omega)\bigr|^2 d\Omega, \qquad P(t) = E_1(t)\, E_2(t)'
     eqslide('To consider: weighting the pairs by the dye', 'The dye’s absorption g weights each pair by its total frequency; a '
             'flat g gives the time-overlap signal used so far.', [
@@ -1022,13 +1006,19 @@ elif SECTION == 'pulses':
             'lenses.', [
         (r'\theta = \pi:\ z_{b,1} = z,\ z_{b,2} = -z \;\Rightarrow\; \text{overlap peaks at } z = \frac{c\,\Delta t}{2n},\ '
          r'\mathrm{FWHM} = \frac{c\sqrt{2}\,\tau}{2n}',
-         'facing pulses meet on a thin slab that a time delay slides along the axis: 4.2 µm long at 20 fs, 2.1 µm at 10 fs.'),
+         'facing pulses meet on a thin slab that a time delay slides along the axis: 4.2 µm long at 20 fs, 2.1 µm at 10 fs. '
+         'Near the focus the pulse moves faster than c/n, so the slab sits about 6% further at NA 0.5 and 30% at NA 0.9; '
+         'the full calculation includes this.'),
         (r'\theta = \pi/2:\ z_{b,1} = z,\ z_{b,2} = x \;\Rightarrow\; \exp\left(-\frac{2\ln 2}{\tau^2}'
          r'\left(\frac{n(z - x)}{c} - \Delta t\right)^2\right)',
          'crossed pulses meet along a diagonal band, much wider than the crossed spot.'),
         (r'\text{at the focus: } \exp\left(-2\ln 2\,(\Delta t/\tau)^2\right) = 0.71,\ 0.25\ \text{at}\ \Delta t = \tau/2,\ \tau',
          'how much a time delay lowers the PSF where the band is wider than the spot.')],
-        'Facing pulses meet on a thin moving slab; crossed pulses on a wide band.', 'The overlap for each geometry.',
+        'Facing pulses meet on a thin moving slab; crossed pulses on a wide band.', 'The overlap for each geometry. The arrival '
+        'times n z/c hold away from the focus. Near the focus the pulse is a sum of plane waves tilted up to the cone angle, '
+        'and the point where each crosses the axis moves at c/(n cos beta), faster than c/n: the pulse arrives at 0.94 z n/c '
+        'at NA 0.5, 0.87 at NA 0.7 and 0.76 at NA 0.9 (vector). The plane where facing pulses meet is then at about '
+        'c Delta t/(2n) divided by these factors. The pair calculation includes this through the phase of each frequency.',
         r'\theta=\pi: z = c\Delta t/2n,\ \mathrm{FWHM} = c\sqrt{2}\tau/2n', size=14)
     wide('Step 14: facing pulses meet, seen', PS('pulse_facing_meet.png'), [
         'Pulse 1 (red) travels toward +z and pulse 2 (blue) toward −z. Both are present at the same place only near z = 0, '
