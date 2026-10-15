@@ -1221,6 +1221,11 @@ elif SECTION == MEETING:
         'The paraxial model of the paper agrees with the vector focus within 5% up to NA 0.45. Above it, its longer focus '
         'overestimates the tolerance along the axis.'],
         'The paraxial model holds to NA 0.45.', 'Difference between the scalar and vector 20% tolerances against NA.')
+    wide('Fig. 4(a) at the same NA: 2CE, θ = π', SL('map_fig4a_samena.png'), [
+        'Scalar 2CE and vector 2CE at the same NA, 0.7 and 0.9, so the difference is the model alone. The scalar region that '
+        'keeps the peak is longer along the axis, and the difference grows from NA 0.7 to 0.9.'],
+        'At the same NA the paraxial model keeps the peak over a longer range along the axis.',
+        'Same NA, same axes; contours in percent of the peak.')
     wide('20% tolerances in air and water, θ = π', SL('air_water_pi.png'), [
         'At the same NA the tolerance across the axis is the same in air and water, and along the axis it is about 1.4 times '
         'larger in water. The power laws are the same; in water the departure from the paraxial law starts at 1.33 times '
