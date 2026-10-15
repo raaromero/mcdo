@@ -183,7 +183,7 @@ def tolerance_media(key):
                 ins.axvline(1.0, color='#777777', lw=1.5, ls=':')
                 ins.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=14, zorder=6)
             ins.set_xlim(lo - 0.02 * (hi - lo), hi + 0.02 * (hi - lo))
-            ins.yaxis.tick_right(); ins.tick_params(labelsize=16)
+            ins.tick_params(labelsize=16)
             if hi < 1:                                   # low NA: log scale over a decade, the points coincide
                 ins.set_xscale('log'); ins.set_yscale('log'); ins.set_xlim(lo / 1.1, hi * 1.1)
                 ins.set_xticks([0.03, 0.1])
@@ -224,12 +224,13 @@ def deviation_media():
         for t in (5, 10):
             ax.axhline(t, color='#999999', lw=2, ls=':')
         ax.set_xscale('log'); ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)        # the NA axis of the tolerance figures
-        ax.set_xticks([0.03, 0.1, 0.3, 1.0])
+        ax.set_xticks([0.03, 0.1, 0.3, 0.5, 1.0])
         ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
         ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         ax.axvline(1.0, color='#777777', lw=1.5, ls=':')
+        ax.axvline(0.5, color='#777777', lw=1.5)                      # NA 0.5, the case of Lim & Saloma
         ax.set_title({'pi': 'θ = π', 'pi2': 'θ = π/2'}[key]); ax.set_xlabel('NA'); ax.set_ylim(0, 50)
-    axes[0].set_ylabel('|T$_{scalar}$/T$_{vector}$ − 1| (%)')
+    axes[0].set_ylabel('Difference in T (%)')
     L = matplotlib.lines.Line2D
     h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='k', lw=4),
          L([], [], color='k', lw=4, ls='--')]

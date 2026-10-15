@@ -241,7 +241,7 @@ def vector_fields():
 
 
 def lens_problem():
-    s = slide('The θ = π/2 lens problem', 'Two lenses with crossed axes fit side by side while each cone half-angle is at '
+    s = slide('Largest NA of two crossed lenses', 'Two lenses with crossed axes fit side by side while each cone half-angle is at '
               'most 45°.')
     figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), 0.45, 1.3, 9.1, 3.2)
     h = equation(s, 0.55, 4.6, 5.2, r'\alpha \leq \theta/2 \;\Leftrightarrow\; \mathrm{NA} \leq n\sin(\theta/2)', 17)
@@ -592,7 +592,7 @@ if SECTION == 'overview':
          'shapes and tolerances unchanged.')],
         'Weighting by the dye changes how much signal there is, not the shape of the PSF, for equal Gaussian pulses.',
         'The weighted rate integrates the dye absorption against the spectrum of the product field.', RATE, size=14)
-    wide('To consider: how much signal the weighting keeps', SL('pulse_pairs_weight.png'), [
+    wide('To consider: signal kept by the dye weighting', SL('pulse_pairs_weight.png'), [
         'Signal kept when the dye absorbs in a Gaussian band around 350 nm, relative to a flat band. At 100 fs nearly all '
         'pairs fall within a 10 nm band; at 20 fs about 60% do, and at 10 fs about 35%. To decide: which dye, and so which g.'],
         'Short pulses waste pairs outside the dye band.', 'Gaussian absorption bands of FWHM 2, 5, 10 and 20 nm centred at 350 nm.')
@@ -794,7 +794,7 @@ elif SECTION == 'polarization':
             'axis depend on the orientation of the misalignment. For 2PE the relative orientation of the two fields decides the '
             'interference.')
     geometry()
-    words('What polarization is', [
+    words('Polarization: s and p', [
         'Light is a transverse wave: its electric field oscillates in a direction perpendicular to the direction the beam travels. '
         'That direction of oscillation is the polarization.',
         'A laser beam is usually linearly polarized: the field oscillates along one fixed direction.',
@@ -851,7 +851,7 @@ F_{2p} \ni 2\,\mathrm{Re}(\mathbf{E}_1\cdot\mathbf{E}_2^*)""", size=15)
         'a few percent up to NA 0.7, against 26–44% for s–s.'],
         'Polarization changes the losses across the axis, and for crossed-beam 2PE decides whether the beams interfere.',
         'Above NA 0.7 the p–p loss rises because the focused fields gain components that are no longer perpendicular.')
-    words('How the earlier results change with s or p', [
+    words('Parts 2–4 with s and p polarization', [
         'Part 2, facing lenses: tolerances and losses across the axis move by up to about ±20% at NA 0.9; along the axis they do '
         'not change.',
         'Part 2, crossed lenses: 2CE tolerances change by a few percent at most.',
@@ -965,7 +965,7 @@ elif SECTION == 'pulses':
     T3 = (r'\Delta\lambda_a \approx \frac{\lambda_1^2}{c}\,\frac{\Delta\nu}{\sqrt{2}} \approx \frac{585\ \mathrm{nm\,fs}}{\tau}, '
           r'\quad \Delta\lambda_b \approx \frac{448\ \mathrm{nm\,fs}}{\tau}, \quad '
           r'\Delta\lambda_e \approx \frac{255\ \mathrm{nm\,fs}}{\tau}')
-    eqslide('Step 8: which pairs, and how many', 'The resonant pairs are √2 narrower than either pulse; the probability of '
+    eqslide('Step 8: width and probability of the resonant pairs', 'The resonant pairs are √2 narrower than either pulse; the probability of '
             'reaching ν_e is a Gaussian √2 wider.', [
         (T1, 'spread of the 750 nm photons in resonant pairs, and of their partners: the exponent 8 ln2/Δν² of Step 7.'),
         (T2, 'probability that a pair reaches ν_e, summed over all pairs: a Gaussian in δ of FWHM √2 Δν, the spread of pair '
@@ -998,7 +998,7 @@ elif SECTION == 'pulses':
     PA = r'A(P) = \int \sqrt{P(\nu_a)}\; U_1(P, \nu_a)\, U_2(P, \nu_e - \nu_a)\, d\nu_a, \qquad F_{2c}(P) = \kappa_{2c}\, |A(P)|^2'
     PU = r'U_i(P, \nu) \approx U_i^{\mathrm{CW}}(P)\, e^{\,i 2\pi \nu\, t_i(P)}'
     PH = r'2\pi\nu_a t_1 + 2\pi(\nu_e - \nu_a)\, t_2 = 2\pi\nu_e t_2 + 2\pi\nu_1 (t_1 - t_2) + 2\pi(\nu_a - \nu_1)(t_1 - t_2)'
-    eqslide('Step 11: the pairs add with the phase of their arrival times', 'The two-photon amplitude adds all resonant pairs; '
+    eqslide('Step 11: phase of the resonant pairs', 'The two-photon amplitude adds all resonant pairs; '
             'each pair carries the phase of the times at which the two pulses pass the point.', [
         (PA, 'A = two-photon amplitude; √P = amplitude of the pair whose 750 nm photon has frequency ν_a (its square is the joint '
              'probability of Step 6); U_i(P, ν) = focal field of beam i at frequency ν. The signal is the square of the sum.'),
@@ -1034,7 +1034,7 @@ elif SECTION == 'pulses':
          'continuous-beam result of the paper.')],
         'Pulsed PSF = continuous-beam PSF times pair probability times overlap in time.', 'Steps 8, 10 and 12 combined.',
         '\n'.join((CF, T12)), size=15)
-    eqslide('Step 14: where the pulses meet', 'The overlap depends on z_{b,1} − z_{b,2}, which differs for facing and crossed '
+    eqslide('Step 14: meeting plane of the two pulses', 'The overlap depends on z_{b,1} − z_{b,2}, which differs for facing and crossed '
             'lenses.', [
         (r'\theta = \pi:\ z_{b,1} = z,\ z_{b,2} = -z \;\Rightarrow\; \text{overlap peaks at } z = \frac{c\,\Delta t}{2n},\ '
          r'\mathrm{FWHM} = \frac{c\sqrt{2}\,\tau}{2n}',
@@ -1145,7 +1145,7 @@ elif SECTION == 'pulses':
         'The 2PE peak falls with the time delay but levels off at 1/8 (dotted), where each pulse alone excites 2PE and the '
         'interference is lost.'],
         '2PE keeps a floor of 1/8 when the pulses no longer overlap.', 'Scalar model, NA 0.5, overlap in time of the fields.')
-    wide('What counting the resonant pairs changes', PS('pairs_vs_every_pair.png'), ['Aligned 2CE peak at equal pulse energies. Counting all pairs (the overlap in time) the signal grows as 1/τ, 10 times larger at 10 fs than at 100 fs. Counting the pairs that reach ν_e it stays the same, because a shorter pulse spreads its pairs over more transition frequencies. The PSF shapes and time-delay curves of the two agree within 0.3%.'],
+    wide('Resonant pairs against all pairs', PS('pairs_vs_every_pair.png'), ['Aligned 2CE peak at equal pulse energies. Counting all pairs (the overlap in time) the signal grows as 1/τ, 10 times larger at 10 fs than at 100 fs. Counting the pairs that reach ν_e it stays the same, because a shorter pulse spreads its pairs over more transition frequencies. The PSF shapes and time-delay curves of the two agree within 0.3%.'],
          'The resonant pairs change the signal level, not the PSF shape.',
          'Aligned peak at the focus against the pulse duration, at equal pulse energies, scalar 2CE at NA 0.5.')
     RATE = r'\text{rate} \propto \int g(\Omega)\, \bigl|\tilde{P}(\Omega)\bigr|^2 d\Omega, \qquad P(t) = E_1(t)\, E_2(t)'
@@ -1157,7 +1157,7 @@ elif SECTION == 'pulses':
         (r'g = \delta(\Omega - \Omega_e): \quad \text{rate} \propto |\tilde{P}(\Omega_e)|^2 = |A|^2',
          'a narrow band gives the resonant pairs of Steps 11–13; for equal Gaussian pulses both give the same PSF shapes.')],
         'Weighting by the dye changes how much signal there is, not the shape of the PSF.', 'The weighted rate.', RATE, size=14)
-    wide('How much signal the weighting keeps', SL('pulse_pairs_weight.png'), [
+    wide('Signal kept by the dye weighting', SL('pulse_pairs_weight.png'), [
         'Shorter pulses spread the photon pairs over more wavelengths, so a dye that absorbs only near 350 nm uses fewer of '
         'them: with a 10 nm band, about 97% is kept at 100 fs, 60% at 20 fs and 35% at 10 fs.'],
         'Short pulses waste pairs outside the dye band.', 'Gaussian absorption bands of FWHM 2, 5, 10 and 20 nm at 350 nm.')
@@ -1168,18 +1168,7 @@ elif SECTION == 'pulses':
 elif SECTION == MEETING:
     title('Two-color excitation: progress report', 'Vector 2CE at high NA and optical pulses, starting from the model of '
           'Lim & Saloma (2002)')
-    words('Summary', [
-        'High NA: the 20% alignment tolerances follow power laws in NA, about 1/NA across the axis and 1/NA^2 along it, as '
-        'the width and length of the focus do. Above NA 0.5 the paraxial model overestimates the tolerance along the axis.',
-        'Water: two crossed lenses fit side by side up to NA 0.71 in air and 0.94 in water; above NA 0.71 our crossed lenses '
-        'are in water. Water keeps the power laws, with a focus about 1.4 times longer at the same NA.',
-        'Gaussian input: the dim edge of the pupil enlarges the focus, giving about 1.4 times larger tolerances with the same '
-        'power laws.',
-        'Time delay, continuous beams: a delay changes 2PE through its fringes and leaves 2CE unchanged; for 2CE a time '
-        'delay needs optical pulses.',
-        'Photon pairs: with pulses, 2CE counts the pairs whose frequencies add up to the transition; the pulsed PSF is the '
-        'continuous-beam PSF times the pair probability times the overlap in time.',
-        'Pulse delay: a delay between the pulses lowers 2CE; with crossed lenses 20% of the peak is lost at a delay of 0.4 τ.'],
+    words('Summary', ['High NA: offset for 20% peak loss ∝ 1/NA across the axis, 1/NA^2 along it, as the width and length of the focus. Paraxial model within 5% up to NA 0.45.', 'Water: crossed lenses fit to NA 0.71 in air, 0.94 in water. Same power laws; focus 1.4× longer at the same NA.', 'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.', 'Continuous beams: a time delay shifts the 2PE fringes, no change in 2CE. Timing in 2CE needs pulses.', 'Photon pairs: 2CE counts pairs with ν_a + ν_b = ν_e. Pulsed PSF = continuous-beam PSF × pair probability × overlap in time.', 'Pulse delay: 2CE peak falls with the delay; 20% lost at Δt = 0.4 τ with crossed lenses.'],
         'The tolerances follow the size of the focus; with pulses, the timing adds a tolerance set by the pulse duration.',
         'At high NA the tolerances follow power laws set by the focus. Water and a Gaussian input enlarge the focus. With '
         'continuous beams timing does nothing to 2CE; with pulses, the photon pairs that reach the transition count, and a '
@@ -1188,70 +1177,59 @@ elif SECTION == MEETING:
     def section(k, name, line):
         navy(f'{k}. {name}', [(line, 15, PALE)])
 
-    section(1, 'High NA: power laws', 'Last time: the replication of Lim & Saloma (2002), paraxial scalar 2CE at NA 0.5. Here: the same 20% tolerances at high NA with the vector focus, in air and in water.')
+    section(1, 'High NA: power laws', 'Last time: replication of Lim & Saloma (2002), paraxial scalar, NA 0.5. Now: high NA, vector focus, air and water.')
     lens_problem()
-    wide('20% tolerances against NA, θ = π', SL('tolerance_media_pi.png'), [
-        'The tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. It follows power laws in NA: about 1/NA '
-        'across the axis and 1/NA^2 along it, as the width and length of the focus do. Insets: above NA 0.5 the paraxial '
-        'scalar model parts from the vector one, along the axis first; air ends at NA 1.'],
+    wide('Offset for 20% loss against NA, θ = π', SL('tolerance_media_pi.png'), ['T: offset of O′ for 20% loss of the 2CE peak. Across ∝ 1/NA (focus width); along ∝ 1/NA^2 (focus length).', 'Insets: scalar = vector at low NA; scalar above vector at high NA, along z first.'],
         'The tolerances follow power laws in NA set by the width and length of the focus.',
         'Blue: vector; red: paraxial scalar; filled: air; open: water, at the same NA points. Lines: power laws fitted over '
         'NA 0.1 to 0.5. Star: the value reported by Lim and Saloma at NA 0.5. In air NA = sin alpha cannot exceed 1.')
-    wide('20% tolerances against NA, θ = π/2', SL('tolerance_media_pi2.png'), [
-        'Crossed lenses: both tolerances fall close to 1/NA^2, because both misalignments run along the length of one of the '
-        'beams. Air ends at NA 0.71, where the two crossed lenses stop fitting; water continues to NA 0.94.'],
+    wide('Offset for 20% loss against NA, θ = π/2', SL('tolerance_media_pi2.png'), ['Crossed lenses: both ∝ 1/NA^2, both misalignments along the length of a beam.', 'Air to NA 0.71 (lenses fit); water to 0.94.'],
         'Crossed lenses: both tolerances follow the length of the focus.',
         'Blue: vector; red: paraxial scalar; filled: air, up to NA 0.71; open: water. Lines: power laws fitted over NA 0.1 to '
         '0.5. Star: the value reported by Lim and Saloma at NA 0.5.')
-    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), [
-        'Relative difference of the 20% tolerances, |T_{scalar}/T_{vector} − 1|, at the same NA. In air the paraxial model '
-        'agrees within 5% up to NA 0.45; in water up to about NA 0.6, because the difference is set by the cone angle, '
-        'sin α = NA/n. Along the axis it departs first.'],
+    PL1 = r'T_x = A_x\,\mathrm{NA}^{-p_x}, \qquad T_z = A_z\,\mathrm{NA}^{-p_z}'
+    PL2 = r'\theta = \pi:\quad p_x = 0.99,\; p_z = 2.04 \;\text{(air)}; \qquad p_x = 0.99,\; p_z = 2.02 \;\text{(water)}'
+    PL3 = r'\theta = \pi/2:\quad p_x = 2.03,\; p_z = 2.04 \;\text{(air)}; \qquad p_x = p_z = 2.02 \;\text{(water)}'
+    PL4 = r'\text{width of the focus} \propto \frac{\lambda}{\mathrm{NA}}, \qquad \text{length} \propto \frac{n\lambda}{\mathrm{NA}^2}'
+    eqslide('Power laws of T', 'Fit over NA 0.1–0.5, where scalar = vector: exponents 1 and 2, as the width and length of the focus.', [
+        (PL1, 'T_x, T_z = offsets for 20% loss across and along the axis (vector 2CE); A, p = fitted prefactor and exponent.'),
+        (PL2, 'facing lenses: across the axis as 1/NA, along it as 1/NA^2, in air and in water.'),
+        (PL3, 'crossed lenses: both as 1/NA^2, since both misalignments run along the length of a beam.'),
+        (PL4, 'the scaling of the focus; at the same NA the focus in water is n = 1.33 times longer, and A_z is 1.38 times '
+              'larger in water.')],
+        'The tolerances scale as 1/NA across and 1/NA^2 along, like the focus.',
+        'Power-law fits of the vector tolerances over NA 0.1 to 0.5.', '\n'.join((PL1, PL2, PL3, PL4)), size=15)
+    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), ['Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA.', 'Below 5% to NA 0.45 in air, ~0.6 in water. At NA 0.5: 7% along z in air, 4% in water.'],
         'The paraxial model holds to NA 0.45 in air and to about 0.6 in water.',
-        'T = 20% tolerance, the offset of O prime that reduces the 2CE peak by 20%. Solid: air; dashed: water; same NA points. '
-        'Crossed lenses in air up to NA 0.71.')
-    wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), [
-        'Linfoot’s fidelity F compares the misaligned PSF with the aligned one (1 when identical). At high NA, F stays high '
-        'over a smaller range of misalignments than scalar 2CE predicts.'],
+        'Solid: air; dashed: water; same NA points. Crossed lenses in air up to NA 0.71. The difference is set by the cone '
+        'angle, sin alpha = NA/n, so water reaches it at 1.33 times the NA.')
+    wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), ['F: similarity of misaligned and aligned PSF (1 = identical).', 'High NA: F high over a smaller range of misalignments.'],
         'At high NA the PSF keeps its shape over a smaller range of misalignments.',
         'Scalar 2CE at NA 0.5, then vector 2CE at NA 0.7 and 0.9.')
 
-    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff_F_2ce_pi.png'), [
-        'ΔF = F of vector 2CE minus F of scalar 2CE at the same NA, 0.7 and 0.9, so the difference is the model alone. Red: '
-        'vector higher; blue: vector lower; black line: no difference. The difference grows from NA 0.7 to NA 0.9.'],
+    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff_F_2ce_pi.png'), ['ΔF = F_{vector} − F_{scalar}, same NA. Red: vector higher; blue: lower.', 'Larger at NA 0.9 than at 0.7.'],
         'At the same NA the vector and scalar fidelity differ, more at NA 0.9.',
         'The scalar PSF has the same shape at every NA in units of the spot; the vector PSF changes shape as NA grows.')
-    section(2, 'Air and water at the same NA', 'The same power laws in both media; in water the focus is longer at the same NA.')
-    wide('20% tolerances in air and water, θ = π', SL('air_water_pi.png'), [
-        'At the same NA the tolerance across the axis is the same in air and water, and along the axis it is about 1.4 times '
-        'larger in water. Fitted over the same NA range, 0.1–0.7, the power laws are the same in both media.'],
+    section(2, 'Air and water at the same NA', 'Same power laws in air and water; longer focus in water at the same NA.')
+    wide('Offset for 20% loss in air and water, θ = π', SL('air_water_pi.png'), ['Same NA: across, equal in air and water; along, 1.4× larger in water.', 'Same power laws (fit NA 0.1–0.7).'],
         'Water keeps the power laws and enlarges the tolerance along the axis.',
         'Filled: air; open: water, at the same NA points. Lines: power-law fits over NA 0.1 to 0.7.')
 
-    wide('20% tolerances in air and water, θ = π/2', SL('air_water_pi2.png'), [
-        'Crossed lenses: at the same NA both tolerances are about 1.4 times larger in water, because both follow the length '
-        'of the focus. Fitted over NA 0.1–0.7, both media follow about 1/NA^2.'],
+    wide('Offset for 20% loss in air and water, θ = π/2', SL('air_water_pi2.png'), ['Crossed lenses: both 1.4× larger in water at the same NA.', 'Same power laws, ∝ 1/NA^2 (fit NA 0.1–0.7).'],
         'Crossed lenses: water keeps the power laws.', 'Filled: air, up to NA 0.71; open: water. Lines: power-law fits.')
-    section(3, 'Gaussian input', 'A Gaussian input (α_t = 4) against uniform input.')
-    wide('20% tolerances, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), [
-        'With a Gaussian input (α_t = 4) the dim edge of the pupil makes the focus wider and longer, so the tolerances are '
-        'about 1.4 times larger than with uniform input, with the same power laws.'],
+    section(3, 'Gaussian input', 'Gaussian input (α_t = 4) against uniform input.')
+    wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), ['Dim pupil edge → wider, longer focus.', 'Offsets 1.4× larger than with uniform input; same power laws.'],
         'A Gaussian input gives about 1.4 times larger tolerances.', 'Blue: vector 2CE; red: scalar 2CE; α_t = 4.')
 
-    section(4, 'Time delay, continuous beams', 'A time delay acts on 2PE through its fringes; 2CE does not change.')
-    wide('Time delay with continuous beams', PD('phase_delay.png'), [
-        'Time delay as the phase φ = ωΔt (φ = π is half an optical period, 1.17 fs at 700 nm). With continuous beams a time delay is a phase. 2PE adds the two fields, so the phase moves its fringes (red, blue). '
-        '2CE multiplies the two intensities, so it does not change (dashed): for 2CE a time delay needs optical pulses.'],
+    section(4, 'Time delay, continuous beams', 'Time delay with continuous beams: 2PE changes, 2CE does not.')
+    wide('Time delay with continuous beams', PD('phase_delay.png'), ['Delay as phase φ = ωΔt (φ = π: half an optical period, 1.17 fs at 700 nm).', '2PE (adds fields): fringes shift. 2CE (multiplies intensities): no change, so it needs pulses.'],
         'A time delay changes 2PE, not continuous-beam 2CE.', 'Peak lost and fidelity against the phase of the delay.')
-    section(5, 'Photon pairs', 'Which pairs of wavelengths, one from each pulse, reach the 350 nm transition.')
-    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), [
-        '(a) Spectrum of each pulse at 20 fs. (b) Probability of the photon pairs whose frequencies add up to the 350 nm '
-        'transition, against the 750 nm photon and its partner from the 656 nm laser. Shorter pulses bring in more pairs.'],
+    section(5, 'Photon pairs', 'Which wavelength pairs, one from each pulse, reach 350 nm.')
+    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), ['(a) Spectrum of each pulse, 20 fs. (b) Pairs adding to 350 nm: 750 nm photon (red axis), partner (blue axis).', 'Shorter pulses: more pairs.'],
         'The pairs that reach the transition, from the two pulse spectra.',
         'Continuous beams have the single pair 750 + 656 nm.')
     PT = r'I_i(P, t) = I_i^{\mathrm{CW}}(P)\, \exp\left(-\frac{4\ln 2\,(t - t_i)^2}{\tau^2}\right), \qquad t_1 = \frac{n z_{b,1}}{c}, \quad t_2 = \frac{n z_{b,2}}{c} + \Delta t'
-    eqslide('Closed form, term 1: the continuous-beam PSF', 'Each pulse is focused like the continuous beam of the paper and '
-            'passes each point P at its own time.', [
+    eqslide('Closed form, term 1: the continuous-beam PSF', 'Each pulse: continuous-beam focus, passing P at its own time.', [
         (r'F_{2c}^{\mathrm{CW}}(P) \propto I_1^{\mathrm{CW}}(P)\; I_2^{\mathrm{CW}}(P)', 'the 2CE PSF of the paper: the '
          'product of the two focused intensities.'),
         (PT, 'pulse i at P: the continuous-beam intensity times a Gaussian in time of FWHM τ, centred on the time t_i at which '
@@ -1260,8 +1238,7 @@ elif SECTION == MEETING:
         'The spatial part is the continuous-beam focus; the pulse adds a Gaussian envelope in time.',
         r'F^{CW} \propto I_1^{CW} I_2^{CW}' + '\n' + PT, size=15)
     T2M = r'\int P(\nu_a)\, d\nu_a \;\propto\; \exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right), \qquad \delta = \nu_e - (\nu_1 + \nu_2)'
-    eqslide('Closed form, term 2: the pair probability', 'A pair excites the transition when its photon energies add up to '
-            'the transition energy; the photons of the two lasers are independent.', [
+    eqslide('Closed form, term 2: the pair probability', 'Resonant pair: energies add to the transition; independent lasers.', [
         (R1M := r'h\nu_a + h\nu_b = h\nu_e \;\Leftrightarrow\; \frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}',
          'two-photon resonance; ν = c/λ.'),
         (R2M := r'p_i(\nu) \propto \exp\left(-\frac{4\ln 2\,(\nu - \nu_i)^2}{\Delta\nu^2}\right), \qquad \Delta\nu = \frac{0.441}{\tau}',
@@ -1272,7 +1249,7 @@ elif SECTION == MEETING:
               '750 + 656 nm → 350 nm.')],
         'Term 2: the probability that a pair of photons reaches the transition.',
         'Resonance, the two spectra, their product, and the sum over pairs.', '\n'.join((R1M, R2M, R3M, T2M)), size=14)
-    eqslide('Closed form, term 3: the overlap in time', 'A pair needs one photon from each pulse at P at the same time.', [
+    eqslide('Closed form, term 3: the overlap in time', 'One photon from each pulse at P at the same time.', [
         (r'O(P, \Delta t) = \int I_1(P, t)\, I_2(P, t)\, dt = I_1^{\mathrm{CW}} I_2^{\mathrm{CW}} \int e^{-a (t-t_1)^2} '
          r'e^{-a (t-t_2)^2} dt, \quad a = \frac{4\ln 2}{\tau^2}', 'overlap in time at P, with term 1 substituted.'),
         (r'(t-t_1)^2 + (t-t_2)^2 = 2\left(t - \bar{t}\right)^2 + \frac{(t_1 - t_2)^2}{2}, \qquad \bar{t} = \frac{t_1+t_2}{2}',
@@ -1286,24 +1263,18 @@ elif SECTION == MEETING:
           r'\underbrace{\exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right)}_{\text{term 2}}\; '
           r'\underbrace{\exp\left(-\frac{2\ln 2\,(t_1 - t_2)^2}{\tau^2}\right)}_{\text{term 3}}')
     T12 = r't_1 - t_2 = \frac{n\,(z_{b,1} - z_{b,2})}{c} - \Delta t'
-    eqslide('Closed form: the three terms combined', 'Adding the resonant pairs with their phases gives the product of the '
-            'three terms for Gaussian pulses.', [
+    eqslide('Closed form: the three terms combined', 'Pulsed PSF = term 1 × term 2 × term 3, for Gaussian pulses.', [
         (CF, 'continuous-beam PSF × probability that a pair reaches ν_e (the same at all points) × overlap in time.'),
         (T12, 'difference of the arrival times at P: it sets where the pulses meet; Δt moves that place.'),
         (r'\tau \to \infty:\quad F_{2c} \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}', 'long pulses recover the '
          'continuous-beam result of the paper.')],
         'Pulsed PSF = term 1 × term 2 × term 3.', 'The three terms of the previous slides, multiplied.',
         '\n'.join((CF, T12)), size=15)
-    section(6, 'Pulse delay', 'A time delay between the two pulses, against the pulse duration.')
-    wide('Peak against the time delay', SL('pairs_time_peak.png'), [
-        'Time delay in units of the pulse duration τ (FWHM of the intensity): Δt/τ. A delay makes the resonant pairs add out of phase where the pulses do not arrive together. Crossed lenses: the peak '
-        'follows the overlap at the focus. Facing lenses with 10–20 fs pulses: the PSF moves along the axis with the plane '
-        'where the pulses meet, and loses less peak.'],
+    section(6, 'Pulse delay', 'Time delay between the two pulses.')
+    wide('Peak against the time delay', SL('pairs_time_peak.png'), ['Δt in units of τ (pulse FWHM). Crossed: peak follows the overlap at the focus.', 'Facing, 10–20 fs: PSF moves with the plane where the pulses meet; less peak lost.'],
         'The peak falls with the delay; facing lenses with short pulses lose less.',
         'Aligned foci; tau = 10, 20 and 100 fs.')
-    wide('20% tolerance in time', SL('pairs_time_tolerance.png'), [
-        'Delay in fs for 20% peak lost. With crossed lenses a delay of 0.40 τ (4 fs at 10 fs, 40 fs at 100 fs) reduces the 2CE peak by 20% at all NA, scalar and vector alike. With facing '
-        'lenses and 10 fs pulses the tolerance is larger at low NA and falls toward 0.40 τ as NA grows.'],
+    wide('Time delay for 20% loss', SL('pairs_time_tolerance.png'), ['Crossed: 0.40 τ at all NA (4 fs at 10 fs, 40 fs at 100 fs).', 'Facing, 10 fs: larger at low NA, toward 0.40 τ at high NA.'],
         'The time tolerance is set by the pulse duration.', 'Delay that reduces the 2CE peak by 20%, in units of tau.')
     navy('Next steps', [('Polarization, the dye, and the paper draft.', 15, PALE)])
     words('Next steps', DECIDE + ['Paper draft: one main point (tolerances follow the size of the focus) and two sub-points '
@@ -1321,7 +1292,7 @@ elif SECTION == MEETING:
                                      'from its equations, as in this example.'], 11)
     notes(s, 'Fig. 4(a) of the paper next to ours.', 'The same panel computed from the equations of the paper; the other '
           'figures match in the same way.')
-    words('Replication: the results of the paper hold', [
+    words('Replication: results of the abstract', [
         'Crossed beams, focus moved in the focal plane: the 2CE peak stays above 89% and decreases smoothly, while the 2PE peak '
         'drops to 70% and partly recovers as its fringes pass through the focus.',
         'Facing beams: the 2CE and 2PE peaks decrease at about the same rate.',

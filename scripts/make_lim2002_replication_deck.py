@@ -134,7 +134,7 @@ bullets(s, 6.25, 1.85 + h, 3.25, 2.8, [
 notes(s, 'Fluorescence needs a photon from each beam.', 'The two photon energies add to the transition energy.',
       r'\hbar\omega_1 + \hbar\omega_2 = \hbar\omega_e \qquad F_{2c}(P) = \kappa_{2c} I_1(P) I_2(P)')
 
-s = slide('Why one color interferes and two colors do not', 'Two colors beat at their difference frequency and average out.')
+s = slide('Interference: one color and two colors', 'Two colors beat at their difference frequency and average out.')
 figure(s, os.path.join(BGD, 'bg_beating.png'), 0.45, 1.25, 9.1, 3.05)
 h = equation(s, 0.55, 4.38, 9.0, r'|\mathbf{E}|^2 = |\mathbf{E}_1|^2 + |\mathbf{E}_2|^2 + 2\,\mathrm{Re}\left[\mathbf{E}_1\cdot'
              r'\mathbf{E}_2^{*}\, e^{-i(\omega_1-\omega_2)t}\right]', 17)
