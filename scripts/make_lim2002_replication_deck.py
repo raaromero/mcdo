@@ -30,7 +30,7 @@ F = 2Q - C
 '''
 
 
-def panel(title, orig, ours, line, main, script, latex=None, ours_label='Ours'):
+def panel(title, orig, ours, line, main, script, latex=None, ours_label='Current work'):
     """One panel of the paper and the same panel of ours, side by side at full height; one sentence beneath."""
     s = slide(title, '')
     label(s, 0.45, 0.95, 4.45, 'Lim & Saloma (2002)')
@@ -288,10 +288,10 @@ notes(s, 'Linfoot’s three criteria compare the misaligned PSF with the aligned
 
 # ══ Fig. 5 and the C/Q labels, one panel per slide ═════════════════════
 for t, (lab, ours, line) in {
-        'a': ('Linfoot’s criteria, 2CE, θ = π: F', 'Ours: F', 'Fidelity F for 2CE at θ = π agrees with the paper.'),
-        'b': ('Linfoot’s criteria, 2CE, θ = π, labelled C', 'Ours: Q', 'The panel the paper labels C matches our correlation quality Q.'),
-        'c': ('Linfoot’s criteria, 2CE, θ = π/2: F', 'Ours: F', 'Fidelity F for 2CE at θ = π/2 agrees with the paper.'),
-        'd': ('Linfoot’s criteria, 2CE, θ = π/2, labelled C', 'Ours: Q', 'At θ = π/2 the panel labelled C also matches our Q.')}.items():
+        'a': ('Linfoot’s criteria, 2CE, θ = π: F', 'Current work: F', 'Fidelity F for 2CE at θ = π agrees with the paper.'),
+        'b': ('Linfoot’s criteria, 2CE, θ = π, labelled C', 'Current work: Q', 'The panel the paper labels C matches our correlation quality Q.'),
+        'c': ('Linfoot’s criteria, 2CE, θ = π/2: F', 'Current work: F', 'Fidelity F for 2CE at θ = π/2 agrees with the paper.'),
+        'd': ('Linfoot’s criteria, 2CE, θ = π/2, labelled C', 'Current work: Q', 'At θ = π/2 the panel labelled C also matches our Q.')}.items():
     panel(f'Fig. 5({t}): {lab}', f'orig_fig5{t}.png', P(f'fig5_linfoot_p{"abcd".index(t) + 1}.png'), line,
           f'Fig. 5({t}): {line}', 'Linfoot criteria of the misaligned 2CE PSF over (x_c, z_c), paper against ours.', LINFOOT_TEX,
           ours_label=ours)
@@ -309,14 +309,14 @@ notes(s, 'The paper’s own identity rules out its C near zero; the panel is Q.'
 
 # ══ Fig. 6, one panel per slide; its bottom row against θ = π/2 and θ = 0 ═
 for t, lab, ours, path, line in (
-        ('a', 'Linfoot’s criteria, 2PE, θ = π: F', 'Ours: F', 'fig6_linfoot_p1.png', 'Fidelity F for 2PE at θ = π agrees with the paper.'),
-        ('b', 'Linfoot’s criteria, 2PE, θ = π, labelled C', 'Ours: Q', 'fig6_linfoot_p2.png',
+        ('a', 'Linfoot’s criteria, 2PE, θ = π: F', 'Current work: F', 'fig6_linfoot_p1.png', 'Fidelity F for 2PE at θ = π agrees with the paper.'),
+        ('b', 'Linfoot’s criteria, 2PE, θ = π, labelled C', 'Current work: Q', 'fig6_linfoot_p2.png',
          'The panel the paper labels C matches our correlation quality Q.'),
-        ('c', 'Linfoot’s criteria, captioned θ = π/2', 'Ours: F, θ = π/2', 'fig6_linfoot_p3.png',
+        ('c', 'Linfoot’s criteria, captioned θ = π/2', 'Current work: F, θ = π/2', 'fig6_linfoot_p3.png',
          'Our F at θ = π/2 changes sharply with O′, from the fringes of the crossed beams; the surface in the paper is smooth.'),
-        ('c', 'Linfoot’s criteria, against θ = 0', 'Ours: F, θ = 0', 'fig6_theta0_p1.png',
+        ('c', 'Linfoot’s criteria, against θ = 0', 'Current work: F, θ = 0', 'fig6_theta0_p1.png',
          'At θ = 0 the same model gives the smooth surface of the paper: the bottom row of Fig. 6 is most likely θ = 0.'),
-        ('d', 'Linfoot’s criteria, against θ = 0', 'Ours: Q, θ = 0', 'fig6_theta0_p2.png',
+        ('d', 'Linfoot’s criteria, against θ = 0', 'Current work: Q, θ = 0', 'fig6_theta0_p2.png',
          'The panel labelled C in Fig. 6(d) matches our Q at θ = 0.')):
     panel(f'Fig. 6({t}): {lab}', f'orig_fig6{t}.png', P(path), line, f'Fig. 6({t}): {line}',
           'Same model, window and normalization as the other panels; only theta changes between the theta = pi/2 and theta = 0 '
