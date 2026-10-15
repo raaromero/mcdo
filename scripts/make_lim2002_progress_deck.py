@@ -540,6 +540,22 @@ if SECTION == 'overview':
         'not arrive together; with crossed lenses 20% of the peak is lost at a delay of 0.4 τ.'],
         'Seven parts, each with its main result.',
         ' '.join(SUMMARIES[k][3] for k in PART_TITLE), size=11.5)
+    words('New since the last meeting', [
+        'Photon pairs: the probability of each pair of wavelengths, one from each pulse, that reaches the 350 nm transition, '
+        'derived in closed form. Shorter pulses bring in more pairs (Part 7).',
+        'Pulsed 2CE counts those pairs: the PSF is the continuous-beam PSF times the probability that a pair reaches the '
+        'transition, times the overlap in time of the two pulses. At equal pulse energy, shorter pulses give no more signal '
+        '(Part 7).',
+        'Time delay between pulses: with crossed lenses the PSF keeps its shape and loses 20% of its peak at a delay of 0.4 τ; '
+        'with facing lenses and 10–20 fs pulses the PSF moves along the axis with the plane where the pulses meet (Part 7).',
+        'Crossed lenses above NA 0.71 are computed in water, so the crossed-lens results continue to NA 0.9 (Parts 2–4).',
+        'Air and water at the same NA: the same power laws; in water the focus is about 1.4 times longer, and the departure '
+        'from the paraxial law starts at 1.33 times the NA (Part 2).',
+        'Scalar 2CE and vector 2CE compared at the same NA, 0.7 and 0.9, which shows the difference between the two models '
+        'alone (Parts 2–4 and 7).'],
+        'Photon pairs, pulsed 2CE with a time delay, and crossed lenses in water.',
+        'Since the last meeting: the photon-pair calculation, the pulsed PSF with a time delay, water for crossed lenses, '
+        'air against water at the same NA, and scalar against vector at the same NA.', size=13)
     words('Next steps: points to settle', DECIDE, 'Two points to settle before the next results.',
           'The polarization of the beams, and the dye that weights the photon pairs.')
     words('To consider: polarization of the two beams', [
@@ -612,6 +628,18 @@ elif SECTION == 'vector':
         'at NA 0.8, 1.33 times the values in air: the difference is set by the angle of the cone, sin α = NA/n.'],
         'In water scalar 2CE holds to 1.33 times the NA it holds to in air.',
         'The same 20% tolerances in water, up to NA 1.2.')
+    for key, lab, line in (
+            ('pi', 'θ = π', 'Facing lenses, vector 2CE, uniform input. At the same NA the tolerance across the axis is the same '
+             'in air and water, and along the axis it is about 1.4 times larger in water. Fitted over NA 0.5–0.7, where both '
+             'media are computed, the power laws are the same: close to 1/NA across the axis and 1/NA^2 along it. Air is a '
+             'little steeper along the axis, because its wider cone departs from the paraxial law sooner.'),
+            ('pi2', 'θ = π/2', 'Crossed lenses, vector 2CE, uniform input; in air the lenses fit up to NA 0.71. At the same NA '
+             'both tolerances are about 1.4 times larger in water, because both follow the length of the focus. Fitted over '
+             'NA 0.5–0.7 both media follow about 1/NA^2; air is a little steeper.')):
+        wide(f'20% tolerances in air and water, {lab}', SL(f'air_water_{key}.png'), [line],
+             'Water keeps the power laws and moves the high-NA departure to 1.33 times the NA.',
+             'Filled: air; open: water. Lines: power-law fits over NA 0.5 to 0.7, solid for air and dashed for water. At the '
+             'same NA the cone in water is narrower, sin alpha = NA/n, so the focus is about as wide and 1.33 times longer.')
     lens_problem()
     peaks('')
     wide('Profiles at NA 0.8, θ = π', SL('profiles_pi_na0.8.png'), [

@@ -117,6 +117,40 @@ def tolerance(key, suf, n):
     save(fig, f'tolerance_{key}{suf}.png')
 
 
+# ── air against water at the same NA (vector, uniform input); crossed lenses in air only up to NA 0.71 ──
+def air_water(key):
+    a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
+    w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
+    if a is None or w is None:
+        return
+    a = a[(a[:, 0] >= 0.3 - 1e-9) & (a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.95) + 1e-9)]
+    w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
+    alln = np.concatenate([a[:, 0], w[:, 0]])
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+    names = ('x', 'z')
+    for ax, col, lab in ((axes[0], 3, names[0]), (axes[1], 4, names[1])):
+        ax.plot(a[:, 0], a[:, col], 'o', color=BLUE, ms=8, label='Air, n = 1')
+        ax.plot(w[:, 0], w[:, col], 'o', color=BLUE, ms=10, mfc='none', mew=2.5, label='Water, n = 1.33')
+        txt = []
+        for d, ls, med in ((a, '-', 'air'), (w, '--', 'water')):
+            s = d[(d[:, 0] >= 0.5 - 1e-9) & (d[:, 0] <= 0.7 + 1e-9)]
+            sl, ic = np.polyfit(np.log(s[:, 0]), np.log(s[:, col]), 1)
+            ax.plot(s[:, 0], np.exp(ic) * s[:, 0] ** sl, ls, color='k', lw=3)
+            txt.append(f'{med}: NA$^{{{sl:.2f}}}$')
+        ax.axvspan(0.5, 0.7, color='#e6e6e6', lw=0, zorder=0, label='NA 0.5–0.7, both media')
+        logaxes(ax, alln)
+        ax.set_xlim(alln.min() / 1.1, alln.max() * 1.05)
+        ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5)))
+        ax.set_title(f'Along {lab}$_c$')
+        ax.text(0.96, 0.95, '\n'.join(txt), transform=ax.transAxes, ha='right', va='top', fontsize=26)
+        ax.set_xlabel('NA')
+    axes[0].set_ylabel('Offset for 20% loss (µm)')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
+    plt.tight_layout()
+    save(fig, f'air_water_{key}.png')
+
+
 # ── how far the paraxial scalar tolerance departs from the vector one ──
 def deviation(suf):
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
@@ -563,6 +597,8 @@ if __name__ == '__main__':
     for suf, n in (('', 1.0), ('_at4', 1.0), ('_n1.33', 1.33), ('_at4_n1.33', 1.33)):
         for key in ('pi', 'pi2'):
             tolerance(key, suf, n)
+    for key in ('pi', 'pi2'):
+        air_water(key)
     for suf in ('', '_at4'):
         deviation(suf)
         for k in range(1, 6):
