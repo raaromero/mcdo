@@ -30,10 +30,11 @@ os.environ['DECK_APPEND'] = '1'
 from PIL import Image
 
 import mcdo.deckstyle as ds
-from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, PALE, PURPLE, RED, WHITE, bullets, card, dots, equation,
-                            figure, notes, prs, shape, slide, text, where)
+from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, ORIG, PALE, PAN, PURPLE, RED, WHITE, bullets, card, dots, equation,
+                            figure, label, notes, prs, shape, slide, text, where)
 
 SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'polarization', 'pulses']
+MEETING = 'meeting'                                            # SECTION=meeting: highlights for one meeting, not in the full build
 SECTION = os.environ.get('SECTION')
 DIR = os.path.expanduser('~/Downloads/Research/two_color')
 HERE = os.path.dirname(__file__)
@@ -126,7 +127,9 @@ GLOSS = {   # term: (meaning, sections that use it)
 
 
 def glossary():
-    rows = [f'{t}: {m}.' for t, (m, use) in GLOSS.items() if use == 'all' or SECTION in use.split()]
+    skip = {'Scalar Debye', 'p_i(ν)', 'A(P)', 'N', 's–s, p–p', 'K'}       # terms the meeting deck does not use
+    rows = [f'{t}: {m}.' for t, (m, use) in GLOSS.items()
+            if use == 'all' or (SECTION == MEETING and t not in skip) or SECTION in use.split()]
     pages = [rows[i:i + 9] for i in range(0, len(rows), 9)]
     for k, page in enumerate(pages, 1):
         s = slide('Glossary' + (f' ({k}/{len(pages)})' if len(pages) > 1 else ''), '')
@@ -1161,6 +1164,116 @@ elif SECTION == 'pulses':
           'Pulsed 2CE = continuous-beam PSF times pair probability times overlap in time.', 'Summary of the pulsed study.',
           size=12.5)
 
+elif SECTION == MEETING:
+    title('Two-color excitation: progress report', 'Replication of Lim & Saloma (2002), vector 2CE at high NA, and optical pulses')
+    summary(
+        'At high NA the alignment tolerance of 2CE follows the size of the focus; with pulses, the timing of the two pulses '
+        'adds a tolerance set by the pulse duration.',
+        'Rebuilt from its equations, the model of Lim & Saloma (2002) reproduces their figures and their conclusion: 2CE is more '
+        'robust against misalignment than 2PE, most of all with crossed beams.',
+        'With the vector focus the tolerances shrink as 1/NA across the axis and 1/NA^2 along it, and the paraxial model holds '
+        'up to NA 0.45. A Gaussian input or a water medium enlarges the focus, and the tolerances with it.',
+        'With pulses, 2CE counts the photon pairs whose frequencies add up to the transition. A time delay between the pulses '
+        'lowers the signal; with crossed lenses 20% of the peak is lost at a delay of 0.4 τ.',
+        'The replication holds. At high NA the tolerances follow the width and length of the focus. With pulses, only the photon '
+        'pairs that reach the transition count, and the time delay of the two pulses has its own tolerance, set by the pulse '
+        'length.')
+    geometry()
+
+    # ── replication ──
+    s = slide('Replication: Fig. 4(a), 2CE, θ = π', '')
+    label(s, 0.45, 0.95, 4.45, 'Lim & Saloma (2002)')
+    label(s, 5.1, 0.95, 4.45, 'Ours', PURPLE)
+    figure(s, os.path.join(ORIG, 'orig_fig4a.png'), 0.45, 1.2, 4.45, 3.8)
+    figure(s, os.path.join(PAN, 'fig4_peak_p1.png'), 5.1, 1.2, 4.45, 3.8)
+    bullets(s, 0.6, 5.04, 8.3, 0.3, ['Peak of the 2CE PSF against the misalignment of O′; the figures of the paper come back '
+                                     'from its equations, as in this example.'], 11)
+    notes(s, 'Fig. 4(a) of the paper next to ours.', 'The same panel computed from the equations of the paper; the other '
+          'figures match in the same way.')
+    words('Replication: the results of the paper hold', [
+        'Crossed beams, focus moved in the focal plane: the 2CE peak stays above 89% and decreases smoothly, while the 2PE peak '
+        'drops to 70% and partly recovers as its fringes pass through the focus.',
+        'Facing beams: the 2CE and 2PE peaks decrease at about the same rate.',
+        'Crossed beams, focus moved along the axis: the 2CE peak decreases steadily, while the 2PE peak rises and falls as the '
+        'fringes pass.',
+        'Three things differ from the printed paper: the panels labelled C in Figs. 5–6 show Q; Eq. (2) reproduces the numbers '
+        'when applied as a rotation in space; and the bottom row of Fig. 6 matches θ = 0 rather than θ = π/2.'],
+        'The three comparisons of the abstract hold; three details of the printed paper differ.',
+        'Each comparison in the abstract comes out the same way. The differences are in labels and in how Eq. (2) is applied, '
+        'not in the conclusion.')
+
+    # ── high NA ──
+    wide('Fig. 4(a) against NA: 2CE, θ = π', SL('map_fig4a.png'), [
+        'Peak against the misalignment of O′, from scalar 2CE at NA 0.5 to vector 2CE at NA 0.7 and 0.9: the region that keeps '
+        'the peak shrinks as NA grows, most of all along the axis.'],
+        'The region that keeps the peak shrinks with NA.', 'Contours in percent of the peak; orange: 50 percent.')
+    wide('20% tolerances against NA, θ = π', SL('tolerance_pi.png'), [
+        'The 20% tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. Across the axis it falls close to 1/NA, '
+        'as the width of the focus does; along the axis close to 1/NA^2, as its length does.'],
+        'The tolerances follow the width and length of the focus.',
+        'Blue: vector 2CE; red: scalar 2CE; star: the tolerance reported at NA 0.5.')
+    wide('20% tolerances against NA, θ = π/2', SL('tolerance_pi2.png'), [
+        'With crossed lenses both tolerances fall close to 1/NA^2, because both misalignments run along the length of one of '
+        'the beams. Two crossed lenses fit in air up to NA 0.71; above it they are in water (open circles).'],
+        'Crossed lenses: both tolerances follow the length of the focus.',
+        'Blue: vector 2CE; red: scalar 2CE; open circles: water, n = 1.33.')
+    wide('Scalar 2CE against vector 2CE', SL('deviation.png'), [
+        'The paraxial model of the paper agrees with the vector focus within 5% up to NA 0.45. Above it, its longer focus '
+        'overestimates the tolerance along the axis.'],
+        'The paraxial model holds to NA 0.45.', 'Difference between the scalar and vector 20% tolerances against NA.')
+    wide('20% tolerances in air and water, θ = π', SL('air_water_pi.png'), [
+        'At the same NA the tolerance across the axis is the same in air and water, and along the axis it is about 1.4 times '
+        'larger in water. The power laws are the same; in water the departure from the paraxial law starts at 1.33 times '
+        'the NA.'],
+        'Water keeps the power laws and enlarges the tolerance along the axis.',
+        'Filled: air; open: water. Lines: power-law fits over NA 0.5 to 0.7.')
+    wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), [
+        'Linfoot’s fidelity F compares the misaligned PSF with the aligned one (1 when identical). At high NA, F stays high '
+        'over a smaller range of misalignments than scalar 2CE predicts.'],
+        'At high NA the PSF keeps its shape over a smaller range of misalignments.',
+        'Scalar 2CE at NA 0.5, then vector 2CE at NA 0.7 and 0.9.')
+    wide('20% tolerances, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), [
+        'With a Gaussian input (α_t = 4) the dim edge of the pupil makes the focus wider and longer, so the tolerances are '
+        'about 1.4 times larger than with uniform input, with the same power laws.'],
+        'A Gaussian input gives about 1.4 times larger tolerances.', 'Blue: vector 2CE; red: scalar 2CE; α_t = 4.')
+
+    # ── time delay and pulses ──
+    wide('Time delay between continuous beams', PD('phase_delay.png'), [
+        'With continuous beams a time delay is a phase: it leaves the 2CE PSF unchanged, because 2CE multiplies intensities, '
+        'and shifts the 2PE fringes.'],
+        'A time delay does not change continuous-beam 2CE.', 'Peak lost and fidelity against the time delay.')
+    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), [
+        '(a) Spectrum of each pulse at 20 fs. (b) Probability of the photon pairs whose frequencies add up to the 350 nm '
+        'transition, against the 750 nm photon and its partner from the 656 nm laser. Shorter pulses bring in more pairs.'],
+        'The pairs that reach the transition, from the two pulse spectra.',
+        'Continuous beams have the single pair 750 + 656 nm.')
+    CF = (r'F_{2c}(P, \Delta t) \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}\; \exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right) '
+          r'\exp\left(-\frac{2\ln 2\,(t_1 - t_2)^2}{\tau^2}\right)')
+    T12 = r't_1 - t_2 = \frac{n\,(z_{b,1} - z_{b,2})}{c} - \Delta t'
+    eqslide('Pulsed 2CE: closed form', 'The pulsed PSF is the continuous-beam PSF of the paper, times the probability that a '
+            'pair reaches the transition, times the overlap in time of the two pulses.', [
+        (CF, 'I^CW_1 I^CW_2 = the 2CE PSF of the paper; first exponential = probability that a pair reaches ν_e, the same at '
+             'all points; second = overlap in time.'),
+        (T12, 'difference of the arrival times of the two pulses at P; Δt = time delay of pulse 2.')],
+        'Pulsed PSF = continuous-beam PSF times pair probability times overlap in time.',
+        'Summing the resonant pairs with their phases gives this product for Gaussian pulses.', '\n'.join((CF, T12)), size=15)
+    wide('Peak against the time delay', SL('pairs_time_peak.png'), [
+        'A delay makes the resonant pairs add out of phase where the pulses do not arrive together. Crossed lenses: the peak '
+        'follows the overlap at the focus. Facing lenses with 10–20 fs pulses: the PSF moves along the axis with the plane '
+        'where the pulses meet, and loses less peak.'],
+        'The peak falls with the delay; facing lenses with short pulses lose less.',
+        'Aligned foci; tau = 10, 20 and 100 fs.')
+    wide('20% tolerance in time', SL('pairs_time_tolerance.png'), [
+        'With crossed lenses a delay of 0.40 τ reduces the 2CE peak by 20% at all NA, scalar and vector alike. With facing '
+        'lenses and 10 fs pulses the tolerance is larger at low NA and falls toward 0.40 τ as NA grows.'],
+        'The time tolerance is set by the pulse duration.', 'Delay that reduces the 2CE peak by 20%, in units of tau.')
+    wide('What counting the resonant pairs changes', SL('pairs_vs_every_pair.png'), [
+        'Counting only the pairs that reach the transition leaves the PSF shapes and time-delay curves unchanged and changes '
+        'the signal level: at equal pulse energy, shorter pulses give no more signal.'],
+        'The pair condition changes the signal level, not the shapes.', 'Aligned 2CE peak at equal pulse energies.')
+    words('Points to settle', DECIDE, 'Two points to settle before the next results.',
+          'The polarization of the beams, and the dye that weights the photon pairs.')
+
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
 
@@ -1196,7 +1309,7 @@ for sl in prs.slides:
             im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
             ipart._blob = buf.getvalue()
         done.add(id(ipart))
-OUT = os.path.join(DIR, f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
+OUT = os.path.join(DIR, '2ce_meeting_2026-10-15.pptx' if SECTION == MEETING else f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
 os.makedirs(os.path.join(DIR, 'pdfs'), exist_ok=True)
 ds.keynote_fonts()
 prs.save(OUT)
