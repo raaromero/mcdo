@@ -1362,13 +1362,14 @@ elif SECTION == 'cambaliza':
     CB = os.path.join(FIG, '..', 'cambaliza2000')
     title('Replication: Cambaliza & Saloma (2000)', 'Opt. Commun. 184 (2000) 25–35: 2CE and 2PE with two confocal beams, circular and annular pupils')
     words('Summary', [
-        'Rebuilt from its Eqs. 1–6 (paraxial scalar, NA 0.5), the model reproduces the shapes of Figs. 2–7 and the lines of Fig. 5.',
-        '– 2CE (I₁I₂) matches in every panel: circular and annular, θ = 0, π/2, π, and the wavelength gap Δλ.',
-        '– 2PE matches Eq. 6, |U₁ + U₂|⁴, in Figs. 2–3; Figs. 6a and 7a match the excitation |U₁ + U₂|² instead.',
-        '– Fig. 5: same DOF line; the FWHM slope printed in the caption (2.4×10⁻⁴) does not match the plotted points (5×10⁻⁴).',
-        '– Some quoted width ratios depend on how the central spot is measured; listed at the end.',
-        '– Fig. 8 (Monte Carlo through a scattering slab): not yet.'],
-        'Figures 2–7 come back from the equations; two details of the printed paper differ.', 'Replication summary.', size=14)
+        'Rebuilt from its Eqs. 1–6 (paraxial scalar, NA 0.5), the model lies on every curve of Figs. 2, 3, 6 and 7 and on the lines of Fig. 5.',
+        '– 2CE (I₁I₂): exact in every panel, circular and annular, θ = 0, π/2, π, and against Δλ.',
+        '– 2PE: Figs. 2a and 3a are |U₁ + U₂|⁴ (Eq. 6); Figs. 6a and 7a are the excitation |U₁ + U₂|².',
+        '– Beam 2 rotated in real space, as with Lim & Saloma; Eq. 1 written as a rotation of (u, v) gives other curves.',
+        '– Fig. 5 caption: FWHM slope and intercept and the sign of the DOF slope differ from the plotted lines.',
+        '– Three quoted values do not match the paper’s own figures: 0.67 (Fig. 2a), "1.58× wider" (Fig. 2), "20% longer" (p. 32).',
+        '– Fig. 8 (Monte Carlo through a scattering slab): next.'],
+        'The figures come back exactly; the text differs in a few places.', 'Replication summary.', size=13)
     U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
     U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
     U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
@@ -1405,13 +1406,22 @@ elif SECTION == 'cambaliza':
             ('fig6a', 'Fig. 6(a) with the excitation |U₁ + U₂|²', 'Side lobes and the minimum 0.086 (paper: "not lower than 0.08") match.'),
             ('fig7a', 'Fig. 7(a) with the excitation |U₁ + U₂|²', 'θ = π/2 background ≈ 0.25 as in the paper: Figs. 6a and 7a plot |U₁ + U₂|².')):
         cpanel(title_, key, f'{key}_excitation.png', line)
-    words('Quoted values: paper against current work', [
-        'Match: F2c(x;0)/F2c(x;π/2) 0.75 → 0.75; F2c/a(x;0)/F2c/a(x;π/2) 0.82 → 0.77; F2c/a(z;π/2) spot ≈ 1 µm → 0.93 µm (zero-to-zero diameters).',
-        'Match with |U₁ + U₂|²: min F2p/a(x;π/2) 0.08 → 0.086; DOF F2c/F2p at π/2 ≈ 2 → 1.89; F2p/a 35% narrower than F2c/a → 34%.',
-        'Match (FWHM): F2c/a(x;0) 30% narrower than F2p(x;0) → 30%; F2c/a(x;π/2) 32% narrower than F2c(x;π/2) → 29%; FWHM +6% over 10–94 nm → 6.1%.',
-        'Not reproduced: F2p(x;π/2)/F2p(x;0) 0.67 → 0.49; F2c/F2p at π/2 "1.58× wider" → 2.2–3.0; DOF F2c/a 40% shorter than F2c → 30%.',
-        'Open: the measure of "central spot diameter" (FWHM or zero-to-zero) is not stated in the paper.'],
-        'Most quoted values come back; a few depend on the unstated width measure.', 'Quoted values.', size=13)
+    for keys, ttl, line in ((('fig2a', 'fig2b', 'fig3a', 'fig3b'), 'Current work over the paper: Figs. 2–3, circular',
+                             'Red: 2PE |U₁ + U₂|⁴; orange dashed: |U₁ + U₂|²; blue: 2CE. Red and blue lie on the printed curves.'),
+                            (('fig6a', 'fig6b', 'fig7a', 'fig7b'), 'Current work over the paper: Figs. 6–7, annular',
+                             'Orange dashed (|U₁ + U₂|²) lies on the printed 2PE curves; blue lies on the 2CE curves.')):
+        s = slide(ttl, '')
+        for q, k in enumerate(keys):
+            figure(s, os.path.join(CB, 'overlay', f'{k}.png'), 0.45 + (q % 2) * 4.6, 0.95 + (q // 2) * 2.0, 4.45, 1.95)
+        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 11.5)
+        notes(s, ttl, line)
+    words('Quoted values against the paper’s own figures', [
+        'Match: 30% (FWHM 29.7%); 35% (29.7% → 34.0% with |U₁ + U₂|², as plotted in Fig. 6a); 32% (29.1%); ≈ 1 µm (1.01 µm zero to zero); DOF ≈ 2× (1.9–2.2).',
+        'Width measure not stated: 0.75 (Fig. 2b) and 0.82 (Fig. 6b) give 0.68 (FWHM) to 0.87 (zero to zero); 40% (p. 32) gives 30–37%.',
+        'Not what the figures show: F2p(x;π/2)/F2p(x;0) = 0.67 → 0.43–0.50; F2c(x;π/2) "1.58× wider" than F2p(x;π/2) → 2.2–3.0; DOF of F2c/a(z;π/2) "20% longer" than F2p(z;π/2) → 34–85%.',
+        'Fig. 5 caption: FWHM = 2.4×10⁻⁴ Δλ + 0.356×10⁻¹ against the plotted 5.2×10⁻⁴ Δλ + 0.713; DOF printed with + while the plotted line falls.',
+        'Fig. 4 caption: Δλ = λ₂ − λ₁; the text: Δλ = λ₁ − λ₂.'],
+        'Most quoted values come back; three do not match the paper’s own figures.', 'Quoted values.', size=12.5)
     words('Next steps', ['Reproduce Fig. 8: Monte Carlo of both beams through a scattering slab (g = 0.9, h/d_s = 8), method of '
                          'Blanca & Saloma (1998, 1999).', 'Extend to high NA (vector focus; water for crossed lenses).',
                          'Extend to optical pulses with a time delay.'],
