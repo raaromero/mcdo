@@ -156,7 +156,7 @@ def air_water(key):
 
 
 # ── 20% tolerances in air and water, vector and scalar, lines only; inset where scalar and vector part ──
-def tolerance_media(key, suf=''):
+def tolerance_media(key, suf='', water=True):
     a = rows(os.path.join(D, f'na_breakdown{suf}_{key}.csv'))
     w = rows(os.path.join(D, f'na_breakdown{suf}_n1.33_{key}.csv'))
     a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
@@ -166,7 +166,7 @@ def tolerance_media(key, suf=''):
         # two linear insets: low NA (scalar and vector agree) lower left, high NA (they part) upper right
         insets = ((ax.inset_axes([0.14, 0.09, 0.30, 0.30]), (0.03, 0.15), 'Low NA'),
                   (ax.inset_axes([0.64, 0.62, 0.32, 0.32]), (0.4, 1.2), 'High NA'))
-        for d, fc, ls, big in ((w, 'white', '--', 3), (a, None, '-', 0)):   # water open rings under air dots
+        for d, fc, ls, big in (((w, 'white', '--', 3),) if water else ()) + ((a, None, '-', 0),):   # water open rings under air dots
             ax.plot(d[:, 0], d[:, col - 2], 's', color=RED, ms=5 + big, mfc=fc or RED, mew=1.2, ls='')
             ax.plot(d[:, 0], d[:, col], 'o', color=BLUE, ms=5 + big, mfc=fc or BLUE, mew=1.3, ls='')
             for ins, (lo, hi), _ in insets:
@@ -209,14 +209,17 @@ def tolerance_media(key, suf=''):
     L = matplotlib.lines.Line2D
     h = [L([], [], color=BLUE, ls='', marker='o', ms=10), L([], [], color=BLUE, ls='', marker='o', ms=10, mfc='white'),
          L([], [], color=RED, ls='', marker='s', ms=9), L([], [], color=RED, ls='', marker='s', ms=9, mfc='white')]
-    fig.legend(h, ['Vector, air' + (' (to NA 0.71)' if key == 'pi2' else ''), 'Vector, water', 'Scalar, air', 'Scalar, water'],
+    lab4 = ['Vector, air' + (' (to NA 0.71)' if key == 'pi2' else ''), 'Vector, water', 'Scalar, air', 'Scalar, water']
+    if not water:
+        h, lab4 = [h[0], h[2]], [lab4[0], lab4[2]]
+    fig.legend(h, lab4,
                loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.09), frameon=False)
     plt.tight_layout()
     save(fig, f'tolerance_media_{key}{suf}.png')
 
 
 # ── scalar against vector in air and in water, at the same NA points ──
-def deviation_media(suf=''):
+def deviation_media(suf='', water=True):
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
     dev = lambda a, col: 100 * np.abs(a[:, col - 2] / a[:, col] - 1)
     for ax, key in zip(axes, ('pi', 'pi2')):
@@ -226,10 +229,11 @@ def deviation_media(suf=''):
         w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
         for col, c in ((3, BLUE), (4, '#9467bd')):
             ax.plot(a[:, 0], dev(a, col), '-', color=c, lw=4)
-            ax.plot(w[:, 0], dev(w, col), '--', color=c, lw=4)
+            if water:
+                ax.plot(w[:, 0], dev(w, col), '--', color=c, lw=4)
         for t in (5, 10):
             ax.axhline(t, color='#999999', lw=2, ls=':')
-        for d, ls, n in ((a, '-', 1.0), (w, '--', 1.33)):              # small-angle phase: tan²(α/2), sin α = NA/n
+        for d, ls, n in ((a, '-', 1.0),) + (((w, '--', 1.33),) if water else ()):   # small-angle phase: tan²(α/2)
             na = np.linspace(0.03, d[-1, 0], 300)
             ax.plot(na, 100 * np.tan(np.arcsin(na / n) / 2) ** 2, ls, color='k', lw=1.5, zorder=5)
         ax.set_xscale('log'); ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)        # the NA axis of the tolerance figures
@@ -243,8 +247,11 @@ def deviation_media(suf=''):
     L = matplotlib.lines.Line2D
     h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='#777777', lw=4),
          L([], [], color='#777777', lw=4, ls='--'), L([], [], color='k', lw=1.5)]
-    fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33',
-                   'Small-angle phase error: tan$^2$(α/2)'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
+    labs = ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33',
+            'Small-angle phase error: tan$^2$(α/2)']
+    if not water:
+        h, labs = [h[0], h[1], h[4]], [labs[0], labs[1], labs[4]]
+    fig.legend(h, labs, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
     save(fig, f'deviation_media{suf}.png')
 
