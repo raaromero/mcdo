@@ -1168,7 +1168,7 @@ elif SECTION == 'pulses':
 elif SECTION == MEETING:
     title('Two-color excitation: progress report', 'Vector 2CE at high NA and optical pulses, starting from the model of '
           'Lim & Saloma (2002)')
-    words('Summary', ['High NA: offset for 20% peak loss ∝ 1/NA across the axis, 1/NA^2 along it, as the width and length of the focus. Paraxial model within 5% up to NA 0.45.', 'Water: crossed lenses fit to NA 0.71 in air, 0.94 in water. Same power laws; focus 1.4× longer at the same NA.', 'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.', 'Continuous beams: a time delay shifts the 2PE fringes, no change in 2CE. Timing in 2CE needs pulses.', 'Photon pairs: 2CE counts pairs with ν_a + ν_b = ν_e. Pulsed PSF = continuous-beam PSF × pair probability × overlap in time.', 'Pulse delay: 2CE peak falls with the delay; 20% lost at Δt = 0.4 τ with crossed lenses.'],
+    words('Summary', ['Offset against NA: offset for 20% peak loss ∝ 1/NA across the axis, 1/NA^2 along it, as the width and length of the focus. Paraxial model within 5% up to NA 0.45.', 'Water: crossed lenses fit to NA 0.71 in air, 0.94 in water. Same power laws; focus 1.4× longer at the same NA.', 'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.', 'Continuous beams: a time delay shifts the 2PE fringes, no change in 2CE. Timing in 2CE needs pulses.', 'Photon pairs: 2CE counts pairs with ν_a + ν_b = ν_e. Pulsed PSF = continuous-beam PSF × pair probability × overlap in time.', 'Time delay between pulses: 2CE peak falls with the delay; 20% lost at Δt = 0.4 τ with crossed lenses.'],
         'The tolerances follow the size of the focus; with pulses, the timing adds a tolerance set by the pulse duration.',
         'At high NA the tolerances follow power laws set by the focus. Water and a Gaussian input enlarge the focus. With '
         'continuous beams timing does nothing to 2CE; with pulses, the photon pairs that reach the transition count, and a '
@@ -1177,7 +1177,7 @@ elif SECTION == MEETING:
     def section(k, name, line):
         navy(f'{k}. {name}', [(line, 15, PALE)])
 
-    section(1, 'High NA: power laws', 'Last time: replication of Lim & Saloma (2002), paraxial scalar, NA 0.5. Now: high NA, vector focus, air and water.')
+    section(1, 'Offset for 20% loss against NA', 'Last time: replication of Lim & Saloma (2002), paraxial scalar, NA 0.5. Now: high NA, vector focus, air and water.')
     lens_problem()
     wide('Offset for 20% loss against NA, θ = π', SL('tolerance_media_pi.png'), ['T: offset of O′ for 20% loss of the 2CE peak. Across ∝ 1/NA (focus width); along ∝ 1/NA^2 (focus length).', 'Insets: scalar = vector at low NA; scalar above vector at high NA, along z first.'],
         'The tolerances follow power laws in NA set by the width and length of the focus.',
@@ -1199,10 +1199,25 @@ elif SECTION == MEETING:
               'larger in water.')],
         'The tolerances scale as 1/NA across and 1/NA^2 along, like the focus.',
         'Power-law fits of the vector tolerances over NA 0.1 to 0.5.', '\n'.join((PL1, PL2, PL3, PL4)), size=15)
-    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), ['Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA.', 'Below 5% to NA 0.45 in air, ~0.6 in water. At NA 0.5: 7% along z in air, 4% in water.'],
+    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), ['Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA.', 'Along z: tan^2(α/2), sin α = NA/n (black). At NA 0.5: 7% in air, 4% in water.'],
         'The paraxial model holds to NA 0.45 in air and to about 0.6 in water.',
         'Solid: air; dashed: water; same NA points. Crossed lenses in air up to NA 0.71. The difference is set by the cone '
         'angle, sin alpha = NA/n, so water reaches it at 1.33 times the NA.')
+    SA1 = r'\text{exact: } k n z\,(1 - \cos\theta), \qquad \text{paraxial: } k n z\,\frac{\sin^2\theta}{2}'
+    SA2 = r'\frac{\text{paraxial length}}{\text{exact length}} = \frac{2(1 - \cos\alpha)}{\sin^2\alpha} = \frac{2}{1 + \cos\alpha}'
+    SA3 = r'\text{Difference in } T = \frac{2}{1+\cos\alpha} - 1 = \tan^2\frac{\alpha}{2}, \qquad \sin\alpha = \frac{\mathrm{NA}}{n}'
+    eqslide('Difference in T from the small-angle phase', 'Paraxial phase along the axis: focus too long by 2/(1 + cos α).', [
+        (SA1, 'axial phase of the ray at angle θ to the axis, exact and small-angle (paraxial scalar model).'),
+        (SA2, 'the paraxial phase grows more slowly along z, so the paraxial focus is longer.'),
+        (SA3, 'no free parameter. NA 0.5: 7.2% (computed 7.1%) in air, 3.8% (3.8%) in water. 5% at α = 25°: NA 0.42 in air, '
+              '0.56 in water.')],
+        'The along-axis difference is tan^2(alpha/2): the small-angle phase.', 'Derivation of the along-axis difference.',
+        '\n'.join((SA1, SA2, SA3)), size=15)
+    wide('Focal field along the axis at NA 0.8, θ = π', SL('profiles_pi_na0.8.png'), [
+        'Aligned 2CE spot, three focal fields. Across: all agree. Along: paraxial longer.',
+        'Scalar with the exact phase = vector: the small-angle phase causes the difference.'],
+        'The small-angle phase, not polarization, lengthens the paraxial focus.',
+        'Paraxial scalar, scalar Debye with the exact phase, and vector.')
     wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), ['F: similarity of misaligned and aligned PSF (1 = identical).', 'High NA: F high over a smaller range of misalignments.'],
         'At high NA the PSF keeps its shape over a smaller range of misalignments.',
         'Scalar 2CE at NA 0.5, then vector 2CE at NA 0.7 and 0.9.')
@@ -1270,7 +1285,7 @@ elif SECTION == MEETING:
          'continuous-beam result of the paper.')],
         'Pulsed PSF = term 1 × term 2 × term 3.', 'The three terms of the previous slides, multiplied.',
         '\n'.join((CF, T12)), size=15)
-    section(6, 'Pulse delay', 'Time delay between the two pulses.')
+    section(6, 'Time delay between pulses', 'Time delay between the two pulses.')
     wide('Peak against the time delay', SL('pairs_time_peak.png'), ['Δt in units of τ (pulse FWHM). Crossed: peak follows the overlap at the focus.', 'Facing, 10–20 fs: PSF moves with the plane where the pulses meet; less peak lost.'],
         'The peak falls with the delay; facing lenses with short pulses lose less.',
         'Aligned foci; tau = 10, 20 and 100 fs.')

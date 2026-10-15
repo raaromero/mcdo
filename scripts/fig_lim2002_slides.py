@@ -223,6 +223,9 @@ def deviation_media():
             ax.plot(w[:, 0], dev(w, col), '--', color=c, lw=4)
         for t in (5, 10):
             ax.axhline(t, color='#999999', lw=2, ls=':')
+        for d, ls, n in ((a, '-', 1.0), (w, '--', 1.33)):              # small-angle phase: tan²(α/2), sin α = NA/n
+            na = np.linspace(0.03, d[-1, 0], 300)
+            ax.plot(na, 100 * np.tan(np.arcsin(na / n) / 2) ** 2, ls, color='k', lw=1.5, zorder=5)
         ax.set_xscale('log'); ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)        # the NA axis of the tolerance figures
         ax.set_xticks([0.03, 0.1, 0.3, 0.5, 1.0])
         ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
@@ -232,10 +235,10 @@ def deviation_media():
         ax.set_title({'pi': 'θ = π', 'pi2': 'θ = π/2'}[key]); ax.set_xlabel('NA'); ax.set_ylim(0, 50)
     axes[0].set_ylabel('Difference in T (%)')
     L = matplotlib.lines.Line2D
-    h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='k', lw=4),
-         L([], [], color='k', lw=4, ls='--')]
-    fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33'],
-               loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='#777777', lw=4),
+         L([], [], color='#777777', lw=4, ls='--'), L([], [], color='k', lw=1.5)]
+    fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33',
+                   'tan$^2$(α/2), sin α = NA/n'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
     save(fig, 'deviation_media.png')
 
