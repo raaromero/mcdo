@@ -1358,6 +1358,65 @@ elif SECTION == MEETING:
                          'Gaussian input) and optical pulses.'],
           'Run pulses with a delay, derive the closed form, draft the paper.', 'Next steps.', size=14)
 
+elif SECTION == 'cambaliza':
+    CB = os.path.join(FIG, '..', 'cambaliza2000')
+    title('Replication: Cambaliza & Saloma (2000)', 'Opt. Commun. 184 (2000) 25–35: 2CE and 2PE with two confocal beams, circular and annular pupils')
+    words('Summary', [
+        'Rebuilt from its Eqs. 1–6 (paraxial scalar, NA 0.5), the model reproduces the shapes of Figs. 2–7 and the lines of Fig. 5.',
+        '– 2CE (I₁I₂) matches in every panel: circular and annular, θ = 0, π/2, π, and the wavelength gap Δλ.',
+        '– 2PE matches Eq. 6, |U₁ + U₂|⁴, in Figs. 2–3; Figs. 6a and 7a match the excitation |U₁ + U₂|² instead.',
+        '– Fig. 5: same DOF line; the FWHM slope printed in the caption (2.4×10⁻⁴) does not match the plotted points (5×10⁻⁴).',
+        '– Some quoted width ratios depend on how the central spot is measured; listed at the end.',
+        '– Fig. 8 (Monte Carlo through a scattering slab): not yet.'],
+        'Figures 2–7 come back from the equations; two details of the printed paper differ.', 'Replication summary.', size=14)
+    U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
+    U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
+    U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
+    eqslide('Model of the paper: Eqs. 1–6', 'Paraxial scalar field of each lens; beam 2 rotated by θ; annular pupil as a '
+            'difference of two circular pupils.', [
+        (U1, 'Eq. 1: C, S = Lommel functions; f = focal length, D = pupil diameter; NA 0.5.'),
+        (U2, 'rotated coordinates of beam 2 (Eq. 1); θ = angle between the lens axes.'),
+        (U3, 'Eqs. 2–6: 2CE (750 + 656 nm), 2PE (700 nm); annular ε = 0.99.')],
+        'The model of the paper.', 'Equations 1 to 6.', '\n'.join((U1, U2, U3)), size=14)
+
+    def cpanel(title, key, ours, line):
+        s = slide(title, '')
+        label(s, 0.45, 0.95, 4.45, 'Cambaliza & Saloma (2000)')
+        label(s, 5.1, 0.95, 4.45, 'Current work', PURPLE)
+        figure(s, os.path.join(CB, 'original', f'{key}.png'), 0.45, 1.2, 4.45, 3.7)
+        figure(s, os.path.join(CB, 'panels', ours), 5.1, 1.2, 4.45, 3.7)
+        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 11.5)
+        notes(s, title, line)
+
+    for key, title_, line in (
+            ('fig2a', 'Fig. 2(a): 2PE, transverse, circular', 'θ = π/2: narrow central spot with side lobes at ±0.65 µm; θ = 0 and π coincide.'),
+            ('fig2b', 'Fig. 2(b): 2CE, transverse, circular', 'θ = π/2 wider; θ = 0 and π coincide; no interference.'),
+            ('fig3a', 'Fig. 3(a): 2PE, axial, circular', 'θ = π: standing-wave fringes inside the θ = 0 envelope; θ = π/2 narrow.'),
+            ('fig3b', 'Fig. 3(b): 2CE, axial, circular', 'θ = π/2 short along z; θ = 0 and π coincide.'),
+            ('fig4a', 'Fig. 4(a): 2CE, θ = π/2, transverse, against Δλ', 'Δλ = 10, 39, 94 nm at λ_e = 350 nm: the spot widens slightly with Δλ.'),
+            ('fig4b', 'Fig. 4(b): 2CE, θ = π/2, axial, against Δλ', 'The DOF shortens slightly with Δλ.'),
+            ('fig5', 'Fig. 5: FWHM and DOF against Δλ', 'DOF: 0.7131 − 4.57×10⁻⁴ Δλ (paper: 0.7112 − 4.81×10⁻⁴ Δλ). FWHM slope 5.2×10⁻⁴ µm/nm, as plotted.'),
+            ('fig6a', 'Fig. 6(a): 2PE, transverse, annular', 'Current work with Eq. 6, |U₁ + U₂|⁴: side lobes lower than in the paper.'),
+            ('fig6b', 'Fig. 6(b): 2CE, transverse, annular', 'θ = π/2 wider with side lobes at ±0.95 µm; θ = 0 and π coincide.'),
+            ('fig7a', 'Fig. 7(a): 2PE, axial, annular', 'Current work with Eq. 6: θ = π/2 background 1/16; the paper shows about 0.25.'),
+            ('fig7b', 'Fig. 7(b): 2CE, axial, annular', 'θ = 0 and π flat (long DOF); θ = π/2 a 1 µm central spot.')):
+        cpanel(title_, key, f'{key}.png', line)
+    for key, title_, line in (
+            ('fig6a', 'Fig. 6(a) with the excitation |U₁ + U₂|²', 'Side lobes and the minimum 0.086 (paper: "not lower than 0.08") match.'),
+            ('fig7a', 'Fig. 7(a) with the excitation |U₁ + U₂|²', 'θ = π/2 background ≈ 0.25 as in the paper: Figs. 6a and 7a plot |U₁ + U₂|².')):
+        cpanel(title_, key, f'{key}_excitation.png', line)
+    words('Quoted values: paper against current work', [
+        'Match: F2c(x;0)/F2c(x;π/2) 0.75 → 0.75; F2c/a(x;0)/F2c/a(x;π/2) 0.82 → 0.77; F2c/a(z;π/2) spot ≈ 1 µm → 0.93 µm (zero-to-zero diameters).',
+        'Match with |U₁ + U₂|²: min F2p/a(x;π/2) 0.08 → 0.086; DOF F2c/F2p at π/2 ≈ 2 → 1.89; F2p/a 35% narrower than F2c/a → 34%.',
+        'Match (FWHM): F2c/a(x;0) 30% narrower than F2p(x;0) → 30%; F2c/a(x;π/2) 32% narrower than F2c(x;π/2) → 29%; FWHM +6% over 10–94 nm → 6.1%.',
+        'Not reproduced: F2p(x;π/2)/F2p(x;0) 0.67 → 0.49; F2c/F2p at π/2 "1.58× wider" → 2.2–3.0; DOF F2c/a 40% shorter than F2c → 30%.',
+        'Open: the measure of "central spot diameter" (FWHM or zero-to-zero) is not stated in the paper.'],
+        'Most quoted values come back; a few depend on the unstated width measure.', 'Quoted values.', size=13)
+    words('Next steps', ['Reproduce Fig. 8: Monte Carlo of both beams through a scattering slab (g = 0.9, h/d_s = 8), method of '
+                         'Blanca & Saloma (1998, 1999).', 'Extend to high NA (vector focus; water for crossed lenses).',
+                         'Extend to optical pulses with a time delay.'],
+          'Monte Carlo, high NA, pulses.', 'Next steps.', size=14)
+
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
 
@@ -1393,7 +1452,8 @@ for sl in prs.slides:
             im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
             ipart._blob = buf.getvalue()
         done.add(id(ipart))
-OUT = os.path.join(DIR, '2ce_meeting_2026-10-15.pptx' if SECTION == MEETING else f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
+OUT = os.path.join(DIR, {MEETING: '2ce_meeting_2026-10-15.pptx', 'cambaliza': '2ce_cambaliza_replication.pptx'}.get(
+    SECTION) or f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
 os.makedirs(os.path.join(DIR, 'pdfs'), exist_ok=True)
 ds.keynote_fonts()
 prs.save(OUT)
