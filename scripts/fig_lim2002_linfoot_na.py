@@ -97,25 +97,49 @@ def maps(pair, th, model, na):
     return xc, zc, F, C, Q
 
 
-if os.environ.get('GRID'):                          # 2 × 3: vector (top) and scalar (bottom) at NA 0.5, 0.7, 0.9; 2CE, θ = π
-    sym, k = 'F', 0
-    fig = plt.figure(figsize=(19.5, 13.0))
-    for r, model in enumerate(('vector', 'scalar')):
-        for c, na in enumerate((0.5, 0.7, 0.9)):
-            xc, zc, *M = maps('2ce', 'pi', model, na)
-            XC, ZC = np.meshgrid(xc, zc); lim = LIM_G = (-3, 1)
-            ax = fig.add_subplot(2, 3, 3 * r + c + 1, projection='3d')
-            ax.plot_surface(XC, ZC, np.clip(M[k], *lim), cmap='viridis', edgecolor='k', linewidth=0.2, rstride=1, cstride=1)
-            ax.set_zlim(*lim); ax.set_ylim(zc.max(), zc.min())
-            ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 3)); ax.set_zticks(np.arange(-3, 1.01, 1.0))
-            ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
-            ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
-            ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel('F', labelpad=14)
-            ax.set_title(f'{"Vector" if model == "vector" else "Scalar"}, NA {na:g}')
-            ax.view_init(elev=22, azim=120)
-    fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08, hspace=0.32)
-    fig.savefig(os.path.join(OUT, 'linfoot3d_F_2ce_pi_grid.png'), dpi=300, bbox_inches='tight')
-    print('Saved -> linfoot3d_F_2ce_pi_grid.png'); sys.exit(0)
+if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0.9 (Gaussian input with ALPHA_T=4)
+    NAS3 = (0.5, 0.7, 0.9)
+
+    def surf_grid(rows, name):
+        fig = plt.figure(figsize=(19.5, 13.0))
+        for r, (label, get) in enumerate(rows):
+            for c, na in enumerate(NAS3):
+                xc, zc, F = get(na)
+                XC, ZC = np.meshgrid(xc, zc)
+                ax = fig.add_subplot(2, 3, 3 * r + c + 1, projection='3d')
+                ax.plot_surface(XC, ZC, np.clip(F, -3, 1), cmap='viridis', edgecolor='k', linewidth=0.2, rstride=1, cstride=1)
+                ax.set_zlim(-3, 1); ax.set_ylim(zc.max(), zc.min())
+                ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 3)); ax.set_zticks(np.arange(-3, 1.01, 1.0))
+                ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
+                ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
+                ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel('F', labelpad=14)
+                ax.set_title(f'{label}, NA {na:g}'); ax.view_init(elev=22, azim=120)
+        fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08, hspace=0.32)
+        fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight'); plt.close(fig); print('Saved ->', name)
+
+    def diff_row(a, b, label, name):
+        d = []
+        for na in NAS3:
+            xc, zc, A = a(na); _, _, B = b(na); d.append((na, xc, zc, A - B))
+        lim = max(float(np.ceil(max(np.percentile(np.abs(x[3]), 98) for x in d) * 20) / 20), 0.05)
+        fig, axes = plt.subplots(1, 3, figsize=(21.0, 7.4))
+        for ax, (na, xc, zc, dM) in zip(axes, d):
+            pm = ax.pcolormesh(xc, zc, dM, cmap='RdBu_r', vmin=-lim, vmax=lim, shading='nearest', rasterized=True)
+            ax.contour(xc, zc, dM, levels=[0.0], colors='k', linewidths=1.5)
+            ax.set_box_aspect(1.0); ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 2))
+            ax.set_xlabel('x$_c$ (λ$_1$)'); ax.set_title(f'NA {na:g}')
+        axes[0].set_ylabel('z$_c$ (λ$_1$)')
+        fig.colorbar(pm, ax=list(axes), fraction=0.02, pad=0.02, extend='both').set_label(label)
+        fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight'); plt.close(fig); print('Saved ->', name)
+
+    cur = lambda model: (lambda na: tuple(maps('2ce', 'pi', model, na)[:3]))
+    uni = lambda na: (lambda d: (d['xc'], d['zc'], d['F']))(np.load(os.path.join(CACHE, f'2ce_pi_vector_na{na:g}.npz')))
+    surf_grid((('Vector', cur('vector')), ('Scalar', cur('scalar'))), f'linfoot3d_F_2ce_pi_grid{SUF}.png')
+    diff_row(cur('vector'), cur('scalar'), 'ΔF = vector − scalar', f'linfoot_diff3_F_2ce_pi{SUF}.png')
+    if AT:
+        surf_grid((('Uniform, vector', uni), ('Gaussian, vector', cur('vector'))), 'linfoot3d_F_2ce_pi_gauss_uniform.png')
+        diff_row(cur('vector'), uni, 'ΔF = Gaussian − uniform', 'linfoot_diff3_F_2ce_pi_gauss_uniform.png')
+    sys.exit(0)
 
 
 PANELS = (('scalar', 0.5, 'Scalar 2CE, NA 0.5'), ('vector', 0.7, 'Vector, NA 0.7'), ('vector', 0.9, 'Vector, NA 0.9'))

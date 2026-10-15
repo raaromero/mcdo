@@ -1168,16 +1168,16 @@ elif SECTION == 'pulses':
 elif SECTION == MEETING:
     title('Two-color excitation: progress report', '')
     words('Summary', [
-        'Offset for 20% loss against NA: ∝ 1/NA across the axis, 1/NA^2 along it (width and length of the focus). Paraxial '
-        'model within 5% up to NA 0.45; along the axis it is off by tan^2(α/2).',
-        'Air and water: same power laws; focus 1.4× longer in water at the same NA. Crossed lenses fit to NA 0.71 in air, '
+        'Extended the 2CE misalignment study to high NA (vector focus), water, Gaussian input and optical pulses.',
+        '– Offset for 20% loss: ∝ 1/NA across the axis, 1/NA^2 along it (width and length of the focus). Paraxial model within '
+        '5% up to NA 0.45; along the axis off by tan^2(α/2).',
+        '– Air and water: same power laws; focus 1.4× longer in water at the same NA. Crossed lenses fit to NA 0.71 in air, '
         '0.94 in water.',
-        'Fidelity: at high NA, F stays high over a smaller range of misalignments; vector and scalar differ more at NA 0.9.',
-        'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.',
-        'Continuous beams: a time delay is a phase; it shifts the 2PE fringes and leaves 2CE unchanged.',
-        'Optical pulses: 2CE counts photon pairs with ν_a + ν_b = ν_e, one photon from each pulse; shorter pulses, more pairs.'],
-        'Offsets follow the size of the focus; pulses add photon pairs and a time delay.',
-        'One line per section.', size=13)
+        '– Fidelity: at high NA, F high over a smaller range of misalignments; vector and scalar differ more at NA 0.9.',
+        '– Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.',
+        '– Continuous beams: a time delay is a phase; shifts the 2PE fringes, no change in 2CE.',
+        '– Optical pulses: 2CE counts photon pairs with ν_a + ν_b = ν_e, one photon from each pulse; shorter pulses, more pairs.'],
+        'Extended the misalignment study to high NA, water, Gaussian input and pulses.', 'One line per section.', size=15)
     geometry()
     def section(k, name, line):
         navy(f'{k}. {name}', [(line, 15, PALE)])
@@ -1231,24 +1231,33 @@ elif SECTION == MEETING:
         'F: similarity of misaligned and aligned PSF (1 = identical). Top: vector; bottom: scalar; NA 0.5, 0.7, 0.9.',
         'Vector: high-F region shrinks along z_c as NA grows.'],
         'At high NA the PSF keeps its shape over a smaller range of misalignments.', 'Axes in lambda_1.')
-    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff_F_2ce_pi.png'), [
-        'ΔF = F_{vector} − F_{scalar}, same NA. Red: vector higher; blue: lower.', 'Larger at NA 0.9 than at 0.7.'],
+    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff3_F_2ce_pi.png'), [
+        'ΔF = F_{vector} − F_{scalar}, same NA: 0.5, 0.7, 0.9. Red: vector higher; blue: lower.', 'Grows with NA.'],
         'At the same NA the vector and scalar fidelity differ, more at NA 0.9.', 'Same NA, same axes.')
 
     section(4, 'Gaussian input', 'Gaussian input (α_t = 4) against uniform input.')
-    wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), [
-        'Dim pupil edge → wider, longer focus.', 'Offsets 1.4× larger than with uniform input; same power laws.'],
-        'A Gaussian input gives 1.4 times larger offsets.', 'Blue: vector; red: scalar.')
-    wide('Offset for 20% loss, Gaussian input, θ = π/2', SL('tolerance_pi2_at4.png'), [
-        'Crossed lenses: both ∝ 1/NA^2, as with uniform input.', 'Above NA 0.71: water (open circles).'],
-        'Crossed lenses with a Gaussian input.', 'Blue: vector; red: scalar.')
-    wide('Scalar 2CE against vector 2CE, Gaussian input', SL('deviation_at4.png'), [
-        'Difference in T below 5% up to NA 0.525 (uniform input: 0.45).', 'Dim pupil edge: fewer high-angle rays, closer to paraxial.'],
-        'With a Gaussian input the paraxial model holds to a higher NA.', 'Same definition as for uniform input.')
-    wide('Fidelity, Gaussian input: 2CE, θ = π', SL('linfoot3d_F_2ce_pi_at4.png'), [
-        'Scalar NA 0.5, vector NA 0.7 and 0.9, Gaussian input.', 'Smoother, changes less with NA than with uniform input.'],
+    wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_media_pi_at4.png'), [
+        'Dim pupil edge → wider, longer focus; offsets 1.4× larger than with uniform input.', 'Same power laws; insets as for uniform input.'],
+        'A Gaussian input gives 1.4 times larger offsets.', 'Blue: vector; red: scalar; filled: air; open: water.')
+    wide('Offset for 20% loss, Gaussian input, θ = π/2', SL('tolerance_media_pi2_at4.png'), [
+        'Crossed lenses: both ∝ 1/NA^2, as with uniform input.', 'Air to NA 0.71; water to 0.94.'],
+        'Crossed lenses with a Gaussian input.', 'Blue: vector; red: scalar; filled: air; open: water.')
+    wide('Scalar 2CE against vector 2CE, Gaussian input', SL('deviation_media_at4.png'), [
+        'Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA; black: tan^2(α/2).',
+        'Below 5% to NA 0.525 in air (uniform input: 0.45): dim pupil edge, fewer high-angle rays.'],
+        'With a Gaussian input the paraxial model holds to a higher NA.', 'Same axes as for uniform input.')
+    wide('Fidelity, Gaussian input: 2CE, θ = π', SL('linfoot3d_F_2ce_pi_grid_at4.png'), [
+        'Top: vector; bottom: scalar; NA 0.5, 0.7, 0.9.', 'Smoother and changes less with NA than with uniform input.'],
         'Gaussian input: fidelity changes less with NA.', 'Axes in lambda_1.')
-
+    wide('Fidelity, vector − scalar, Gaussian input: 2CE, θ = π', SL('linfoot_diff3_F_2ce_pi_at4.png'), [
+        'ΔF = F_{vector} − F_{scalar}, same NA, Gaussian input.', 'Smaller than with uniform input at the same NA.'],
+        'Gaussian input: vector and scalar fidelity closer.', 'Same NA, same axes.')
+    wide('Fidelity, Gaussian vs uniform input: vector, θ = π', SL('linfoot3d_F_2ce_pi_gauss_uniform.png'), [
+        'Top: uniform input; bottom: Gaussian input; vector, NA 0.5, 0.7, 0.9.', 'Gaussian: high-F region larger at each NA.'],
+        'A Gaussian input keeps the PSF shape over a larger range.', 'Axes in lambda_1.')
+    wide('Fidelity, Gaussian − uniform input: vector, θ = π', SL('linfoot_diff3_F_2ce_pi_gauss_uniform.png'), [
+        'ΔF = F_{Gaussian} − F_{uniform}, vector, same NA.', 'Red: Gaussian input higher.'],
+        'Fidelity difference from the input alone.', 'Same NA, same axes.')
     section(5, 'Time delay, continuous beams', 'A time delay is a phase on each field.')
     wide('Time delay with continuous beams', PD('phase_delay.png'), [
         'Delay Δt → phase φ = ωΔt on the field (φ = π: half an optical period, 1.17 fs at 700 nm).',
@@ -1310,7 +1319,7 @@ elif SECTION == MEETING:
     for sl_ in list(prs.slides)[n0:]:
         sl_._element.set('show', '0')                  # hidden: closed form in progress
 
-    navy('Next steps', [('Optical pulses with a time delay.', 15, PALE)])
+    navy('Next steps', [('Time delay between optical pulses.', 15, PALE)])
     words('Time delay between two pulses', [
         'Each laser emits a train of short pulses; the two trains are synchronized.',
         'Δt: arrival of pulse 2 at the focus after pulse 1, set by the path of beam 2 (1 µm longer → 3.34 fs).',
@@ -1335,11 +1344,12 @@ elif SECTION == MEETING:
         elif i in (3, 4):
             shape(s, MSO_SHAPE.LEFT_ARROW, l - 0.4, tp + 0.42, 0.35, 0.3, NAVY)
     notes(s, 'Steps of the pulsed 2CE calculation with a time delay.', ' '.join(BOX))
-    words('Next steps', ['Optical pulses with a time delay: 2CE PSF against Δt and τ (steps above).',
-                         'Closed form of the pulsed PSF for Gaussian pulses (in progress).',
-                         'Paper draft: main point, offsets follow the size of the focus; sub-points, larger focus (water, '
+    s._element.set('show', '0')                         # hidden: steps of the running calculation
+    words('Next steps', ['Run the time delay between optical pulses (currently running).',
+                         'Derive the closed form of the pulsed PSF for Gaussian pulses.',
+                         'Draft the paper: main point, offsets follow the size of the focus; sub-points, larger focus (water, '
                          'Gaussian input) and optical pulses.'],
-          'Pulses with a delay, closed form, paper draft.', 'Next steps.', size=14)
+          'Run pulses with a delay, derive the closed form, draft the paper.', 'Next steps.', size=14)
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()

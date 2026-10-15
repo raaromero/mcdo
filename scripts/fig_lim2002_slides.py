@@ -156,9 +156,9 @@ def air_water(key):
 
 
 # ── 20% tolerances in air and water, vector and scalar, lines only; inset where scalar and vector part ──
-def tolerance_media(key):
-    a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
-    w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
+def tolerance_media(key, suf=''):
+    a = rows(os.path.join(D, f'na_breakdown{suf}_{key}.csv'))
+    w = rows(os.path.join(D, f'na_breakdown{suf}_n1.33_{key}.csv'))
     a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
     w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
     fig, axes = plt.subplots(1, 2, figsize=(16.4, 7.6))
@@ -174,16 +174,20 @@ def tolerance_media(key):
                 ins.plot(d[k, 0], d[k, col - 2], 's', color=RED, ms=3 + big / 2, mfc=fc or RED, mew=1, ls='')
                 ins.plot(d[k, 0], d[k, col], 'o', color=BLUE, ms=3 + big / 2, mfc=fc or BLUE, mew=1, ls='')
             f = (d[:, 0] >= 0.1 - 1e-9) & (d[:, 0] <= 0.5 + 1e-9)      # power law where scalar and vector agree
+            if f.sum() < 3:
+                continue
             sl, ic = np.polyfit(np.log(d[f, 0]), np.log(d[f, col]), 1)
             ax.plot(d[:, 0], np.exp(ic) * d[:, 0] ** sl, ls, color='k', lw=1.5, zorder=1)
             if d is a:
                 p_air = sl
         ax.axvline(1.0, color='#777777', lw=1.5, ls=':')
-        ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=20, zorder=6)
+        if not suf:
+            ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=20, zorder=6)
         for ins, (lo, hi), name in insets:
             if hi > 1:
                 ins.axvline(1.0, color='#777777', lw=1.5, ls=':')
-                ins.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=14, zorder=6)
+                if not suf:
+                    ins.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=14, zorder=6)
             ins.set_xlim(lo - 0.02 * (hi - lo), hi + 0.02 * (hi - lo))
             ins.tick_params(labelsize=16)
             if hi < 1:                                   # low NA: log scale over a decade, the points coincide
@@ -208,16 +212,16 @@ def tolerance_media(key):
     fig.legend(h, ['Vector, air' + (' (to NA 0.71)' if key == 'pi2' else ''), 'Vector, water', 'Scalar, air', 'Scalar, water'],
                loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.09), frameon=False)
     plt.tight_layout()
-    save(fig, f'tolerance_media_{key}.png')
+    save(fig, f'tolerance_media_{key}{suf}.png')
 
 
 # ── scalar against vector in air and in water, at the same NA points ──
-def deviation_media():
+def deviation_media(suf=''):
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
     dev = lambda a, col: 100 * np.abs(a[:, col - 2] / a[:, col] - 1)
     for ax, key in zip(axes, ('pi', 'pi2')):
-        a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
-        w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
+        a = rows(os.path.join(D, f'na_breakdown{suf}_{key}.csv'))
+        w = rows(os.path.join(D, f'na_breakdown{suf}_n1.33_{key}.csv'))
         a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
         w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
         for col, c in ((3, BLUE), (4, '#9467bd')):
@@ -242,7 +246,7 @@ def deviation_media():
     fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33',
                    'Small-angle phase error: tan$^2$(α/2)'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
-    save(fig, 'deviation_media.png')
+    save(fig, f'deviation_media{suf}.png')
 
 
 # ── how far the paraxial scalar tolerance departs from the vector one ──
