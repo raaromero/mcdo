@@ -50,7 +50,8 @@ def rows(pattern):
     if not out:
         return None
     a = np.concatenate(out)
-    return a[np.argsort(a[:, 0])]
+    _, i = np.unique(np.round(a[:, 0], 4), return_index=True)   # an NA computed in two files counts once
+    return a[i]
 
 
 def save(fig, name):
@@ -118,12 +119,15 @@ def tolerance(key, suf, n):
 
 
 # ── air against water at the same NA (vector, uniform input); crossed lenses in air only up to NA 0.71 ──
+FIT = (0.1, 0.7)                         # the same NA range in both media, where crossed lenses fit in air
+
+
 def air_water(key):
     a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
     w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
     if a is None or w is None:
         return
-    a = a[(a[:, 0] >= 0.3 - 1e-9) & (a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.95) + 1e-9)]
+    a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
     w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
     alln = np.concatenate([a[:, 0], w[:, 0]])
     fig, axes = plt.subplots(1, 2, figsize=WIDE)
@@ -133,11 +137,11 @@ def air_water(key):
         ax.plot(w[:, 0], w[:, col], 'o', color=BLUE, ms=10, mfc='none', mew=2.5, label='Water, n = 1.33')
         txt = []
         for d, ls, med in ((a, '-', 'air'), (w, '--', 'water')):
-            s = d[(d[:, 0] >= 0.5 - 1e-9) & (d[:, 0] <= 0.7 + 1e-9)]
+            s = d[(d[:, 0] >= FIT[0] - 1e-9) & (d[:, 0] <= FIT[1] + 1e-9)]
             sl, ic = np.polyfit(np.log(s[:, 0]), np.log(s[:, col]), 1)
             ax.plot(s[:, 0], np.exp(ic) * s[:, 0] ** sl, ls, color='k', lw=3)
             txt.append(f'{med}: NA$^{{{sl:.2f}}}$')
-        ax.axvspan(0.5, 0.7, color='#e6e6e6', lw=0, zorder=0, label='NA 0.5–0.7, both media')
+        ax.axvspan(*FIT, color='#e6e6e6', lw=0, zorder=0, label=f'fit range, NA {FIT[0]:g}–{FIT[1]:g}')
         logaxes(ax, alln)
         ax.set_xlim(alln.min() / 1.1, alln.max() * 1.05)
         ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5)))
@@ -149,6 +153,90 @@ def air_water(key):
     fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
     save(fig, f'air_water_{key}.png')
+
+
+# ── 20% tolerances in air and water, vector and scalar, lines only; inset where scalar and vector part ──
+def tolerance_media(key):
+    a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
+    w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
+    a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
+    w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
+    fig, axes = plt.subplots(1, 2, figsize=(16.4, 7.6))
+    for ax, col, lab in ((axes[0], 3, 'x'), (axes[1], 4, 'z')):
+        # two linear insets: low NA (scalar and vector agree) lower left, high NA (they part) upper right
+        insets = ((ax.inset_axes([0.14, 0.09, 0.30, 0.30]), (0.03, 0.15), 'Low NA'),
+                  (ax.inset_axes([0.64, 0.62, 0.32, 0.32]), (0.4, 1.2), 'High NA'))
+        for d, fc, ls, big in ((w, 'white', '--', 3), (a, None, '-', 0)):   # water open rings under air dots
+            ax.plot(d[:, 0], d[:, col - 2], 's', color=RED, ms=5 + big, mfc=fc or RED, mew=1.2, ls='')
+            ax.plot(d[:, 0], d[:, col], 'o', color=BLUE, ms=5 + big, mfc=fc or BLUE, mew=1.3, ls='')
+            for ins, (lo, hi), _ in insets:
+                k = (d[:, 0] >= lo - 1e-9) & (d[:, 0] <= hi + 1e-9)
+                ins.plot(d[k, 0], d[k, col - 2], 's', color=RED, ms=3 + big / 2, mfc=fc or RED, mew=1, ls='')
+                ins.plot(d[k, 0], d[k, col], 'o', color=BLUE, ms=3 + big / 2, mfc=fc or BLUE, mew=1, ls='')
+            f = (d[:, 0] >= 0.1 - 1e-9) & (d[:, 0] <= 0.5 + 1e-9)      # power law where scalar and vector agree
+            sl, ic = np.polyfit(np.log(d[f, 0]), np.log(d[f, col]), 1)
+            ax.plot(d[:, 0], np.exp(ic) * d[:, 0] ** sl, ls, color='k', lw=1.5, zorder=1)
+        ax.axvline(1.0, color='#777777', lw=1.5, ls=':')
+        ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=20, zorder=6)
+        for ins, (lo, hi), name in insets:
+            if hi > 1:
+                ins.axvline(1.0, color='#777777', lw=1.5, ls=':')
+                ins.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=14, zorder=6)
+            ins.set_xlim(lo - 0.02 * (hi - lo), hi + 0.02 * (hi - lo))
+            ins.yaxis.tick_right(); ins.tick_params(labelsize=16)
+            if hi < 1:                                   # low NA: log scale over a decade, the points coincide
+                ins.set_xscale('log'); ins.set_yscale('log'); ins.set_xlim(lo / 1.1, hi * 1.1)
+                ins.set_xticks([0.03, 0.1])
+                for a_ in (ins.xaxis, ins.yaxis):
+                    a_.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+                    a_.set_minor_formatter(matplotlib.ticker.NullFormatter())
+                ins.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5), numticks=10))
+            else:
+                ins.set_ylim(0, None); ins.set_xticks([0.5, 1.0])
+                ins.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+            ins.set_title(name, fontsize=18, pad=3); ins.grid(alpha=0.3)
+        logaxes(ax, np.concatenate([a[:, 0], w[:, 0]]))
+        ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)
+        ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5) if lab == 'x' else (1,)))
+        ax.set_title(f'Along {lab}$_c$'); ax.set_xlabel('NA')
+    axes[0].set_ylabel('Offset for 20% loss (µm)')
+    L = matplotlib.lines.Line2D
+    h = [L([], [], color=BLUE, ls='', marker='o', ms=10), L([], [], color=BLUE, ls='', marker='o', ms=10, mfc='white'),
+         L([], [], color=RED, ls='', marker='s', ms=9), L([], [], color=RED, ls='', marker='s', ms=9, mfc='white')]
+    fig.legend(h, ['Vector, air' + (' (to NA 0.71)' if key == 'pi2' else ''), 'Vector, water', 'Scalar, air', 'Scalar, water'],
+               loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.09), frameon=False)
+    plt.tight_layout()
+    save(fig, f'tolerance_media_{key}.png')
+
+
+# ── scalar against vector in air and in water, at the same NA points ──
+def deviation_media():
+    fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
+    dev = lambda a, col: 100 * np.abs(a[:, col - 2] / a[:, col] - 1)
+    for ax, key in zip(axes, ('pi', 'pi2')):
+        a = rows(os.path.join(D, f'na_breakdown_{key}.csv'))
+        w = rows(os.path.join(D, f'na_breakdown_n1.33_{key}.csv'))
+        a = a[a[:, 0] <= (AIR_LIM if key == 'pi2' else 0.99) + 1e-9]
+        w = w[w[:, 0] <= (WATER_LIM if key == 'pi2' else 1.2) + 1e-9]
+        for col, c in ((3, BLUE), (4, '#9467bd')):
+            ax.plot(a[:, 0], dev(a, col), '-', color=c, lw=4)
+            ax.plot(w[:, 0], dev(w, col), '--', color=c, lw=4)
+        for t in (5, 10):
+            ax.axhline(t, color='#999999', lw=2, ls=':')
+        ax.set_xscale('log'); ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)        # the NA axis of the tolerance figures
+        ax.set_xticks([0.03, 0.1, 0.3, 1.0])
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.axvline(1.0, color='#777777', lw=1.5, ls=':')
+        ax.set_title({'pi': 'θ = π', 'pi2': 'θ = π/2'}[key]); ax.set_xlabel('NA'); ax.set_ylim(0, 50)
+    axes[0].set_ylabel('|T$_{scalar}$/T$_{vector}$ − 1| (%)')
+    L = matplotlib.lines.Line2D
+    h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='k', lw=4),
+         L([], [], color='k', lw=4, ls='--')]
+    fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33'],
+               loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.12), frameon=False)
+    plt.tight_layout()
+    save(fig, 'deviation_media.png')
 
 
 # ── how far the paraxial scalar tolerance departs from the vector one ──

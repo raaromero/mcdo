@@ -245,7 +245,8 @@ def lens_problem():
               'most 45°.')
     figure(s, os.path.join(os.path.dirname(FIG), 'na_crossing_limit.png'), 0.45, 1.3, 9.1, 3.2)
     h = equation(s, 0.55, 4.6, 5.2, r'\alpha \leq \theta/2 \;\Leftrightarrow\; \mathrm{NA} \leq n\sin(\theta/2)', 17)
-    bullets(s, 5.9, 4.6, 3.6, 0.7, ['θ = π/2: NA 0.71 in air, 0.94 in water. Above NA 0.71 our crossed lenses are in water.'], 10.5)
+    bullets(s, 5.9, 4.6, 3.6, 0.7, ['Any lens: NA = n sin α ≤ n, so NA < 1 in air. θ = π/2: NA 0.71 in air, 0.94 in water; above '
+                                     'NA 0.71 our crossed lenses are in water.'], 11)
     notes(s, 'Crossed lenses fit up to NA n sin(theta/2).',
           'Each lens fills a cone of half-angle alpha, sin alpha = NA/n. Two cones meeting at a right angle overlap once their '
           'half-angles exceed 45 degrees: NA 0.71 in air, 0.94 in water. Above NA 0.71 the crossed lenses are computed in '
@@ -1168,8 +1169,8 @@ elif SECTION == MEETING:
     title('Two-color excitation: progress report', 'Vector 2CE at high NA and optical pulses, starting from the model of '
           'Lim & Saloma (2002)')
     words('Summary', [
-        'High NA: with the vector focus the 20% alignment tolerances follow power laws in NA, about 1/NA across the axis and '
-        '1/NA^2 along it; the paraxial model holds to NA 0.45.',
+        'High NA: the 20% alignment tolerances follow power laws in NA, about 1/NA across the axis and 1/NA^2 along it, as '
+        'the width and length of the focus do. Above NA 0.5 the paraxial model overestimates the tolerance along the axis.',
         'Water: two crossed lenses fit side by side up to NA 0.71 in air and 0.94 in water; above NA 0.71 our crossed lenses '
         'are in water. Water keeps the power laws, with a focus about 1.4 times longer at the same NA.',
         'Gaussian input: the dim edge of the pupil enlarges the focus, giving about 1.4 times larger tolerances with the same '
@@ -1187,17 +1188,28 @@ elif SECTION == MEETING:
     def section(k, name, line):
         navy(f'{k}. {name}', [(line, 15, PALE)])
 
-    section(1, 'High NA: power laws', 'The 20% tolerances against NA, vector 2CE against scalar 2CE.')
-    wide('20% tolerances against NA, θ = π', SL('tolerance_pi.png'), [
-        'The 20% tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. Across the axis it falls close to 1/NA, '
-        'as the width of the focus does; along the axis close to 1/NA^2, as its length does.'],
-        'The tolerances follow the width and length of the focus.',
-        'Blue: vector 2CE; red: scalar 2CE; star: the tolerance reported at NA 0.5.')
-    wide('Scalar 2CE against vector 2CE', SL('deviation.png'), [
-        'The paraxial model of the paper agrees with the vector focus within 5% up to NA 0.45. Above it, its longer focus '
-        'overestimates the tolerance along the axis.'],
-        'The paraxial model holds to NA 0.45.', 'Difference between the scalar and vector 20% tolerances against NA.')
-
+    section(1, 'High NA: power laws', 'Last time: the replication of Lim & Saloma (2002), paraxial scalar 2CE at NA 0.5. Here: the same 20% tolerances at high NA with the vector focus, in air and in water.')
+    lens_problem()
+    wide('20% tolerances against NA, θ = π', SL('tolerance_media_pi.png'), [
+        'The tolerance is the misalignment of O′ that reduces the 2CE peak by 20%. It follows power laws in NA: about 1/NA '
+        'across the axis and 1/NA^2 along it, as the width and length of the focus do. Insets: above NA 0.5 the paraxial '
+        'scalar model parts from the vector one, along the axis first; air ends at NA 1.'],
+        'The tolerances follow power laws in NA set by the width and length of the focus.',
+        'Blue: vector; red: paraxial scalar; filled: air; open: water, at the same NA points. Lines: power laws fitted over '
+        'NA 0.1 to 0.5. Star: the value reported by Lim and Saloma at NA 0.5. In air NA = sin alpha cannot exceed 1.')
+    wide('20% tolerances against NA, θ = π/2', SL('tolerance_media_pi2.png'), [
+        'Crossed lenses: both tolerances fall close to 1/NA^2, because both misalignments run along the length of one of the '
+        'beams. Air ends at NA 0.71, where the two crossed lenses stop fitting; water continues to NA 0.94.'],
+        'Crossed lenses: both tolerances follow the length of the focus.',
+        'Blue: vector; red: paraxial scalar; filled: air, up to NA 0.71; open: water. Lines: power laws fitted over NA 0.1 to '
+        '0.5. Star: the value reported by Lim and Saloma at NA 0.5.')
+    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), [
+        'Relative difference of the 20% tolerances, |T_{scalar}/T_{vector} − 1|, at the same NA. In air the paraxial model '
+        'agrees within 5% up to NA 0.45; in water up to about NA 0.6, because the difference is set by the cone angle, '
+        'sin α = NA/n. Along the axis it departs first.'],
+        'The paraxial model holds to NA 0.45 in air and to about 0.6 in water.',
+        'T = 20% tolerance, the offset of O prime that reduces the 2CE peak by 20%. Solid: air; dashed: water; same NA points. '
+        'Crossed lenses in air up to NA 0.71.')
     wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), [
         'Linfoot’s fidelity F compares the misaligned PSF with the aligned one (1 when identical). At high NA, F stays high '
         'over a smaller range of misalignments than scalar 2CE predicts.'],
@@ -1209,23 +1221,16 @@ elif SECTION == MEETING:
         'vector higher; blue: vector lower; black line: no difference. The difference grows from NA 0.7 to NA 0.9.'],
         'At the same NA the vector and scalar fidelity differ, more at NA 0.9.',
         'The scalar PSF has the same shape at every NA in units of the spot; the vector PSF changes shape as NA grows.')
-    section(2, 'Water as the medium', 'Why crossed lenses need water above NA 0.71, and air against water at the same NA.')
-    lens_problem()
-    wide('20% tolerances against NA, θ = π/2', SL('tolerance_pi2.png'), [
-        'With crossed lenses both tolerances fall close to 1/NA^2, because both misalignments run along the length of one of '
-        'the beams. Two crossed lenses fit in air up to NA 0.71; above it they are in water (open circles).'],
-        'Crossed lenses: both tolerances follow the length of the focus.',
-        'Blue: vector 2CE; red: scalar 2CE; open circles: water, n = 1.33.')
+    section(2, 'Air and water at the same NA', 'The same power laws in both media; in water the focus is longer at the same NA.')
     wide('20% tolerances in air and water, θ = π', SL('air_water_pi.png'), [
         'At the same NA the tolerance across the axis is the same in air and water, and along the axis it is about 1.4 times '
-        'larger in water. The power laws are the same; in water the departure from the paraxial law starts at 1.33 times '
-        'the NA.'],
+        'larger in water. Fitted over the same NA range, 0.1–0.7, the power laws are the same in both media.'],
         'Water keeps the power laws and enlarges the tolerance along the axis.',
-        'Filled: air; open: water. Lines: power-law fits over NA 0.5 to 0.7.')
+        'Filled: air; open: water, at the same NA points. Lines: power-law fits over NA 0.1 to 0.7.')
 
     wide('20% tolerances in air and water, θ = π/2', SL('air_water_pi2.png'), [
         'Crossed lenses: at the same NA both tolerances are about 1.4 times larger in water, because both follow the length '
-        'of the focus. Both media follow about 1/NA^2.'],
+        'of the focus. Fitted over NA 0.1–0.7, both media follow about 1/NA^2.'],
         'Crossed lenses: water keeps the power laws.', 'Filled: air, up to NA 0.71; open: water. Lines: power-law fits.')
     section(3, 'Gaussian input', 'A Gaussian input (α_t = 4) against uniform input.')
     wide('20% tolerances, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), [
