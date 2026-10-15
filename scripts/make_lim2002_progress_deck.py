@@ -187,14 +187,14 @@ def eqslide(title, takeaway, eqs, main, script, latex, side=None, fig=None, size
 
 
 ZB = r'z_b = (x - x_c)\sin\theta + (z - z_c)\cos\theta, \qquad x_b = (x - x_c)\cos\theta - (z - z_c)\sin\theta'
-UPAR = r'U(u,v) \propto e^{ikz}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho'
+UPAR = r'U(u,v) \propto e^{i n k_0 z}\, 2\int_0^1 J_0(v\rho)\, e^{-iu\rho^2/2}\,\rho\, d\rho'
 
 
 def scalar_fields():
     eqslide('Field equations: scalar 2CE', 'Each beam is the paraxial scalar Debye field; beam 2 is the same field rotated by θ '
             'and centred at O′.', [
         (UPAR, 'r, z = distance from the focus across and along the axis; ρ = radius in the pupil over its edge.'),
-        (r'u = \frac{k\,\mathrm{NA}^2 z}{n}, \qquad v = k\,\mathrm{NA}\, r, \qquad k = \frac{2\pi n}{\lambda}',
+        (r'u = \frac{k_0\,\mathrm{NA}^2 z}{n}, \qquad v = k_0\,\mathrm{NA}\, r, \qquad k_0 = \frac{2\pi}{\lambda}',
          'u, v = axial and transverse optical coordinates; λ = vacuum wavelength; n = refractive index.'),
         (ZB, 'x_b, z_b = coordinates of beam 2, rotated by θ about O′ = (x_c, z_c).'),
         (r'F_{2c} = \kappa_{2c}\, I_1 I_2, \qquad F_{2p} = \kappa_{2p}\, |U_1 + U_2|^4', 'I = |U|^2; 2CE multiplies the two '
@@ -1184,6 +1184,13 @@ elif SECTION == MEETING:
 
     section(1, 'Offset for 20% loss against NA', 'Extended to high NA, vector focus.')
     lens_problem()
+    scalar_fields()
+    eqslide('Field equations: vector 2CE (Richards–Wolf)', 'Exact phase of each ray and all three field components.', [
+        (EVEC, 'E = focal field for input polarized along x; φ = angle about the axis; unpolarized = mean of x and y input.'),
+        (IM, 'β = ray angle; r, z = distance from the focus; A(β) = pupil amplitude (1 uniform, Gaussian for α_t = 4); '
+             '√cos β = aplanatic factor; k = 2πn/λ.'),
+        (GM, 'α = half-angle of the focusing cone; m = 0, 1, 2.')],
+        'The vector Richards–Wolf field.', 'At low NA it reduces to the paraxial scalar field.', '\n'.join((EVEC, IM, GM)), size=15)
     words('Scalar and vector focal fields at the same NA', [
         'Scalar (paraxial): small-angle phase k n z sin²θ/2; no polarization.',
         'Vector (Richards–Wolf): exact phase k n z cos θ; field components E_x, E_y, E_z; pupil weight √cos θ.',
