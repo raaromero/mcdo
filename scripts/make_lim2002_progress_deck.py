@@ -1166,85 +1166,107 @@ elif SECTION == 'pulses':
           size=12.5)
 
 elif SECTION == MEETING:
-    title('Two-color excitation: progress report', 'Vector 2CE at high NA and optical pulses, starting from the model of '
-          'Lim & Saloma (2002)')
-    words('Summary', ['Offset against NA: offset for 20% peak loss ∝ 1/NA across the axis, 1/NA^2 along it, as the width and length of the focus. Paraxial model within 5% up to NA 0.45.', 'Water: crossed lenses fit to NA 0.71 in air, 0.94 in water. Same power laws; focus 1.4× longer at the same NA.', 'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.', 'Continuous beams: a time delay shifts the 2PE fringes, no change in 2CE. Timing in 2CE needs pulses.', 'Photon pairs: 2CE counts pairs with ν_a + ν_b = ν_e. Pulsed PSF = continuous-beam PSF × pair probability × overlap in time.', 'Time delay between pulses: 2CE peak falls with the delay; 20% lost at Δt = 0.4 τ with crossed lenses.'],
-        'The tolerances follow the size of the focus; with pulses, the timing adds a tolerance set by the pulse duration.',
-        'At high NA the tolerances follow power laws set by the focus. Water and a Gaussian input enlarge the focus. With '
-        'continuous beams timing does nothing to 2CE; with pulses, the photon pairs that reach the transition count, and a '
-        'delay between the pulses has its own tolerance.', size=13)
+    title('Two-color excitation: progress report', '')
+    words('Summary', [
+        'Offset for 20% loss against NA: ∝ 1/NA across the axis, 1/NA^2 along it (width and length of the focus). Paraxial '
+        'model within 5% up to NA 0.45; along the axis it is off by tan^2(α/2).',
+        'Air and water: same power laws; focus 1.4× longer in water at the same NA. Crossed lenses fit to NA 0.71 in air, '
+        '0.94 in water.',
+        'Fidelity: at high NA, F stays high over a smaller range of misalignments; vector and scalar differ more at NA 0.9.',
+        'Gaussian input: wider, longer focus; offsets 1.4× larger, same power laws.',
+        'Continuous beams: a time delay is a phase; it shifts the 2PE fringes and leaves 2CE unchanged.',
+        'Optical pulses: 2CE counts photon pairs with ν_a + ν_b = ν_e, one photon from each pulse; shorter pulses, more pairs.'],
+        'Offsets follow the size of the focus; pulses add photon pairs and a time delay.',
+        'One line per section.', size=13)
     geometry()
     def section(k, name, line):
         navy(f'{k}. {name}', [(line, 15, PALE)])
 
-    section(1, 'Offset for 20% loss against NA', 'Last time: replication of Lim & Saloma (2002), paraxial scalar, NA 0.5. Now: high NA, vector focus, air and water.')
+    section(1, 'Offset for 20% loss against NA', 'Extended to high NA, vector focus.')
     lens_problem()
-    wide('Offset for 20% loss against NA, θ = π', SL('tolerance_media_pi.png'), ['T: offset of O′ for 20% loss of the 2CE peak. Across ∝ 1/NA (focus width); along ∝ 1/NA^2 (focus length).', 'Insets: scalar = vector at low NA; scalar above vector at high NA, along z first.'],
-        'The tolerances follow power laws in NA set by the width and length of the focus.',
-        'Blue: vector; red: paraxial scalar; filled: air; open: water, at the same NA points. Lines: power laws fitted over '
-        'NA 0.1 to 0.5. Star: the value reported by Lim and Saloma at NA 0.5. In air NA = sin alpha cannot exceed 1.')
-    wide('Offset for 20% loss against NA, θ = π/2', SL('tolerance_media_pi2.png'), ['Crossed lenses: both ∝ 1/NA^2, both misalignments along the length of a beam.', 'Air to NA 0.71 (lenses fit); water to 0.94.'],
-        'Crossed lenses: both tolerances follow the length of the focus.',
-        'Blue: vector; red: paraxial scalar; filled: air, up to NA 0.71; open: water. Lines: power laws fitted over NA 0.1 to '
-        '0.5. Star: the value reported by Lim and Saloma at NA 0.5.')
-    PL1 = r'T_x = A_x\,\mathrm{NA}^{-p_x}, \qquad T_z = A_z\,\mathrm{NA}^{-p_z}'
-    PL2 = r'\theta = \pi:\quad p_x = 0.99,\; p_z = 2.04 \;\text{(air)}; \qquad p_x = 0.99,\; p_z = 2.02 \;\text{(water)}'
-    PL3 = r'\theta = \pi/2:\quad p_x = 2.03,\; p_z = 2.04 \;\text{(air)}; \qquad p_x = p_z = 2.02 \;\text{(water)}'
-    PL4 = r'\text{width of the focus} \propto \frac{\lambda}{\mathrm{NA}}, \qquad \text{length} \propto \frac{n\lambda}{\mathrm{NA}^2}'
-    eqslide('Power laws of T', 'Fit over NA 0.1–0.5, where scalar = vector: exponents 1 and 2, as the width and length of the focus.', [
-        (PL1, 'T_x, T_z = offsets for 20% loss across and along the axis (vector 2CE); A, p = fitted prefactor and exponent.'),
-        (PL2, 'facing lenses: across the axis as 1/NA, along it as 1/NA^2, in air and in water.'),
-        (PL3, 'crossed lenses: both as 1/NA^2, since both misalignments run along the length of a beam.'),
-        (PL4, 'the scaling of the focus; at the same NA the focus in water is n = 1.33 times longer, and A_z is 1.38 times '
-              'larger in water.')],
-        'The tolerances scale as 1/NA across and 1/NA^2 along, like the focus.',
-        'Power-law fits of the vector tolerances over NA 0.1 to 0.5.', '\n'.join((PL1, PL2, PL3, PL4)), size=15)
-    wide('Scalar 2CE against vector 2CE', SL('deviation_media.png'), ['Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA.', 'Along z: tan^2(α/2), sin α = NA/n (black). At NA 0.5: 7% in air, 4% in water.'],
-        'The paraxial model holds to NA 0.45 in air and to about 0.6 in water.',
-        'Solid: air; dashed: water; same NA points. Crossed lenses in air up to NA 0.71. The difference is set by the cone '
-        'angle, sin alpha = NA/n, so water reaches it at 1.33 times the NA.')
-    SA1 = r'\text{exact: } k n z\,(1 - \cos\theta), \qquad \text{paraxial: } k n z\,\frac{\sin^2\theta}{2}'
-    SA2 = r'\frac{\text{paraxial length}}{\text{exact length}} = \frac{2(1 - \cos\alpha)}{\sin^2\alpha} = \frac{2}{1 + \cos\alpha}'
-    SA3 = r'\text{Difference in } T = \frac{2}{1+\cos\alpha} - 1 = \tan^2\frac{\alpha}{2}, \qquad \sin\alpha = \frac{\mathrm{NA}}{n}'
-    eqslide('Difference in T from the small-angle phase', 'Paraxial phase along the axis: focus too long by 2/(1 + cos α).', [
-        (SA1, 'axial phase of the ray at angle θ to the axis, exact and small-angle (paraxial scalar model).'),
-        (SA2, 'the paraxial phase grows more slowly along z, so the paraxial focus is longer.'),
-        (SA3, 'no free parameter. NA 0.5: 7.2% (computed 7.1%) in air, 3.8% (3.8%) in water. 5% at α = 25°: NA 0.42 in air, '
-              '0.56 in water.')],
-        'The along-axis difference is tan^2(alpha/2): the small-angle phase.', 'Derivation of the along-axis difference.',
-        '\n'.join((SA1, SA2, SA3)), size=15)
+    words('Scalar and vector focal fields at the same NA', [
+        'Scalar (paraxial): small-angle phase k n z sin²θ/2; no polarization.',
+        'Vector (Richards–Wolf): exact phase k n z cos θ; field components E_x, E_y, E_z; pupil weight √cos θ.',
+        'Across the axis: same width, ≈ λ/NA; polarization widens the vector spot slightly along the field.',
+        'Along the axis: paraxial focus longer by 2/(1 + cos α): 7% at NA 0.5, 39% at NA 0.9 (air).'],
+        'Same NA: same width; the paraxial focus is longer along the axis.', 'Scalar against vector focal fields.', size=14)
     wide('Focal field along the axis at NA 0.8, θ = π', SL('profiles_pi_na0.8.png'), [
         'Aligned 2CE spot, three focal fields. Across: all agree. Along: paraxial longer.',
         'Scalar with the exact phase = vector: the small-angle phase causes the difference.'],
         'The small-angle phase, not polarization, lengthens the paraxial focus.',
         'Paraxial scalar, scalar Debye with the exact phase, and vector.')
-    wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi.png'), ['F: similarity of misaligned and aligned PSF (1 = identical).', 'High NA: F high over a smaller range of misalignments.'],
-        'At high NA the PSF keeps its shape over a smaller range of misalignments.',
-        'Scalar 2CE at NA 0.5, then vector 2CE at NA 0.7 and 0.9.')
+    wide('Offset for 20% loss against NA, θ = π', SL('tolerance_media_pi.png'), [
+        'T: offset of O′ for 20% loss of the 2CE peak. Lines: power law, fit NA 0.1–0.5.',
+        'Insets: scalar = vector at low NA; scalar above vector at high NA, along z first.'],
+        'The offsets follow power laws in NA set by the width and length of the focus.',
+        'Blue: vector; red: paraxial scalar; filled: air; open: water. Star: value of the paper at NA 0.5. Air ends at NA 1.')
+    wide('Offset for 20% loss against NA, θ = π/2', SL('tolerance_media_pi2.png'), [
+        'Crossed lenses: both ∝ 1/NA^2, both misalignments along the length of a beam.', 'Air to NA 0.71 (lenses fit); water to 0.94.'],
+        'Crossed lenses: both offsets follow the length of the focus.',
+        'Blue: vector; red: paraxial scalar; filled: air, up to NA 0.71; open: water.')
+    SA1 = r'\text{exact: } k n z\,(1 - \cos\theta), \quad \text{paraxial: } k n z\,\frac{\sin^2\theta}{2}'
+    SA2 = r'\frac{\text{paraxial length}}{\text{exact length}} = \frac{2}{1 + \cos\alpha}'
+    SA3 = r'\frac{|T_{\mathrm{scalar}} - T_{\mathrm{vector}}|}{T_{\mathrm{vector}}} \approx \tan^2\frac{\alpha}{2}, \quad \sin\alpha = \frac{\mathrm{NA}}{n}'
+    s = slide('Scalar 2CE against vector 2CE', '')
+    figure(s, SL('deviation_media.png'), 0.4, 0.95, 5.6, 4.3)
+    t = 1.05
+    for tex, wh in ((SA1, 'axial phase of a ray at angle θ'), (SA2, 'small-angle phase: focus too long'),
+                    (SA3, 'black curves; α = half-angle of the cone')):
+        t += equation(s, 6.15, t, 3.4, tex, 13) + 0.02
+        t += where(s, 6.2, t, 3.3, wh) + 0.12
+    bullets(s, 6.15, t + 0.05, 3.4, 1.2, ['T: offset for 20% loss. At NA 0.5: 7% in air, 4% in water along z.'], 11)
+    notes(s, 'The along-axis difference is tan^2(alpha/2), from the small-angle phase.',
+          'Same sinc^2 along the axis, stretched by 2/(1 + cos alpha); no free parameter.', '\n'.join((SA1, SA2, SA3)))
 
-    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff_F_2ce_pi.png'), ['ΔF = F_{vector} − F_{scalar}, same NA. Red: vector higher; blue: lower.', 'Larger at NA 0.9 than at 0.7.'],
-        'At the same NA the vector and scalar fidelity differ, more at NA 0.9.',
-        'The scalar PSF has the same shape at every NA in units of the spot; the vector PSF changes shape as NA grows.')
-    section(2, 'Air and water at the same NA', 'Same power laws in air and water; longer focus in water at the same NA.')
-    wide('Offset for 20% loss in air and water, θ = π', SL('air_water_pi.png'), ['Same NA: across, equal in air and water; along, 1.4× larger in water.', 'Same power laws (fit NA 0.1–0.7).'],
-        'Water keeps the power laws and enlarges the tolerance along the axis.',
-        'Filled: air; open: water, at the same NA points. Lines: power-law fits over NA 0.1 to 0.7.')
+    section(2, 'Air and water at the same NA', 'Same power laws; longer focus in water at the same NA.')
+    wide('Offset for 20% loss in air and water, θ = π', SL('air_water_pi.png'), [
+        'Same NA: across, equal in air and water; along, 1.4× larger in water.', 'Same power laws (fit NA 0.1–0.7).'],
+        'Water keeps the power laws and enlarges the offset along the axis.', 'Filled: air; open: water.')
+    wide('Offset for 20% loss in air and water, θ = π/2', SL('air_water_pi2.png'), [
+        'Crossed lenses: both 1.4× larger in water at the same NA.', 'Same power laws, ∝ 1/NA^2 (fit NA 0.1–0.7).'],
+        'Crossed lenses: water keeps the power laws.', 'Filled: air, up to NA 0.71; open: water.')
 
-    wide('Offset for 20% loss in air and water, θ = π/2', SL('air_water_pi2.png'), ['Crossed lenses: both 1.4× larger in water at the same NA.', 'Same power laws, ∝ 1/NA^2 (fit NA 0.1–0.7).'],
-        'Crossed lenses: water keeps the power laws.', 'Filled: air, up to NA 0.71; open: water. Lines: power-law fits.')
-    section(3, 'Gaussian input', 'Gaussian input (α_t = 4) against uniform input.')
-    wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), ['Dim pupil edge → wider, longer focus.', 'Offsets 1.4× larger than with uniform input; same power laws.'],
-        'A Gaussian input gives about 1.4 times larger tolerances.', 'Blue: vector 2CE; red: scalar 2CE; α_t = 4.')
+    section(3, 'Fidelity against NA', 'Linfoot fidelity F of the misaligned 2CE PSF, vector and scalar.')
+    wide('Fidelity: 2CE, θ = π', SL('linfoot3d_F_2ce_pi_grid.png'), [
+        'F: similarity of misaligned and aligned PSF (1 = identical). Top: vector; bottom: scalar; NA 0.5, 0.7, 0.9.',
+        'Vector: high-F region shrinks along z_c as NA grows.'],
+        'At high NA the PSF keeps its shape over a smaller range of misalignments.', 'Axes in lambda_1.')
+    wide('Fidelity, vector − scalar at the same NA: 2CE, θ = π', SL('linfoot_diff_F_2ce_pi.png'), [
+        'ΔF = F_{vector} − F_{scalar}, same NA. Red: vector higher; blue: lower.', 'Larger at NA 0.9 than at 0.7.'],
+        'At the same NA the vector and scalar fidelity differ, more at NA 0.9.', 'Same NA, same axes.')
 
-    section(4, 'Time delay, continuous beams', 'Time delay with continuous beams: 2PE changes, 2CE does not.')
-    wide('Time delay with continuous beams', PD('phase_delay.png'), ['Delay as phase φ = ωΔt (φ = π: half an optical period, 1.17 fs at 700 nm).', '2PE (adds fields): fringes shift. 2CE (multiplies intensities): no change, so it needs pulses.'],
-        'A time delay changes 2PE, not continuous-beam 2CE.', 'Peak lost and fidelity against the phase of the delay.')
-    section(5, 'Photon pairs', 'Which wavelength pairs, one from each pulse, reach 350 nm.')
-    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), ['(a) Spectrum of each pulse, 20 fs. (b) Pairs adding to 350 nm: 750 nm photon (red axis), partner (blue axis).', 'Shorter pulses: more pairs.'],
-        'The pairs that reach the transition, from the two pulse spectra.',
-        'Continuous beams have the single pair 750 + 656 nm.')
+    section(4, 'Gaussian input', 'Gaussian input (α_t = 4) against uniform input.')
+    wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_pi_at4.png'), [
+        'Dim pupil edge → wider, longer focus.', 'Offsets 1.4× larger than with uniform input; same power laws.'],
+        'A Gaussian input gives 1.4 times larger offsets.', 'Blue: vector; red: scalar.')
+    wide('Offset for 20% loss, Gaussian input, θ = π/2', SL('tolerance_pi2_at4.png'), [
+        'Crossed lenses: both ∝ 1/NA^2, as with uniform input.', 'Above NA 0.71: water (open circles).'],
+        'Crossed lenses with a Gaussian input.', 'Blue: vector; red: scalar.')
+    wide('Scalar 2CE against vector 2CE, Gaussian input', SL('deviation_at4.png'), [
+        'Difference in T below 5% up to NA 0.525 (uniform input: 0.45).', 'Dim pupil edge: fewer high-angle rays, closer to paraxial.'],
+        'With a Gaussian input the paraxial model holds to a higher NA.', 'Same definition as for uniform input.')
+    wide('Fidelity, Gaussian input: 2CE, θ = π', SL('linfoot3d_F_2ce_pi_at4.png'), [
+        'Scalar NA 0.5, vector NA 0.7 and 0.9, Gaussian input.', 'Smoother, changes less with NA than with uniform input.'],
+        'Gaussian input: fidelity changes less with NA.', 'Axes in lambda_1.')
+
+    section(5, 'Time delay, continuous beams', 'A time delay is a phase on each field.')
+    wide('Time delay with continuous beams', PD('phase_delay.png'), [
+        'Delay Δt → phase φ = ωΔt on the field (φ = π: half an optical period, 1.17 fs at 700 nm).',
+        '2PE ∝ |E₁ + E₂|⁴: interference term carries φ → fringes shift. 2CE ∝ |E₁|²|E₂|²: φ cancels → no change.'],
+        'A time delay changes 2PE through its fringes; 2CE does not change.', 'Peak lost and fidelity against the phase.')
+
+    section(6, 'Optical pulses', 'A pulse holds a range of wavelengths; 2CE needs one photon from each pulse.')
+    wide('Photon pairs at the two-photon resonance', SL('pairs_overlap.png'), [
+        'Joint probability: chance that the 750 nm pulse gives λ_a and the 656 nm pulse gives λ_b; independent lasers → p₁(λ_a)·p₂(λ_b).',
+        '(b): pairs with 1/λ_a + 1/λ_b = 1/350 nm. Shorter pulses: more pairs.'],
+        'The pairs that reach the transition, from the two pulse spectra.', 'Continuous beams: the single pair 750 + 656 nm.')
+    wide('Pairs that reach 350 nm', SL('pair_line.png'), [
+        'Shading: joint probability of any pair, 20 fs. Line: pairs with 1/λ_a + 1/λ_b = 1/λ_e.',
+        'Pairs on the 350 nm line excite the transition.'],
+        'The line of pairs with the same total photon energy.', 'Dashed: 345 and 355 nm.')
+    n0 = len(prs.slides)
     PT = r'I_i(P, t) = I_i^{\mathrm{CW}}(P)\, \exp\left(-\frac{4\ln 2\,(t - t_i)^2}{\tau^2}\right), \qquad t_1 = \frac{n z_{b,1}}{c}, \quad t_2 = \frac{n z_{b,2}}{c} + \Delta t'
-    eqslide('Closed form, term 1: the continuous-beam PSF', 'Each pulse: continuous-beam focus, passing P at its own time.', [
+    eqslide('Working on: closed form, term 1: the continuous-beam PSF', 'Each pulse: continuous-beam focus, passing P at its own time.', [
         (r'F_{2c}^{\mathrm{CW}}(P) \propto I_1^{\mathrm{CW}}(P)\; I_2^{\mathrm{CW}}(P)', 'the 2CE PSF of the paper: the '
          'product of the two focused intensities.'),
         (PT, 'pulse i at P: the continuous-beam intensity times a Gaussian in time of FWHM τ, centred on the time t_i at which '
@@ -1253,7 +1275,7 @@ elif SECTION == MEETING:
         'The spatial part is the continuous-beam focus; the pulse adds a Gaussian envelope in time.',
         r'F^{CW} \propto I_1^{CW} I_2^{CW}' + '\n' + PT, size=15)
     T2M = r'\int P(\nu_a)\, d\nu_a \;\propto\; \exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right), \qquad \delta = \nu_e - (\nu_1 + \nu_2)'
-    eqslide('Closed form, term 2: the pair probability', 'Resonant pair: energies add to the transition; independent lasers.', [
+    eqslide('Working on: closed form, term 2: the pair probability', 'Resonant pair: energies add to the transition; independent lasers.', [
         (R1M := r'h\nu_a + h\nu_b = h\nu_e \;\Leftrightarrow\; \frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{\lambda_e}',
          'two-photon resonance; ν = c/λ.'),
         (R2M := r'p_i(\nu) \propto \exp\left(-\frac{4\ln 2\,(\nu - \nu_i)^2}{\Delta\nu^2}\right), \qquad \Delta\nu = \frac{0.441}{\tau}',
@@ -1264,7 +1286,7 @@ elif SECTION == MEETING:
               '750 + 656 nm → 350 nm.')],
         'Term 2: the probability that a pair of photons reaches the transition.',
         'Resonance, the two spectra, their product, and the sum over pairs.', '\n'.join((R1M, R2M, R3M, T2M)), size=14)
-    eqslide('Closed form, term 3: the overlap in time', 'One photon from each pulse at P at the same time.', [
+    eqslide('Working on: closed form, term 3: the overlap in time', 'One photon from each pulse at P at the same time.', [
         (r'O(P, \Delta t) = \int I_1(P, t)\, I_2(P, t)\, dt = I_1^{\mathrm{CW}} I_2^{\mathrm{CW}} \int e^{-a (t-t_1)^2} '
          r'e^{-a (t-t_2)^2} dt, \quad a = \frac{4\ln 2}{\tau^2}', 'overlap in time at P, with term 1 substituted.'),
         (r'(t-t_1)^2 + (t-t_2)^2 = 2\left(t - \bar{t}\right)^2 + \frac{(t_1 - t_2)^2}{2}, \qquad \bar{t} = \frac{t_1+t_2}{2}',
@@ -1278,55 +1300,47 @@ elif SECTION == MEETING:
           r'\underbrace{\exp\left(-\frac{2\ln 2\,\delta^2}{\Delta\nu^2}\right)}_{\text{term 2}}\; '
           r'\underbrace{\exp\left(-\frac{2\ln 2\,(t_1 - t_2)^2}{\tau^2}\right)}_{\text{term 3}}')
     T12 = r't_1 - t_2 = \frac{n\,(z_{b,1} - z_{b,2})}{c} - \Delta t'
-    eqslide('Closed form: the three terms combined', 'Pulsed PSF = term 1 × term 2 × term 3, for Gaussian pulses.', [
+    eqslide('Working on: closed form, combined', 'Pulsed PSF = term 1 × term 2 × term 3, for Gaussian pulses.', [
         (CF, 'continuous-beam PSF × probability that a pair reaches ν_e (the same at all points) × overlap in time.'),
         (T12, 'difference of the arrival times at P: it sets where the pulses meet; Δt moves that place.'),
         (r'\tau \to \infty:\quad F_{2c} \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}', 'long pulses recover the '
          'continuous-beam result of the paper.')],
         'Pulsed PSF = term 1 × term 2 × term 3.', 'The three terms of the previous slides, multiplied.',
         '\n'.join((CF, T12)), size=15)
-    section(6, 'Time delay between pulses', 'Time delay between the two pulses.')
-    wide('Peak against the time delay', SL('pairs_time_peak.png'), ['Δt in units of τ (pulse FWHM). Crossed: peak follows the overlap at the focus.', 'Facing, 10–20 fs: PSF moves with the plane where the pulses meet; less peak lost.'],
-        'The peak falls with the delay; facing lenses with short pulses lose less.',
-        'Aligned foci; tau = 10, 20 and 100 fs.')
-    wide('Time delay for 20% loss', SL('pairs_time_tolerance.png'), ['Crossed: 0.40 τ at all NA (4 fs at 10 fs, 40 fs at 100 fs).', 'Facing, 10 fs: larger at low NA, toward 0.40 τ at high NA.'],
-        'The time tolerance is set by the pulse duration.', 'Delay that reduces the 2CE peak by 20%, in units of tau.')
-    navy('Next steps', [('Polarization, the dye, and the paper draft.', 15, PALE)])
-    words('Next steps', DECIDE + ['Paper draft: one main point (tolerances follow the size of the focus) and two sub-points '
-          '(larger focus: water and Gaussian input; pulses: photon pairs and the time delay).'],
-          'Two points to settle, then the paper draft.',
-          'The polarization of the beams, the dye that weights the photon pairs, and the structure of the paper.')
+    for sl_ in list(prs.slides)[n0:]:
+        sl_._element.set('show', '0')                  # hidden: closed form in progress
 
-    navy('Backup', [('Replication of Lim & Saloma (2002), and Fig. 4(a) and fidelity against NA.', 15, PALE)])
-    s = slide('Replication: Fig. 4(a), 2CE, θ = π', '')
-    label(s, 0.45, 0.95, 4.45, 'Lim & Saloma (2002)')
-    label(s, 5.1, 0.95, 4.45, 'Current work', PURPLE)
-    figure(s, os.path.join(ORIG, 'orig_fig4a.png'), 0.45, 1.2, 4.45, 3.8)
-    figure(s, os.path.join(PAN, 'fig4_peak_p1.png'), 5.1, 1.2, 4.45, 3.8)
-    bullets(s, 0.6, 5.04, 8.3, 0.3, ['Peak of the 2CE PSF against the misalignment of O′; the figures of the paper come back '
-                                     'from its equations, as in this example.'], 11)
-    notes(s, 'Fig. 4(a) of the paper next to ours.', 'The same panel computed from the equations of the paper; the other '
-          'figures match in the same way.')
-    words('Replication: results of the abstract', [
-        'Crossed beams, focus moved in the focal plane: the 2CE peak stays above 89% and decreases smoothly, while the 2PE peak '
-        'drops to 70% and partly recovers as its fringes pass through the focus.',
-        'Facing beams: the 2CE and 2PE peaks decrease at about the same rate.',
-        'Crossed beams, focus moved along the axis: the 2CE peak decreases steadily, while the 2PE peak rises and falls as the '
-        'fringes pass.',
-        'Three things differ from the printed paper: the panels labelled C in Figs. 5–6 show Q; Eq. (2) reproduces the numbers '
-        'when applied as a rotation in space; and the bottom row of Fig. 6 matches θ = 0 rather than θ = π/2.'],
-        'The three comparisons of the abstract hold; three details of the printed paper differ.',
-        'Each comparison in the abstract comes out the same way. The differences are in labels and in how Eq. (2) is applied, '
-        'not in the conclusion.')
-    wide('Fig. 4(a) against NA: 2CE, θ = π', SL('map_fig4a.png'), [
-        'Peak against the misalignment of O′, from scalar 2CE at NA 0.5 to vector 2CE at NA 0.7 and 0.9: the region that keeps '
-        'the peak shrinks as NA grows, most of all along the axis.'],
-        'The region that keeps the peak shrinks with NA.', 'Contours in percent of the peak; orange: 50 percent.')
-    wide('Fig. 4(a) at the same NA: 2CE, θ = π', SL('map_fig4a_samena.png'), [
-        'Scalar 2CE and vector 2CE at the same NA, 0.7 and 0.9, so the difference is the model alone. The scalar region that '
-        'keeps the peak is longer along the axis, and the difference grows from NA 0.7 to 0.9.'],
-        'At the same NA the paraxial model keeps the peak over a longer range along the axis.',
-        'Same NA, same axes; contours in percent of the peak.')
+    navy('Next steps', [('Optical pulses with a time delay.', 15, PALE)])
+    words('Time delay between two pulses', [
+        'Each laser emits a train of short pulses; the two trains are synchronized.',
+        'Δt: arrival of pulse 2 at the focus after pulse 1, set by the path of beam 2 (1 µm longer → 3.34 fs).',
+        'A pulse (no chirp) carries all its wavelengths throughout: the spectrum gives which wavelengths, the envelope '
+        '(FWHM τ) gives when.',
+        'Δt = 0: the pulses overlap at the focus. Δt ≫ τ: no pair forms there.'],
+        'Delay = arrival of pulse 2 after pulse 1 at the focus.', 'What is delayed, and which wavelengths are present.', size=14)
+    s = slide('Optical pulses with a time delay: steps', '')
+    BOX = ['Pulse spectra: 750 and 656 nm, duration τ', 'Pairs λ_a + λ_b reaching 350 nm (joint probability)',
+           'Focus each wavelength (vector field)', 'Delay pulse 2 by Δt: phase e^{iωΔt} per wavelength',
+           'Add the pairs at each point → 2CE PSF(Δt)', 'Offset and delay for 20% loss; fidelity']
+    for i, txt in enumerate(BOX):
+        r, c = divmod(i, 3)
+        c = c if r == 0 else 2 - c                      # snake: left to right, then right to left
+        l, tp = 0.6 + c * 3.05, 1.3 + r * 1.9
+        shape(s, MSO_SHAPE.ROUNDED_RECTANGLE, l, tp, 2.6, 1.15, CARD, NAVY, 1.25)
+        text(s, l + 0.1, tp + 0.08, 2.4, 1.0, f'{i + 1}. {txt}', 13, NAVY, anchor=ds.MSO_ANCHOR.MIDDLE)
+        if i in (0, 1):
+            shape(s, MSO_SHAPE.RIGHT_ARROW, l + 2.65, tp + 0.42, 0.35, 0.3, NAVY)
+        elif i == 2:
+            shape(s, MSO_SHAPE.DOWN_ARROW, l + 1.15, tp + 1.2, 0.3, 0.6, NAVY)
+        elif i in (3, 4):
+            shape(s, MSO_SHAPE.LEFT_ARROW, l - 0.4, tp + 0.42, 0.35, 0.3, NAVY)
+    notes(s, 'Steps of the pulsed 2CE calculation with a time delay.', ' '.join(BOX))
+    words('Next steps', ['Optical pulses with a time delay: 2CE PSF against Δt and τ (steps above).',
+                         'Closed form of the pulsed PSF for Gaussian pulses (in progress).',
+                         'Paper draft: main point, offsets follow the size of the focus; sub-points, larger focus (water, '
+                         'Gaussian input) and optical pulses.'],
+          'Pulses with a delay, closed form, paper draft.', 'Next steps.', size=14)
+
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
 

@@ -97,6 +97,27 @@ def maps(pair, th, model, na):
     return xc, zc, F, C, Q
 
 
+if os.environ.get('GRID'):                          # 2 × 3: vector (top) and scalar (bottom) at NA 0.5, 0.7, 0.9; 2CE, θ = π
+    sym, k = 'F', 0
+    fig = plt.figure(figsize=(19.5, 13.0))
+    for r, model in enumerate(('vector', 'scalar')):
+        for c, na in enumerate((0.5, 0.7, 0.9)):
+            xc, zc, *M = maps('2ce', 'pi', model, na)
+            XC, ZC = np.meshgrid(xc, zc); lim = LIM_G = (-3, 1)
+            ax = fig.add_subplot(2, 3, 3 * r + c + 1, projection='3d')
+            ax.plot_surface(XC, ZC, np.clip(M[k], *lim), cmap='viridis', edgecolor='k', linewidth=0.2, rstride=1, cstride=1)
+            ax.set_zlim(*lim); ax.set_ylim(zc.max(), zc.min())
+            ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 3)); ax.set_zticks(np.arange(-3, 1.01, 1.0))
+            ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
+            ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
+            ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel('F', labelpad=14)
+            ax.set_title(f'{"Vector" if model == "vector" else "Scalar"}, NA {na:g}')
+            ax.view_init(elev=22, azim=120)
+    fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08, hspace=0.32)
+    fig.savefig(os.path.join(OUT, 'linfoot3d_F_2ce_pi_grid.png'), dpi=300, bbox_inches='tight')
+    print('Saved -> linfoot3d_F_2ce_pi_grid.png'); sys.exit(0)
+
+
 PANELS = (('scalar', 0.5, 'Scalar 2CE, NA 0.5'), ('vector', 0.7, 'Vector, NA 0.7'), ('vector', 0.9, 'Vector, NA 0.9'))
 LIM = {'F': (-3, 1), 'C': (0, 3), 'Q': (0, 1)}       # C rises above 1 for a broader misaligned PSF
 for pair in ('2ce', '2pe'):

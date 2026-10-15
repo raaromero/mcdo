@@ -176,6 +176,8 @@ def tolerance_media(key):
             f = (d[:, 0] >= 0.1 - 1e-9) & (d[:, 0] <= 0.5 + 1e-9)      # power law where scalar and vector agree
             sl, ic = np.polyfit(np.log(d[f, 0]), np.log(d[f, col]), 1)
             ax.plot(d[:, 0], np.exp(ic) * d[:, 0] ** sl, ls, color='k', lw=1.5, zorder=1)
+            if d is a:
+                p_air = sl
         ax.axvline(1.0, color='#777777', lw=1.5, ls=':')
         ax.plot(0.5, PAPER[(key, lab)], '*', color='k', ms=20, zorder=6)
         for ins, (lo, hi), name in insets:
@@ -198,7 +200,7 @@ def tolerance_media(key):
         logaxes(ax, np.concatenate([a[:, 0], w[:, 0]]))
         ax.set_xlim(0.03 / 1.1, 1.2 * 1.05)
         ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5) if lab == 'x' else (1,)))
-        ax.set_title(f'Along {lab}$_c$'); ax.set_xlabel('NA')
+        ax.set_title(f'Along {lab}$_c$:  ∝ NA$^{{{p_air:.2f}}}$'); ax.set_xlabel('NA')
     axes[0].set_ylabel('Offset for 20% loss (µm)')
     L = matplotlib.lines.Line2D
     h = [L([], [], color=BLUE, ls='', marker='o', ms=10), L([], [], color=BLUE, ls='', marker='o', ms=10, mfc='white'),
@@ -238,7 +240,7 @@ def deviation_media():
     h = [L([], [], color=BLUE, lw=4), L([], [], color='#9467bd', lw=4), L([], [], color='#777777', lw=4),
          L([], [], color='#777777', lw=4, ls='--'), L([], [], color='k', lw=1.5)]
     fig.legend(h, ['Across the axis (x$_c$)', 'Along the axis (z$_c$)', 'Air, n = 1', 'Water, n = 1.33',
-                   'tan$^2$(α/2), sin α = NA/n'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
+                   'Small-angle phase error: tan$^2$(α/2)'], loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.2), frameon=False)
     plt.tight_layout()
     save(fig, 'deviation_media.png')
 
