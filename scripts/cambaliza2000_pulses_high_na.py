@@ -198,11 +198,11 @@ def profiles():
            '20': ('#ff7f0e', '-', 3, 'τ = 20 fs'), '10': ('#d62728', '-', 3, 'τ = 10 fs')}
     for n, nas in PROF:
         tag = 'air' if n == 1 else 'water'
-        fig, axes = plt.subplots(3, len(nas), figsize=(22, 17), sharey=True)
+        fig, axes = plt.subplots(2, len(nas), figsize=(18.5, 6.9), sharey=True)
         for c, na in enumerate(nas):
             k0 = f'n{n:g}_na{na:g}_'
             zs = P[k0 + 'z']
-            for r, (sig, lab) in enumerate((('2PE', '2PE'), ('2CE_y', '2CE, y'), ('2CE_unpol', '2CE, unpolarized'))):
+            for r, (sig, lab) in enumerate((('2PE', '2PE'), ('2CE_y', '2CE'))):       # unpolarized 2CE: same on the axis
                 ax = axes[r, c]
                 for k in ('cw', '100', '20', '10'):
                     col, ls, lw, l = STY[k]
@@ -210,7 +210,7 @@ def profiles():
                     ax.plot(zs, v / v.max(), ls, color=col, lw=lw, label=l)
                 ax.set_xlim(zs[0], zs[-1]); ax.set_ylim(0, 1.0)
                 ax.set_title(f'{lab}, NA {na:g}')
-                if r == 2:
+                if r == 1:
                     ax.set_xlabel('z (µm)')
                 if c == 0:
                     ax.set_ylabel('Intensity')

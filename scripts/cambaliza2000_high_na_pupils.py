@@ -215,12 +215,12 @@ def figures():
     # 3. the paper's annular comparisons (pp. 31-32) against NA, vector (s) solid, scalar dashed, air and water
     P = np.pi / 2
     same, less, more = (lambda r: r), (lambda r: 1 - r), (lambda r: r - 1)
-    RAT = (('Fig. 6b: F2c/a(x;0) / F2c/a(x;π/2)', ('2CE', 'x', 0.0, EPS), ('2CE', 'x', P, EPS), 0.82, same),
-           ('p. 31: 1 − F2p/a(x;π/2) / F2c/a(x;π/2)', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
-           ('p. 32: 1 − DOF F2c/a(z;π/2) / F2c(z;π/2)', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
-           ('p. 32: DOF F2c/a(z;π/2) / F2p(z;π/2) − 1', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
-    fig, axes = plt.subplots(2, 2, figsize=(18.5, 12.5))
-    for ax, (lab, a, b, paper, tr) in zip(axes.ravel(), RAT):
+    RAT = (('Fig. 6b: x, θ = 0 / π/2', ('2CE', 'x', 0.0, EPS), ('2CE', 'x', P, EPS), 0.82, same),
+           ('p. 31: 2PE narrower', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
+           ('p. 32: DOF shorter', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
+           ('p. 32: DOF longer', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
+    fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
+    for ax, (lab, a, b, paper, tr) in zip(axes, RAT):
         for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
             for model, c, ls in (('s', '#1f77b4', '-'), ('scalar', '#d62728', '--')):
                 na_a, wa = sel(n, a[3], 0, a[0], a[1], a[2], model); na_b, wb = sel(n, b[3], 0, b[0], b[1], b[2], model)
@@ -230,46 +230,41 @@ def figures():
                         label=f'{"Vector" if model == "s" else "Scalar"}, {tag}')
         ax.plot([0.5], [paper], '*', color='k', ms=22, label='Paper (NA 0.5)')
         ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
-    save(fig, 'annular_quoted.png', axes.ravel(), 5)
+    save(fig, 'annular_quoted.png', axes, 5)
 
     # 4. Gaussian input (α_t = 4) / uniform: width ratio against NA, vector (s), circular and annular
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):
-        fig, axes = plt.subplots(2, 2, figsize=(18.5, 12.0), sharex=True)
+        fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
         for i, sig in enumerate(('2PE', '2CE')):
             for j, axis in enumerate(('x', 'z')):
-                ax = axes[i, j]
+                ax = axes[2 * i + j]
                 for n, ls, tag in ((1.0, '-o', 'air'), (1.33, '--s', 'water')):
                     for th in THETAS:
                         g, wg = sel(n, eps, AT, sig, axis, th, 's'); u, wu = sel(n, eps, 0, sig, axis, th, 's')
                         ax.plot(g, wg / wu, ls, color=TCOL[th], lw=3, ms=8, mfc=TCOL[th] if n == 1 else 'white',
                                 label=f'{TLAB[th]}, {tag}')
                 ax.axhline(1, color='#999999', lw=2, ls=':')
-                ax.set_title(f'{sig}, {"transverse FWHM" if axis == "x" else "DOF"}')
-                if i:
-                    ax.set_xlabel('NA')
-                if not j:
-                    ax.set_ylabel('Gaussian / uniform')
-        save(fig, f'gaussian_over_uniform_{etag}.png', axes.ravel(), 3)
+                ax.set_title(f'{sig}, {"FWHM" if axis == "x" else "DOF"}')
+                ax.set_xlabel('NA')
+        axes[0].set_ylabel('Gaussian / uniform')
+        save(fig, f'gaussian_over_uniform_{etag}.png', axes, 3)
 
     # 5. polarization: 2CE widths with unpolarized and p beams over s beams, circular, uniform
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):
-        fig, axes = plt.subplots(2, 2, figsize=(18.5, 12.0), sharex=True)
+        fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
         for i, model in enumerate(('unpol', 'p')):
             for j, axis in enumerate(('x', 'z')):
-                ax = axes[i, j]
+                ax = axes[2 * i + j]
                 for n, ls, tag in ((1.0, '-o', 'air'), (1.33, '--s', 'water')):
                     for th in THETAS:
                         a, wa = sel(n, eps, 0, '2CE', axis, th, model); b, wb = sel(n, eps, 0, '2CE', axis, th, 's')
                         ax.plot(a, wa / wb, ls, color=TCOL[th], lw=3, ms=8, mfc=TCOL[th] if n == 1 else 'white',
                                 label=f'{TLAB[th]}, {tag}')
                 ax.axhline(1, color='#999999', lw=2, ls=':')
-                ax.set_title(f'2CE {"transverse FWHM" if axis == "x" else "DOF"}, '
-                             f'{"unpolarized" if model == "unpol" else "p"} / s')
-                if i:
-                    ax.set_xlabel('NA')
-                if not j:
-                    ax.set_ylabel('Width ratio')
-        save(fig, f'polarization_2ce_{etag}.png', axes.ravel(), 3)
+                ax.set_title(f'{"FWHM" if axis == "x" else "DOF"}, {"unpol." if model == "unpol" else "p"} / s')
+                ax.set_xlabel('NA')
+        axes[0].set_ylabel('2CE width ratio')
+        save(fig, f'polarization_2ce_{etag}.png', axes, 3)
 
     # 6. polarization: vector / scalar 2CE width against NA, for s, p and unpolarized beams (circular, uniform)
     fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2), sharey=True)
@@ -290,7 +285,7 @@ def figures():
     E = pd.read_csv(DCSV)
     NCOL = {(1.0, 0.3): '#9467bd', (1.0, 0.5): 'k', (1.0, 0.7): '#1f77b4',
             (1.33, 0.5): '#ff7f0e', (1.33, 0.7): '#2ca02c', (1.33, 0.9): '#d62728'}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.4), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
         for (n, na), c in NCOL.items():
             for model, ls in (('s', '-o'), ('scalar', '--')):
@@ -298,9 +293,9 @@ def figures():
                 ax.plot(d.dl_nm, d.fwhm / d.fwhm.iloc[0], ls, color=c, lw=3 if model == 's' else 2.5, ms=8,
                         label=f'NA {na:g} {"air" if n == 1 else "water"}, {"vector" if model == "s" else "scalar"}')
         ax.set_xlabel('Δλ (nm)'); ax.set_xlim(0, 100)
-        ax.set_title(f'2CE θ = π/2, {"transverse FWHM" if axis == "x" else "DOF"} / value at 10 nm')
+        ax.set_title(f'2CE θ = π/2, {"FWHM" if axis == "x" else "DOF"} / value at 10 nm')
     axes[0].set_ylabel('Relative width')
-    save(fig, 'dlambda_vs_na.png', axes, 3)
+    save(fig, 'dlambda_vs_na.png', axes, 4)
 
     # numbers quoted on the slides
     L = []

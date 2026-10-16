@@ -1552,6 +1552,29 @@ elif SECTION == CMEETING:
         "300 um 0.004 / 0.005; 1 mm none. In current work the scattered light of both beams passes the focus, so the 2CE "
         "background stays 40-75% of the 2PE background.")
     chigh_na('2. High NA')
+    PU = os.path.join(CB, 'high_na', 'pupils')
+    wide('Annular pupils: depth of focus against NA, air', os.path.join(PU, 'annular_widths_air_z.png'), [
+        'With annular pupils (ε = 0.99) the paraxial depth of focus is too long at high NA: 2.2× at NA 0.9.'],
+        'Along the axis the paraxial model departs sooner with annular pupils.',
+        'Vector (Richards-Wolf) with the annulus sin(theta) >= eps sin(alpha) (sine condition), beams polarized along y. '
+        'Annular DOF (2CE, theta = 0), vector / scalar: 155 / 179 um at NA 0.5 (scalar 15% longer), 65 / 91 um at 0.7 '
+        '(39%), 25 / 55 um at 0.9 (125%). Water: 221 / 238 at 0.5, 54 / 73 at 0.9, 18 / 41 at 1.2. Annular over circular '
+        'DOF: 47x at NA 0.5, 42x at 0.7, 31x at 0.9 (paraxial: 1/(1 - eps^2) = 50). Spot across the axis: 0.70x the '
+        'circular one at all NA. theta = pi/2: set by the narrow transverse spot of the other beam, so scalar and vector '
+        'agree within 2%.')
+    wide('Annular comparisons of the paper against NA', os.path.join(PU, 'annular_quoted.png'), [
+        'Scalar and vector agree within 5% on the annular comparisons; two of them change with NA.'],
+        'Two annular comparisons stay fixed with NA; two shrink as NA grows.',
+        'Stars: values quoted at NA 0.5. Fig. 6b ratio 0.673 at all NA (paper 0.82; the replication gives 0.67 at NA '
+        '0.5). DOF of annular over circular 2CE at theta = pi/2: 30% shorter at all NA (paper 40%). 2PE narrower than '
+        '2CE at theta = pi/2: 52% at NA 0.5, 31% at 0.7 in air (paper 35%). Annular 2CE DOF over 2PE DOF at theta = '
+        'pi/2: +81% at NA 0.5, +27% at 0.7 in air (paper +20%).')
+    wide('Wavelength gap Δλ against NA (Figs. 4–5)', os.path.join(PU, 'dlambda_vs_na.png'), [
+        'The Δλ dependence of Figs. 4–5 holds from NA 0.3 to 0.9, in air and water.'],
+        'The wavelength gap changes the 2CE response by the same fraction at all NA.',
+        '2CE, theta = pi/2, circular pupils; 1/lambda1 + 1/lambda2 = 1/350 nm. From 10 to 94 nm the FWHM grows by 6.3% at '
+        'NA 0.3, 6.1% at 0.5, 5.7% at 0.7 (air), 5.8% at 0.9 (water); the DOF shrinks by 5.5% to 5.2%. Vector (y), '
+        'unpolarized and scalar within 0.3% of each other in this relative change.')
     navy('3. Optical pulses', [('Transform-limited pulses, zero delay.', 15, PALE)])
     wide('Axial response with pulses, NA 0.5, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
         'Short pulses shorten the 2CE depth of focus: from 3.6 µm to 1.9 µm at 10 fs.'],
@@ -1565,8 +1588,79 @@ elif SECTION == CMEETING:
             'Vector (Richards-Wolf), both beams polarized along y, zero delay. DOF = central-peak FWHM along z; '
             'pulsed over continuous. Widths (um), CW | 20 fs | 10 fs: '
             + '; '.join(l for l in open(os.path.join(PH, 'widths.txt')).read().splitlines()[1:] if ' z π |' in l))
-    words('Next steps', ['Choose the slab half-thickness h for Fig. 8.', 'Pulses with a time delay between them.'],
-          'Fig. 8 setting, time delay.', 'Next steps.', size=18)
+    for med, tag in (('air', 'NA 0.5, 0.7, 0.9'), ('water', 'NA 0.5, 0.9, 1.2')):
+        if os.path.exists(os.path.join(PH, f'axial_pi_{med}.png')):
+            wide(f'Axial response with pulses at high NA, {med}, θ = π', os.path.join(PH, f'axial_pi_{med}.png'), [
+                'Pulses shorten the 2CE response along the axis at low NA; at high NA the focus is already shorter.'],
+                'The pulse overlap matters where the focus is longer than it.',
+                f'Vector (Richards-Wolf), {tag}; rows: 2PE and 2CE, beams along y (unpolarized 2CE: the same on the axis). Continuous and '
+                'tau = 100, 20, 10 fs, zero delay; each curve normalized to its own peak.')
+    words('Next steps', ['Choose the slab half-thickness h for Fig. 8.', 'Choose the polarization of the beams for both '
+                         'studies (backup slides).', 'Pulses with a time delay between them.'],
+          'Fig. 8 setting, polarization, time delay.', 'Next steps.', size=18)
+    navy('Backup', [('Polarization, Gaussian input, and Lim & Saloma (2002) in water.', 15, PALE)])
+    wide('Polarization: 2CE widths, unpolarized and p over s', os.path.join(PU, 'polarization_2ce_circular.png'), [
+        'Unpolarized beams give a 2CE spot 3% wider than s beams at NA 0.5 and 15% wider at NA 0.9 (air).'],
+        'The polarization choice changes the widths at high NA.',
+        's: both beams along y, perpendicular to the plane of the axes (Part 2). p: both in that plane. Unpolarized: each '
+        'intensity averaged over s and p, as in the Lim & Saloma runs. Across the axis, unpolarized / s: 1.031 at NA 0.5, '
+        '1.069 at 0.7, 1.148 at 0.9 (air); 1.016, 1.063, 1.149 at NA 0.5, 0.9, 1.2 (water). Along the axis at theta = 0 '
+        'and pi: no change. At theta = pi/2 the DOF follows the transverse spot of beam 2: 1.032 at NA 0.5, 1.069 at 0.7.')
+    wide('Polarization: vector over scalar 2CE widths, θ = π', os.path.join(PU, 'polarization_vector_over_scalar.png'), [
+        'Against the scalar model the vector spot is narrower for s beams and wider for p and unpolarized beams.'],
+        'The scalar-vector agreement across the axis depends on the polarization.',
+        'Vector over scalar across the axis at NA 0.5, 0.7, 0.9 (air): s 0.988, 0.977, 0.945 (Part 2 numbers); '
+        'unpolarized 1.018, 1.041, 1.083; p up to 1.37 at 0.95. Along the axis the polarization does not change the '
+        'on-axis intensity, so the three DOF curves coincide: 0.93, 0.86, 0.73.')
+    wide('Gaussian input (α = 4) at high NA', os.path.join(PU, 'gaussian_over_uniform_circular.png'), [
+        'Gaussian input widens the 2CE spot and depth of focus by 1.5× at low NA, up to 1.6× at NA 0.9.'],
+        'A Gaussian input widens the 2CE responses by about half.',
+        'Truncated Gaussian exp(-alpha sin^2 theta / sin^2 alpha), alpha = 4, as in the Lim & Saloma runs; vector, s. 2CE '
+        'across the axis: 1.49 at NA 0.5, 1.52 at 0.9 (air). DOF: 1.48, 1.52, 1.63 at NA 0.5, 0.7, 0.9. 2PE at theta = '
+        'pi/2 and pi along the axis: set by the fringe, so no change (1.00) or shorter at high NA. Annular pupils: '
+        'gaussian_over_uniform_annular.png.')
+    if os.path.exists(os.path.join(PH, 'unpol', 'dof_pi.png')):
+        wide('Pulses at high NA, unpolarized beams', os.path.join(PH, 'unpol', 'dof_pi.png'), [
+            'With unpolarized beams the pulses shorten the depth of focus by the same amounts as with s beams.'],
+            'The pulse result does not depend on the polarization.',
+            '2CE unpolarized; 2PE stays s. Widths (um), CW | 20 fs | 10 fs: '
+            + '; '.join(l for l in open(os.path.join(PH, 'unpol', 'widths.txt')).read().splitlines()[1:]
+                        if ' z π |' in l and '2CE' in l))
+    LB = [('Lim & Saloma: fidelity in water, 2CE, θ = π', SL('linfoot3d_F_2ce_pi_vec_n1.33.png'),
+           'In water F stays above 0.8 over a 1.4–2× longer axial offset than in air at the same NA.',
+           'F over the offset of O′ (x_c, z_c in lambda_1), NA 0.5, 0.7, 0.9, n = 1.33, vector; with the scalar: '
+           'linfoot3d_F_2ce_pi_grid_n1.33.png. Axial half-width of F >= 0.8 (vector), air / water: 1.9 / 2.7 lambda_1 at NA 0.5, 0.8 / 1.3 at 0.7, '
+           '0.3 / 0.5 at 0.9; across the axis unchanged (0.32, 0.21, 0.16). The focus in water is longer at the same NA. '
+           'Gaussian input: linfoot3d_F_2ce_pi_grid_at4_n1.33.png.'),
+          ('Lim & Saloma: fidelity against NA, air and water, 2CE, θ = π',
+           os.path.join(FIG, 'fidelity', 'fidelity_na_2ce_pi_F.png'),
+           'In water the vector region F ≥ 0.8 stays closer to the scalar one: 12% shorter along the axis at NA 0.9 (air: 25%).',
+           'Open markers: water (n = 1.33), NA 0.5, 0.7, 0.9 added to 1.0-1.2. Offsets in spot units. Vector / scalar '
+           'half-width along z_c, air / water: 0.94 / 0.97 at NA 0.5, 0.87 / 0.93 at 0.7, 0.75 / 0.88 at 0.9; along x_c '
+           '1.11 / 1.05 at 0.9; area 0.83 / 0.92 at 0.9. Other cases: fidelity_na_{2ce,2pe}_{pi,pi2}[_at4]_{F,C,Q}.png.'),
+          ('Lim & Saloma: fidelity in water, 2CE, θ = π/2', SL('linfoot3d_F_2ce_pi2_vec_n1.33.png'),
+           'Crossed lenses: the region with F ≥ 0.8 has the same size in water as in air at NA 0.5 and 0.7.',
+           'n = 1.33; crossed lenses fit up to NA 0.94 in water. Fraction of the offset map with F >= 0.8 (vector): 0.020 '
+           'in air and water at NA 0.5 and 0.7; 0.020 in water at NA 0.9.'),
+          ('Lim & Saloma: 2PE fidelity, θ = π', SL('linfoot3d_F_2pe_pi_vec.png'),
+           'The 2PE fidelity follows the standing-wave fringes along the axis.',
+           'Air, vector, NA 0.5, 0.7, 0.9 (with the scalar: linfoot3d_F_2pe_pi_grid.png). Offsets in lambda_2p. θ = π/2: '
+           'linfoot3d_F_2pe_pi2_grid.png; water: _n1.33.'),
+          ('Lim & Saloma: time tolerance of pulses in water', SL('pairs_time_tolerance_water.png'),
+           'In water the time delay for a 20% loss follows the same trend with τ as in air.',
+           'Photon pairs, 2CE; delay for 20% peak loss against tau. Values: pairs_time_tolerance_water.csv.'),
+          ('Lim & Saloma: time tolerance with Gaussian input', SL('pairs_time_tolerance_gaussian.png'),
+           'With Gaussian input the time tolerance follows the same trend with τ as with uniform input.',
+           'Photon pairs, 2CE, alpha = 4. Values: pairs_time_tolerance_gaussian.csv.'),
+          ('Lim & Saloma: polarization in water and with Gaussian input', os.path.join(FIG, 'polarization_media.png'),
+           'Water and Gaussian input narrow the gap between polarizations: 13% and 12% at NA 0.9, against 32% in air.',
+           '2CE offset of O′ for 20% peak loss with s-s and p-p beams, over that with unpolarized beams (A). theta = pi along '
+           'x_c at NA 0.9, (p - s)/A: air uniform 0.32, water uniform 0.13, air Gaussian 0.12, water Gaussian 0.06. Along '
+           'z_c at theta = pi: no change; theta = pi/2: within 2% (5% at NA 0.95 in air). Full curves: '
+           'polarization_tolerances[_at4][_n1.33].png, polarization_quoted[_at4][_n1.33].png.')]
+    for ttl, path, line, note in LB:
+        if os.path.exists(path):
+            wide(ttl, path, [line], line, note)
     red({
         'Summary': ('the text differs',),
         'Model of the paper: Eqs. 1–6': ('Eq. 1 writes',),

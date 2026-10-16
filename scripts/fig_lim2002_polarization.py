@@ -155,3 +155,27 @@ for key in ('pi', 'pi2'):
                 r = a[np.isclose(a[:, 0], na)][0]
                 vals.append(f'{name.split(":")[0] + (name.split(":")[1][:4] if ":" in name else "")}: x {r[3]:.3f} z {r[4]:.3f}')
         print(f'{key} NA {na}:', ' | '.join(vals))
+
+# ── every medium and input at once: s and p tolerances over the unpolarized ones (run without ALPHA_T, N_MED) ──
+if not PFX:
+    MEDIA = (('', 'air, uniform', 'k', 'o'), ('_n1.33', 'water, uniform', '#1f77b4', 's'),
+             ('_at4', 'air, Gaussian', '#ff7f0e', '^'), ('_at4_n1.33', 'water, Gaussian', '#2ca02c', 'D'))
+    fig, axes = plt.subplots(1, 2, figsize=(18.2, 6.0), sharey=True)
+    for ax, (key, col, lab) in zip(axes, (('pi', 3, 'θ = π, along x$_c$'), ('pi2', 4, 'θ = π/2, along z$_c$'))):
+        for pfx, name, colr, mk in MEDIA:
+            A = rows(os.path.join(D, f'na_breakdown{pfx}_{key}.csv'))
+            for suf, ls, pl in (('_pols', '-', 's'), ('_polp', '--', 'p')):
+                B = rows(os.path.join(D, f'na_breakdown{pfx}{suf}_{key}.csv'))
+                if A is None or B is None:
+                    continue
+                nas = [na for na in B[:, 0] if np.any(np.isclose(A[:, 0], na))]
+                r = [B[np.isclose(B[:, 0], na)][0, col] / A[np.isclose(A[:, 0], na)][0, col] for na in nas]
+                ax.plot(nas, r, ls + mk, color=colr, lw=3, ms=11, mfc=colr if pl == 's' else 'white',
+                        label=f'{pl} / A, {name}')
+        ax.axhline(1, color='#999999', lw=2, ls=':')
+        ax.set_title(lab); ax.set_xlabel('NA')
+    axes[0].set_ylabel('Offset for 20% loss,\nrelative to A')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False, fontsize=22)
+    plt.tight_layout()
+    save(fig, 'polarization_media.png')

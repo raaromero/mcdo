@@ -108,12 +108,12 @@ if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0
     NAS3 = (0.5, 0.7, 0.9)
 
     def surf_grid(rows, name):
-        fig = plt.figure(figsize=(19.5, 13.0))
+        fig = plt.figure(figsize=(19.5, 6.5 * len(rows)))
         for r, (label, get) in enumerate(rows):
             for c, na in enumerate(NAS3):
                 xc, zc, F = get(na)
                 XC, ZC = np.meshgrid(xc, zc)
-                ax = fig.add_subplot(2, 3, 3 * r + c + 1, projection='3d')
+                ax = fig.add_subplot(len(rows), 3, 3 * r + c + 1, projection='3d')
                 ax.plot_surface(XC, ZC, np.clip(F, -3, 1), cmap='viridis', edgecolor='k', linewidth=0.2, rstride=1, cstride=1)
                 ax.set_zlim(-3, 1); ax.set_ylim(zc.max(), zc.min())
                 ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 3)); ax.set_zticks(np.arange(-3, 1.01, 1.0))
@@ -147,6 +147,7 @@ if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0
         uni = lambda na: (lambda d: (d['xc'], d['zc'], d['F']))(
             np.load(os.path.join(CACHE, f'{pair}_{th}_vector_na{na:g}{nsuf(na)}.npz')))
         surf_grid((('Vector', cur('vector')), ('Scalar', cur('scalar'))), f'linfoot3d_F_{pair}_{th}_grid{SUF}{MSUF}.png')
+        surf_grid((('Vector', cur('vector')),), f'linfoot3d_F_{pair}_{th}_vec{SUF}{MSUF}.png')      # one row, for a wide slot
         diff_row(cur('vector'), cur('scalar'), 'ΔF = vector − scalar', f'linfoot_diff3_F_{pair}_{th}{SUF}{MSUF}.png')
         if AT:
             surf_grid((('Uniform, vector', uni), ('Gaussian, vector', cur('vector'))),
