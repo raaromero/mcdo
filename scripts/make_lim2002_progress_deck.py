@@ -1370,7 +1370,7 @@ elif SECTION == 'cambaliza':
     U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
     U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
     U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
-    eqslide('Model of the paper: Eqs. 1–6', 'Paraxial scalar field per lens; beam 2 rotated by θ.', [
+    eqslide('Model of the paper: Eqs. 1–6', 'Beam 2 is rotated in real space; Eq. 1 writes the rotation in (u, v).', [
         (U1, 'Eq. 1: C, S = Lommel functions; f = focal length, D = pupil diameter; NA 0.5.'),
         (U2, 'rotated coordinates of beam 2 (Eq. 1); θ = angle between the lens axes.'),
         (U3, 'Eqs. 2–6: 2CE (750 + 656 nm), 2PE (700 nm); annular ε = 0.99.')],
@@ -1446,6 +1446,24 @@ elif SECTION == 'cambaliza':
         'Head-on pulses overlap within sqrt(2) c tau / 2 of the focus (2.1 um at 10 fs). 2CE DOF 3.56 um continuous, 3.52 at 100 fs, 2.81 at 20 fs, 1.92 at 10 fs. 2PE fringes kept only where the pulses overlap.')
     words('Next steps', ['Decide the slab half-thickness h for Fig. 8.', 'Run pulses with a time delay and at high NA.'],
           'Fig. 8 setting, time delay.', 'Next steps.', size=18)
+    DIFF = {                                                   # slides where current work and the paper differ: text in red
+        'Summary': ('The text differs',),
+        'Model of the paper: Eqs. 1–6': ('Eq. 1 writes',),
+        'Fig. 5: FWHM and DOF against Δλ': ('caption numbers differ',),
+        'Fig. 6(a): 2PE, transverse, annular': ('lower than printed',),
+        'Fig. 7(a): 2PE, axial, annular': ('printed ≈ 0.25',),
+        'Quoted values against the paper’s own figures': ('do not', 'differ'),
+        'Fig. 8(b): 2CE through a scattering slab, θ = π': ('paper: near 0',)}
+    for sl in prs.slides:
+        frames = [sh.text_frame for sh in sl.shapes if sh.has_text_frame]
+        if not frames or frames[0].text not in DIFF and not any(f.text in DIFF for f in frames):
+            continue
+        key = next(f.text for f in frames if f.text in DIFF)
+        for f in frames:
+            for para in f.paragraphs:
+                if para.text == key or any(k in para.text for k in DIFF[key]):
+                    for r in para.runs:
+                        r.font.color.rgb = RED
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
