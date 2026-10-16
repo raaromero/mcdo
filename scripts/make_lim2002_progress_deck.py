@@ -1244,14 +1244,14 @@ elif SECTION == MEETING:
 
     section(4, 'Gaussian input', 'Gaussian input (α_t = 4) against uniform input.')
     wide('Offset for 20% loss, Gaussian input, θ = π', SL('tolerance_media_pi_at4.png'), [
-        'Dim pupil edge → wider, longer focus; offsets 1.4× larger than with uniform input.', 'Same power laws. Air only; water: running.'],
-        'A Gaussian input gives 1.4 times larger offsets.', 'Blue: vector; red: scalar; air.')
+        'Dim pupil edge → wider, longer focus; offsets 1.4× larger than with uniform input.', 'Same power laws in air and water.'],
+        'A Gaussian input gives 1.4 times larger offsets.', 'Blue: vector; red: scalar; filled: air; open: water.')
     wide('Offset for 20% loss, Gaussian input, θ = π/2', SL('tolerance_media_pi2_at4.png'), [
-        'Crossed lenses: both ∝ 1/NA^2, as with uniform input.', 'Air, to NA 0.71 (lenses fit). Water: running.'],
+        'Crossed lenses: both ∝ 1/NA^2, as with uniform input.', 'Air to NA 0.71 (lenses fit); water to 0.94.'],
         'Crossed lenses with a Gaussian input.', 'Blue: vector; red: scalar; filled: air; open: water.')
     wide('Scalar 2CE against vector 2CE, Gaussian input', SL('deviation_media_at4.png'), [
         'Difference in T = |T_{scalar} − T_{vector}| / T_{vector}, same NA; black: tan^2(α/2), uniform pupil (Gaussian input lies below).',
-        'Below 5% to NA 0.525 in air (uniform input: 0.45): dim pupil edge, fewer high-angle rays.'],
+        'Passes 5% at NA 0.525 in air and 0.675 in water (uniform input: 0.45 and 0.575): dim pupil edge, fewer high-angle rays.'],
         'With a Gaussian input the paraxial model holds to a higher NA.', 'Same axes as for uniform input.')
     wide('Fidelity, Gaussian input: 2CE, θ = π', SL('linfoot3d_F_2ce_pi_grid_at4.png'), [
         'Top: vector; bottom: scalar; NA 0.5, 0.7, 0.9.', 'Smoother and changes less with NA than with uniform input.'],

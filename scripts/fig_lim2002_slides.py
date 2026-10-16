@@ -660,6 +660,28 @@ def input_compare(stem, xkey, zkey, tag, theta, xlabel, zlabel):
     save(fig, f'{tag}_input.png')
 
 
+def fig4a_grid():
+    """Fig. 4(a), 2CE, θ = π: scalar (top) and vector (bottom) at NA 0.5, 0.7, 0.9."""
+    d = np.load(os.path.join(D, 'na_peakmaps_fig4a.npz'))
+    fig, axes = plt.subplots(2, 3, figsize=(16.5, 13.0))
+    for c, na in enumerate((0.5, 0.7, 0.9)):
+        xs, zs, S = scalar_peak('2ce', 'pi', '', na, 1.0)
+        for r, (lab, x, z, M) in enumerate((('Scalar', xs, zs, S), ('Vector', d['x_c_um'], d['z_c_um'], d[f'P_na{na:g}']))):
+            ax = axes[r, c]; M = 100 * M / M.max()
+            cs = ax.contour(x / L1, z / L1, M, levels=[10, 20, 40, 60, 80], colors='k', linewidths=1.8)
+            ax.clabel(cs, fmt='%d', fontsize=16)
+            ax.contour(x / L1, z / L1, M, levels=[50], colors='#ff7f0e', linewidths=3)
+            ax.set_box_aspect(1.0); ax.set_xlim(-1.4, 1.4); ax.set_ylim(-6.5, 6.5)
+            ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 2))
+            ax.set_title(f'{lab}, NA {na:g}', fontsize=24)
+            if r == 1:
+                ax.set_xlabel('x$_c$ (λ$_1$)')
+            if c == 0:
+                ax.set_ylabel('z$_c$ (λ$_1$)')
+    plt.tight_layout()
+    save(fig, 'map_fig4a_grid.png')
+
+
 def maps_same_na(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
     """Scalar and vector 2CE at the same NA (0.7 and 0.9), drawn as the replication."""
     path = os.path.join(D, f'{stem}{suf}.npz')
