@@ -1416,9 +1416,9 @@ elif SECTION == 'cambaliza':
         bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 11.5)
         notes(s, ttl, line)
     words('Quoted values against the paper’s own figures', [
-        'Match: 30% (FWHM 29.7%); 35% (29.7% → 34.0% with |U₁ + U₂|², as plotted in Fig. 6a); 32% (29.1%); ≈ 1 µm (1.01 µm zero to zero); DOF ≈ 2× (1.9–2.2).',
-        'Width measure not stated: 0.75 (Fig. 2b) and 0.82 (Fig. 6b) give 0.68 (FWHM) to 0.87 (zero to zero); 40% (p. 32) gives 30–37%.',
-        'Not what the figures show: F2p(x;π/2)/F2p(x;0) = 0.67 → 0.43–0.50; F2c(x;π/2) "1.58× wider" than F2p(x;π/2) → 2.2–3.0; DOF of F2c/a(z;π/2) "20% longer" than F2p(z;π/2) → 34–85%.',
+        'Match: 30% (FWHM 29.7%); 35% (29.7% → 34.0% with |U₁ + U₂|², as plotted in Fig. 6a); 32% (29.1%); ≈ 1 µm (1.01 µm zero to zero).',
+        'Width measure not stated: 0.75 (Fig. 2b) and 0.82 (Fig. 6b) give 0.68 (FWHM) to 0.87 (zero to zero); 40% (p. 32) gives 30–37%; DOF ≈ 2× (p. 29) gives 2.2 (zero to zero) to 2.6 (FWHM).',
+        'Not what the figures show: F2p(x;π/2)/F2p(x;0) = 0.67 → 0.43–0.50; F2c(x;π/2) "1.58× wider" than F2p(x;π/2) → 2.5–3.0; DOF of F2c/a(z;π/2) "20% longer" than F2p(z;π/2) → 38–85%.',
         'Fig. 5 caption: FWHM = 2.4×10⁻⁴ Δλ + 0.356×10⁻¹ against the plotted 5.2×10⁻⁴ Δλ + 0.713; DOF printed with + while the plotted line falls.',
         'Fig. 4 caption: Δλ = λ₂ − λ₁; the text: Δλ = λ₁ − λ₂.'],
         'Most quoted values come back; three do not match the paper’s own figures.', 'Quoted values.', size=12.5)
