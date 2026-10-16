@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 import matplotlib
+import matplotlib.ticker
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -169,13 +170,23 @@ PAN = os.path.join(OUT, 'panels')
 os.makedirs(PAN, exist_ok=True)
 
 
-def one(name, curves, xlabel, xlim, ylim=(0, 1.05), legend=True):
-    fig, ax = plt.subplots(figsize=(10, 7))
+# width/height of the plot box of each original panel, measured from its axis lines (pixels)
+BOX = {'fig2a': 478 / 245, 'fig2b': 478 / 243, 'fig3a': 486 / 270, 'fig3b': 486 / 294, 'fig4a': 490 / 305,
+       'fig4b': 493 / 309, 'fig5': 450 / 367, 'fig6a': 490 / 256, 'fig6b': 492 / 283, 'fig7a': 488 / 281,
+       'fig7b': 491 / 288}
+
+
+def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True):
+    fig, ax = plt.subplots(figsize=(12, 12 / BOX[name[:5]] + 2.5))
+    ax.set_box_aspect(1 / BOX[name[:5]])                     # same plot-box shape as the paper's panel
     for x, y, lab, c, ls, lw in curves:
         ax.plot(x, y, ls, color=c, lw=lw, label=lab)
     ax.set_xlim(*xlim); ax.set_ylim(*ylim); ax.set_xlabel(xlabel); ax.set_ylabel('Intensity')
+    ax.set_xticks(np.arange(xlim[0], xlim[1] + 1e-9, 0.2 if xlim == (0, 1) else 0.5 if xlim[1] == 1 else 1))
+    ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+    ax.set_yticks(np.arange(0, 1.01, 0.2)); ax.tick_params(axis='x', pad=12)
     if legend:
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.17), ncol=3, frameon=False)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[name[:5]]), ncol=3, frameon=False)
     fig.savefig(os.path.join(PAN, name), dpi=300, bbox_inches='tight'); plt.close(fig)
 
 
@@ -198,12 +209,14 @@ for t, axis in (('a', 'x'), ('b', 'z')):
         v = F2c(s, 0 * s, np.pi / 2, l1=l1, l2=l2) if axis == 'x' else F2c(0 * s, s, np.pi / 2, l1=l1, l2=l2)
         cs.append((s, norm(v), f'{dl * 1000:.0f} nm', 'k', ls, 3))
     one(f'fig4{t}.png', cs, 'x (µm)' if axis == 'x' else 'z (µm)', (0, 1))
-fig, ax = plt.subplots(figsize=(10, 7))
+fig, ax = plt.subplots(figsize=(12, 12 / BOX['fig5'] + 2.5))
+ax.set_box_aspect(1 / BOX['fig5'])
 ax.plot(d_nm, fw, 'o', color='k', ms=11, label='FWHM')
 ax.plot(d_nm, dof, 'o', color='k', mfc='white', ms=11, mew=2, label='DOF')
 for p in (pf, pd):
     ax.plot([0, 100], np.polyval(p, [0, 100]), '-', color='k', lw=2)
 ax.set_xlim(0, 100); ax.set_ylim(0.65, 0.775); ax.set_xlabel('Δλ (nm)'); ax.set_ylabel('Magnitude (µm)')
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.17), ncol=2, frameon=False)
+ax.set_yticks(np.arange(0.65, 0.7751, 0.025)); ax.tick_params(axis='x', pad=12)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX['fig5']), ncol=2, frameon=False)
 fig.savefig(os.path.join(PAN, 'fig5.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
 print('Saved panels ->', PAN)
