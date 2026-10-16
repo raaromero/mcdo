@@ -177,3 +177,31 @@ def test_unpolarized_average_is_circular_polarization():
         circ = np.sum(np.abs((ex + 1j * ey) / np.sqrt(2)) ** 2, axis=0)
         avg = 0.5 * (np.sum(np.abs(ex) ** 2, axis=0) + np.sum(np.abs(ey) ** 2, axis=0))
         assert np.max(np.abs(circ - avg)) < 1e-12 * avg.max()
+
+
+# ── annular pupils in the vector model ─────────────────────────────────────
+
+def test_vector_annulus_is_babinet_difference():
+    """An annular vector pupil (ε) equals the full pupil minus the inner disk of NA ε·NA
+    (Babinet at the field level, sinθ_in = ε sinα), in air and in water; ε = 0 is unchanged."""
+    X, Z = np.meshgrid(np.linspace(-1, 1, 11), np.linspace(-3, 3, 13))
+    for na, n in ((0.7, 1.0), (1.2, 1.33)):
+        full = beam_field(X, Z, L1, na, n, model='rw', theta=0.3)
+        assert np.array_equal(full, beam_field(X, Z, L1, na, n, model='rw', theta=0.3, eps=0.0))
+        for eps in (0.5, 0.9):
+            ann = beam_field(X, Z, L1, na, n, model='rw', theta=0.3, eps=eps, n_theta=601)
+            bab = (beam_field(X, Z, L1, na, n, model='rw', theta=0.3, n_theta=1201)
+                   - beam_field(X, Z, L1, eps * na, n, model='rw', theta=0.3, n_theta=1201))
+            assert np.max(np.abs(ann - bab)) < 1e-6 * np.max(np.abs(bab))
+
+
+def test_vector_annulus_matches_paraxial_at_low_na():
+    """At NA 0.1 the thin annulus (ε = 0.99) of the vector model has the paraxial annular
+    profile across and along the axis (Cambaliza & Saloma's U_R − U_εR)."""
+    na, eps = 0.1, 0.99
+    x, z = np.linspace(0, 10, 101), np.linspace(-400, 400, 161)
+    for X, Z in ((x, 0 * x), (0 * z, z)):
+        s = np.abs(beam_field(X, Z, L1, na, eps=eps)) ** 2
+        v = 0.5 * sum(np.sum(np.abs(beam_field(X, Z, L1, na, model='rw', psi=p, eps=eps)) ** 2, axis=0)
+                      for p in (0.0, np.pi / 2))
+        assert np.max(np.abs(s / s.max() - v / v.max())) < 1e-2

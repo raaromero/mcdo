@@ -161,36 +161,47 @@ fig.legend([h[i] for i in order], [l[i] for i in order], loc='upper center', bbo
 save(fig, 'pairs_time_samena.png')
 
 # ── 20% tolerance in time: the delay that lowers the 2CE peak by 20%, against τ ──
-rows = []
-fig, axes = plt.subplots(1, 2, figsize=(22.0, 7.2), sharey=True)
-NACOL = {'0.5': 'k', '0.7': '#1f77b4', '0.9': '#d62728'}
-for ax, (th, title) in zip(axes, GEOM):
-    for kind, ls, mlab in (('scalar', '--', 'scalar 2CE'), ('rw', '-', 'vector 2CE')):
-        for na in ('0.5', '0.7', '0.9'):
-            model = f'{kind}_na{na}' + ('_n1.33' if th == 'pi2' and float(na) > 0.71 else '')   # crossed: water
-            tt = [(tau, t20(d[f'2ce_{th}_delays'] / tau, d[f'2ce_{th}_delay_peak']) * tau)
-                  for tau in TAUS if (d := load(model, tau)) is not None]
-            if tt:
-                ax.plot(*zip(*tt), ls, color=NACOL[na], lw=4, marker='o', ms=12, label=f'{mlab}, NA {na}')
-                rows += [(model, th, tau, v) for tau, v in tt]
-    tg = np.array([7, 140])
-    ax.plot(tg, np.sqrt(np.log(1.25) / (2 * LN2)) * tg, ':', color='#ff7f0e', lw=3, label='at the focus, Δt = 0.40 τ')
-    ax.set_xscale('log'); ax.set_yscale('log'); ax.set_xlim(7, 140)
-    ax.set_xticks(TAUS); ax.set_xticklabels([str(t) for t in TAUS]); ax.minorticks_off()
-    ax.set_xlabel('pulse duration τ (fs)'); ax.set_title(title + (', NA 0.9 in water' if th == 'pi2' else ''))
-axes[0].set_ylabel('time delay for\n20% peak loss (fs)')
-axes[0].set_yticks([3, 10, 30, 100]); axes[0].set_yticklabels(['3', '10', '30', '100'])
-h, l = axes[0].get_legend_handles_labels()
-order = [l.index(k) for k in ('scalar 2CE, NA 0.5', 'at the focus, Δt = 0.40 τ', 'scalar 2CE, NA 0.7', 'vector 2CE, NA 0.7',
-                              'scalar 2CE, NA 0.9', 'vector 2CE, NA 0.9')]      # columns by NA
-plt.tight_layout(w_pad=2.0)
-fig.legend([h[i] for i in order], [l[i] for i in order], loc='upper center', bbox_to_anchor=(0.5, 0.0), ncol=3,
-           frameon=False)
-save(fig, 'pairs_time_tolerance.png')
-with open(os.path.join(D, 'pairs_time_tolerance.csv'), 'w') as fh:
-    fh.write('model,theta,tau_fs,delay_20pct_fs\n')
-    for r_ in rows:
-        fh.write(f'{r_[0]},{r_[1]},{r_[2]},{r_[3]:.3f}\n')
+# medium(th, na) → file suffix of the medium; KIND the suffix of the input ('' uniform, '_at4' Gaussian)
+def tolerance(medium, kind_sfx, name, where, csv):
+    rows = []
+    fig, axes = plt.subplots(1, 2, figsize=(22.0, 7.2), sharey=True)
+    NACOL = {'0.5': 'k', '0.7': '#1f77b4', '0.9': '#d62728'}
+    for ax, (th, title) in zip(axes, GEOM):
+        for kind, ls, mlab in (('scalar', '--', 'scalar 2CE'), ('rw', '-', 'vector 2CE')):
+            for na in ('0.5', '0.7', '0.9'):
+                model = f'{kind}_na{na}' + medium(th, na)
+                tt = [(tau, t20(d[f'2ce_{th}_delays'] / tau, d[f'2ce_{th}_delay_peak']) * tau)
+                      for tau in TAUS if (d := load(model, tau, '_pairs' + kind_sfx)) is not None and f'2ce_{th}_delays' in d]
+                if tt:
+                    ax.plot(*zip(*tt), ls, color=NACOL[na], lw=4, marker='o', ms=12, label=f'{mlab}, NA {na}')
+                    rows += [(model + kind_sfx, th, tau, v) for tau, v in tt]
+        tg = np.array([7, 140])
+        ax.plot(tg, np.sqrt(np.log(1.25) / (2 * LN2)) * tg, ':', color='#ff7f0e', lw=3, label='at the focus, Δt = 0.40 τ')
+        ax.set_xscale('log'); ax.set_yscale('log'); ax.set_xlim(7, 140)
+        ax.set_xticks(TAUS); ax.set_xticklabels([str(t) for t in TAUS]); ax.minorticks_off()
+        ax.set_xlabel('pulse duration τ (fs)'); ax.set_title(title + where(th))
+    axes[0].set_ylabel('time delay for\n20% peak loss (fs)')
+    axes[0].set_yticks([3, 10, 30, 100]); axes[0].set_yticklabels(['3', '10', '30', '100'])
+    h, l = axes[0].get_legend_handles_labels()
+    keys = ('scalar 2CE, NA 0.5', 'at the focus, Δt = 0.40 τ', 'scalar 2CE, NA 0.7', 'vector 2CE, NA 0.7',
+            'scalar 2CE, NA 0.9', 'vector 2CE, NA 0.9')                                  # columns by NA
+    order = [l.index(k) for k in keys if k in l]
+    plt.tight_layout(w_pad=2.0)
+    fig.legend([h[i] for i in order], [l[i] for i in order], loc='upper center', bbox_to_anchor=(0.5, 0.0), ncol=3,
+               frameon=False)
+    save(fig, name)
+    with open(os.path.join(D, csv), 'w') as fh:
+        fh.write('model,theta,tau_fs,delay_20pct_fs\n')
+        for r_ in rows:
+            fh.write(f'{r_[0]},{r_[1]},{r_[2]},{r_[3]:.3f}\n')
+
+
+crossed_water = lambda th, na: '_n1.33' if th == 'pi2' and float(na) > 0.71 else ''      # crossed above 0.71: water
+tolerance(crossed_water, '', 'pairs_time_tolerance.png', lambda th: ', NA 0.9 in water' if th == 'pi2' else '',
+          'pairs_time_tolerance.csv')
+tolerance(lambda th, na: '_n1.33', '', 'pairs_time_tolerance_water.png', lambda th: ', water', 'pairs_time_tolerance_water.csv')
+tolerance(crossed_water, '_at4', 'pairs_time_tolerance_gaussian.png',
+          lambda th: ', Gaussian input' + (', NA 0.9 in water' if th == 'pi2' else ''), 'pairs_time_tolerance_gaussian.csv')
 
 # ── time delay with axial misalignment, facing lenses (peak over z_c and Δt) ──
 fig, axes = plt.subplots(1, 3, figsize=(21.0, 8.0))

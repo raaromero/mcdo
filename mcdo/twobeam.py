@@ -110,9 +110,11 @@ def _paraxial(rb, zb, k, na, n, n_rho=401, eps=0.0, sa=0.0, apodization=None):
     return (np.exp(1j * k * zb.ravel()) * U).reshape(zb.shape)
 
 
-def _theta_kernel(rb, zb, k, alpha, n_theta, apodization):
-    th = np.linspace(0.0, alpha, n_theta)
-    w = _simpson_weights(n_theta, alpha)
+def _theta_kernel(rb, zb, k, alpha, n_theta, apodization, eps=0.0):
+    # annular pupil: ray angles from sinθ_in = ε sinα (sine condition, as in mcdo.annular) to α
+    th0 = np.arcsin(eps * np.sin(alpha)) if eps > 0 else 0.0
+    th = np.linspace(th0, alpha, n_theta)
+    w = _simpson_weights(n_theta, alpha - th0)
     amp = np.sqrt(np.maximum(np.cos(th), 0.0))
     if apodization is not None:
         amp = amp * apodization(th)
@@ -121,15 +123,15 @@ def _theta_kernel(rb, zb, k, alpha, n_theta, apodization):
     return th, w * amp, ph, arg
 
 
-def _debye(rb, zb, k, alpha, n_theta=301, apodization=None):
-    th, wa, ph, arg = _theta_kernel(rb, zb, k, alpha, n_theta, apodization)
+def _debye(rb, zb, k, alpha, n_theta=301, apodization=None, eps=0.0):
+    th, wa, ph, arg = _theta_kernel(rb, zb, k, alpha, n_theta, apodization, eps)
     U = (ph * jv(0, arg)) @ (wa * np.sin(th))
     return U.reshape(zb.shape)
 
 
-def _rw(rb, phib, zb, k, alpha, psi, n_theta=301, apodization=None):
+def _rw(rb, phib, zb, k, alpha, psi, n_theta=301, apodization=None, eps=0.0):
     """Vector Richards-Wolf field, input linearly polarized at angle psi."""
-    th, wa, ph, arg = _theta_kernel(rb, zb, k, alpha, n_theta, apodization)
+    th, wa, ph, arg = _theta_kernel(rb, zb, k, alpha, n_theta, apodization, eps)
     st, ct = np.sin(th), np.cos(th)
     I0 = (ph * jv(0, arg)) @ (wa * st * (1 + ct))
     I1 = (ph * jv(1, arg)) @ (wa * st ** 2)
@@ -153,6 +155,8 @@ def beam_field(x, z, lam, na, n=1.0, theta=0.0, xc=0.0, zc=0.0, model='paraxial'
     vector for ``'rw'``. ``psi`` is the input polarization angle about the beam's
     own axis; the default pi/2 is polarization along the lab y axis for every
     ``theta``, perpendicular to both beam axes, so two beams can interfere fully.
+    ``eps`` is the obstruction ratio of an annular pupil for every model (vector:
+    ray angles sinθ ≥ ε sinα); ``sa`` applies to the paraxial model.
     """
     x, z = np.broadcast_arrays(np.asarray(x, float), np.asarray(z, float))
     k = n * 2.0 * np.pi / lam
@@ -176,10 +180,10 @@ def beam_field(x, z, lam, na, n=1.0, theta=0.0, xc=0.0, zc=0.0, model='paraxial'
     if model == 'paraxial':
         return _paraxial(rb, zb, k, na, n, eps=eps, sa=sa, apodization=apodization)
     if model == 'debye':
-        return _debye(rb, zb, k, alpha, n_theta, apodization)
+        return _debye(rb, zb, k, alpha, n_theta, apodization, eps)
     if model == 'rw':
         phib = np.arctan2(yb, xb)
-        return _to_lab(_rw(rb, phib, zb, k, alpha, psi, n_theta, apodization), theta)
+        return _to_lab(_rw(rb, phib, zb, k, alpha, psi, n_theta, apodization, eps), theta)
     raise ValueError(f"unknown model {model!r}")
 
 

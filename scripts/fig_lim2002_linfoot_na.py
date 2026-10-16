@@ -46,8 +46,14 @@ TH = {'pi': np.pi, 'pi2': np.pi / 2}
 dx, dz, nx, nz, P = 0.02, 0.1, 50, 50, 50          # window ±1 × ±5 µm; offsets ±P steps of 2
 
 
+NMED = os.environ.get('N_MED')                     # every case in this medium, e.g. 1.33 (water at the same NAs as air)
+MSUF = '' if not NMED else f'_n{float(NMED):g}'
+
+
 def medium(th, na):
     """Refractive index: water (1.33) for crossed lenses above NA 0.71, where they do not fit in air."""
+    if NMED:
+        return float(NMED)
     return 1.33 if th == 'pi2' and na > 1 / np.sqrt(2) else 1.0
 
 
@@ -98,6 +104,7 @@ def maps(pair, th, model, na):
 
 
 if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0.9 (Gaussian input with ALPHA_T=4)
+    # GRID_CASES=2ce:pi,2ce:pi2,2pe:pi,2pe:pi2 for the other cases; N_MED=1.33 for all of them in water
     NAS3 = (0.5, 0.7, 0.9)
 
     def surf_grid(rows, name):
@@ -113,7 +120,7 @@ if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0
                 ax.set_box_aspect((1.0, 1.0, 0.9), zoom=1.1)
                 ax.zaxis.set_ticks_position('lower'); ax.zaxis.set_label_position('lower')
                 ax.set_xlabel('x$_c$', labelpad=16); ax.set_ylabel('z$_c$', labelpad=16); ax.set_zlabel('F', labelpad=14)
-                ax.set_title(f'{label}, NA {na:g}'); ax.view_init(elev=22, azim=120)
+                ax.set_title(f'{label}, NA {na:g}' + where(th, na)); ax.view_init(elev=22, azim=120)
         fig.subplots_adjust(left=0.04, right=1.0, wspace=0.08, hspace=0.32)
         fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight'); plt.close(fig); print('Saved ->', name)
 
@@ -127,18 +134,24 @@ if os.environ.get('GRID'):        # meeting figures, 2CE θ = π, NA 0.5, 0.7, 0
             pm = ax.pcolormesh(xc, zc, dM, cmap='RdBu_r', vmin=-lim, vmax=lim, shading='nearest', rasterized=True)
             ax.contour(xc, zc, dM, levels=[0.0], colors='k', linewidths=1.5)
             ax.set_box_aspect(1.0); ax.set_xticks([-1.0, 0.0, 1.0]); ax.set_yticks(np.arange(-6, 7, 2))
-            ax.set_xlabel('x$_c$ (λ$_1$)'); ax.set_title(f'NA {na:g}')
-        axes[0].set_ylabel('z$_c$ (λ$_1$)')
+            ax.set_xlabel(f'x$_c$ ({unit})'); ax.set_title(f'NA {na:g}' + where(th, na))
+        axes[0].set_ylabel(f'z$_c$ ({unit})')
         fig.colorbar(pm, ax=list(axes), fraction=0.02, pad=0.02, extend='both').set_label(label)
         fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight'); plt.close(fig); print('Saved ->', name)
 
-    cur = lambda model: (lambda na: tuple(maps('2ce', 'pi', model, na)[:3]))
-    uni = lambda na: (lambda d: (d['xc'], d['zc'], d['F']))(np.load(os.path.join(CACHE, f'2ce_pi_vector_na{na:g}.npz')))
-    surf_grid((('Vector', cur('vector')), ('Scalar', cur('scalar'))), f'linfoot3d_F_2ce_pi_grid{SUF}.png')
-    diff_row(cur('vector'), cur('scalar'), 'ΔF = vector − scalar', f'linfoot_diff3_F_2ce_pi{SUF}.png')
-    if AT:
-        surf_grid((('Uniform, vector', uni), ('Gaussian, vector', cur('vector'))), 'linfoot3d_F_2ce_pi_gauss_uniform.png')
-        diff_row(cur('vector'), uni, 'ΔF = Gaussian − uniform', 'linfoot_diff3_F_2ce_pi_gauss_uniform.png')
+    for case in os.environ.get('GRID_CASES', '2ce:pi').split(','):
+        pair, th = case.split(':')
+        unit = 'λ$_1$' if pair == '2ce' else 'λ$_{2p}$'
+        cur = lambda model: (lambda na: tuple(maps(pair, th, model, na)[:3]))
+        nsuf = lambda na: '' if medium(th, na) == 1 else f'_n{medium(th, na):g}'
+        uni = lambda na: (lambda d: (d['xc'], d['zc'], d['F']))(
+            np.load(os.path.join(CACHE, f'{pair}_{th}_vector_na{na:g}{nsuf(na)}.npz')))
+        surf_grid((('Vector', cur('vector')), ('Scalar', cur('scalar'))), f'linfoot3d_F_{pair}_{th}_grid{SUF}{MSUF}.png')
+        diff_row(cur('vector'), cur('scalar'), 'ΔF = vector − scalar', f'linfoot_diff3_F_{pair}_{th}{SUF}{MSUF}.png')
+        if AT:
+            surf_grid((('Uniform, vector', uni), ('Gaussian, vector', cur('vector'))),
+                      f'linfoot3d_F_{pair}_{th}_gauss_uniform{MSUF}.png')
+            diff_row(cur('vector'), uni, 'ΔF = Gaussian − uniform', f'linfoot_diff3_F_{pair}_{th}_gauss_uniform{MSUF}.png')
     sys.exit(0)
 
 
