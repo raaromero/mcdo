@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Two-color excitation microscopy: Cambaliza & Saloma (2000) replicated, and extended from low to high NA." />
+    <meta name="color-scheme" content="light dark" />
+    <title>Two-Color Excitation</title>
+  </head>
+  <body>
+    <header class="bar">
+      <div class="brand">
+        <h1><a href="#v=home" id="homeLink">Two-Color Excitation</a></h1>
+      </div>
+      <div class="controls">
+        <div class="seg" role="radiogroup" aria-label="View" id="view">
+          <button type="button" role="radio" data-value="home">Home</button>
+          <button type="button" role="radio" data-value="insights">Insights</button>
+          <button type="button" role="radio" data-value="profiles">Profiles</button>
+          <button type="button" role="radio" data-value="widths">Widths</button>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><div class="progress-fill" id="progress"></div></div>
+    </header>
+
+    <main>
+      <div id="home" class="home" hidden></div>
+      <div id="insights" class="insights" hidden></div>
+      <div id="explore" class="explore" hidden>
+        <aside class="panel" aria-label="Chart options">
+          <button type="button" class="linkbtn panel-hide" id="panelHide">‹ Hide options</button>
+          <section class="pgroup" id="naCtl">
+            <h3>Numerical aperture</h3>
+            <div class="slider-row">
+              <div class="sliders">
+                <input type="range" id="na" aria-label="NA" />
+                <output id="naOut" for="na"></output>
+              </div>
+            </div>
+            <p class="panel-hint">NA 0.5 in air is the setting of the paper.</p>
+          </section>
+          <section class="pgroup">
+            <h3>Medium</h3>
+            <div class="seg" role="radiogroup" aria-label="Medium" id="medium">
+              <button type="button" role="radio" data-value="air">Air</button>
+              <button type="button" role="radio" data-value="water">Water</button>
+            </div>
+          </section>
+          <section class="pgroup">
+            <h3>Signal</h3>
+            <div class="seg" role="radiogroup" aria-label="Signal" id="signal">
+              <button type="button" role="radio" data-value="2PE">2PE</button>
+              <button type="button" role="radio" data-value="2CE">2CE</button>
+            </div>
+          </section>
+          <section class="pgroup">
+            <h3>Direction</h3>
+            <div class="seg" role="radiogroup" aria-label="Direction" id="axis">
+              <button type="button" role="radio" data-value="x">Across (x)</button>
+              <button type="button" role="radio" data-value="z">Along (z)</button>
+            </div>
+          </section>
+          <section class="pgroup">
+            <h3>Angle between the lenses</h3>
+            <button type="button" class="toggle" id="th-0" aria-pressed="true"><span class="swatch t0" aria-hidden="true"></span>θ = 0</button>
+            <button type="button" class="toggle" id="th-pi2" aria-pressed="true"><span class="swatch t1" aria-hidden="true"></span>θ = π/2 (crossed)</button>
+            <button type="button" class="toggle" id="th-pi" aria-pressed="true"><span class="swatch t2" aria-hidden="true"></span>θ = π (facing)</button>
+          </section>
+          <section class="pgroup">
+            <h3>Model</h3>
+            <div class="seg seg-grid" role="radiogroup" aria-label="Model" id="model">
+              <button type="button" role="radio" data-value="both">Both</button>
+              <button type="button" role="radio" data-value="vector">Vector</button>
+              <button type="button" role="radio" data-value="scalar">Scalar</button>
+            </div>
+            <p class="panel-hint">Solid: vector (Richards–Wolf). Dashed: paraxial scalar, the model of the paper.</p>
+          </section>
+          <button type="button" class="linkbtn more-btn" id="moreBtn" aria-expanded="false" aria-controls="more">More settings</button>
+          <div class="more" id="more" hidden>
+            <section class="pgroup">
+              <h3>Pupil</h3>
+              <div class="seg" role="radiogroup" aria-label="Pupil" id="pupil">
+                <button type="button" role="radio" data-value="circ">Circular</button>
+                <button type="button" role="radio" data-value="ann">Annular</button>
+              </div>
+              <p class="panel-hint">Annular: a ring with obstruction ratio ε = 0.99, as in Figs. 6–7.</p>
+            </section>
+            <section class="pgroup">
+              <h3>Input beam</h3>
+              <div class="seg" role="radiogroup" aria-label="Input beam" id="input">
+                <button type="button" role="radio" data-value="uni">Uniform</button>
+                <button type="button" role="radio" data-value="gau">Gaussian</button>
+              </div>
+              <p class="panel-hint">Gaussian: truncated at the pupil edge, α = 4.</p>
+            </section>
+          </div>
+        </aside>
+        <div class="explore-main">
+          <button type="button" class="panel-show" id="panelShow" hidden>Options ›</button>
+          <h2 class="chart-title" id="chartTitle"></h2>
+          <div class="scroller">
+            <div class="chart" id="chart"></div>
+          </div>
+          <div class="meta">
+            <p id="status" aria-live="polite"></p>
+            <button type="button" class="linkbtn export-btn" id="exportBtn">Download image</button>
+            <ul class="legend" id="legend"></ul>
+          </div>
+        </div>
+      </div>
+      <footer>
+        <p>Source: C. Cambaliza and C. Saloma, Opt. Commun. 184 (2000) 25–35. Current work: the paper's Eqs. 1–6
+        (paraxial scalar) and the vector Richards–Wolf focus, both beams polarized along y.</p>
+        <p>2CE: λ₁ = 750 nm on lens L1, λ₂ = 656 nm on lens L2. 2PE: 700 nm on both. Widths are full widths at half
+        maximum of the central peak; DOF is the width along the axis.</p>
+      </footer>
+    </main>
+    <div class="sr-only" aria-live="polite" id="live"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

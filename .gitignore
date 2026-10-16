@@ -25,3 +25,10 @@ output/
 
 # Superseded by output/review/, which make_review_folder.py builds per stage.
 slides_review/
+
+# Cambaliza dashboard (dashboard/cambaliza): dependencies, build, and the data written by
+# scripts/dashboard_cambaliza_data.py (generated, like output/; the overlays include the paper's scanned figures)
+dashboard/cambaliza/node_modules/
+dashboard/cambaliza/dist/
+dashboard/cambaliza/public/data/
+dashboard/cambaliza/public/img/
