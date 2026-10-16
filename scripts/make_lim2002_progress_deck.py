@@ -84,7 +84,7 @@ def words(name, items, main, script, latex=None, size=13):
 def wide(name, path, items, main, script, latex=None):
     s = slide(name, '')
     figure(s, path, 0.45, 0.95, 9.1, 3.72)
-    bullets(s, 0.6, 4.72, 8.9, 0.55, items, 11.5)
+    bullets(s, 0.6, 4.72, 8.9, 0.55, items, 14 if SECTION == 'cambaliza' else 11.5)
     notes(s, main, script, latex)
 
 
@@ -1364,19 +1364,13 @@ elif SECTION == 'cambaliza':
     CB = os.path.join(FIG, '..', 'cambaliza2000')
     title('Replication: Cambaliza & Saloma (2000)', 'Opt. Commun. 184 (2000) 25–35: 2CE and 2PE with two confocal beams, circular and annular pupils')
     words('Summary', [
-        'Rebuilt from its Eqs. 1–6 (paraxial scalar, NA 0.5), the model lies on every curve of Figs. 2, 3, 6 and 7 and on the lines of Fig. 5.',
-        '– 2CE (I₁I₂): exact in every panel, circular and annular, θ = 0, π/2, π, and against Δλ.',
-        '– 2PE: Figs. 2a and 3a are |U₁ + U₂|⁴ (Eq. 6); Figs. 6a and 7a are the excitation |U₁ + U₂|².',
-        '– Beam 2 rotated in real space, as with Lim & Saloma; Eq. 1 written as a rotation of (u, v) gives other curves.',
-        '– Fig. 5 caption: FWHM slope and intercept and the sign of the DOF slope differ from the plotted lines.',
-        '– Three quoted values do not match the paper’s own figures: 0.67 (Fig. 2a), "1.58× wider" (Fig. 2), "20% longer" (p. 32).',
-        '– Fig. 8 (Monte Carlo through a scattering slab): shapes come back with h = 100 µm; the 2CE background is higher than in the paper.'],
-        'The figures come back exactly; the text differs in a few places.', 'Replication summary.', size=13)
+        'Figs. 2–7 come back exactly from Eqs. 1–6; Fig. 8 with assumed slab settings.',
+        'The text differs from the figures in places: three quoted values, the Fig. 5 caption, 2PE in Figs. 6a and 7a.'],
+        'The figures come back; the text differs in places.', 'Rebuilt from Eqs. 1-6 (paraxial scalar, NA 0.5): on every curve of Figs. 2, 3, 6, 7 and the lines of Fig. 5. 2CE exact everywhere. 2PE: Figs. 2a, 3a are |U1+U2|^4 (Eq. 6); Figs. 6a, 7a are |U1+U2|^2. Beam 2 rotated in real space; the (u, v) rotation of Eq. 1 gives other curves. Fig. 5 caption fit differs from the plotted lines. Three quoted values differ from the figures: 0.67, 1.58x wider, 20% longer. Fig. 8: shapes come back with h = 100 um; 2CE background higher.', size=18)
     U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
     U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
     U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
-    eqslide('Model of the paper: Eqs. 1–6', 'Paraxial scalar field of each lens; beam 2 rotated by θ; annular pupil as a '
-            'difference of two circular pupils.', [
+    eqslide('Model of the paper: Eqs. 1–6', 'Paraxial scalar field per lens; beam 2 rotated by θ.', [
         (U1, 'Eq. 1: C, S = Lommel functions; f = focal length, D = pupil diameter; NA 0.5.'),
         (U2, 'rotated coordinates of beam 2 (Eq. 1); θ = angle between the lens axes.'),
         (U3, 'Eqs. 2–6: 2CE (750 + 656 nm), 2PE (700 nm); annular ε = 0.99.')],
@@ -1388,81 +1382,70 @@ elif SECTION == 'cambaliza':
         label(s, 5.1, 0.95, 4.45, 'Current work', PURPLE)
         figure(s, os.path.join(CB, 'original', f'{key}.png'), 0.45, 1.2, 4.45, 3.7)
         figure(s, os.path.join(CB, 'panels', ours), 5.1, 1.2, 4.45, 3.7)
-        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 11.5)
+        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
         notes(s, title, line)
 
     for key, title_, line in (
-            ('fig2a', 'Fig. 2(a): 2PE, transverse, circular', 'θ = π/2: narrow central spot with side lobes at ±0.65 µm; θ = 0 and π coincide.'),
-            ('fig2b', 'Fig. 2(b): 2CE, transverse, circular', 'θ = π/2 wider; θ = 0 and π coincide; no interference.'),
-            ('fig3a', 'Fig. 3(a): 2PE, axial, circular', 'θ = π: standing-wave fringes inside the θ = 0 envelope; θ = π/2 narrow.'),
-            ('fig3b', 'Fig. 3(b): 2CE, axial, circular', 'θ = π/2 short along z; θ = 0 and π coincide.'),
-            ('fig4a', 'Fig. 4(a): 2CE, θ = π/2, transverse, against Δλ', 'Δλ = 10, 39, 94 nm at λ_e = 350 nm: the spot widens slightly with Δλ.'),
-            ('fig4b', 'Fig. 4(b): 2CE, θ = π/2, axial, against Δλ', 'The DOF shortens slightly with Δλ.'),
-            ('fig5', 'Fig. 5: FWHM and DOF against Δλ', 'DOF: 0.7131 − 4.57×10⁻⁴ Δλ (paper: 0.7112 − 4.81×10⁻⁴ Δλ). FWHM slope 5.2×10⁻⁴ µm/nm, as plotted.'),
-            ('fig6a', 'Fig. 6(a): 2PE, transverse, annular', 'Current work with Eq. 6, |U₁ + U₂|⁴: side lobes lower than in the paper.'),
-            ('fig6b', 'Fig. 6(b): 2CE, transverse, annular', 'θ = π/2 wider with side lobes at ±0.95 µm; θ = 0 and π coincide.'),
-            ('fig7a', 'Fig. 7(a): 2PE, axial, annular', 'Current work with Eq. 6: θ = π/2 background 1/16; the paper shows about 0.25.'),
-            ('fig7b', 'Fig. 7(b): 2CE, axial, annular', 'θ = 0 and π flat (long DOF); θ = π/2 a 1 µm central spot.')):
+            ('fig2a', 'Fig. 2(a): 2PE, transverse, circular', 'θ = π/2: narrow spot with side lobes.'),
+            ('fig2b', 'Fig. 2(b): 2CE, transverse, circular', 'θ = π/2 wider; θ = 0 and π coincide.'),
+            ('fig3a', 'Fig. 3(a): 2PE, axial, circular', 'θ = π: standing-wave fringes.'),
+            ('fig3b', 'Fig. 3(b): 2CE, axial, circular', 'θ = π/2 short along z.'),
+            ('fig4a', 'Fig. 4(a): 2CE, θ = π/2, transverse, against Δλ', 'Spot widens slightly with Δλ.'),
+            ('fig4b', 'Fig. 4(b): 2CE, θ = π/2, axial, against Δλ', 'DOF shortens slightly with Δλ.'),
+            ('fig5', 'Fig. 5: FWHM and DOF against Δλ', 'Plotted lines match; caption numbers differ.'),
+            ('fig6a', 'Fig. 6(a): 2PE, transverse, annular', 'With Eq. 6 (|U₁ + U₂|⁴): side lobes lower than printed.'),
+            ('fig6b', 'Fig. 6(b): 2CE, transverse, annular', 'θ = π/2 wider, with side lobes.'),
+            ('fig7a', 'Fig. 7(a): 2PE, axial, annular', 'With Eq. 6: θ = π/2 background 1/16; printed ≈ 0.25.'),
+            ('fig7b', 'Fig. 7(b): 2CE, axial, annular', 'θ = π/2: 1 µm spot; θ = 0 and π flat.')):
         cpanel(title_, key, f'{key}.png', line)
     for key, title_, line in (
-            ('fig6a', 'Fig. 6(a) with the excitation |U₁ + U₂|²', 'Side lobes and the minimum 0.086 (paper: "not lower than 0.08") match.'),
-            ('fig7a', 'Fig. 7(a) with the excitation |U₁ + U₂|²', 'θ = π/2 background ≈ 0.25 as in the paper: Figs. 6a and 7a plot |U₁ + U₂|².')):
+            ('fig6a', 'Fig. 6(a) with the excitation |U₁ + U₂|²', 'With |U₁ + U₂|²: minimum 0.086, as printed (0.08).'),
+            ('fig7a', 'Fig. 7(a) with the excitation |U₁ + U₂|²', 'With |U₁ + U₂|²: background 0.25, as printed.')):
         cpanel(title_, key, f'{key}_excitation.png', line)
     for keys, ttl, line in ((('fig2a', 'fig2b', 'fig3a', 'fig3b'), 'Current work over the paper: Figs. 2–3, circular',
-                             'Red: 2PE |U₁ + U₂|⁴; orange dashed: |U₁ + U₂|²; blue: 2CE. Red and blue lie on the printed curves.'),
+                             'Current work (red, blue) lies on the printed curves.'),
                             (('fig6a', 'fig6b', 'fig7a', 'fig7b'), 'Current work over the paper: Figs. 6–7, annular',
-                             'Orange dashed (|U₁ + U₂|²) lies on the printed 2PE curves; blue lies on the 2CE curves.')):
+                             'Orange (|U₁ + U₂|²) and blue lie on the printed curves.')):
         s = slide(ttl, '')
         for q, k in enumerate(keys):
             figure(s, os.path.join(CB, 'overlay', f'{k}.png'), 0.45 + (q % 2) * 4.6, 0.95 + (q // 2) * 2.0, 4.45, 1.95)
-        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 11.5)
+        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
         notes(s, ttl, line)
     words('Quoted values against the paper’s own figures', [
-        'Match: 30% (FWHM 29.7%); 35% (29.7% → 34.0% with |U₁ + U₂|², as plotted in Fig. 6a); 32% (29.1%); ≈ 1 µm (1.01 µm zero to zero).',
-        'Width measure not stated: 0.75 (Fig. 2b) and 0.82 (Fig. 6b) give 0.68 (FWHM) to 0.87 (zero to zero); 40% (p. 32) gives 30–37%; DOF ≈ 2× (p. 29) gives 2.2 (zero to zero) to 2.6 (FWHM).',
-        'Not what the figures show: F2p(x;π/2)/F2p(x;0) = 0.67 → 0.43–0.50; F2c(x;π/2) "1.58× wider" than F2p(x;π/2) → 2.5–3.0; DOF of F2c/a(z;π/2) "20% longer" than F2p(z;π/2) → 38–85%.',
-        'Fig. 5 caption: FWHM = 2.4×10⁻⁴ Δλ + 0.356×10⁻¹ against the plotted 5.2×10⁻⁴ Δλ + 0.713; DOF printed with + while the plotted line falls.',
-        'Fig. 4 caption: Δλ = λ₂ − λ₁; the text: Δλ = λ₁ − λ₂.'],
-        'Most quoted values come back; three do not match the paper’s own figures.', 'Quoted values.', size=12.5)
+        'Most quoted values match; 0.67, "1.58× wider" and "20% longer" do not.',
+        'Fig. 5 caption fit and Fig. 4 sign of Δλ differ from the plots.'],
+        'Three quoted values do not match the figures.', 'Match: 30% (29.7%), 35% (34.0% with |U1+U2|^2), 32% (29.1%), 1 um (1.01 zero to zero). Width measure not stated: 0.75 and 0.82 give 0.68-0.87; 40% gives 30-37%; DOF 2x gives 2.2-2.6. Not in the figures: 0.67 -> 0.43-0.50; 1.58x -> 2.5-3.0; 20% longer -> 38-85%. Fig. 5 caption: 2.4e-4 dl + 0.0356 against plotted 5.2e-4 dl + 0.713; DOF slope printed with +. Fig. 4 caption dl = l2 - l1; text dl = l1 - l2.', size=18)
     for key, title_, line in (
             ('fig8a', 'Fig. 8(a): 2PE through a scattering slab, θ = π',
-             'Ballistic peak at z = 0; excitation broadened toward each lens; 2PE background 0.09 at |z| = 15 µm (paper: 0.1–0.2).'),
+             'Ballistic peak at focus; 2PE background 0.09 (paper: 0.1–0.2).'),
             ('fig8b', 'Fig. 8(b): 2CE through a scattering slab, θ = π',
-             'λ₂ = 656 nm scattered more than λ₁ = 750 nm; 2CE background 0.07 at |z| = 15 µm (paper: near 0).')):
+             '2CE background 0.07 (paper: near 0).')):
         cpanel(title_, key, f'{key}.png', line)
     words('Fig. 8: Monte Carlo settings', [
-        'Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey–Greenstein scattering (g = 0.9), up to 40 events; '
-        'I(z) = photons inside the unscattered beam radius w(z), per unit area. 10 trials × 10⁶ photons per beam.',
-        'Not stated in the paper: slab half-thickness h and the λ dependence of d_s. Used: d_s ∝ λ² (g = 0.9 case of Blanca & '
-        'Saloma 1998), h/d_s = 8 at 700 nm (7.0 at 750 nm, 9.1 at 656 nm).',
-        'h sets the picture: h = 20 µm gives a broad pedestal (2PE FWHM 17 µm); h = 1 mm gives no background; '
-        'h = 100 µm gives the paper’s narrow peak (2CE FWHM 2.0 µm).',
-        'Difference: in current work scattered light passes the focus, so each beam keeps 0.1–0.2 beyond it and the 2CE '
-        'background (0.07) stays close to 2PE (0.09); in the paper each beam falls to about 0 past the focus.'],
-        'Fig. 8 depends on two settings the paper does not give.', 'Monte Carlo settings.', size=12.5)
+        'Not in the paper: slab half-thickness h and λ dependence of d_s; used h = 100 µm, d_s ∝ λ².',
+        'h sets the background: broad at 20 µm, none at 1 mm.'],
+        'Fig. 8 depends on two settings the paper does not give.', "Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey-Greenstein g = 0.9, up to 40 events; I(z) = photons inside w(z) per area; 10 trials x 1e6 photons per beam. Not stated: h and the lambda dependence of d_s. Used d_s ~ lambda^2, h/d_s = 8 at 700 nm. h = 20 um: broad pedestal; 1 mm: no background; 100 um: paper's narrow peak. In current work scattered light passes the focus, so the 2CE background (0.07) stays near 2PE (0.09).", size=18)
     HN = os.path.join(CB, 'high_na')
-    navy('High NA', [('Figs. 2–3 widths against NA: paraxial scalar against vector, air and water.', 15, PALE)])
+    navy('High NA', [('Scalar against vector, air and water.', 15, PALE)])
     wide('Widths against NA in air: scalar and vector', os.path.join(HN, 'widths_air.png'), [
-        'Solid: vector; dashed: paraxial scalar (the paper’s model). θ = 0 and π coincide except 2PE along z (fringes at θ = π).',
-        'Scalar DOF longer by tan²(α/2): 7% at NA 0.5, 16% at 0.7, 36% at 0.9; across the axis 6% or less. θ = π/2 to NA 0.71.'],
-        'The paraxial model holds across the axis; along it the DOF is too long at high NA.', 'Widths in air.')
+        'Scalar DOF too long by tan²(α/2): 16% at NA 0.7, 36% at 0.9.', 'Across the axis: within 6%.'],
+        'The paraxial model holds across the axis; along it the DOF is too long at high NA.',
+        'Solid vector, dashed paraxial scalar. theta = 0 and pi coincide except 2PE along z. Scalar DOF longer by 7% at NA 0.5, 16% at 0.7, 36% at 0.9. theta = pi/2 to NA 0.71.')
     wide('Widths against NA in water: scalar and vector', os.path.join(HN, 'widths_water.png'), [
-        'Same layout as in air; θ = π/2 to NA 0.94 (lenses fit at 90°).',
-        'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9: about half the error in air at the same NA, or less.'],
-        'In water the paraxial model holds to a higher NA.', 'Widths in water.')
+        'Scalar DOF error about half that in air: 15% at NA 0.9.'],
+        'In water the paraxial model holds to a higher NA.',
+        'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9. theta = pi/2 to NA 0.94 (lenses fit at 90 degrees).')
     wide('The paper’s comparisons against NA, θ = π/2', os.path.join(HN, 'ratios.png'), [
-        'Scalar and vector within 4% to NA 0.7 (air) and 0.9 (water): the paper’s comparisons hold for the vector focus.',
-        'All three ratios move toward 1 as NA grows: at NA 0.7 in air, 2CE is 2.0× wider than 2PE (2.9× at NA 0.5).'],
-        'The comparisons of the paper hold at high NA; their size depends on NA.', 'Ratios against NA.')
-    navy('Optical pulses', [('Figs. 2–3 with transform-limited pulses, zero delay, NA 0.5.', 15, PALE)])
+        'Scalar and vector agree within 4%: the paper’s comparisons hold at high NA.', 'The ratios move toward 1 as NA grows.'],
+        'The comparisons of the paper hold at high NA; their size depends on NA.',
+        'Within 4% to NA 0.7 (air) and 0.9 (water). At NA 0.7 in air 2CE is 2.0x wider than 2PE (2.9x at NA 0.5).')
+    navy('Optical pulses', [('Transform-limited pulses, zero delay, NA 0.5.', 15, PALE)])
     wide('Axial response with pulses, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
-        'Head-on pulses overlap only within √2 cτ/2 of the focus (2.1 µm at 10 fs).',
-        '2CE DOF: 3.56 µm (continuous) → 3.52 (100 fs), 2.81 (20 fs), 1.92 (10 fs). 2PE: fringes kept only where the pulses '
-        'overlap. θ = 0 and π/2: widths change by 2% or less.'],
-        'Short pulses shorten the 2CE response along the axis at θ = π.', 'Pulses, θ = π.')
-    words('Next steps', ['Decide h for Fig. 8 with Dr. Saloma (slab half-thickness not stated).',
-                         'Run the time delay between the pulses (θ = π).', 'Run high NA with pulses.'],
-          'Fig. 8 setting, time delay.', 'Next steps.', size=14)
+        'Short pulses shorten the 2CE DOF: 3.6 µm → 1.9 µm at 10 fs.', 'θ = 0 and π/2: no change (2% or less).'],
+        'Short pulses shorten the 2CE response along the axis at theta = pi.',
+        'Head-on pulses overlap within sqrt(2) c tau / 2 of the focus (2.1 um at 10 fs). 2CE DOF 3.56 um continuous, 3.52 at 100 fs, 2.81 at 20 fs, 1.92 at 10 fs. 2PE fringes kept only where the pulses overlap.')
+    words('Next steps', ['Decide the slab half-thickness h for Fig. 8.', 'Run pulses with a time delay and at high NA.'],
+          'Fig. 8 setting, time delay.', 'Next steps.', size=18)
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
