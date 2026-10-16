@@ -9,11 +9,12 @@ Not stated in the paper (assumptions):
   slab −h ≤ z ≤ h, focus at its centre, h = 100 µm (H_UM; scan of 20–1000 µm: 100 µm gives the paper's narrow
   peak and low 2CE background; 20 µm gives a broad pedestal, 1 mm no background); plotted and counted over |z| ≤ 20 µm;
   d_s ∝ λ² (g = 0.9 case of Blanca & Saloma 1998: h/d_s = 4 at λ/2 ↔ 1 at λ), h/d_s = 8 at λ_2p = 0.7 µm;
-  Gaussian waist w₀ = λ / (π NA), NA 0.5, n = 1.
+  Gaussian waist w₀ = λ / (π NA), NA 0.5 (NA_ for other NA: plane spacing scaled by (0.5/NA)²), n = 1.
 Each beam: 10 trials × 10⁶ photons (10⁷, as in the paper); per-trial profiles saved.
 
-    [H_UM=100] python scripts/replicate_cambaliza2000_fig8.py [--rerun]
-    -> output/08_two_color/cambaliza2000/fig8_mc_h<h>.npz, panels/fig8{a,b}.png
+    [H_UM=100] [NA_=0.5] python scripts/replicate_cambaliza2000_fig8.py [--rerun]
+    -> output/08_two_color/cambaliza2000/fig8_mc_h<h>.npz, panels/fig8{a,b}.png (h = 100), panels/h<h>/fig8{a,b}.png;
+       NA ≠ 0.5: fig8_mc_h<h>_na<NA>.npz, panels/h<h>_na<NA>/
 """
 import os
 import sys
@@ -33,11 +34,14 @@ matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsi
                             'ytick.labelsize': 24, 'legend.fontsize': 24})
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
-PAN = os.path.join(OUT, 'panels')
-NA, G, HDS, LREF, MAXS = 0.5, 0.9, 8.0, 0.700, 40
+G, HDS, LREF, MAXS = 0.9, 8.0, 0.700, 40
+NA = float(os.environ.get('NA_', 0.5))
 H = float(os.environ.get('H_UM', 100.0))                  # slab half-thickness h (µm)
+TAG = f'h{H:g}' + ('' if NA == 0.5 else f'_na{NA:g}')
+PAN = os.path.join(OUT, 'panels', *(() if TAG == 'h100' else (TAG,)))     # other h, NA: backup panels in panels/<tag>/
+os.makedirs(PAN, exist_ok=True)
 N_PH, N_TR = 1_000_000, 10
-DZ = 0.25
+DZ = 0.25 * min(1.0, (0.5 / NA) ** 2)                    # plane spacing: resolves the focus at every NA
 ZP = np.arange(-20.0, 20.0 + DZ / 2, DZ)                # counting planes (µm): the plotted range
 
 
@@ -104,7 +108,7 @@ def run():
         t0 = time.time()
         res[key] = np.array([trial(lam, rng) for _ in range(N_TR)])
         print(f'{key} λ = {lam} µm: {time.time() - t0:.0f} s', flush=True)
-    np.savez(os.path.join(OUT, f'fig8_mc_h{H:g}.npz'), z=ZP, **res, h=H, h_ds=HDS, g=G, na=NA, n_photons=N_PH)
+    np.savez(os.path.join(OUT, f'fig8_mc_{TAG}.npz'), z=ZP, **res, h=H, h_ds=HDS, g=G, na=NA, n_photons=N_PH)
     return res
 
 
@@ -114,7 +118,7 @@ def ref(lam):
 
 
 if __name__ == '__main__':
-    path = os.path.join(OUT, f'fig8_mc_h{H:g}.npz')
+    path = os.path.join(OUT, f'fig8_mc_{TAG}.npz')
     R = dict(np.load(path)) if os.path.exists(path) and '--rerun' not in sys.argv else run()
     z = ZP
     m = {k: R[k].mean(0) for k in ('2p_a', '2p_b', 'l1', 'l2')}
@@ -127,11 +131,12 @@ if __name__ == '__main__':
     for key, title, exc, F, Fr, labs in (
             ('fig8a', '2PE', (E1, E2), F2p, r2p, ('Excitation, θ = 0', 'Excitation, θ = π')),
             ('fig8b', '2CE', (C1, C2), F2c, r2c, ('Excitation, λ₁', 'Excitation, λ₂'))):
-        fig, ax = plt.subplots(figsize=(12, 12 / BOX[key] + 2.5)); ax.set_box_aspect(1 / BOX[key])
+        fig, ax = plt.subplots(figsize=(9, 9 / BOX[key] + 2.5)); ax.set_box_aspect(1 / BOX[key])
         for e, ls, lab in zip(exc, ('-.', ':'), labs):
             ax.plot(z, nz(e), ls, color='#555555', lw=2.5, label=lab)
         ax.plot(z, nz(Fr), '-', color='k', lw=3, label='No scattering')
-        ax.plot(z[::2], nz(F)[::2], 'o', mfc='none', mec='#1f77b4', mew=2, ms=9, label='Fluorescence')
+        k = max(1, round(0.5 / DZ))                                  # markers 0.5 µm apart
+        ax.plot(z[::k], nz(F)[::k], 'o', mfc='none', mec='#1f77b4', mew=2, ms=9, label='Fluorescence')
         ax.set_xlim(-20, 20); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-20, 21, 5))
         ax.set_xlabel('z (µm)'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[key] - 0.08), ncol=2, frameon=False)

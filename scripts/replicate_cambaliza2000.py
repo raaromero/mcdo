@@ -177,7 +177,7 @@ BOX = {'fig2a': 478 / 245, 'fig2b': 478 / 243, 'fig3a': 486 / 270, 'fig3b': 486 
 
 
 def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True):
-    fig, ax = plt.subplots(figsize=(12, 12 / BOX[name[:5]] + 2.5))
+    fig, ax = plt.subplots(figsize=(9, 9 / BOX[name[:5]] + 2.5))
     ax.set_box_aspect(1 / BOX[name[:5]])                     # same plot-box shape as the paper's panel
     for x, y, lab, c, ls, lw in curves:
         ax.plot(x, y, ls, color=c, lw=lw, label=lab)
@@ -209,7 +209,7 @@ for t, axis in (('a', 'x'), ('b', 'z')):
         v = F2c(s, 0 * s, np.pi / 2, l1=l1, l2=l2) if axis == 'x' else F2c(0 * s, s, np.pi / 2, l1=l1, l2=l2)
         cs.append((s, norm(v), f'{dl * 1000:.0f} nm', 'k', ls, 3))
     one(f'fig4{t}.png', cs, 'x (µm)' if axis == 'x' else 'z (µm)', (0, 1))
-fig, ax = plt.subplots(figsize=(12, 12 / BOX['fig5'] + 2.5))
+fig, ax = plt.subplots(figsize=(9, 9 / BOX['fig5'] + 2.5))
 ax.set_box_aspect(1 / BOX['fig5'])
 ax.plot(d_nm, fw, 'o', color='k', ms=11, label='FWHM')
 ax.plot(d_nm, dof, 'o', color='k', mfc='white', ms=11, mew=2, label='DOF')

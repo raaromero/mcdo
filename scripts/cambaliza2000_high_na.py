@@ -6,7 +6,7 @@ Same wavelengths as the paper: 2PE λ_2p = 0.700 µm; 2CE λ₁ = 0.750 µm (L1)
 Width: FWHM of the central peak, transverse F(x, 0, 0; θ) and axial F(0, 0, z; θ) (DOF).
 θ = π/2 needs both lenses to fit at 90°: NA ≤ n sin 45° (air 0.71, water 0.94).
 
-    python scripts/cambaliza2000_high_na.py [--rerun] -> output/08_two_color/cambaliza2000/high_na/{widths.csv, widths_*.png, ratios.png}
+    python scripts/cambaliza2000_high_na.py [--rerun] -> output/08_two_color/cambaliza2000/high_na/{widths.csv, widths_<medium>_<x|z>.png, ratios_<x|z>.png}
 """
 import os
 import sys
@@ -88,12 +88,11 @@ def sel(n, sig, axis, th):
     return A[m][:, [1, 5, 6]]
 
 
-# ── widths against NA: rows transverse / axial, columns 2PE / 2CE; solid vector, dashed scalar ──
+# ── widths against NA, one figure per medium and direction: 2PE and 2CE side by side; solid vector, dashed scalar ──
 for n, tag in ((1.0, 'air'), (1.33, 'water')):
-    fig, axes = plt.subplots(2, 2, figsize=(28, 14), sharex=True)
-    for c, sig in enumerate(('2PE', '2CE')):
-        for r, axis in enumerate(('x', 'z')):
-            ax = axes[r, c]
+    for axis in ('x', 'z'):
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.8))
+        for ax, sig in zip(axes, ('2PE', '2CE')):
             for th in THETAS:
                 d = sel(n, sig, axis, th)
                 ax.plot(d[:, 0], d[:, 2], '-o', color=TCOL[th], lw=3, ms=8, label=f'{TLAB[th]}, vector')
@@ -101,26 +100,25 @@ for n, tag in ((1.0, 'air'), (1.33, 'water')):
             ax.set_xscale('log'); ax.set_yscale('log')
             ax.set_xticks([0.2, 0.3, 0.5, 0.7, 1.0]); ax.set_xticklabels(['0.2', '0.3', '0.5', '0.7', '1'])
             ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-            ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5)))
+            ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 3, 5)))
             ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
             ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
             ax.set_title(f'{sig}, {"transverse FWHM" if axis == "x" else "DOF (axial FWHM)"}')
-            ax.set_ylabel('Width (µm)')
-            if r == 1:
-                ax.set_xlabel('NA')
-    h, l = axes[0, 0].get_legend_handles_labels()
-    fig.legend(h, l, loc='center left', ncol=1, bbox_to_anchor=(1.0, 0.5), frameon=False)
-    plt.tight_layout()
-    fig.savefig(os.path.join(OUT, f'widths_{tag}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
-    print('Saved -> widths_%s.png' % tag)
+            ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
+        h, l = axes[0].get_legend_handles_labels()
+        fig.legend(h, l, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 0.0), frameon=False)
+        plt.tight_layout()
+        fig.savefig(os.path.join(OUT, f'widths_{tag}_{axis}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+        print(f'Saved -> widths_{tag}_{axis}.png')
 
 # ── the paper's comparisons at θ = π/2 against NA (air and water), vector solid, scalar dashed ──
 P = np.pi / 2
 RAT = (('F2p(x;π/2) / F2p(x;0)', ('2PE', 'x', P), ('2PE', 'x', 0.0)),
        ('F2c(x;π/2) / F2p(x;π/2)', ('2CE', 'x', P), ('2PE', 'x', P)),
        ('DOF F2c(z;π/2) / F2p(z;π/2)', ('2CE', 'z', P), ('2PE', 'z', P)))
-fig, axes = plt.subplots(1, 3, figsize=(30, 9))
-for ax, (lab, a, b) in zip(axes, RAT):
+
+
+def ratio_axes(ax, lab, a, b):
     for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
         da, db = sel(n, *a), sel(n, *b)
         nas = np.intersect1d(da[:, 0], db[:, 0])
@@ -131,11 +129,20 @@ for ax, (lab, a, b) in zip(axes, RAT):
                 ms=8, label=f'Scalar, {tag}')
     ax.axvline(0.5, color='#999999', lw=2, ls=':')
     ax.set_title(lab); ax.set_xlabel('NA'); ax.set_ylabel('Ratio')
+
+
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2))               # across the axis: two comparisons
+for ax, (lab, a, b) in zip(axes, RAT[:2]):
+    ratio_axes(ax, lab, a, b)
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1), frameon=False)
+fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
 plt.tight_layout()
-fig.savefig(os.path.join(OUT, 'ratios.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
-print('Saved -> ratios.png')
+fig.savefig(os.path.join(OUT, 'ratios_x.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+fig, ax = plt.subplots(figsize=(12, 6.5))                            # along the axis: the DOF comparison
+ratio_axes(ax, *RAT[2])
+ax.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), frameon=False)
+fig.savefig(os.path.join(OUT, 'ratios_z.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+print('Saved -> ratios_x.png, ratios_z.png')
 
 for n in (1.0, 1.33):
     for lab, a, b in RAT:

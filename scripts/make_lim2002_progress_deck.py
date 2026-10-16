@@ -35,6 +35,7 @@ from mcdo.deckstyle import (CARD, FIG, GREY, MSO_SHAPE, NAVY, ORIG, PALE, PAN, P
 
 SECTIONS = ['overview', 'replication', 'vector', 'fidelity', 'gaussian', 'delay', 'polarization', 'pulses']
 MEETING = 'meeting'                                            # SECTION=meeting: highlights for one meeting, not in the full build
+CMEETING = 'cmeeting'                                          # SECTION=cmeeting: meeting on Cambaliza & Saloma (2000)
 SECTION = os.environ.get('SECTION')
 DIR = os.path.expanduser('~/Downloads/Research/two_color')
 HERE = os.path.dirname(__file__)
@@ -84,7 +85,7 @@ def words(name, items, main, script, latex=None, size=13):
 def wide(name, path, items, main, script, latex=None):
     s = slide(name, '')
     figure(s, path, 0.45, 0.95, 9.1, 3.72)
-    bullets(s, 0.6, 4.72, 8.9, 0.55, items, 14 if SECTION == 'cambaliza' else 11.5)
+    bullets(s, 0.6, 4.72, 8.9, 0.55, items, 14 if SECTION in ('cambaliza', CMEETING) else 11.5)
     notes(s, main, script, latex)
 
 
@@ -93,6 +94,92 @@ def side(name, path, items, main, script, latex=None, fw=5.3):
     figure(s, path, 0.45, 0.95, fw, 4.25)
     bullets(s, 0.45 + fw + 0.25, 1.05, 9.5 - fw - 0.7, 4.15, items, 12)
     notes(s, main, script, latex)
+
+
+CB = os.path.join(FIG, '..', 'cambaliza2000')                 # Cambaliza & Saloma (2000) figures
+
+
+def cpanel(title, key, ours, line):
+    """Original panel of Cambaliza & Saloma (2000) beside current work, one line beneath."""
+    s = slide(title, '')
+    label(s, 0.45, 0.95, 4.45, 'Cambaliza & Saloma (2000)')
+    label(s, 5.1, 0.95, 4.45, 'Current work', PURPLE)
+    figure(s, os.path.join(CB, 'original', f'{key}.png'), 0.45, 1.2, 4.45, 3.7)
+    figure(s, os.path.join(CB, 'panels', ours), 5.1, 1.2, 4.45, 3.7)
+    bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
+    notes(s, title, line)
+
+
+def coverlay(keys, ttl, line):
+    """Four panels of current work drawn over the original figures."""
+    s = slide(ttl, '')
+    for q, k in enumerate(keys):
+        figure(s, os.path.join(CB, 'overlay', f'{k}.png'), 0.45 + (q % 2) * 4.6, 0.95 + (q // 2) * 2.0, 4.45, 1.95)
+    bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
+    notes(s, ttl, line)
+
+
+def cmodel():
+    U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
+    U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
+    U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
+    eqslide('Model of the paper: Eqs. 1–6', 'Beam 2 is rotated in real space; Eq. 1 writes the rotation in (u, v).', [
+        (U1, 'Eq. 1: C, S = Lommel functions; f = focal length, D = pupil diameter; NA 0.5.'),
+        (U2, 'rotated coordinates of beam 2 (Eq. 1); θ = angle between the lens axes.'),
+        (U3, 'Eqs. 2–6: 2CE (750 + 656 nm), 2PE (700 nm); annular ε = 0.99.')],
+        'The model of the paper.', 'Equations 1 to 6.', '\n'.join((U1, U2, U3)), size=14)
+
+
+def chigh_na(part='High NA', water_x=False):
+    """Part on high NA of the Cambaliza decks: scalar against vector widths, air and water, and the paper's comparisons."""
+    hn = os.path.join(CB, 'high_na')
+    navy(part, [('Scalar against vector (Richards–Wolf), air and water.', 15, PALE)])
+    wide('Widths across the axis against NA, air', os.path.join(hn, 'widths_air_x.png'), [
+        'Across the axis the paraxial widths agree with the vector ones within 6% up to NA 0.9.'],
+        'The paraxial model holds across the axis.',
+        'Solid vector, dashed paraxial scalar; both beams polarized along y. Scalar wider by up to 1.4% at NA 0.5, 3.4% at '
+        '0.7, 5.9% at 0.9. theta = 0 and pi coincide; theta = pi/2 to NA 0.71 (lenses fit at 90 degrees).')
+    wide('Depth of focus against NA, air', os.path.join(hn, 'widths_air_z.png'), [
+        'The paraxial depth of focus is too long at high NA: by 36% at NA 0.9.'],
+        'Along the axis the paraxial model gives too long a focus at high NA.',
+        'Scalar DOF longer by 7% at NA 0.5, 16% at 0.7, 36% at 0.9: the factor tan^2(alpha/2) from the small-angle phase. '
+        '2PE at theta = pi/2 and pi: the width of the central interference fringe, set by the wavelength.')
+    if water_x:
+        wide('Widths across the axis against NA, water', os.path.join(hn, 'widths_water_x.png'), [
+            'In water the paraxial widths across the axis agree within 3% up to NA 0.9.'],
+            'The paraxial model holds across the axis in water.',
+            'Scalar wider by up to 0.7% at NA 0.5, 1.6% at 0.7, 3.1% at 0.9, 7.2% at 1.25. theta = pi/2 to NA 0.94.')
+    wide('Depth of focus against NA, water', os.path.join(hn, 'widths_water_z.png'), [
+        'In water the paraxial error at the same NA is about half that in air: 15% at NA 0.9.'],
+        'In water the paraxial model holds to a higher NA.',
+        'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9, 44% at 1.25 (tan^2(alpha/2) with sin(alpha) = NA/1.33). '
+        'theta = pi/2 to NA 0.94 (lenses fit at 90 degrees).')
+    wide('Comparisons across the axis against NA, θ = π/2', os.path.join(hn, 'ratios_x.png'), [
+        'Scalar and vector agree within 4%: the comparisons of the paper hold at high NA.',
+        'The 2CE spot stays wider than the 2PE spot, by less as NA grows.'],
+        'The comparisons of the paper hold at high NA; their size depends on NA.',
+        'Within 4% to NA 0.7 (air) and 0.9 (water). 2CE over 2PE at theta = pi/2: 2.9x at NA 0.5, 2.0x at NA 0.7 in air. '
+        '2PE crossed over facing: 0.50 at NA 0.5, 0.71 at NA 0.7 in air.')
+    wide('Depth-of-focus comparison against NA, θ = π/2', os.path.join(hn, 'ratios_z.png'), [
+        'The 2CE response stays longer than the 2PE central fringe, by less as NA grows; scalar and vector agree.'],
+        'The DOF comparison of the paper holds at high NA.',
+        'DOF of 2CE over 2PE at theta = pi/2: 2.6 at NA 0.5, 1.8 at NA 0.7 in air; 3.5 at 0.5, 1.9 at 0.9 in water. '
+        'Scalar and vector within 4%. The 2PE width is that of the central fringe, which does not change with NA, '
+        'so the ratio falls as the 2CE focus shortens.')
+
+
+def red(diff):
+    """Slides where current work and the paper differ: the title and the difference in red."""
+    for sl in prs.slides:
+        frames = [sh.text_frame for sh in sl.shapes if sh.has_text_frame]
+        if not any(f.text in diff for f in frames):
+            continue
+        key = next(f.text for f in frames if f.text in diff)
+        for f in frames:
+            for para in f.paragraphs:
+                if para.text == key or any(k in para.text for k in diff[key]):
+                    for r in para.runs:
+                        r.font.color.rgb = RED
 
 
 GLOSS = {   # term: (meaning, sections that use it)
@@ -105,7 +192,7 @@ GLOSS = {   # term: (meaning, sections that use it)
     '2CE, 2PE': ('two-color excitation, signal ∝ I_1 I_2; two-photon excitation, signal ∝ |U_1 + U_2|^4', 'all'),
     'PSF': ('point spread function: the fluorescence from one point, scaled to its peak', 'all'),
     'Scalar 2CE': ('the paraxial scalar model (small-angle phase, no polarization)', 'all'),
-    'Vector 2CE': ('the same signals with the Richards–Wolf focus (exact phase and polarization)', 'overview vector fidelity gaussian polarization pulses'),
+    'Vector 2CE': ('the same signals with the Richards–Wolf focus (exact phase and polarization)', 'overview vector fidelity gaussian polarization pulses cmeeting'),
     'Scalar Debye': ('scalar focus with the exact phase, no polarization', 'vector'),
     'Peak lost': ('drop of the peak of the misaligned PSF, in percent of the aligned peak', 'overview replication vector gaussian delay polarization'),
     '20% tolerance': ('the misalignment x_c or z_c that reduces the 2CE peak by 20%', 'overview vector gaussian polarization'),
@@ -115,9 +202,9 @@ GLOSS = {   # term: (meaning, sections that use it)
     'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'overview vector fidelity gaussian polarization pulses'),
     's–s, p–p': ('both beams polarized perpendicular to (s) or in (p) the plane of the two lens axes', 'polarization'),
     'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay pulses'),
-    'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses cambaliza'),
-    'FWHM, DOF': ('full width at half maximum; depth of focus, the FWHM along the axis', 'cambaliza'),
-    'h, d_s, g': ('slab half-thickness; mean free path between scattering events; anisotropy ⟨cos⟩ of one scattering', 'cambaliza'),
+    'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses cambaliza cmeeting'),
+    'FWHM, DOF': ('full width at half maximum; depth of focus, the FWHM along the axis', 'cambaliza cmeeting'),
+    'h, d_s, g': ('slab half-thickness; mean free path between scattering events; anisotropy ⟨cos⟩ of one scattering', 'cambaliza cmeeting'),
     'ν_a, ν_b, ν_e': ('photon frequencies from the 750 and 656 nm lasers, and of the transition (ν = c/λ)', 'pulses'),
     'p_i(ν)': ('spectral probability density of a photon of laser i', 'pulses'),
     'P(ν_a), δ': ('joint probability of a resonant pair; detuning ν_e − (ν_1 + ν_2) of the transition', 'pulses'),
@@ -130,8 +217,11 @@ GLOSS = {   # term: (meaning, sections that use it)
 
 def glossary():
     skip = {'Scalar Debye', 'p_i(ν)', 'A(P)', 'N', 's–s, p–p', 'K'}       # terms the meeting deck does not use
+    if SECTION == CMEETING:                                    # no misalignment in the Cambaliza study
+        skip = {'x_c, z_c', 'PSF', 'L1, L2; O, O′'}
     rows = [f'{t}: {m}.' for t, (m, use) in GLOSS.items()
-            if use == 'all' or (SECTION == MEETING and t not in skip) or SECTION in use.split()]
+            if (use == 'all' or (SECTION == MEETING and t not in skip) or SECTION in use.split())
+            and not (SECTION == CMEETING and t in skip)]
     pages = [rows[i:i + 9] for i in range(0, len(rows), 9)]
     for k, page in enumerate(pages, 1):
         s = slide('Glossary' + (f' ({k}/{len(pages)})' if len(pages) > 1 else ''), '')
@@ -1361,29 +1451,12 @@ elif SECTION == MEETING:
           'Run pulses with a delay, derive the closed form, draft the paper.', 'Next steps.', size=14)
 
 elif SECTION == 'cambaliza':
-    CB = os.path.join(FIG, '..', 'cambaliza2000')
     title('Replication: Cambaliza & Saloma (2000)', 'Opt. Commun. 184 (2000) 25–35: 2CE and 2PE with two confocal beams, circular and annular pupils')
     words('Summary', [
         'Figs. 2–7 come back exactly from Eqs. 1–6; Fig. 8 with assumed slab settings.',
         'The text differs from the figures in places: three quoted values, the Fig. 5 caption, 2PE in Figs. 6a and 7a.'],
         'The figures come back; the text differs in places.', 'Rebuilt from Eqs. 1-6 (paraxial scalar, NA 0.5): on every curve of Figs. 2, 3, 6, 7 and the lines of Fig. 5. 2CE exact everywhere. 2PE: Figs. 2a, 3a are |U1+U2|^4 (Eq. 6); Figs. 6a, 7a are |U1+U2|^2. Beam 2 rotated in real space; the (u, v) rotation of Eq. 1 gives other curves. Fig. 5 caption fit differs from the plotted lines. Three quoted values differ from the figures: 0.67, 1.58x wider, 20% longer. Fig. 8: shapes come back with h = 100 um; 2CE background higher.', size=18)
-    U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
-    U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
-    U3 = r'F_{2c} = \kappa\,|U_1|^2|U_2|^2, \qquad F_{2p} = \kappa\,'"'"r'|U_1 + U_2|^4, \qquad U_a = U_R - U_{\varepsilon R}'
-    eqslide('Model of the paper: Eqs. 1–6', 'Beam 2 is rotated in real space; Eq. 1 writes the rotation in (u, v).', [
-        (U1, 'Eq. 1: C, S = Lommel functions; f = focal length, D = pupil diameter; NA 0.5.'),
-        (U2, 'rotated coordinates of beam 2 (Eq. 1); θ = angle between the lens axes.'),
-        (U3, 'Eqs. 2–6: 2CE (750 + 656 nm), 2PE (700 nm); annular ε = 0.99.')],
-        'The model of the paper.', 'Equations 1 to 6.', '\n'.join((U1, U2, U3)), size=14)
-
-    def cpanel(title, key, ours, line):
-        s = slide(title, '')
-        label(s, 0.45, 0.95, 4.45, 'Cambaliza & Saloma (2000)')
-        label(s, 5.1, 0.95, 4.45, 'Current work', PURPLE)
-        figure(s, os.path.join(CB, 'original', f'{key}.png'), 0.45, 1.2, 4.45, 3.7)
-        figure(s, os.path.join(CB, 'panels', ours), 5.1, 1.2, 4.45, 3.7)
-        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
-        notes(s, title, line)
+    cmodel()
 
     for key, title_, line in (
             ('fig2a', 'Fig. 2(a): 2PE, transverse, circular', 'θ = π/2: narrow spot with side lobes.'),
@@ -1402,15 +1475,10 @@ elif SECTION == 'cambaliza':
             ('fig6a', 'Fig. 6(a) with the excitation |U₁ + U₂|²', 'With |U₁ + U₂|²: minimum 0.086, as printed (0.08).'),
             ('fig7a', 'Fig. 7(a) with the excitation |U₁ + U₂|²', 'With |U₁ + U₂|²: background 0.25, as printed.')):
         cpanel(title_, key, f'{key}_excitation.png', line)
-    for keys, ttl, line in ((('fig2a', 'fig2b', 'fig3a', 'fig3b'), 'Current work over the paper: Figs. 2–3, circular',
-                             'Current work (red, blue) lies on the printed curves.'),
-                            (('fig6a', 'fig6b', 'fig7a', 'fig7b'), 'Current work over the paper: Figs. 6–7, annular',
-                             'Orange (|U₁ + U₂|²) and blue lie on the printed curves.')):
-        s = slide(ttl, '')
-        for q, k in enumerate(keys):
-            figure(s, os.path.join(CB, 'overlay', f'{k}.png'), 0.45 + (q % 2) * 4.6, 0.95 + (q // 2) * 2.0, 4.45, 1.95)
-        bullets(s, 0.6, 4.98, 8.6, 0.4, [line], 14)
-        notes(s, ttl, line)
+    coverlay(('fig2a', 'fig2b', 'fig3a', 'fig3b'), 'Current work over the paper: Figs. 2–3, circular',
+             'Current work (red, blue) lies on the printed curves.')
+    coverlay(('fig6a', 'fig6b', 'fig7a', 'fig7b'), 'Current work over the paper: Figs. 6–7, annular',
+             'Orange (|U₁ + U₂|²) and blue lie on the printed curves.')
     words('Quoted values against the paper’s own figures', [
         'Most quoted values match; 0.67, "1.58× wider" and "20% longer" do not.',
         'Fig. 5 caption fit and Fig. 4 sign of Δλ differ from the plots.'],
@@ -1425,20 +1493,7 @@ elif SECTION == 'cambaliza':
         'Not in the paper: slab half-thickness h and λ dependence of d_s; used h = 100 µm, d_s ∝ λ².',
         'h sets the background: broad at 20 µm, none at 1 mm.'],
         'Fig. 8 depends on two settings the paper does not give.', "Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey-Greenstein g = 0.9, up to 40 events; I(z) = photons inside w(z) per area; 10 trials x 1e6 photons per beam. Not stated: h and the lambda dependence of d_s. Used d_s ~ lambda^2, h/d_s = 8 at 700 nm. h = 20 um: broad pedestal; 1 mm: no background; 100 um: paper's narrow peak. In current work scattered light passes the focus, so the 2CE background (0.07) stays near 2PE (0.09).", size=18)
-    HN = os.path.join(CB, 'high_na')
-    navy('High NA', [('Scalar against vector, air and water.', 15, PALE)])
-    wide('Widths against NA in air: scalar and vector', os.path.join(HN, 'widths_air.png'), [
-        'Scalar DOF too long by tan²(α/2): 16% at NA 0.7, 36% at 0.9.', 'Across the axis: within 6%.'],
-        'The paraxial model holds across the axis; along it the DOF is too long at high NA.',
-        'Solid vector, dashed paraxial scalar. theta = 0 and pi coincide except 2PE along z. Scalar DOF longer by 7% at NA 0.5, 16% at 0.7, 36% at 0.9. theta = pi/2 to NA 0.71.')
-    wide('Widths against NA in water: scalar and vector', os.path.join(HN, 'widths_water.png'), [
-        'Scalar DOF error about half that in air: 15% at NA 0.9.'],
-        'In water the paraxial model holds to a higher NA.',
-        'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9. theta = pi/2 to NA 0.94 (lenses fit at 90 degrees).')
-    wide('The paper’s comparisons against NA, θ = π/2', os.path.join(HN, 'ratios.png'), [
-        'Scalar and vector agree within 4%: the paper’s comparisons hold at high NA.', 'The ratios move toward 1 as NA grows.'],
-        'The comparisons of the paper hold at high NA; their size depends on NA.',
-        'Within 4% to NA 0.7 (air) and 0.9 (water). At NA 0.7 in air 2CE is 2.0x wider than 2PE (2.9x at NA 0.5).')
+    chigh_na(water_x=True)
     navy('Optical pulses', [('Transform-limited pulses, zero delay, NA 0.5.', 15, PALE)])
     wide('Axial response with pulses, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
         'Short pulses shorten the 2CE DOF: 3.6 µm → 1.9 µm at 10 fs.', 'θ = 0 and π/2: no change (2% or less).'],
@@ -1454,16 +1509,73 @@ elif SECTION == 'cambaliza':
         'Fig. 7(a): 2PE, axial, annular': ('printed ≈ 0.25',),
         'Quoted values against the paper’s own figures': ('do not', 'differ'),
         'Fig. 8(b): 2CE through a scattering slab, θ = π': ('paper: near 0',)}
-    for sl in prs.slides:
-        frames = [sh.text_frame for sh in sl.shapes if sh.has_text_frame]
-        if not frames or frames[0].text not in DIFF and not any(f.text in DIFF for f in frames):
-            continue
-        key = next(f.text for f in frames if f.text in DIFF)
-        for f in frames:
-            for para in f.paragraphs:
-                if para.text == key or any(k in para.text for k in DIFF[key]):
-                    for r in para.runs:
-                        r.font.color.rgb = RED
+    red(DIFF)
+
+elif SECTION == CMEETING:
+    title('Two-color excitation: Cambaliza & Saloma (2000)', 'Opt. Commun. 184 (2000) 25–35: replication, high NA, optical pulses')
+    words('Summary', [
+        'Figs. 2–8 of Cambaliza & Saloma (2000) come back from Eqs. 1–6; the text differs from the figures in places.',
+        'At high NA the comparisons of 2CE and 2PE in the paper still hold; the paraxial model gives too long a depth of focus.'],
+        'The paper is reproduced, and its comparisons hold at high NA.',
+        'Part 1: rebuilt from Eqs. 1-6 (paraxial scalar, NA 0.5). 2CE exact everywhere. Figs. 6a and 7a plot the 2PE excitation '
+        '|U1+U2|^2, not Eq. 6. Three quoted values and the Fig. 5 caption differ from the figures. Fig. 8 needs the slab '
+        'half-thickness h, which the paper does not give. Part 2: scalar against vector (Richards-Wolf), air and water: the '
+        'three comparisons agree within 4% to NA 0.7 (air) and 0.9 (water); scalar DOF too long by tan^2(alpha/2). '
+        'Part 3: optical pulses, zero delay: shorter pulses shorten the 2CE DOF at theta = pi; at high NA the focus is '
+        'already shorter than the pulse overlap.', size=18)
+    navy('1. Replication', [('Paraxial scalar model of the paper, NA 0.5.', 15, PALE)])
+    cmodel()
+    coverlay(('fig2a', 'fig2b', 'fig3a', 'fig3b'), 'Current work over the paper: Figs. 2–3, circular',
+             'Current work (red, blue) lies on the printed curves.')
+    coverlay(('fig6a', 'fig6b', 'fig7a', 'fig7b'), 'Current work over the paper: Figs. 6–7, annular',
+             'Orange (|U₁ + U₂|²) and blue lie on the printed curves.')
+    cpanel('Fig. 6(a): 2PE, transverse, annular', 'fig6a', 'fig6a_excitation.png',
+           'The printed curve is the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴).')
+    cpanel('Fig. 7(a): 2PE, axial, annular', 'fig7a', 'fig7a_excitation.png',
+           'The printed curve is |U₁ + U₂|²: background 0.25; Eq. 6 gives 1/16.')
+    cpanel('Fig. 5: FWHM and DOF against Δλ', 'fig5', 'fig5.png', 'Plotted lines match; caption numbers differ.')
+    words('Quoted values against the paper’s own figures', [
+        'Most quoted values match; 0.67, "1.58× wider" and "20% longer" do not.',
+        'Fig. 5 caption fit and Fig. 4 sign of Δλ differ from the plots.'],
+        'Three quoted values do not match the figures.', 'Match: 30% (29.7%), 35% (34.0% with |U1+U2|^2), 32% (29.1%), 1 um (1.01 zero to zero). Width measure not stated: 0.75 and 0.82 give 0.68-0.87; 40% gives 30-37%; DOF 2x gives 2.2-2.6. Not in the figures: 0.67 -> 0.43-0.50; 1.58x -> 2.5-3.0; 20% longer -> 38-85%. Fig. 5 caption: 2.4e-4 dl + 0.0356 against plotted 5.2e-4 dl + 0.713; DOF slope printed with +. Fig. 4 caption dl = l2 - l1; text dl = l1 - l2.', size=18)
+    cpanel('Fig. 8(a): 2PE through a scattering slab, θ = π', 'fig8a', 'fig8a.png',
+           'Ballistic peak at focus; 2PE background 0.09 (paper: 0.1–0.2).')
+    cpanel('Fig. 8(b): 2CE through a scattering slab, θ = π', 'fig8b', 'fig8b.png', '2CE background 0.07 (paper: near 0).')
+    wide('Fig. 8 against the slab half-thickness h', os.path.join(CB, 'panels', 'fig8_h_scan.png'), [
+        'The paper does not give h: a thin slab gives a broad pedestal, a thick slab no background.',
+        'No h gives both the 2PE background (0.1–0.2) and no 2CE background; h = 100 µm is used.'],
+        'Fig. 8 depends on h, which the paper does not give.',
+        "Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey-Greenstein g = 0.9, up to 40 events; I(z) = photons "
+        "inside w(z) per area; 10 trials x 1e6 photons per beam. Not stated: h and the lambda dependence of d_s; used "
+        "d_s ~ lambda^2, h/d_s = 8 at 700 nm for every h, so h sets the scattering length against the focal region. "
+        "Background for |z| > 10 um, 2PE / 2CE: h = 20 um broad pedestal; 50 um 0.26 / 0.14; 100 um 0.09 / 0.07; "
+        "300 um 0.004 / 0.005; 1 mm none. In current work the scattered light of both beams passes the focus, so the 2CE "
+        "background stays 40-75% of the 2PE background.")
+    chigh_na('2. High NA')
+    navy('3. Optical pulses', [('Transform-limited pulses, zero delay.', 15, PALE)])
+    wide('Axial response with pulses, NA 0.5, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
+        'Short pulses shorten the 2CE depth of focus: from 3.6 µm to 1.9 µm at 10 fs.'],
+        'Short pulses shorten the 2CE response along the axis at theta = pi.',
+        'Paraxial scalar. Head-on pulses overlap within sqrt(2) c tau / 2 of the focus (2.1 um at 10 fs). 2CE DOF 3.56 um continuous, 3.52 at 100 fs, 2.81 at 20 fs, 1.92 at 10 fs. theta = 0 and pi/2: change of 2% or less. 2PE fringes kept only where the pulses overlap.')
+    PH = os.path.join(CB, 'pulses', 'high_na')
+    if os.path.exists(os.path.join(PH, 'dof_pi.png')):
+        wide('Depth of focus with pulses against NA, θ = π', os.path.join(PH, 'dof_pi.png'), [
+            'At high NA the focus is shorter than the pulse overlap, so pulses change the depth of focus little.'],
+            'The effect of the pulse length fades as NA grows.',
+            'Vector (Richards-Wolf), both beams polarized along y, zero delay. DOF = central-peak FWHM along z; '
+            'pulsed over continuous. Widths (um), CW | 20 fs | 10 fs: '
+            + '; '.join(l for l in open(os.path.join(PH, 'widths.txt')).read().splitlines()[1:] if ' z π |' in l))
+    words('Next steps', ['Choose the slab half-thickness h for Fig. 8.', 'Pulses with a time delay between them.'],
+          'Fig. 8 setting, time delay.', 'Next steps.', size=18)
+    red({
+        'Summary': ('the text differs',),
+        'Model of the paper: Eqs. 1–6': ('Eq. 1 writes',),
+        'Fig. 6(a): 2PE, transverse, annular': ('not Eq. 6',),
+        'Fig. 7(a): 2PE, axial, annular': ('Eq. 6 gives',),
+        'Fig. 5: FWHM and DOF against Δλ': ('caption numbers differ',),
+        'Quoted values against the paper’s own figures': ('do not', 'differ'),
+        'Fig. 8(b): 2CE through a scattering slab, θ = π': ('paper: near 0',),
+        'Fig. 8 against the slab half-thickness h': ('No h gives',)})
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
@@ -1500,7 +1612,8 @@ for sl in prs.slides:
             im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
             ipart._blob = buf.getvalue()
         done.add(id(ipart))
-OUT = os.path.join(DIR, {MEETING: '2ce_meeting_2026-10-15.pptx', 'cambaliza': '2ce_cambaliza_replication.pptx'}.get(
+OUT = os.path.join(DIR, {MEETING: '2ce_meeting_2026-10-15.pptx', 'cambaliza': '2ce_cambaliza_replication.pptx',
+                         CMEETING: '2ce_meeting_cambaliza.pptx'}.get(
     SECTION) or f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')
 os.makedirs(os.path.join(DIR, 'pdfs'), exist_ok=True)
 ds.keynote_fonts()
