@@ -1647,11 +1647,17 @@ elif SECTION == CMEETING:
            'Air, vector, NA 0.5, 0.7, 0.9 (with the scalar: linfoot3d_F_2pe_pi_grid.png). Offsets in lambda_2p. θ = π/2: '
            'linfoot3d_F_2pe_pi2_grid.png; water: _n1.33.'),
           ('Lim & Saloma: time tolerance of pulses in water', SL('pairs_time_tolerance_water.png'),
-           'In water the time delay for a 20% loss follows the same trend with τ as in air.',
-           'Photon pairs, 2CE; delay for 20% peak loss against tau. Values: pairs_time_tolerance_water.csv.'),
+           'In water 10-fs pulses tolerate a longer delay than in air at the same NA: 12 against 8 fs at NA 0.5 (θ = π).',
+           'Photon pairs, 2CE; delay for 20% peak loss against tau, water (n = 1.33). theta = pi, tau = 10 fs, water / air: '
+           'scalar 12.3 / 7.6 fs at NA 0.5, 7.0 / 5.0 at 0.7, 5.2 / 4.3 at 0.9; vector 6.6 / 4.8 at 0.7, 4.9 / 4.2 at 0.9. '
+           'tau = 100 fs: 40 fs in both (0.40 tau, the gate at the focus). theta = pi/2: as in air, 0.40 tau. The longer '
+           'focus in water spreads the overlap of the pulses over more of the axis. Values: pairs_time_tolerance_water.csv.'),
           ('Lim & Saloma: time tolerance with Gaussian input', SL('pairs_time_tolerance_gaussian.png'),
-           'With Gaussian input the time tolerance follows the same trend with τ as with uniform input.',
-           'Photon pairs, 2CE, alpha = 4. Values: pairs_time_tolerance_gaussian.csv.'),
+           'With Gaussian input 10-fs pulses tolerate a longer delay: 10 against 8 fs at NA 0.5 (θ = π).',
+           'Photon pairs, 2CE, alpha = 4, air (theta = pi/2 at NA 0.9 in water). theta = pi, tau = 10 fs, Gaussian / '
+           'uniform: scalar 10.1 / 7.6 fs at NA 0.5, 6.1 / 5.0 at 0.7, 4.8 / 4.3 at 0.9; vector 5.7 / 4.8 at 0.7, 4.5 / 4.2 '
+           'at 0.9. tau = 100 fs: 40 fs in both. theta = pi/2: 0.40 tau in both. The Gaussian input lengthens the focus, as '
+           'water does. Values: pairs_time_tolerance_gaussian.csv.'),
           ('Lim & Saloma: polarization in water and with Gaussian input', os.path.join(FIG, 'polarization_media.png'),
            'Water and Gaussian input narrow the gap between polarizations: 13% and 12% at NA 0.9, against 32% in air.',
            '2CE offset of O′ for 20% peak loss with s-s and p-p beams, over that with unpolarized beams (A). theta = pi along '

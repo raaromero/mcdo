@@ -201,7 +201,7 @@ tolerance(crossed_water, '', 'pairs_time_tolerance.png', lambda th: ', NA 0.9 in
           'pairs_time_tolerance.csv')
 tolerance(lambda th, na: '_n1.33', '', 'pairs_time_tolerance_water.png', lambda th: ', water', 'pairs_time_tolerance_water.csv')
 tolerance(crossed_water, '_at4', 'pairs_time_tolerance_gaussian.png',
-          lambda th: ', Gaussian input' + (', NA 0.9 in water' if th == 'pi2' else ''), 'pairs_time_tolerance_gaussian.csv')
+          lambda th: ', NA 0.9 in water' if th == 'pi2' else '', 'pairs_time_tolerance_gaussian.csv')   # input: slide title
 
 # ── time delay with axial misalignment, facing lenses (peak over z_c and Δt) ──
 fig, axes = plt.subplots(1, 3, figsize=(21.0, 8.0))
