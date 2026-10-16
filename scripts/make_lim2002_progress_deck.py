@@ -115,7 +115,9 @@ GLOSS = {   # term: (meaning, sections that use it)
     'Unpolarized': ('averaged over two perpendicular input polarizations, equal to circular', 'overview vector fidelity gaussian polarization pulses'),
     's–s, p–p': ('both beams polarized perpendicular to (s) or in (p) the plane of the two lens axes', 'polarization'),
     'Δt, φ': ('time delay of beam 2; the phase it adds, φ = ωΔt', 'overview delay pulses'),
-    'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses'),
+    'τ': ('pulse duration: full width at half maximum of the intensity', 'pulses cambaliza'),
+    'FWHM, DOF': ('full width at half maximum; depth of focus, the FWHM along the axis', 'cambaliza'),
+    'h, d_s, g': ('slab half-thickness; mean free path between scattering events; anisotropy ⟨cos⟩ of one scattering', 'cambaliza'),
     'ν_a, ν_b, ν_e': ('photon frequencies from the 750 and 656 nm lasers, and of the transition (ν = c/λ)', 'pulses'),
     'p_i(ν)': ('spectral probability density of a photon of laser i', 'pulses'),
     'P(ν_a), δ': ('joint probability of a resonant pair; detuning ν_e − (ν_1 + ν_2) of the transition', 'pulses'),
@@ -1368,7 +1370,7 @@ elif SECTION == 'cambaliza':
         '– Beam 2 rotated in real space, as with Lim & Saloma; Eq. 1 written as a rotation of (u, v) gives other curves.',
         '– Fig. 5 caption: FWHM slope and intercept and the sign of the DOF slope differ from the plotted lines.',
         '– Three quoted values do not match the paper’s own figures: 0.67 (Fig. 2a), "1.58× wider" (Fig. 2), "20% longer" (p. 32).',
-        '– Fig. 8 (Monte Carlo through a scattering slab): next.'],
+        '– Fig. 8 (Monte Carlo through a scattering slab): shapes come back with h = 100 µm; the 2CE background is higher than in the paper.'],
         'The figures come back exactly; the text differs in a few places.', 'Replication summary.', size=13)
     U1 = r'U(P;\theta) = -j\,\frac{\pi\,\mathrm{NA}^2 A\, e^{\,j (2f/D)^2 u}}{\lambda}\,\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]'
     U2 = r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x'
@@ -1422,10 +1424,45 @@ elif SECTION == 'cambaliza':
         'Fig. 5 caption: FWHM = 2.4×10⁻⁴ Δλ + 0.356×10⁻¹ against the plotted 5.2×10⁻⁴ Δλ + 0.713; DOF printed with + while the plotted line falls.',
         'Fig. 4 caption: Δλ = λ₂ − λ₁; the text: Δλ = λ₁ − λ₂.'],
         'Most quoted values come back; three do not match the paper’s own figures.', 'Quoted values.', size=12.5)
-    words('Next steps', ['Reproduce Fig. 8: Monte Carlo of both beams through a scattering slab (g = 0.9, h/d_s = 8), method of '
-                         'Blanca & Saloma (1998, 1999).', 'Extend to high NA (vector focus; water for crossed lenses).',
-                         'Extend to optical pulses with a time delay.'],
-          'Monte Carlo, high NA, pulses.', 'Next steps.', size=14)
+    for key, title_, line in (
+            ('fig8a', 'Fig. 8(a): 2PE through a scattering slab, θ = π',
+             'Ballistic peak at z = 0; excitation broadened toward each lens; 2PE background 0.09 at |z| = 15 µm (paper: 0.1–0.2).'),
+            ('fig8b', 'Fig. 8(b): 2CE through a scattering slab, θ = π',
+             'λ₂ = 656 nm scattered more than λ₁ = 750 nm; 2CE background 0.07 at |z| = 15 µm (paper: near 0).')):
+        cpanel(title_, key, f'{key}.png', line)
+    words('Fig. 8: Monte Carlo settings', [
+        'Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey–Greenstein scattering (g = 0.9), up to 40 events; '
+        'I(z) = photons inside the unscattered beam radius w(z), per unit area. 10 trials × 10⁶ photons per beam.',
+        'Not stated in the paper: slab half-thickness h and the λ dependence of d_s. Used: d_s ∝ λ² (g = 0.9 case of Blanca & '
+        'Saloma 1998), h/d_s = 8 at 700 nm (7.0 at 750 nm, 9.1 at 656 nm).',
+        'h sets the picture: h = 20 µm gives a broad pedestal (2PE FWHM 17 µm); h = 1 mm gives no background; '
+        'h = 100 µm gives the paper’s narrow peak (2CE FWHM 2.0 µm).',
+        'Difference: in current work scattered light passes the focus, so each beam keeps 0.1–0.2 beyond it and the 2CE '
+        'background (0.07) stays close to 2PE (0.09); in the paper each beam falls to about 0 past the focus.'],
+        'Fig. 8 depends on two settings the paper does not give.', 'Monte Carlo settings.', size=12.5)
+    HN = os.path.join(CB, 'high_na')
+    navy('High NA', [('Figs. 2–3 widths against NA: paraxial scalar against vector, air and water.', 15, PALE)])
+    wide('Widths against NA in air: scalar and vector', os.path.join(HN, 'widths_air.png'), [
+        'Solid: vector; dashed: paraxial scalar (the paper’s model). θ = 0 and π coincide except 2PE along z (fringes at θ = π).',
+        'Scalar DOF longer by tan²(α/2): 7% at NA 0.5, 16% at 0.7, 36% at 0.9; across the axis 6% or less. θ = π/2 to NA 0.71.'],
+        'The paraxial model holds across the axis; along it the DOF is too long at high NA.', 'Widths in air.')
+    wide('Widths against NA in water: scalar and vector', os.path.join(HN, 'widths_water.png'), [
+        'Same layout as in air; θ = π/2 to NA 0.94 (lenses fit at 90°).',
+        'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9: about half the error in air at the same NA, or less.'],
+        'In water the paraxial model holds to a higher NA.', 'Widths in water.')
+    wide('The paper’s comparisons against NA, θ = π/2', os.path.join(HN, 'ratios.png'), [
+        'Scalar and vector within 4% to NA 0.7 (air) and 0.9 (water): the paper’s comparisons hold for the vector focus.',
+        'All three ratios move toward 1 as NA grows: at NA 0.7 in air, 2CE is 2.0× wider than 2PE (2.9× at NA 0.5).'],
+        'The comparisons of the paper hold at high NA; their size depends on NA.', 'Ratios against NA.')
+    navy('Optical pulses', [('Figs. 2–3 with transform-limited pulses, zero delay, NA 0.5.', 15, PALE)])
+    wide('Axial response with pulses, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
+        'Head-on pulses overlap only within √2 cτ/2 of the focus (2.1 µm at 10 fs).',
+        '2CE DOF: 3.56 µm (continuous) → 3.52 (100 fs), 2.81 (20 fs), 1.92 (10 fs). 2PE: fringes kept only where the pulses '
+        'overlap. θ = 0 and π/2: widths change by 2% or less.'],
+        'Short pulses shorten the 2CE response along the axis at θ = π.', 'Pulses, θ = π.')
+    words('Next steps', ['Decide h for Fig. 8 with Dr. Saloma (slab half-thickness not stated).',
+                         'Run the time delay between the pulses (θ = π).', 'Run high NA with pulses.'],
+          'Fig. 8 setting, time delay.', 'Next steps.', size=14)
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
