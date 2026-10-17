@@ -1,0 +1,4 @@
+# Upload the source and the generated public/data and public/img (gitignored, so listed here explicitly).
+node_modules
+dist
+.vercel
