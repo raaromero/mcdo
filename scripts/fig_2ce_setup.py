@@ -121,3 +121,43 @@ save_panels(fig, fig.axes, os.path.join(OUT, 'panels'), 'setup')
 out = os.path.join(OUT, 'setup.png')
 fig.savefig(out, dpi=600, bbox_inches='tight')
 print('Saved ->', out)
+
+# Cambaliza & Saloma (2000) only: the three angles, tight panels so the drawings fill them (colors: red λ1, blue λ2)
+fig, axes = plt.subplots(1, 3, figsize=(18.5, 8.6), gridspec_kw=dict(wspace=0.04))
+for ax, (ttl, th) in zip(axes, (('θ = 0', 0.0), ('θ = π/2', -np.pi / 2), ('θ = π', np.pi))):
+    ax.set_aspect('equal'); ax.axis('off'); ax.set_title(ttl, fontsize=34)
+    ax.set_xlim(-2.2, 4.3); ax.set_ylim(4.3, -4.1)
+    for xy, xyt, lab, at in (((4.0, 0), (-2.0, 0), 'x', (3.75, -0.45)), ((0, 4.1), (0, -4.0), 'z', (0.25, 3.9))):
+        ax.annotate('', xy=xy, xytext=xyt, arrowprops=dict(arrowstyle='->', color='#555555', lw=2))
+        ax.text(*at, lab, fontsize=30, va='center')
+    beam(ax, 0.0, (0, 0), C1, 'L1', '')
+    if th == 0.0:
+        beam(ax, 0.0, (0, 0), C2, '', '', draw_lens=False)
+    else:
+        beam(ax, th, (0, 0), C2, 'L2', '')
+    ax.plot(0, 0, 'o', color='k', ms=12, zorder=6)
+    ax.text(-0.3, -0.35, 'O', fontsize=30, ha='right')
+plt.tight_layout()
+out = os.path.join(OUT, 'setup_cambaliza.png')
+fig.savefig(out, dpi=300, bbox_inches='tight')
+print('Saved ->', out)
+
+# One panel with a general angle θ between the lens axes, for the model slide
+TH = 2 * np.pi / 3
+fig, ax = plt.subplots(figsize=(7.4, 7.8))
+ax.set_aspect('equal'); ax.axis('off')
+ax.set_xlim(-4.4, 4.6); ax.set_ylim(4.6, -4.6)
+for xy, xyt, lab, at in (((4.2, 0), (-4.2, 0), 'x', (4.25, -0.4)), ((0, 4.3), (0, -4.5), 'z', (0.25, 4.25))):
+    ax.annotate('', xy=xy, xytext=xyt, arrowprops=dict(arrowstyle='->', color='#555555', lw=1.6))
+    ax.text(*at, lab, fontsize=28, va='center')
+beam(ax, 0.0, (0, 0), C1, 'L1', L1TXT)
+beam(ax, -TH, (0, 0), C2, 'L2', L2TXT)
+phi = np.linspace(0, TH, 60)
+ax.plot(1.3 * np.sin(phi), -1.3 * np.cos(phi), color='k', lw=2)
+ax.text(1.75 * np.sin(TH / 2), -1.75 * np.cos(TH / 2), 'θ', fontsize=32, ha='center', va='center')
+ax.plot(0, 0, 'o', color='k', ms=10, zorder=6)
+ax.text(-0.3, -0.35, 'O', fontsize=28, ha='right')
+plt.tight_layout()
+out = os.path.join(OUT, 'setup_model.png')
+fig.savefig(out, dpi=300, bbox_inches='tight')
+print('Saved ->', out)

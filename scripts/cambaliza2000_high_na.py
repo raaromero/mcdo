@@ -151,3 +151,48 @@ for n in (1.0, 1.33):
             ia, ib = np.isclose(da[:, 0], na), np.isclose(db[:, 0], na)
             if ia.any() and ib.any():
                 print(f'n {n} NA {na}: {lab}: scalar {da[ia, 1][0] / db[ib, 1][0]:.3f}, vector {da[ia, 2][0] / db[ib, 2][0]:.3f}')
+
+
+# ── where scalar and vector split: (scalar - vector) / vector in percent against NA, ±5% band, crossing marked ──
+def crossing(na, gap, lim=5.0):
+    """First NA at which |gap| reaches lim, by linear interpolation; None if it stays inside."""
+    out = np.where(np.abs(gap) >= lim)[0]
+    if not len(out) or out[0] == 0:
+        return None
+    i = out[0]
+    g0, g1 = abs(gap[i - 1]), abs(gap[i])
+    return na[i - 1] + (lim - g0) / (g1 - g0) * (na[i] - na[i - 1])
+
+
+SPLIT = {'0pi': ('θ = 0 and π', {'x': (('2CE', 0.0, '#ff7f0e', '2PE and 2CE'),),     # 2PE and 2CE gaps coincide here
+                                  'z': (('2CE', 0.0, '#ff7f0e', '2CE; 2PE at θ = 0'), ('2PE', np.pi, '#1f77b4', '2PE, θ = π'))}),
+         'pi2': ('θ = π/2', {'x': (('2PE', np.pi / 2, '#d62728', '2PE'), ('2CE', np.pi / 2, '#ff7f0e', '2CE')),
+                             'z': (('2PE', np.pi / 2, '#d62728', '2PE'), ('2CE', np.pi / 2, '#ff7f0e', '2CE'))})}
+split_lines = []
+for key, (ttl, curves) in SPLIT.items():
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.9), sharey=True)
+    for ax, axis in zip(axes, ('x', 'z')):
+        ax.axhspan(-5, 5, color='#cccccc', alpha=0.45, lw=0, label='±5%')
+        ax.axhline(0, color='#888888', lw=1.5)
+        for sig, th, col, lab in curves[axis]:
+            for n, ls, mk, tag in ((1.0, '-', 'o', 'air'), (1.33, '--', 's', 'water')):
+                d = sel(n, sig, axis, th)
+                gap = 100 * (d[:, 1] / d[:, 2] - 1)
+                ax.plot(d[:, 0], gap, ls + mk, color=col, lw=3, ms=8, mfc=col if n == 1 else 'white', label=f'{lab}, {tag}')
+                c = crossing(d[:, 0], gap)
+                if c is not None:
+                    ax.axvline(c, color=col, ls=':', lw=2)
+                    ax.plot([c], [5 if gap[-1] > 0 else -5], 'D', color=col, ms=14, mfc=col if n == 1 else 'white', mew=2.5)
+                split_lines.append(f'{ttl} | {axis} | {lab} | {tag} | 5% at NA {c:.2f}' if c else
+                                   f'{ttl} | {axis} | {lab} | {tag} | within 5% to NA {d[-1, 0]:g}')
+        ax.set_xlabel('NA'); ax.set_xlim(0.15, 1.3)
+        ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
+    axes[0].set_ylabel('Scalar over vector − 1 (%)')
+    axes[0].set_ylim(*((-10, 50) if key == '0pi' else (-8, 12)))
+    h, l = axes[1].get_legend_handles_labels()
+    fig.legend(h, l, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 0.0), frameon=False)
+    plt.tight_layout()
+    fig.savefig(os.path.join(OUT, f'split_{key}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+    print(f'Saved -> split_{key}.png')
+open(os.path.join(OUT, 'split.txt'), 'w').write('\n'.join(split_lines) + '\n')
+print('\n'.join(split_lines))
