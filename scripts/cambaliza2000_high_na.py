@@ -138,7 +138,7 @@ h, l = axes[0].get_legend_handles_labels()
 fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, 'ratios_x.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
-fig, ax = plt.subplots(figsize=(12, 6.5))                            # along the axis: the DOF comparison
+fig, ax = plt.subplots(figsize=(17, 7.0))                            # along the axis: the DOF comparison
 ratio_axes(ax, *RAT[2])
 ax.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), frameon=False)
 fig.savefig(os.path.join(OUT, 'ratios_z.png'), dpi=300, bbox_inches='tight'); plt.close(fig)

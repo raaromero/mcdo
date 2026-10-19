@@ -87,7 +87,7 @@ def wide(name, path, items, main, script, latex=None):
     if SECTION in ('cambaliza', CMEETING):                     # figure as tall as the bullets beneath allow
         h = 4.12 - 0.3 * (len(items) - 1)
         figure(s, path, 0.45, 0.92, 9.1, h)
-        bullets(s, 0.6, 0.98 + h, 8.6, 0.3 * len(items) + 0.05, items, 14)
+        bullets(s, 0.6, 0.98 + h, 8.6, 0.3 * len(items) + 0.05, items, 13)
     else:
         figure(s, path, 0.45, 0.95, 9.1, 3.72)
         bullets(s, 0.6, 4.72, 8.9, 0.55, items, 11.5)
@@ -170,7 +170,7 @@ def chigh_na(part='High NA', water_x=False, summary=None):
         'Within 4% to NA 0.7 (air) and 0.9 (water). 2CE over 2PE at theta = pi/2: 2.9x at NA 0.5, 2.0x at NA 0.7 in air. '
         '2PE crossed over facing: 0.50 at NA 0.5, 0.71 at NA 0.7 in air.')
     wide('Depth-of-focus comparison against NA, θ = π/2', os.path.join(hn, 'ratios_z.png'), [
-        'The 2CE response stays longer than the 2PE central fringe, by less as NA grows; scalar and vector agree.'],
+        'The 2CE depth of focus stays longer than the 2PE central fringe, by less as NA grows.'],
         'The DOF comparison holds at high NA.',
         'DOF of 2CE over 2PE at theta = pi/2: 2.6 at NA 0.5, 1.8 at NA 0.7 in air; 3.5 at 0.5, 1.9 at 0.9 in water. '
         'Scalar and vector within 4%. The 2PE width is that of the central fringe, which does not change with NA, '
@@ -1637,7 +1637,7 @@ elif SECTION == CMEETING:
         'at NA 0.9 in air.'))
     PU = os.path.join(CB, 'high_na', 'pupils')
     wide('Annular pupils: depth of focus against NA, air', os.path.join(PU, 'annular_widths_air_z.png'), [
-        'With annular pupils (ε = 0.99) the paraxial depth of focus is too long at high NA: 2.2× at NA 0.9.'],
+        'With annular pupils the paraxial depth of focus is 2.2 times too long at NA 0.9 in air.'],
         'Along the axis the paraxial model departs sooner with annular pupils.',
         'Vector (Richards-Wolf) with the annulus sin(theta) >= eps sin(alpha) (sine condition), beams polarized along y. '
         'Annular DOF (2CE, theta = 0), vector / scalar: 155 / 179 um at NA 0.5 (scalar 15% longer), 65 / 91 um at 0.7 '
@@ -1645,13 +1645,17 @@ elif SECTION == CMEETING:
         'DOF: 47x at NA 0.5, 42x at 0.7, 31x at 0.9 (paraxial: 1/(1 - eps^2) = 50). Spot across the axis: 0.70x the '
         'circular one at all NA. theta = pi/2: set by the narrow transverse spot of the other beam, so scalar and vector '
         'agree within 2%.')
-    wide('Annular comparisons against NA', os.path.join(PU, 'annular_quoted.png'), [
-        'Scalar and vector agree within 5% on the annular comparisons; two of them change with NA.'],
-        'Two annular comparisons stay fixed with NA; two shrink as NA grows.',
-        'Stars: values quoted at NA 0.5. Fig. 6b ratio 0.673 at all NA (published 0.82; the replication gives 0.67 at NA '
-        '0.5). DOF of annular over circular 2CE at theta = pi/2: 30% shorter at all NA (published 40%). 2PE narrower than '
-        '2CE at theta = pi/2: 52% at NA 0.5, 31% at 0.7 in air (published 35%). Annular 2CE DOF over 2PE DOF at theta = '
-        'pi/2: +81% at NA 0.5, +27% at 0.7 in air (published +20%).')
+    wide('Annular comparisons across the axis against NA', os.path.join(PU, 'annular_quoted_x.png'), [
+        'At all NA the 2CE spot at θ = 0 is 0.67 times that at θ = π/2 (published: 0.82).',
+        'The 2PE spot at θ = π/2 is 52% narrower than 2CE at NA 0.5 and 31% at NA 0.7 (published: 35%).'],
+        'Annular comparisons across the axis.',
+        'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water. The replication '
+        'gives 0.67 at NA 0.5 for the Fig. 6b ratio.')
+    wide('Annular comparisons along the axis against NA', os.path.join(PU, 'annular_quoted_z.png'), [
+        'At θ = π/2 the annular 2CE depth of focus is 30% shorter than the circular one (published: 40%).',
+        'It is 81% longer than the 2PE one at NA 0.5 and 27% longer at NA 0.7 (published: 20%).'],
+        'Annular comparisons along the axis.',
+        'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water.')
     wide('Wavelength gap Δλ against NA (Figs. 4–5)', os.path.join(PU, 'dlambda_vs_na.png'), [
         'The Δλ dependence of Figs. 4–5 holds from NA 0.3 to 0.9, in air and water.'],
         'The wavelength gap changes the 2CE response by the same fraction at all NA.',
@@ -1662,7 +1666,7 @@ elif SECTION == CMEETING:
     words('Summary: optical pulses', [
         'Short pulses shorten the 2CE depth of focus with facing lenses (θ = π): from 3.6 µm to 1.9 µm with 10-fs pulses at NA 0.5.',
         'With θ = 0 and π/2 the pulses change the response by 2% or less.',
-        'At high NA the focus is shorter than the pulse overlap, so pulses change the depth of focus little.'],
+        'At high NA the focus is shorter than the pulse overlap; the depth of focus barely changes.'],
         'Optical pulses: main points.', 'Zero delay between the pulses. Head-on pulses overlap within sqrt(2) c tau / 2 of '
         'the focus (2.1 um at 10 fs).', size=18)
     wide('Axial response with pulses, NA 0.5, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
@@ -1672,18 +1676,28 @@ elif SECTION == CMEETING:
     PH = os.path.join(CB, 'pulses', 'high_na')
     if os.path.exists(os.path.join(PH, 'dof_pi.png')):
         wide('Depth of focus with pulses against NA, θ = π', os.path.join(PH, 'dof_pi.png'), [
-            'At high NA the focus is shorter than the pulse overlap, so pulses change the depth of focus little.'],
+            'At high NA the focus is shorter than the pulse overlap; the depth of focus barely changes.'],
             'The effect of the pulse length fades as NA grows.',
             'Vector (Richards-Wolf), both beams polarized along y, zero delay. DOF = central-peak FWHM along z; '
             'pulsed over continuous. Widths (um), CW | 20 fs | 10 fs: '
             + '; '.join(l for l in open(os.path.join(PH, 'widths.txt')).read().splitlines()[1:] if ' z π |' in l))
+    PULSE = {
+        ('air', '2ce'): ('10-fs pulses shorten the depth of focus from 3.3 to 1.9 µm at NA 0.5, 1.6 to 1.3 µm at 0.7.',
+                         'At NA 0.9 the focus is shorter than the pulse overlap; the depth of focus changes by 4%.'),
+        ('air', '2pe'): ('At NA 0.5, shorter pulses keep the fringes only near the focus, where the pulses overlap.',
+                         'At NA 0.7 and 0.9, the focus is shorter and the fringes change less.'),
+        ('water', '2ce'): ('10-fs pulses shorten the depth of focus from 4.6 to 1.6 µm at NA 0.5, 1.3 to 1.0 µm at 0.9.',
+                           'At NA 1.2 the focus is shorter than the pulse overlap; the depth of focus changes by 4%.'),
+        ('water', '2pe'): ('At NA 0.5, shorter pulses keep the fringes only near the focus, where the pulses overlap.',
+                           'At NA 0.9 and 1.2, the focus is shorter and the fringes change less.')}
     for med, tag in (('air', 'NA 0.5, 0.7, 0.9'), ('water', 'NA 0.5, 0.9, 1.2')):
-        if os.path.exists(os.path.join(PH, f'axial_pi_{med}.png')):
-            wide(f'Axial response with pulses at high NA, {med}, θ = π', os.path.join(PH, f'axial_pi_{med}.png'), [
-                'Pulses shorten the 2CE response along the axis at low NA; at high NA the focus is already shorter.'],
-                'The pulse overlap matters where the focus is longer than it.',
-                f'Vector (Richards-Wolf), {tag}; rows: 2PE and 2CE, beams along y (unpolarized 2CE: the same on the axis). Continuous and '
-                'tau = 100, 20, 10 fs, zero delay; each curve normalized to its own peak.')
+        for sig in ('2ce', '2pe'):
+            path = os.path.join(PH, f'axial_pi_{med}_{sig}.png')
+            if os.path.exists(path):
+                wide(f'{sig.upper()} along the axis with pulses, {med}, θ = π', path, list(PULSE[med, sig]),
+                     f'{sig.upper()} with pulses at high NA, {med}.',
+                     f'Vector (Richards-Wolf), {tag}, beams along y (unpolarized 2CE: the same on the axis). Continuous and '
+                     'tau = 100, 20, 10 fs, zero delay; each curve normalized to its own peak.')
     words('Next steps', ['Add a time delay between the two pulses and follow the 2CE response as the delay grows.'],
           'Next step: time delay.', 'Next steps.', size=18)
     red({                                                     # differences from the published text, on their own slides only

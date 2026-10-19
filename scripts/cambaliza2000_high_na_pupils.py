@@ -215,22 +215,23 @@ def figures():
     # 3. the paper's annular comparisons (pp. 31-32) against NA, vector (s) solid, scalar dashed, air and water
     P = np.pi / 2
     same, less, more = (lambda r: r), (lambda r: 1 - r), (lambda r: r - 1)
-    RAT = (('Fig. 6b: x, θ = 0 / π/2', ('2CE', 'x', 0.0, EPS), ('2CE', 'x', P, EPS), 0.82, same),
-           ('p. 31: 2PE narrower', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
-           ('p. 32: DOF shorter', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
-           ('p. 32: DOF longer', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
-    fig, axes = plt.subplots(2, 2, figsize=(18.5, 6.7)); axes = axes.ravel()
-    for ax, (lab, a, b, paper, tr) in zip(axes, RAT):
-        for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
-            for model, c, ls in (('s', '#1f77b4', '-'), ('scalar', '#d62728', '--')):
-                na_a, wa = sel(n, a[3], 0, a[0], a[1], a[2], model); na_b, wb = sel(n, b[3], 0, b[0], b[1], b[2], model)
-                m = np.intersect1d(na_a, na_b)
-                r = tr(wa[np.isin(na_a, m)] / wb[np.isin(na_b, m)])
-                ax.plot(m, r, ls + mk, color=c, lw=3, ms=9, mfc=c if n == 1 else 'white',
-                        label=f'{"Vector" if model == "s" else "Scalar"}, {tag}')
-        ax.plot([0.5], [paper], '*', color='k', ms=22, label='Published (NA 0.5)')
-        ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
-    save(fig, 'annular_quoted.png', axes, 5)
+    RAT = (('2CE spot, θ = 0 over θ = π/2 (Fig. 6b)', ('2CE', 'x', 0.0, EPS), ('2CE', 'x', P, EPS), 0.82, same),
+           ('2PE spot narrower than 2CE, θ = π/2 (p. 31)', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
+           ('2CE DOF shorter than circular, θ = π/2 (p. 32)', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
+           ('2CE DOF longer than 2PE, θ = π/2 (p. 32)', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
+    for part, rats in (('x', RAT[:2]), ('z', RAT[2:])):           # two comparisons per slide: larger panels
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.9))
+        for ax, (lab, a, b, paper, tr) in zip(axes, rats):
+            for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
+                for model, c, ls in (('s', '#1f77b4', '-'), ('scalar', '#d62728', '--')):
+                    na_a, wa = sel(n, a[3], 0, a[0], a[1], a[2], model); na_b, wb = sel(n, b[3], 0, b[0], b[1], b[2], model)
+                    m = np.intersect1d(na_a, na_b)
+                    r = tr(wa[np.isin(na_a, m)] / wb[np.isin(na_b, m)])
+                    ax.plot(m, r, ls + mk, color=c, lw=3, ms=9, mfc=c if n == 1 else 'white',
+                            label=f'{"Vector" if model == "s" else "Scalar"}, {tag}')
+            ax.plot([0.5], [paper], '*', color='k', ms=22, label='Published (NA 0.5)')
+            ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
+        save(fig, f'annular_quoted_{part}.png', axes, 5)
 
     # 4. Gaussian input (α_t = 4) / uniform: width ratio against NA, vector (s), circular and annular
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):

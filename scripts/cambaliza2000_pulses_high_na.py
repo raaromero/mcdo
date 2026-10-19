@@ -219,6 +219,24 @@ def profiles():
         plt.tight_layout()
         fig.savefig(os.path.join(BASE, f'axial_pi_{tag}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> axial_pi_{tag}.png')
+        for sig, lab in (('2PE', '2PE'), ('2CE_y', '2CE')):                          # one signal per slide: larger panels
+            fig, axes = plt.subplots(1, len(nas), figsize=(18.5, 6.9), sharey=True)
+            for ax, na in zip(axes, nas):
+                k0 = f'n{n:g}_na{na:g}_'
+                zs = P[k0 + 'z']
+                for k in ('cw', '100', '20', '10'):
+                    col, ls, lw, l = STY[k]
+                    v = P[k0 + f'{sig}_{k}']
+                    ax.plot(zs, v / v.max(), ls, color=col, lw=lw, label=l)
+                ax.set_xlim(zs[0], zs[-1]); ax.set_ylim(0, 1.0)
+                ax.set_title(f'{lab}, NA {na:g}'); ax.set_xlabel('z (µm)')
+            axes[0].set_ylabel('Intensity')
+            h, l = axes[0].get_legend_handles_labels()
+            fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
+            plt.tight_layout()
+            name = f'axial_pi_{tag}_{lab.lower()}.png'
+            fig.savefig(os.path.join(BASE, name), dpi=300, bbox_inches='tight'); plt.close(fig)
+            print(f'Saved -> {name}')
 
 
 if __name__ == '__main__':
