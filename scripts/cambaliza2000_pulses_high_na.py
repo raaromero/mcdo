@@ -219,6 +219,25 @@ def profiles():
         plt.tight_layout()
         fig.savefig(os.path.join(BASE, f'axial_pi_{tag}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> axial_pi_{tag}.png')
+        for na in nas:                                                                  # one NA per slide: 2PE | 2CE
+            k0 = f'n{n:g}_na{na:g}_'
+            zs = P[k0 + 'z']
+            fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0), sharey=True)
+            for ax, (sig, lab, keys) in zip(axes, (('2PE', '2PE', ('cw', '10')), ('2CE_y', '2CE', ('cw', '100', '20', '10')))):
+                for k in keys:                                                          # 2PE: continuous and 10 fs only, so the fringes read
+                    col, ls, lw, l = STY[k]
+                    v = P[k0 + f'{sig}_{k}']
+                    ax.plot(zs, v / v.max(), ls, color=col, lw=lw, label=l)
+                half = 4.0 if na <= 0.5 else zs[-1]
+                ax.set_xlim(-half, half); ax.set_ylim(0, 1.0)
+                ax.set_title(lab); ax.set_xlabel('z (µm)')
+            axes[0].set_ylabel('Intensity')
+            h, l = axes[1].get_legend_handles_labels()
+            fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
+            plt.tight_layout()
+            name = f'axial_pi_{tag}_na{na:g}.png'
+            fig.savefig(os.path.join(BASE, name), dpi=300, bbox_inches='tight'); plt.close(fig)
+            print(f'Saved -> {name}')
         for sig, lab in (('2PE', '2PE'), ('2CE_y', '2CE')):                          # one signal per slide: larger panels
             fig, axes = plt.subplots(1, len(nas), figsize=(18.5, 6.9), sharey=True)
             for ax, na in zip(axes, nas):

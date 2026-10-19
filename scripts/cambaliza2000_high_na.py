@@ -196,3 +196,30 @@ for key, (ttl, curves) in SPLIT.items():
     print(f'Saved -> split_{key}.png')
 open(os.path.join(OUT, 'split.txt'), 'w').write('\n'.join(split_lines) + '\n')
 print('\n'.join(split_lines))
+
+
+# ── one configuration per figure: medium and θ; across | along; 2PE black, 2CE orange; vector solid, scalar dashed ──
+for n, tag in ((1.0, 'air'), (1.33, 'water')):
+    for th, tk in ((0.0, '0'), (np.pi / 2, 'pi2'), (np.pi, 'pi')):
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
+        for ax, axis in zip(axes, ('x', 'z')):
+            for sig, col in (('2PE', 'k'), ('2CE', '#ff7f0e')):
+                d = sel(n, sig, axis, th)
+                if not len(d):
+                    continue
+                ax.plot(d[:, 0], d[:, 2], '-o', color=col, lw=3, ms=8, label=f'{sig}, vector')
+                ax.plot(d[:, 0], d[:, 1], '--', color=col, lw=3, label=f'{sig}, scalar')
+            ax.set_xscale('log'); ax.set_yscale('log')
+            ax.set_xticks([0.2, 0.3, 0.5, 0.7, 1.0, 1.2] if n > 1 else [0.2, 0.3, 0.5, 0.7, 0.9])
+            ax.set_xticklabels(['0.2', '0.3', '0.5', '0.7', '1', '1.2'] if n > 1 else ['0.2', '0.3', '0.5', '0.7', '0.9'])
+            ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+            ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 3, 5)))
+            ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+            ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+            ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
+            ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
+        h, l = axes[0].get_legend_handles_labels()
+        fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
+        plt.tight_layout()
+        fig.savefig(os.path.join(OUT, f'theta_{tag}_{tk}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+        print(f'Saved -> theta_{tag}_{tk}.png')

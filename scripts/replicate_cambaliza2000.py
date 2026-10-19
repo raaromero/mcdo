@@ -182,11 +182,14 @@ def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True):
     for x, y, lab, c, ls, lw in curves:
         ax.plot(x, y, ls, color=c, lw=lw, label=lab)
     ax.set_xlim(*xlim); ax.set_ylim(*ylim); ax.set_xlabel(xlabel); ax.set_ylabel('Intensity')
-    ax.set_xticks(np.arange(xlim[0], xlim[1] + 1e-9, 0.2 if xlim == (0, 1) else 0.5 if xlim[1] == 1 else 1))
+    ax.set_xticks(np.round(np.arange(xlim[0], xlim[1] + 1e-9, 0.2 if xlim[1] == 1 else 1), 6) + 0.0)   # the paper's ticks
     ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
     ax.set_yticks(np.arange(0, 1.01, 0.2)); ax.tick_params(axis='x', pad=12)
+    if xlim == (-1, 1):                                       # rotated, as printed in Figs. 2 and 6
+        ax.tick_params(axis='x', labelrotation=90)
     if legend:
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[name[:5]]), ncol=3, frameon=False)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[name[:5]] - (0.16 if xlim == (-1, 1) else 0)), ncol=3,
+                  frameon=False)
     fig.savefig(os.path.join(PAN, name), dpi=300, bbox_inches='tight'); plt.close(fig)
 
 

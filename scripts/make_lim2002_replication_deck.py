@@ -260,7 +260,7 @@ bullets(s, 0.6, _t + 0.5, 8.9, 2.4, [
     'At θ = π, a misalignment of x_c = 0.37 λ_1 reduces the 2CE peak by 18%; the paper reports 20%.',
     'For 2PE at θ = π/2, a misalignment of x_c = 0.5 λ_{2p} reduces the peak by 27%; the paper reports 30%.',
     'Along the axis at θ = π, a misalignment of z_c = 2.7 λ_1 reduces the 2CE peak by 19%; the paper reports 20%.'], 13)
-notes(s, 'Each peak loss reported in Section 3.2 comes back within a few percent.',
+notes(s, 'Each peak loss reported in Section 3.2 is reproduced within a few percent.',
       'The two-color loss at theta = pi/2 is 11 percent at 1.33 lambda_1 in both. At theta = pi, 18 against the paper’s 20 '
       'percent at 0.37 lambda_1. The two-photon loss at theta = pi/2 is 27 against 30 percent. Along the axis, 19 against 20.',
       r'''

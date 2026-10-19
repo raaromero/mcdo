@@ -17,6 +17,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 from mcdo.twobeam import beam_field
 
 D = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
@@ -118,14 +119,25 @@ with plt.rc_context({'font.size': 32, 'axes.labelsize': 32, 'legend.fontsize': 3
 pf, pd = np.polyfit(dn, fw, 1), np.polyfit(dn, dof, 1)
 LINES.append(f'Fig. 5 current work: FWHM {pf[0]:.3e} dl + {pf[1]:.4f}; DOF {pd[0]:.3e} dl + {pd[1]:.4f}')
 
-# rotation of beam 2: (x, z) against (u, v), 2CE at θ = π/2 along the axis
-wg, wo = one('rotation.png', z, [(f2ce(0 * z, z, P2), '#1f77b4', '-', 'Rotated in (x, z)'),
-                                 (f2ce(0 * z, z, P2, rotation='optical'), '#d62728', '--', 'Rotated in (u, v), Eq. 1')],
-             'z (µm)', '', (-3, 3), panel=True)
+# rotation of beam 2: (x, z) against (u, v), 2CE at θ = π/2 along the axis; drawn like the panel of Fig. 3b
+# (same x range and plot-box shape, as in replicate_cambaliza2000.py) to sit beside it
+BOX3B = 486 / 294
+yg, yo = f2ce(0 * z, z, P2), f2ce(0 * z, z, P2, rotation='optical')
+wg, wo = fwhm(z, yg), fwhm(z, yo)
+with plt.rc_context({'font.size': 30, 'axes.labelsize': 30, 'legend.fontsize': 28, 'axes.grid': False}):
+    fig, ax = plt.subplots(figsize=(9, 9 / BOX3B + 2.5))
+    ax.set_box_aspect(1 / BOX3B)
+    ax.plot(z, yg, '-', color='#1f77b4', label='Rotated in (x, z)')
+    ax.plot(z, yo, '--', color='#d62728', label='Rotated in (u, v), Eq. 1')
+    ax.set_xlim(-5, 5); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-5, 5.1, 1)); ax.set_yticks(np.arange(0, 1.01, 0.2))
+    ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+    ax.set_xlabel('z (µm)'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
+    save(fig, 'rotation.png')
 LINES.append(f'rotation, 2CE z pi/2: (x, z) {wg:.3f}, (u, v) {wo:.3f}')
 
 # annular 2PE at θ = π/2: Eq. 6 against the excitation
-fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.4))
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0))
 for ax, (s, X, Z, lab, xl) in zip(axes, ((x, X0, Z0, 'across (Fig. 6a)', 'x (µm)'),
                                          (z, 0 * z, z, 'along (Fig. 7a)', 'z (µm)'))):
     ax.plot(s, f2pe(X, Z, P2, eps=0.99, power=4), '-', color='#d62728', label='Eq. 6, |U₁ + U₂|⁴')
@@ -138,3 +150,22 @@ plt.tight_layout()
 save(fig, 'eq6_excitation.png')
 open(os.path.join(OUT, 'numbers.txt'), 'w').write('\n'.join(LINES) + '\n')
 print('\n'.join(LINES))
+
+# Fig. 5 (asked for as an overlay): current-work lines and the caption fits drawn on the published plot, axes
+# calibrated from its tick marks (x: 0 at column 143.5, 100 at 594.5; y: 0.65 at row 380.5, 0.775 at row 13.5)
+from PIL import Image
+im = np.array(Image.open(os.path.join(D, 'original', 'fig5.png')).convert('L'))
+H, W = im.shape
+cx0, cx1, ry0, ry1 = 143.5, 594.5, 380.5, 13.5
+sx, sy = 100 / (cx1 - cx0), 0.125 / (ry1 - ry0)
+ext = (-cx0 * sx, (W - cx0) * sx, 0.65 + (H - ry0) * sy, 0.65 - ry0 * sy)
+with plt.rc_context({'axes.grid': False, 'legend.fontsize': 24}):
+    fig, ax = plt.subplots(figsize=(14, 14 * H / W * 0.95))
+    ax.imshow(im, cmap='gray', extent=ext, aspect='auto', alpha=0.65)
+    L = np.array([0, 100])
+    ax.plot(L, np.polyval(pf, L), '-', color='#1f77b4', lw=3.5, label=f'Current work, FWHM: {pf[0] * 1e4:+.2f}×10⁻⁴ Δλ + {pf[1]:.4f}')
+    ax.plot(L, np.polyval(pd, L), '-', color='#2ca02c', lw=3.5, label=f'Current work, DOF: {pd[0] * 1e4:+.2f}×10⁻⁴ Δλ + {pd[1]:.4f}')
+    ax.plot(L, 4.81e-4 * L + 0.7112, '--', color='#ff7f0e', lw=3.5, label='Caption, DOF: +4.81×10⁻⁴ Δλ + 0.7112')
+    ax.plot([], [], '--', color='#d62728', lw=3.5, label='Caption, FWHM: 2.4×10⁻⁴ Δλ + 0.0356 (off the plot)')
+    ax.set_xlim(ext[0], ext[1]); ax.set_ylim(ext[2], ext[3]); ax.axis('off')
+    save(fig, 'fig5_overlay.png')                         # colours explained on the slide

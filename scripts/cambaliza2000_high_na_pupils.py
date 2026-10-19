@@ -286,7 +286,7 @@ def figures():
     E = pd.read_csv(DCSV)
     NCOL = {(1.0, 0.3): '#9467bd', (1.0, 0.5): 'k', (1.0, 0.7): '#1f77b4',
             (1.33, 0.5): '#ff7f0e', (1.33, 0.7): '#2ca02c', (1.33, 0.9): '#d62728'}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
         for (n, na), c in NCOL.items():
             for model, ls in (('s', '-o'), ('scalar', '--')):
