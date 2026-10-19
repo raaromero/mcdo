@@ -19,7 +19,7 @@ fontsize: 10.5pt
 - 2CE: Eq. 2 (circular) and Eq. 5 (annular). 2PE: Eq. 3 and Eq. 6. Annular pupil = difference of two circular
   pupils (Eq. 4), ε = 0.99.
 - **Current work:** computed Eqs. 1–6 as written.
-  - Eq. 1 writes the rotation of beam 2 in the optical coordinates (u, v). Because u ∝ NA²z and v ∝ NA·x, a rotation
+  - Eq. 1 writes the rotation of beam 2 in the optical coordinates (u, v). Because u scales as NA²z and v as NA·x, a rotation
     in (u, v) is not a rotation of the lens.
   - The published curves follow the rotation in real space (x, z): along the axis at θ = π/2 the published width is
     0.67 µm, which (x, z) gives; (u, v) gives 1.31 µm. Current work rotates in (x, z).
