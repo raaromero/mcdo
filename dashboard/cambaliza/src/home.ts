@@ -26,7 +26,7 @@ export function renderHome(root: HTMLElement, data: Data, name: string) {
 
   type Tile = { stat: string; title: string; text: string; card: string; mini?: [number, number][][]; img?: string };
   const tiles: Tile[] = [
-    { stat: "NA 0.5", title: "2PE and 2CE profiles recomputed from Eqs. 1–6", img: "fig2b",
+    { stat: "NA 0.5", title: "2PE and 2CE profiles recomputed from Eqs. 1–6", img: "cw2b",
       text: "Circular and annular pupils at NA 0.5; current work agrees with the published curves.", card: "Circular pupils: 2PE and 2CE profiles recomputed from Eqs. 1–6" },
     { stat: `+${Math.round((at(dofAir, 0.9) - 1) * 100)}%`, title: "The paraxial depth of focus is too long at high NA", mini: [dofAir, dofWater],
       text: `Scalar over vector at NA 0.9 in air; ${Math.round((at(dofWater, 0.9) - 1) * 100)}% in water.`, card: "The paraxial depth of focus is too long at high NA" },

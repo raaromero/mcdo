@@ -95,11 +95,15 @@ def main():
                 print(f'{med} NA {na:g}', flush=True)
     json.dump({'na': nas, 'n': {'air': 1.0, 'water': 1.33}, 'lam': {'l1': L1, 'l2': L2, 'lp': LP}, 'eps': EPS,
                'alpha': AT}, open(os.path.join(OUT, 'meta.json'), 'w'))
-    os.makedirs(IMG, exist_ok=True)                    # the replication overlays (current work over the paper)
-    for k in ('fig2a', 'fig2b', 'fig3a', 'fig3b', 'fig6a', 'fig6b', 'fig7a', 'fig7b'):
-        im = Image.open(os.path.join(SRC, 'overlay', f'{k}.png'))
-        im.thumbnail((1200, 1200))
-        im.save(os.path.join(IMG, f'{k}.png'), optimize=True)
+    os.makedirs(IMG, exist_ok=True)                    # published panels and current work side by side, never overlaid
+    for k in ('2a', '2b', '3a', '3b', '6a', '6b', '7a', '7b'):
+        for tag, f in (('paper', f'original/fig{k}'), ('cw', f'panels/fig{k}_excitation' if k in ('6a', '7a') else f'panels/fig{k}')):
+            im = Image.open(os.path.join(SRC, f'{f}.png')).convert('RGB')
+            im.thumbnail((1200, 1200))
+            im.save(os.path.join(IMG, f'{tag}{k}.png'), optimize=True)
+    for k in ('fig2a', 'fig2b', 'fig3a', 'fig3b', 'fig6a', 'fig6b', 'fig7a', 'fig7b'):   # old overlay files, if present
+        if os.path.exists(os.path.join(IMG, f'{k}.png')):
+            os.remove(os.path.join(IMG, f'{k}.png'))
     for k, f in (('paper4a', 'original/fig4a'), ('paper4b', 'original/fig4b'), ('paper5', 'original/fig5'),
                  ('cw4a', 'panels/fig4a'), ('cw4b', 'panels/fig4b'), ('cw5', 'panels/fig5')):
         im = Image.open(os.path.join(SRC, f'{f}.png')).convert('RGB')   # Figs. 4-5: the paper and current work side by side

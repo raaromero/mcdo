@@ -84,15 +84,14 @@ export function renderInsights(host: HTMLElement, data: Data) {
     }
     return c;
   };
-  // keys are overlay names ("fig2a") or [file, caption] pairs
-  const PANEL: Record<string, string> = { "2": "Across the axis", "3": "Along the axis", "6": "Across the axis", "7": "Along the axis" };
-  const images = (parent: HTMLElement, keys: (string | [string, string])[], caption: string) => {
+  // keys are [file, caption] pairs
+  const images = (parent: HTMLElement, keys: [string, string][], caption: string) => {
     const grid = el("div", "ins-images", "", parent);
     for (const k of keys) {
-      const [file, cap] = typeof k === "string" ? [k, `${PANEL[k.slice(3, 4)]}, ${k.endsWith("a") ? "2PE" : "2CE"} (Fig. ${k.slice(3)})`] : k;
+      const [file, cap] = k;
       const fig = el("figure", "", "", grid);
       const img = el("img", "", "", fig) as HTMLImageElement;
-      img.src = `./img/${file}.png`; img.alt = typeof k === "string" ? `${cap}: current work compared to the published curves` : cap; img.loading = "lazy";
+      img.src = `./img/${file}.png`; img.alt = cap; img.loading = "lazy";
       el("figcaption", "", cap, fig);
     }
     el("p", "ins-footnote", caption, parent);
@@ -100,14 +99,16 @@ export function renderInsights(host: HTMLElement, data: Data) {
 
   // ---------------- Replication ----------------
   const rep = section("Replication at NA 0.5");
-  images(card(rep, "Circular pupils: 2PE and 2CE profiles recomputed from Eqs. 1–6",
-    "Paraxial scalar model, NA 0.5, air: current work in color, compared to the published curves in black.",
-    [["See the profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=x&mo=scalar&p=circ&i=uni&th=0.pi2.pi"]]),
-  ["fig2a", "fig2b", "fig3a", "fig3b"], "(a) 2PE, (b) 2CE; Fig. 2 across the axis, Fig. 3 along it.");
-  images(card(rep, "Annular pupils: the published 2PE curves are the excitation",
-    "With annular pupils (ε = 0.99) the 2CE profiles agree with the published curves. The published 2PE curves are the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴).",
-    [["See the annular profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=z&mo=scalar&p=ann&i=uni&th=0.pi2.pi"]]),
-  ["fig6a", "fig6b", "fig7a", "fig7b"], "Orange: |U₁ + U₂|²; blue: Eq. 6.");
+  const circ = card(rep, "Circular pupils: 2PE and 2CE profiles recomputed from Eqs. 1–6",
+    "Paraxial scalar model, NA 0.5, air: each published panel beside current work. The curves agree at θ = 0, π/2 and π.",
+    [["See the profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=x&mo=scalar&p=circ&i=uni&th=0.pi2.pi"]]);
+  circ.classList.add("ins-card-wide", "ins-pairs");
+  images(circ, [["paper2a", "2PE across the axis, published (Fig. 2a)"], ["cw2a", "2PE across the axis, current work"], ["paper2b", "2CE across the axis, published (Fig. 2b)"], ["cw2b", "2CE across the axis, current work"], ["paper3a", "2PE along the axis, published (Fig. 3a)"], ["cw3a", "2PE along the axis, current work"], ["paper3b", "2CE along the axis, published (Fig. 3b)"], ["cw3b", "2CE along the axis, current work"]], "Black: θ = 0; red: θ = π/2; blue dashed: θ = π.");
+  const ann = card(rep, "Annular pupils: the published 2PE curves are the excitation",
+    "With annular pupils (ε = 0.99) the 2CE profiles agree with the published curves. The published 2PE curves are the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴); current work shows the excitation for comparison.",
+    [["See the annular profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=z&mo=scalar&p=ann&i=uni&th=0.pi2.pi"]]);
+  ann.classList.add("ins-card-wide", "ins-pairs");
+  images(ann, [["paper6a", "2PE across the axis, published (Fig. 6a)"], ["cw6a", "2PE across the axis, current work"], ["paper6b", "2CE across the axis, published (Fig. 6b)"], ["cw6b", "2CE across the axis, current work"], ["paper7a", "2PE along the axis, published (Fig. 7a)"], ["cw7a", "2PE along the axis, current work"], ["paper7b", "2CE along the axis, published (Fig. 7b)"], ["cw7b", "2CE along the axis, current work"]], "Each published panel beside current work.");
   const gap = card(rep, "A wider gap between the two wavelengths",
     "The 2CE focus at θ = π/2 as Δλ = λ₁ − λ₂ grows from 10 to 94 nm. The spot widens by about 6%, as reported on p. 30, and the depth of focus shortens by about 5%.",
     []);

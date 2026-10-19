@@ -2403,3 +2403,13 @@ a.ins-chip:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* published panel beside current work: two pairs per row */
+.ins-card-wide.ins-pairs .ins-images {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 900px) {
+  .ins-card-wide.ins-pairs .ins-images {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
