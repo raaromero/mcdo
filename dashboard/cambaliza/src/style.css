@@ -2390,3 +2390,16 @@ a.ins-chip:hover {
 .tip-row .t0 { color: var(--t0); }
 .tip-row .t1 { color: var(--t1); }
 .tip-row .t2 { color: var(--t2); }
+
+/* full-width replication card: paper on the top row, current work below */
+.ins-card-wide {
+  grid-column: 1 / -1;
+}
+.ins-card-wide .ins-images {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 640px) {
+  .ins-card-wide .ins-images {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

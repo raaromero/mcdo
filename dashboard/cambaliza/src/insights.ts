@@ -84,13 +84,15 @@ export function renderInsights(host: HTMLElement, data: Data) {
     }
     return c;
   };
-  const images = (parent: HTMLElement, keys: string[], caption: string) => {
+  // keys are overlay names ("fig2a") or [file, caption] pairs
+  const images = (parent: HTMLElement, keys: (string | [string, string])[], caption: string) => {
     const grid = el("div", "ins-images", "", parent);
     for (const k of keys) {
+      const [file, cap] = typeof k === "string" ? [k, `Fig. ${k.slice(3)}`] : k;
       const fig = el("figure", "", "", grid);
       const img = el("img", "", "", fig) as HTMLImageElement;
-      img.src = `./img/${k}.png`; img.alt = `Fig. ${k.slice(3)}: current work over the paper`; img.loading = "lazy";
-      el("figcaption", "", `Fig. ${k.slice(3)}`, fig);
+      img.src = `./img/${file}.png`; img.alt = typeof k === "string" ? `${cap}: current work over the paper` : cap; img.loading = "lazy";
+      el("figcaption", "", cap, fig);
     }
     el("p", "ins-footnote", caption, parent);
   };
@@ -105,6 +107,13 @@ export function renderInsights(host: HTMLElement, data: Data) {
     "With annular pupils (ε = 0.99) the 2CE panels match. The printed 2PE curves of Figs. 6(a) and 7(a) are the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴).",
     [["See the annular profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=z&mo=scalar&p=ann&i=uni&th=0.pi2.pi"]]),
   ["fig6a", "fig6b", "fig7a", "fig7b"], "Orange: |U₁ + U₂|²; blue: Eq. 6.");
+  const gap = card(rep, "A wider gap between the two wavelengths",
+    "Figs. 4–5: the 2CE focus at θ = π/2 as Δλ = λ₁ − λ₂ grows from 10 to 94 nm. As in the paper, the spot widens by about 6% (p. 30) and the depth of focus shortens, here by about 5%.",
+    []);
+  gap.classList.add("ins-card-wide");
+  images(gap, [["paper4a", "Fig. 4a, paper"], ["paper4b", "Fig. 4b, paper"], ["paper5", "Fig. 5, paper"],
+   ["cw4a", "Fig. 4a, current work"], ["cw4b", "Fig. 4b, current work"], ["cw5", "Fig. 5, current work"]],
+  "Fig. 4: (a) across the axis, (b) along it. Fig. 5: width across the axis (FWHM) and depth of focus (DOF) against Δλ.");
 
   // ---------------- High and low NA ----------------
   const hn = section("From low to high NA");

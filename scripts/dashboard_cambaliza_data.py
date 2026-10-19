@@ -100,6 +100,11 @@ def main():
         im = Image.open(os.path.join(SRC, 'overlay', f'{k}.png'))
         im.thumbnail((1200, 1200))
         im.save(os.path.join(IMG, f'{k}.png'), optimize=True)
+    for k, f in (('paper4a', 'original/fig4a'), ('paper4b', 'original/fig4b'), ('paper5', 'original/fig5'),
+                 ('cw4a', 'panels/fig4a'), ('cw4b', 'panels/fig4b'), ('cw5', 'panels/fig5')):
+        im = Image.open(os.path.join(SRC, f'{f}.png')).convert('RGB')   # Figs. 4-5: the paper and current work side by side
+        im.thumbnail((1200, 1200))
+        im.save(os.path.join(IMG, f'{k}.png'), optimize=True)
     print('Saved ->', OUT)
 
 
