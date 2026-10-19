@@ -1758,4 +1758,9 @@ save active presentation
 save active presentation in POSIX file "{os.path.join(DIR, 'pdfs', os.path.basename(OUT)[:-5])}.pdf" as save as PDF
 close active presentation saving no
 end tell'''], capture_output=True)
+for f in (OUT, os.path.join(DIR, 'pdfs', os.path.basename(OUT)[:-5] + '.pdf')):   # PowerPoint marks its saves as
+    if os.path.exists(f):                                                            # quarantined, which Keynote refuses;
+        data = open(f, 'rb').read()                                                  # a fresh copy drops the mark
+        os.remove(f)
+        open(f, 'wb').write(data)
 print(f'Saved -> {OUT} ({len(prs.slides)} slides)' + (f'; below {FLOOR:g} pt: {sorted(low)}' if low else ''))
