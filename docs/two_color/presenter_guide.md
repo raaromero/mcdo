@@ -100,7 +100,13 @@ air and 1.25 in water.
   narrower at the same NA.
 - Slides 36–37: the 2CE–2PE comparisons hold; scalar and vector agree within 4%.
 - Slide 38: with annular pupils the paraxial focus is 2.2 times too long at NA 0.9, because only the pupil edge is used.
-- Slides 39–40: the annular comparisons. Stars are the text values; crosses are values read off the published curves.
+- Slides 39–40: the annular comparisons at θ = π/2. **Two markers at NA 0.5:**
+  - **Star:** the number written in the text (pp. 31–32).
+  - **× Cross:** the same ratio measured on the paper's own printed figures (Figs. 3, 6, 7).
+  - Our paraxial curve (dashed) passes through the cross, which confirms the replication. Where the star sits away
+    from the cross, the text disagrees with the paper's own figures: 40% stated against 30% on the figures, and 20%
+    against 85%. 35% and 34% agree.
+  - Away from NA 0.5 the curves show how each ratio changes at high NA.
 - Slide 41: the wavelength-gap trend holds at every NA.
 - **Conclusion: the paraxial model is good across the axis and at θ = π/2. Along the axis at θ = 0 and π it
   departs from NA 0.43 (air) or 0.57 (water). The paper's comparisons hold at high NA.**

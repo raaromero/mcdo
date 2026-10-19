@@ -1824,13 +1824,13 @@ elif SECTION == CMEETING:
         'circular one at all NA. theta = pi/2: set by the narrow transverse spot of the other beam, so scalar and vector '
         'agree within 2%.')
     wide('Annular comparisons across the axis against NA', os.path.join(PU, 'annular_quoted_x.png'), [
-        'Stars: stated on p. 31. Crosses: read on the published curves, where current work lies.',
+        'Star: the value written on p. 1.. Cross: the same ratio measured on the published figures; the paraxial curve passes through it.',
         'Fig. 6b: 0.82 stated, 0.67 on the curves. 2PE narrower: 35% stated, 34% on the curves.'],
         'Annular comparisons across the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water. The replication '
         'gives 0.67 at NA 0.5 for the Fig. 6b ratio.')
     wide('Annular comparisons along the axis against NA', os.path.join(PU, 'annular_quoted_z.png'), [
-        'Stars: stated on p. 32. Crosses: read on the published curves, where current work lies.',
+        'Star: the value written on p. 2.. Cross: the same ratio measured on the published figures; the paraxial curve passes through it.',
         'Shorter than circular: 40% stated, 30% on the curves. Longer than 2PE: 20% stated, 85%.'],
         'Annular comparisons along the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water.')
