@@ -1686,7 +1686,12 @@ elif SECTION == CMEETING:
                 'tau = 100, 20, 10 fs, zero delay; each curve normalized to its own peak.')
     words('Next steps', ['Add a time delay between the two pulses and follow the 2CE response as the delay grows.'],
           'Next step: time delay.', 'Next steps.', size=18)
-    red({'Summary': ('differ from the figures',)})
+    red({                                                     # differences from the published text, on their own slides only
+        'Paraxial scalar model: Eqs. 1–6': ('Eq. 1 writes',),
+        '2PE across the axis, annular pupils (Fig. 6a)': ('not Eq. 6',),
+        '2PE along the axis, annular pupils (Fig. 7a)': ('Eq. 6 gives',),
+        'Spot width and depth of focus against the wavelength gap (Fig. 5)': ('differ from the plotted lines',),
+        'Quoted values compared to the published figures': ('do not', 'differ')})
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
