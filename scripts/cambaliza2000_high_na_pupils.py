@@ -219,6 +219,9 @@ def figures():
            ('2PE spot narrower than 2CE, θ = π/2 (p. 31)', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
            ('2CE DOF shorter than circular, θ = π/2 (p. 32)', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
            ('2CE DOF longer than 2PE, θ = π/2 (p. 32)', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
+    # the same ratios read on the published curves at NA 0.5 (current work lies on them; Fig. 6a plots |U1 + U2|^2,
+    # which gives 34% for the 2PE comparison), from replicate_cambaliza2000.py / numbers.txt
+    CURVES = {RAT[0][0]: 0.673, RAT[1][0]: 0.340, RAT[2][0]: 0.295, RAT[3][0]: 0.848}
     for part, rats in (('x', RAT[:2]), ('z', RAT[2:])):           # two comparisons per slide: larger panels
         fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.9))
         for ax, (lab, a, b, paper, tr) in zip(axes, rats):
@@ -229,9 +232,10 @@ def figures():
                     r = tr(wa[np.isin(na_a, m)] / wb[np.isin(na_b, m)])
                     ax.plot(m, r, ls + mk, color=c, lw=3, ms=9, mfc=c if n == 1 else 'white',
                             label=f'{"Vector" if model == "s" else "Scalar"}, {tag}')
-            ax.plot([0.5], [paper], '*', color='k', ms=22, label='Published (NA 0.5)')
+            ax.plot([0.5], [paper], '*', color='k', ms=22, label='Stated in the text (NA 0.5)')
+            ax.plot([0.5], [CURVES[lab]], 'X', color='#7f7f7f', ms=18, label='On the published curves')
             ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
-        save(fig, f'annular_quoted_{part}.png', axes, 5)
+        save(fig, f'annular_quoted_{part}.png', axes, 3)
 
     # 4. Gaussian input (α_t = 4) / uniform: width ratio against NA, vector (s), circular and annular
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):

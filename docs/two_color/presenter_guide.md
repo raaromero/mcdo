@@ -24,6 +24,8 @@ fontsize: 10.5pt
   - The published curves follow the rotation in real space (x, z): along the axis at θ = π/2 the published width is
     0.67 µm, which (x, z) gives; (u, v) gives 1.31 µm. Current work rotates in (x, z).
 
+> *Transition:* With the model in hand, the authors start from the simplest pupil, a full circular lens, and compare the two signals at the three angles.
+
 # 3. Circular pupils, Figs. 2–3 (Section 3.1)
 
 - **What they did:** plotted 2PE and 2CE across (Fig. 2) and along (Fig. 3) the axis at θ = 0, π/2, π.
@@ -33,10 +35,12 @@ fontsize: 10.5pt
   - 2PE at θ = π along the axis is modulated by fringes; its envelope is the 2CE profile at θ = 0.
   - Conclusion: with circular pupils 2CE gives **no definite advantage in resolution** (pp. 29–30).
 - **Current work:** identical curves.
-- **Not consistent with their own figures:**
-  - "0.67 times" (p. 28, 2PE spot at π/2 over θ = 0): the curves give 0.49 (0.256 / 0.517 µm).
-  - "1.58 times wider" (p. 29, 2CE over 2PE at π/2): the curves give 2.98 (0.763 / 0.256 µm).
+- **Not consistent with their own figures** (current work and the published curves give the same values):
+  - p. 28, "0.67 times" (2PE spot at π/2 over θ = 0): 0.49 (0.256 / 0.517 µm).
+  - p. 29, "1.58 times wider" (2CE over 2PE spot at π/2): 2.98 (0.763 / 0.256 µm).
   - Other width measures (1/e², zero to zero) do not reach the stated values either.
+
+> *Transition:* With circular pupils the 2CE spot at θ = π/2 is wider than the 2PE one. 2CE has a free parameter 2PE does not: the two wavelengths can be chosen apart as long as they still reach the same transition. The authors ask how far apart they can be, and what that does to the spot.
 
 # 4. The gap between the two wavelengths, Figs. 4–5 (Section 3.1)
 
@@ -52,6 +56,8 @@ fontsize: 10.5pt
     gap. The rest is not identified. The scaling above predicts about ±5 ×10⁻⁴.
   - The caption fits do not describe the plot: the FWHM fit (2.4 ×10⁻⁴ Δλ + 0.0356) lies off the plot; the DOF fit
     (+4.81 ×10⁻⁴ Δλ + 0.7112) rises and runs through the FWHM points, while the plotted DOF falls.
+
+> *Transition:* Changing the wavelengths moves the widths by only about 6%, so it does not change the conclusion that circular pupils give 2CE no clear advantage. The authors next change the pupil itself: a thin ring stretches each focus along its own axis, which matters most at θ = π/2, where each beam crosses the other's long focus.
 
 # 5. Annular pupils, Figs. 6–7 (Section 3.2)
 
@@ -72,6 +78,8 @@ fontsize: 10.5pt
   - The circular 2PE panels (Figs. 2a, 3a) follow Eq. 6.
 - "20% longer" (p. 32, annular 2CE over circular 2PE depth of focus at π/2): the curves give 85% (0.473 / 0.256 µm).
 
+> *Transition:* Annular pupils give 2CE a better axial response, but 2PE keeps the narrower spot, so resolution alone does not decide. The authors then turn to where they expect 2CE to help: imaging through a scattering medium, where 2PE gains out-of-focus background.
+
 # 6. Scattering media, Fig. 8 (Section 3.3, Monte Carlo)
 
 - **What they did:** facing beams (θ = π) through a scattering slab (g = 0.9, h/d_s = 8), photon Monte Carlo
@@ -83,6 +91,8 @@ fontsize: 10.5pt
 - **Current work (preview, next step):** the slab half-thickness h is not given. With h = 100 µm the 2PE background
   is 0.09 (published 0.1–0.2) and the 2CE background 0.07 (published near 0); no h gives both.
   - Our curves are smoother: 10 runs averaged, and each photon counted at every plane it crosses inside w(z).
+
+> *Transition:* Everything above is at NA 0.5 with the paraxial scalar model, which the paper says holds below NA 0.7 (p. 27). Current work first asks how far that model can be trusted, by comparing it with the vector focus up to the highest NA.
 
 # 7. Extension to high NA (current work)
 
@@ -100,6 +110,8 @@ fontsize: 10.5pt
     width while the 2CE spot shrinks.
   - θ = 0 and π give the same widths, except 2PE along the axis (fringes at π).
 
+> *Transition:* 2CE needs both photons at the same place at the same time (p. 26), but the paper treats the beams as continuous, so only the place enters. With femtosecond pulses the time enters too: a pulse lasts τ, and the two pulses must meet. This extension adds that.
+
 # 8. Extension to optical pulses (current work)
 
 - **What a pulse adds:** a duration τ, a spread of frequencies Δν = 0.441/τ, and an arrival time at each point.
@@ -113,7 +125,11 @@ fontsize: 10.5pt
     focus shortens: 3.3 to 1.9 µm at NA 0.5 in air, 4.6 to 1.6 µm in water.
   - θ = 0 and π/2: changes of 2% or less (co-propagating pulses travel together; at π/2 the focus is short).
   - High NA: the focus is already shorter than the overlap; 4% change at NA 0.9 (air) and 1.2 (water).
+  - This is not a larger tolerance: the pulse has less to cut. A time delay moves the meeting point by cΔt/2n
+    and lowers the signal at the focus by exp(−2 ln2 (Δt/τ)²) at every NA (the time-delay study comes next).
   - 2PE at θ = π: the central fringe is unchanged; the outer fringes drop where the pulses no longer overlap.
+
+> *Transition:* The replication and both extensions use beams without scattering. The remaining figure of the paper, Fig. 8, needs the Monte Carlo of scattering; and the pulses so far meet at the focus with no delay.
 
 # 9. Next steps
 

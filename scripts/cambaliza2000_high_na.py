@@ -223,3 +223,52 @@ for n, tag in ((1.0, 'air'), (1.33, 'water')):
         plt.tight_layout()
         fig.savefig(os.path.join(OUT, f'theta_{tag}_{tk}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> theta_{tag}_{tk}.png')
+
+
+# ── one signal and angle per figure, air and water together, linear axes so the split reads directly ──
+MED = ((1.0, 'air', '#1f77b4', 'o'), (1.33, 'water', '#2ca02c', 's'))
+for sig, th, tk in (('2CE', 0.0, '0'), ('2CE', np.pi / 2, 'pi2'), ('2PE', 0.0, '0'), ('2PE', np.pi / 2, 'pi2'), ('2PE', np.pi, 'pi')):
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.4))
+    for ax, axis in zip(axes, ('x', 'z')):
+        for n, tag, col, mk in MED:
+            d = sel(n, sig, axis, th)
+            ax.plot(d[:, 0], d[:, 2], '-' + mk, color=col, lw=3, ms=8, mfc=col, label=f'{tag}, vector')
+            ax.plot(d[:, 0], d[:, 1], '--', color=col, lw=3, label=f'{tag}, scalar')
+        ax.set_xlim(0.15, 1.3); ax.set_ylim(bottom=0)
+        same = axis == 'x' and th != np.pi / 2                 # across the axis the width depends on NA only
+        ax.set_title(('Across the axis (FWHM): air = water' if same else 'Across the axis (FWHM)') if axis == 'x'
+                     else 'Along the axis (DOF)')
+        ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
+    plt.tight_layout()
+    fig.savefig(os.path.join(OUT, f'cfg_{sig.lower()}_{tk}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+    print(f'Saved -> cfg_{sig.lower()}_{tk}.png')
+
+# ── the scalar-vector gap, one signal per figure ──
+GAPS = {'2ce': (('2CE', 0.0, '#ff7f0e', 'θ = 0 and π'), ('2CE', np.pi / 2, '#d62728', 'θ = π/2')),
+        '2pe': (('2PE', 0.0, 'k', 'θ = 0'), ('2PE', np.pi / 2, '#d62728', 'θ = π/2'), ('2PE', np.pi, '#1f77b4', 'θ = π'))}
+for key, curves in GAPS.items():
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.4), sharey=True)
+    for ax, axis in zip(axes, ('x', 'z')):
+        ax.axhspan(-5, 5, color='#cccccc', alpha=0.45, lw=0, label='±5%')
+        ax.axhline(0, color='#888888', lw=1.5)
+        for sig, th, col, lab in curves:
+            if key == '2pe' and th == np.pi and axis == 'x':
+                continue                                       # 2PE across the axis: θ = π equals θ = 0
+            for n, ls, mk, tag in ((1.0, '-', 'o', 'air'), (1.33, '--', 's', 'water')):
+                d = sel(n, sig, axis, th)
+                gap = 100 * (d[:, 1] / d[:, 2] - 1)
+                ax.plot(d[:, 0], gap, ls + mk, color=col, lw=3, ms=8, mfc=col if n == 1 else 'white', label=f'{lab}, {tag}')
+                c = crossing(d[:, 0], gap)
+                if c is not None:
+                    ax.axvline(c, color=col, ls=':', lw=2)
+                    ax.plot([c], [5 if gap[-1] > 0 else -5], 'D', color=col, ms=14, mfc=col if n == 1 else 'white', mew=2.5)
+        ax.set_xlabel('NA'); ax.set_xlim(0.15, 1.3)
+        ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
+    axes[0].set_ylabel('Scalar over vector − 1 (%)'); axes[0].set_ylim(-10, 50)
+    h, l = axes[1].get_legend_handles_labels()
+    fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
+    plt.tight_layout()
+    fig.savefig(os.path.join(OUT, f'gap_{key}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+    print(f'Saved -> gap_{key}.png')

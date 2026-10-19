@@ -127,8 +127,10 @@ wg, wo = fwhm(z, yg), fwhm(z, yo)
 with plt.rc_context({'font.size': 30, 'axes.labelsize': 30, 'legend.fontsize': 28, 'axes.grid': False}):
     fig, ax = plt.subplots(figsize=(9, 9 / BOX3B + 2.5))
     ax.set_box_aspect(1 / BOX3B)
-    ax.plot(z, yg, '-', color='#1f77b4', label='Rotated in (x, z)')
-    ax.plot(z, yo, '--', color='#d62728', label='Rotated in (u, v), Eq. 1')
+    y0 = f2ce(0 * z, z, 0.0)                                  # θ = 0 and π: both rotations give this curve
+    ax.plot(z, y0, '-', color='k', label='θ = 0, π')
+    ax.plot(z, yg, '-', color='#1f77b4', label='θ = π/2, rotated in (x, z)')
+    ax.plot(z, yo, '--', color='#d62728', label='θ = π/2, rotated in (u, v)')
     ax.set_xlim(-5, 5); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-5, 5.1, 1)); ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
     ax.set_xlabel('z (µm)'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)

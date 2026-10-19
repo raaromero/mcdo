@@ -128,12 +128,17 @@ def side(title, path, items, main, script, size=14):
 def cpanel(title, key, ours, line, script=None):
     """Original panel of Cambaliza & Saloma (2000) beside current work, one line (or one per curve) beneath."""
     lines = [line] if isinstance(line, str) else list(line)
-    h = 3.9 - 0.28 * (len(lines) - 1)
+    hmax = 3.9 - 0.28 * (len(lines) - 1)
     s = slide(title, '')
-    label(s, 0.2, 0.9, 4.75, 'Cambaliza & Saloma (2000)')
-    label(s, 5.05, 0.9, 4.75, 'Current work', PURPLE)
-    figure(s, trimmed(os.path.join(CB, 'original', f'{key}.png')), 0.2, 1.15, 4.75, h)
-    figure(s, os.path.join(CB, 'panels', ours), 5.05, 1.15, 4.75, h)
+    left, right = trimmed(os.path.join(CB, 'original', f'{key}.png')), os.path.join(CB, 'panels', ours)
+    a1, a2 = (Image.open(p).size[0] / Image.open(p).size[1] for p in (left, right))
+    h = min(hmax, (9.5 - 0.15 - 0.2) / (a1 + a2) + 0.1)        # same height for both, as large as the width allows
+    w1, w2 = a1 * (h - 0.1) + 0.1, a2 * (h - 0.1) + 0.1
+    x1 = (10 - (w1 + w2 + 0.15)) / 2
+    label(s, x1, 0.9, w1, 'Cambaliza & Saloma (2000)')
+    label(s, x1 + w1 + 0.15, 0.9, w2, 'Current work', PURPLE)
+    figure(s, left, x1, 1.15, w1, h)
+    figure(s, right, x1 + w1 + 0.15, 1.15, w2, h)
     bullets(s, 0.6, 1.2 + h, 8.6, 0.28 * len(lines) + 0.07, lines, 14 if len(lines) == 1 else 13)
     notes(s, title, script or ' '.join(lines))
 
@@ -168,20 +173,36 @@ def chigh_na(part='High NA', water_x=False, summary=None):
         WHY_0 = 'Why: the paraxial phase uses sin²α/2 for 1 − cos α, which lengthens the focus by tan²(α/2).'
         WHY_P2 = 'Why: each beam is cut by the other beam’s narrow spot, which the paraxial model reproduces.'
         WHY_PI = 'Why: the 2PE width along the axis is the interference fringe, set by the wavelength, not by the focus.'
-        for med, th, ttl, items in (
-                ('air', '0', 'θ = 0', ['Across the axis scalar and vector agree within 5% up to NA 0.86.',
-                                       'Along the axis the paraxial depth of focus is 36% longer at NA 0.9.', WHY_0]),
-                ('air', 'pi2', 'θ = π/2', ['Scalar and vector agree within 4% up to NA 0.7, where the crossed lenses fit.', WHY_P2]),
-                ('air', 'pi', 'θ = π', ['2CE: the same widths as at θ = 0; the 2PE fringe stays within 5% up to NA 0.91.', WHY_PI]),
-                ('water', '0', 'θ = 0', ['Across the axis scalar and vector agree within 5% up to NA 1.14.',
-                                         'Along the axis the paraxial depth of focus is 15% longer at NA 0.9, 44% at 1.25.',
-                                         'Why: at the same NA the cone is narrower in water (sin α = NA/1.33), so tan²(α/2) is smaller.']),
-                ('water', 'pi2', 'θ = π/2', ['Scalar and vector agree within 4% up to NA 0.9, where the crossed lenses fit.', WHY_P2]),
-                ('water', 'pi', 'θ = π', ['2CE: the same widths as at θ = 0; the 2PE fringe stays within 5% up to NA 1.21.', WHY_PI])):
-            wide(f'Widths against NA, {med}, {ttl}', os.path.join(hn, f'theta_{med}_{th}.png'), items,
-                 f'Scalar against vector widths, {med}, {ttl}.',
-                 'Solid: vector (Richards-Wolf), beams along y; dashed: paraxial scalar. 2PE black, 2CE orange; at theta = 0 '
-                 'the two coincide. Gap numbers from high_na/split.txt.')
+        WHY_0 = 'Why: the paraxial phase uses sin²α/2 for 1 − cos α, which lengthens the focus by tan²(α/2).'
+        for key, ttl, items in (
+                ('2ce_0', '2CE, θ = 0 and π', [
+                    'Across the axis scalar and vector agree within 5% up to NA 0.86 in air and 1.14 in water.',
+                    'Along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air, 0.57 in water.', WHY_0]),
+                ('2ce_pi2', '2CE, θ = π/2', [
+                    'Scalar and vector agree within 4% up to NA 0.7 in air and 0.9 in water, where crossed lenses fit.',
+                    'Why: each width is set by the other beam’s narrow spot, which the paraxial model reproduces.']),
+                ('2pe_0', '2PE, θ = 0', [
+                    'The same as 2CE at θ = 0: along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air.',
+                    WHY_0]),
+                ('2pe_pi2', '2PE, θ = π/2', [
+                    'Scalar and vector agree within 0.4% in air and water.',
+                    'Why: the width is the interference fringe of the two crossed beams, set by the wavelength.']),
+                ('2pe_pi', '2PE, θ = π', [
+                    'Across the axis: the same as θ = 0. Along the axis the fringe agrees within 5% up to NA 0.91 in air.',
+                    'Why: along the axis the width is the fringe of the two facing beams, λ/4n, not the focus.'])):
+            wide(f'Widths against NA: {ttl}', os.path.join(hn, f'cfg_{key}.png'), items,
+                 f'Scalar against vector widths, {ttl}.',
+                 'Solid: vector (Richards-Wolf), beams along y; dashed: paraxial scalar. Blue: air; green: water. '
+                 'Linear axes. Gap numbers from high_na/split.txt.')
+        wide('Scalar over vector width against NA: 2CE', os.path.join(hn, 'gap_2ce.png'), [
+            'Along the axis the gap reaches 5% at NA 0.43 in air and 0.57 in water; across the axis at 0.86 and 1.14.',
+            'At θ = π/2 the gap stays below 4%.'],
+            'Where the paraxial 2CE widths depart from the vector ones.',
+            'Gap = scalar / vector - 1. Diamonds: NA where the gap reaches 5% (interpolated).')
+        wide('Scalar over vector width against NA: 2PE', os.path.join(hn, 'gap_2pe.png'), [
+            'θ = 0: as 2CE. θ = π/2: below 0.4%. θ = π along the axis: −5% at NA 0.91 in air, 1.21 in water.'],
+            'Where the paraxial 2PE widths depart from the vector ones.',
+            'Gap = scalar / vector - 1. 2PE across the axis at theta = pi equals theta = 0 and is not drawn twice.')
     else:
         wide('Widths across the axis against NA, air', os.path.join(hn, 'widths_air_x.png'), [
             'Across the axis the paraxial widths agree with the vector ones within 6% up to NA 0.9.'],
@@ -203,14 +224,16 @@ def chigh_na(part='High NA', water_x=False, summary=None):
             'In water the paraxial model holds to a higher NA.',
             'Scalar DOF longer by 4% at NA 0.5, 8% at 0.7, 15% at 0.9, 44% at 1.25 (tan^2(alpha/2) with sin(alpha) = NA/1.33). '
             'theta = pi/2 to NA 0.94 (lenses fit at 90 degrees).')
-    wide('Scalar over vector width against NA, θ = 0 and π', os.path.join(hn, 'split_0pi.png'), [
+    if SECTION != CMEETING:
+     wide('Scalar over vector width against NA, θ = 0 and π', os.path.join(hn, 'split_0pi.png'), [
         'Across the axis the scalar width is 5% larger at NA 0.86 in air and 1.14 in water.',
         'Along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air and 0.57 in water.'],
         'The paraxial model departs first along the axis.',
         'Gap = scalar / vector - 1. Diamonds: NA where the gap reaches 5% (interpolated). theta = 0 and pi give the same '
         'widths except 2PE along the axis, where facing lenses give fringes; the 2PE fringe at pi reaches -5% at NA 0.91 '
         '(air) and 1.21 (water). 2PE and 2CE gaps coincide at theta = 0.')
-    wide('Scalar over vector width against NA, θ = π/2', os.path.join(hn, 'split_pi2.png'), [
+    if SECTION != CMEETING:
+     wide('Scalar over vector width against NA, θ = π/2', os.path.join(hn, 'split_pi2.png'), [
         'At θ = π/2 the two agree within 4% up to NA 0.7 in air and 0.9 in water, where the lenses fit.'],
         'At theta = pi/2 the two models do not split.',
         'Crossed lenses fit up to a half-angle of 45 degrees: NA 0.71 in air, 0.94 in water. Largest gap: 2CE across the '
@@ -1671,7 +1694,8 @@ elif SECTION == CMEETING:
         '\n'.join((r'u = 2\pi\mathrm{NA}^2 z/\lambda, \quad v = 2\pi\mathrm{NA}\, x/\lambda',
                    r'u_r = u\cos\theta - v\sin\theta', r'z_r = z\cos\theta - x\sin\theta, \quad x_r = x\cos\theta + z\sin\theta')), size=15)
     cpanel('Rotation in (x, z) against (u, v), 2CE along the axis (Fig. 3b)', 'fig3b', '../evidence/rotation.png', (
-        'The published θ = π/2 curve has the width of the (x, z) rotation, 0.67 µm; the (u, v) rotation gives 1.31 µm.',
+        'At θ = 0 and π both rotations give the same curve, as published.',
+        'At θ = π/2 the published width, 0.67 µm, is that of the (x, z) rotation; the (u, v) rotation gives 1.31 µm.',
         'Current work rotates beam 2 in (x, z).'),
         '2CE, theta = pi/2, NA 0.5. Across the axis (Fig. 2b) the two rotations nearly coincide.')
     for key, ttl, lines in (
@@ -1758,7 +1782,10 @@ elif SECTION == CMEETING:
     words('Values stated in the text compared to the published figures', [
         'Consistent with the figures: 30%, 35%, 32% and 1 µm (pp. 31–32).',
         'Consistent for some width measure, which the text does not state: 0.75, 0.82, 40% and "twice".',
-        'Not consistent with the figures: 0.67 (p. 28), "1.58 times wider" (p. 29) and "20% longer" (p. 32).'],
+        'Not consistent with the figures:',
+        '– p. 28, 2PE spot at θ = π/2 over θ = 0: "0.67"; the curves and current work give 0.49.',
+        '– p. 29, 2CE over 2PE spot at θ = π/2: "1.58 times wider"; the curves and current work give 2.98.',
+        '– p. 32, annular 2CE over circular 2PE depth of focus at θ = π/2: "20% longer"; the curves and current work give 85%.'],
         'Values stated in the text against the published figures.', 'Match: 30% (29.7%), 35% (34.0% with |U1+U2|^2), 32% (29.1%), 1 um (1.01 zero to zero). Width measure not stated: 0.75 and 0.82 give 0.68-0.87; 40% gives 30-37%; DOF 2x gives 2.2-2.6. Fig. 4 caption dl = l2 - l1; text dl = l1 - l2.', size=16)
     wide('Spot ratio stated on p. 28 (Fig. 2a)', os.path.join(CB, 'evidence', 'ratio_fig2a.png'), [
         'Stated: the 2PE spot at θ = π/2 is about 0.67 times the spot at θ = 0.',
@@ -1797,14 +1824,14 @@ elif SECTION == CMEETING:
         'circular one at all NA. theta = pi/2: set by the narrow transverse spot of the other beam, so scalar and vector '
         'agree within 2%.')
     wide('Annular comparisons across the axis against NA', os.path.join(PU, 'annular_quoted_x.png'), [
-        'At all NA the 2CE spot at θ = 0 is 0.67 times that at θ = π/2 (published: 0.82).',
-        'The 2PE spot at θ = π/2 is 52% narrower than 2CE at NA 0.5 and 31% at NA 0.7 (published: 35%).'],
+        'Stars: stated on p. 31. Crosses: read on the published curves, where current work lies.',
+        'Fig. 6b: 0.82 stated, 0.67 on the curves. 2PE narrower: 35% stated, 34% on the curves.'],
         'Annular comparisons across the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water. The replication '
         'gives 0.67 at NA 0.5 for the Fig. 6b ratio.')
     wide('Annular comparisons along the axis against NA', os.path.join(PU, 'annular_quoted_z.png'), [
-        'At θ = π/2 the annular 2CE depth of focus is 30% shorter than the circular one (published: 40%).',
-        'It is 81% longer than the 2PE one at NA 0.5 and 27% longer at NA 0.7 (published: 20%).'],
+        'Stars: stated on p. 32. Crosses: read on the published curves, where current work lies.',
+        'Shorter than circular: 40% stated, 30% on the curves. Longer than 2PE: 20% stated, 85%.'],
         'Annular comparisons along the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water.')
     wide('Wavelength gap Δλ against NA (Figs. 4–5)', os.path.join(PU, 'dlambda_vs_na.png'), [
@@ -1864,7 +1891,7 @@ elif SECTION == CMEETING:
     PH = os.path.join(CB, 'pulses', 'high_na')
     if os.path.exists(os.path.join(PH, 'dof_pi.png')):
         wide('Depth of focus with pulses against NA, θ = π', os.path.join(PH, 'dof_pi.png'), [
-            '2CE: at high NA the focus is shorter than the pulse overlap, so the depth of focus barely changes.',
+            '2CE: at high NA the focus is shorter than the pulse overlap, so the pulse no longer shortens it.',
             '2PE: the depth of focus is the central fringe, far shorter than the overlap, so pulses leave it unchanged.'],
             'The effect of the pulse length fades as NA grows.',
             'Vector (Richards-Wolf), both beams polarized along y, zero delay. DOF = central-peak FWHM along z; '
@@ -1927,7 +1954,7 @@ elif SECTION == CMEETING:
         'Paraxial scalar model: Eqs. 1–6': ('Eq. 1 writes',),
         '2PE across the axis, annular pupils (Fig. 6a)': ('not Eq. 6',),
         '2PE along the axis, annular pupils (Fig. 7a)': ('not Eq. 6',),
-        'Values stated in the text compared to the published figures': ('Not consistent',),
+        'Values stated in the text compared to the published figures': ('Not consistent', '"0.67"', '"1.58', '"20%'),
         'Spot ratio stated on p. 28 (Fig. 2a)': ('Stated:',),
         '2CE over 2PE spot stated on p. 29 (Figs. 2a, 2b)': ('Stated:',),
         'Depth-of-focus ratio stated on p. 32 (Figs. 3a, 7b)': ('Stated:',),
