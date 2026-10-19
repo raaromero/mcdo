@@ -124,7 +124,7 @@ air and 1.25 in water.
 - Slides 49–54: one slide per NA, in air and in water. 2PE keeps its central fringe; its outer fringes drop where
   the pulses do not meet.
 - **Conclusion: pulses shorten the 2CE focus with facing lenses, at low NA only. At θ = 0 and π/2 they change
-  little (≤ 2%).**
+  little (2% or less).**
 
 # Next steps and preview (slides 55–59)
 
