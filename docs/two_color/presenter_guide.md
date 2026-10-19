@@ -109,7 +109,7 @@ fontsize: 10.5pt
 - **Result of the sum:** the continuous PSF times the overlap of the two pulses in time. At zero delay this equals
   the time-overlap calculation.
 - **Results (transform-limited, zero delay):**
-  - θ = π: facing pulses meet only within √2cτ/2n of the focus (2.1 µm in air at 10 fs), so the 2CE depth of
+  - θ = π: facing pulses meet only within $\sqrt{2}c\tau/2n$ of the focus (2.1 µm in air at 10 fs), so the 2CE depth of
     focus shortens: 3.3 to 1.9 µm at NA 0.5 in air, 4.6 to 1.6 µm in water.
   - θ = 0 and π/2: changes of 2% or less (co-propagating pulses travel together; at π/2 the focus is short).
   - High NA: the focus is already shorter than the overlap; 4% change at NA 0.9 (air) and 1.2 (water).
