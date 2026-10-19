@@ -61,7 +61,7 @@ def one(name, s, curves, xlabel, title, xlim, panel=False):
     """Curves on one axes, legend outside; returns the FWHM of each. Full slide width (legend at the right), or
     panel=True for the slot beside a published panel (no title, legend beneath, larger text)."""
     with plt.rc_context({'font.size': 30, 'axes.labelsize': 30, 'legend.fontsize': 27} if panel else {}):
-        fig, ax = plt.subplots(figsize=(10, 6.2) if panel else (18.5, 6.6))
+        fig, ax = plt.subplots(figsize=(10.5, 5.6) if panel else (18.5, 6.6))
         out = []
         for y, col, ls, lab in curves:
             w = fwhm(s, y)
@@ -105,12 +105,12 @@ dls = np.arange(0.010, 0.0941, 0.0105)
 fw = np.array([fwhm(x, f2ce(X0, Z0, P2, l1=pair(d)[0], l2=pair(d)[1])) for d in dls])
 dof = np.array([fwhm(z, f2ce(0 * z, z, P2, l1=pair(d)[0], l2=pair(d)[1])) for d in dls])
 dn = dls * 1000
-with plt.rc_context({'font.size': 33, 'axes.labelsize': 33, 'legend.fontsize': 30}):
-    fig, ax = plt.subplots(figsize=(10, 6.2))
+with plt.rc_context({'font.size': 32, 'axes.labelsize': 32, 'legend.fontsize': 31}):
+    fig, ax = plt.subplots(figsize=(10.5, 5.6))
     L = np.array([0, 100])
     ax.plot(dn, fw, 'o', color='k', ms=14, label='FWHM')
     ax.plot(dn, dof, 'o', color='k', mfc='white', mew=2.5, ms=14, label='DOF')
-    ax.plot(L, 4.81e-4 * L + 0.7112, '--', color='#ff7f0e', label='Caption DOF fit')
+    ax.plot(L, 4.81e-4 * L + 0.7112, '--', color='#ff7f0e', label='Caption fit')
     ax.set_xlim(0, 100); ax.set_ylim(0.65, 0.775)
     ax.set_xlabel('Δλ (nm)'); ax.set_ylabel('Width (µm)')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False, columnspacing=1.0, handletextpad=0.4)

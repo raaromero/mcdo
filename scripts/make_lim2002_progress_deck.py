@@ -1684,8 +1684,7 @@ elif SECTION == CMEETING:
         'a scatter of 4 nm, as in the published plot.')
     cpanel('Source of the difference in Fig. 5', 'fig5', '../evidence/fig5_caption.png', (
         'Current work follows Eqs. 1–6 at the stated wavelengths; it lies within 0.005 µm of the points.',
-        'The published slopes are about ±4.8 ×10⁻⁴ µm/nm; the source of the difference is not identified.',
-        'The caption fits do not describe the plot: the FWHM line is off the plot; the DOF sign is lost.'),
+        'Published slopes ±4.8 ×10⁻⁴ µm/nm, source not identified; the caption fits match neither line.'),
         'Fig. 5: same trends; slopes differ by 5-9%; caption fits inconsistent with the plot. Checked: the wavelength pairs (705, 695), (720, 681), (750, 656) nm satisfy 1/l1 + 1/l2 = 1/350 nm. Reading the '
         'width at the nearest sample of a 5-nm grid scatters the points as in the published plot but raises the FWHM '
         'slope to 5.7e-4, so it does not explain the lower published slope. Published lines: about +4.8e-4 dl + 0.711 '
@@ -1856,7 +1855,7 @@ elif SECTION == CMEETING:
         'Spot ratio stated on p. 28 (Fig. 2a)': ('Stated:',),
         '2CE over 2PE spot stated on p. 29 (Figs. 2a, 2b)': ('Stated:',),
         'Depth-of-focus ratio stated on p. 32 (Figs. 3a, 7b)': ('Stated:',),
-        'Source of the difference in Fig. 5': ('The caption fits',),
+        'Source of the difference in Fig. 5': ('Published slopes',),
         'Source of the difference in Figs. 6a and 7a': ('Eq. 6 gives',),
         'Spot width and depth of focus against the wavelength gap (Fig. 5)': ('The slopes differ',)})
 
@@ -1876,6 +1875,8 @@ for path, shown in ds.FIGURES:
     if path.endswith('.png'):                                    # 24-pt smallest text at 600 dpi; the pair figures use 28 pt
         im = Image.open(path)
         small = 28 if os.path.basename(path).startswith('pairs_') else 24
+        if os.path.basename(os.path.dirname(path)) == 'evidence' and os.path.basename(path) in ('fig5_caption.png', 'rotation.png'):
+            small = 31                                           # panel-slot figures of evidence_cambaliza2000.py: 31-pt legend
         pt = small * shown / (im.size[0] / (im.info.get('dpi') or (600, 600))[0])
         if pt < FLOOR:
             low.add((os.path.basename(path), round(pt, 1)))
