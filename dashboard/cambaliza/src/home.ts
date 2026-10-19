@@ -26,12 +26,12 @@ export function renderHome(root: HTMLElement, data: Data, name: string) {
 
   type Tile = { stat: string; title: string; text: string; card: string; mini?: [number, number][][]; img?: string };
   const tiles: Tile[] = [
-    { stat: "Figs. 2–7", title: "Circular pupils come back from the equations", img: "fig2b",
-      text: "Rebuilt from Eqs. 1–6 at NA 0.5; current work lies on the printed curves.", card: "Circular pupils come back from the equations" },
+    { stat: "NA 0.5", title: "2PE and 2CE profiles recomputed from Eqs. 1–6", img: "fig2b",
+      text: "Circular and annular pupils at NA 0.5; current work agrees with the published curves.", card: "Circular pupils: 2PE and 2CE profiles recomputed from Eqs. 1–6" },
     { stat: `+${Math.round((at(dofAir, 0.9) - 1) * 100)}%`, title: "The paraxial depth of focus is too long at high NA", mini: [dofAir, dofWater],
       text: `Scalar over vector at NA 0.9 in air; ${Math.round((at(dofWater, 0.9) - 1) * 100)}% in water.`, card: "The paraxial depth of focus is too long at high NA" },
-    { stat: `${at(cmp, 0.5).toFixed(1)}× → ${at(cmp, 0.7).toFixed(1)}×`, title: "The paper's comparisons hold at high NA", mini: [cmp],
-      text: "2CE over 2PE spot at θ = π/2, NA 0.5 to 0.7; scalar and vector within 4%.", card: "The paper's comparisons hold at high NA" },
+    { stat: `${at(cmp, 0.5).toFixed(1)}× → ${at(cmp, 0.7).toFixed(1)}×`, title: "2CE–2PE comparisons hold at high NA", mini: [cmp],
+      text: "2CE over 2PE spot at θ = π/2, NA 0.5 to 0.7; scalar and vector within 4%.", card: "2CE–2PE comparisons hold at high NA" },
     { stat: `${Math.round(at(ann, 0.5) / at(circ, 0.5))}×`, title: "Annular pupils: a long, thin focus", mini: [ann, circ],
       text: "Depth of focus over the circular one at NA 0.5, with a spot 0.70× as wide.", card: "Annular pupils: a long, thin focus" },
   ];
@@ -75,6 +75,6 @@ export function renderHome(root: HTMLElement, data: Data, name: string) {
     el("span", "", text, a);
   }
   el("p", "home-sub home-how-note",
-    "Options sit in the side panel; the URL keeps your view, so links are shareable. Solid lines are the vector focus, dashed the paraxial scalar model of the paper.",
+    "Options sit in the side panel; the URL keeps your view, so links are shareable. Solid lines are the vector focus, dashed the paraxial scalar model (Eqs. 1–6).",
     how);
 }

@@ -88,7 +88,7 @@ print('\n'.join(lines))
 # ── axial profiles at θ = π (head-on pulses), 2PE and 2CE ──
 STY = {'cw': ('k', '-', 3.5, 'Continuous'), 100.0: ('#1f77b4', '--', 3, 'τ = 100 fs'),
        20.0: ('#ff7f0e', '-', 3, 'τ = 20 fs'), 10.0: ('#d62728', '-', 3, 'τ = 10 fs')}
-fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
 for ax, sig in zip(axes, ('2PE', '2CE')):
     for k in ('cw',) + TAUS:
         c, ls, lw, lab = STY[k]

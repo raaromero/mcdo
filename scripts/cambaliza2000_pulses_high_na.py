@@ -132,7 +132,7 @@ def main():
 
     # ── DOF at θ = π against NA: pulsed over continuous, 2PE and 2CE, air and water ──
     STY = {20.0: ('#ff7f0e', 'τ = 20 fs'), 10.0: ('#d62728', 'τ = 10 fs')}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
     for ax, sig in zip(axes, ('2PE', '2CE')):
         for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
             cw = sel(n, sig, 'z', np.pi, 0.0)
@@ -198,7 +198,7 @@ def profiles():
            '20': ('#ff7f0e', '-', 3, 'τ = 20 fs'), '10': ('#d62728', '-', 3, 'τ = 10 fs')}
     for n, nas in PROF:
         tag = 'air' if n == 1 else 'water'
-        fig, axes = plt.subplots(2, len(nas), figsize=(18.5, 6.9), sharey=True)
+        fig, axes = plt.subplots(2, len(nas), figsize=(18.5, 6.7), sharey=True)
         for c, na in enumerate(nas):
             k0 = f'n{n:g}_na{na:g}_'
             zs = P[k0 + 'z']

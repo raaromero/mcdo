@@ -186,7 +186,7 @@ def figures():
     # 1. annular pupils: widths against NA, vector (s) solid, scalar dashed — as widths_<medium>_<axis>.png for circular
     for n, tag in ((1.0, 'air'), (1.33, 'water')):
         for axis in ('x', 'z'):
-            fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.8))
+            fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
             for ax, sig in zip(axes, ('2PE', '2CE')):
                 for th in THETAS:
                     ax.plot(*sel(n, EPS, 0, sig, axis, th, 's'), '-o', color=TCOL[th], lw=3, ms=8, label=f'{TLAB[th]}, vector')
@@ -199,7 +199,7 @@ def figures():
 
     # 2. annular / circular width against NA (vector s), air solid, water dashed
     for axis in ('x', 'z'):
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.8), sharey=True)
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
         for ax, sig in zip(axes, ('2PE', '2CE')):
             for n, ls, tag in ((1.0, '-o', 'air'), (1.33, '--s', 'water')):
                 for th in THETAS:
@@ -219,7 +219,7 @@ def figures():
            ('p. 31: 2PE narrower', ('2PE', 'x', P, EPS), ('2CE', 'x', P, EPS), 0.35, less),
            ('p. 32: DOF shorter', ('2CE', 'z', P, EPS), ('2CE', 'z', P, 0.0), 0.40, less),
            ('p. 32: DOF longer', ('2CE', 'z', P, EPS), ('2PE', 'z', P, 0.0), 0.20, more))
-    fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
+    fig, axes = plt.subplots(2, 2, figsize=(18.5, 6.7)); axes = axes.ravel()
     for ax, (lab, a, b, paper, tr) in zip(axes, RAT):
         for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
             for model, c, ls in (('s', '#1f77b4', '-'), ('scalar', '#d62728', '--')):
@@ -228,13 +228,13 @@ def figures():
                 r = tr(wa[np.isin(na_a, m)] / wb[np.isin(na_b, m)])
                 ax.plot(m, r, ls + mk, color=c, lw=3, ms=9, mfc=c if n == 1 else 'white',
                         label=f'{"Vector" if model == "s" else "Scalar"}, {tag}')
-        ax.plot([0.5], [paper], '*', color='k', ms=22, label='Paper (NA 0.5)')
+        ax.plot([0.5], [paper], '*', color='k', ms=22, label='Published (NA 0.5)')
         ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
     save(fig, 'annular_quoted.png', axes, 5)
 
     # 4. Gaussian input (α_t = 4) / uniform: width ratio against NA, vector (s), circular and annular
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):
-        fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
+        fig, axes = plt.subplots(2, 2, figsize=(18.5, 6.7)); axes = axes.ravel()
         for i, sig in enumerate(('2PE', '2CE')):
             for j, axis in enumerate(('x', 'z')):
                 ax = axes[2 * i + j]
@@ -246,12 +246,12 @@ def figures():
                 ax.axhline(1, color='#999999', lw=2, ls=':')
                 ax.set_title(f'{sig}, {"FWHM" if axis == "x" else "DOF"}')
                 ax.set_xlabel('NA')
-        axes[0].set_ylabel('Gaussian / uniform')
+        axes[0].set_ylabel('Gaussian / uniform'); axes[2].set_ylabel('Gaussian / uniform')
         save(fig, f'gaussian_over_uniform_{etag}.png', axes, 3)
 
     # 5. polarization: 2CE widths with unpolarized and p beams over s beams, circular, uniform
     for eps, etag in ((0.0, 'circular'), (EPS, 'annular')):
-        fig, axes = plt.subplots(1, 4, figsize=(18.5, 5.4))
+        fig, axes = plt.subplots(2, 2, figsize=(18.5, 6.7)); axes = axes.ravel()
         for i, model in enumerate(('unpol', 'p')):
             for j, axis in enumerate(('x', 'z')):
                 ax = axes[2 * i + j]
@@ -263,11 +263,11 @@ def figures():
                 ax.axhline(1, color='#999999', lw=2, ls=':')
                 ax.set_title(f'{"FWHM" if axis == "x" else "DOF"}, {"unpol." if model == "unpol" else "p"} / s')
                 ax.set_xlabel('NA')
-        axes[0].set_ylabel('2CE width ratio')
+        axes[0].set_ylabel('2CE width ratio'); axes[2].set_ylabel('2CE width ratio')
         save(fig, f'polarization_2ce_{etag}.png', axes, 3)
 
     # 6. polarization: vector / scalar 2CE width against NA, for s, p and unpolarized beams (circular, uniform)
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
     PC = {'s': '#1f77b4', 'p': '#2ca02c', 'unpol': '#ff7f0e'}
     PL = {'s': 's', 'p': 'p', 'unpol': 'unpolarized'}
     for ax, axis in zip(axes, ('x', 'z')):
@@ -285,7 +285,7 @@ def figures():
     E = pd.read_csv(DCSV)
     NCOL = {(1.0, 0.3): '#9467bd', (1.0, 0.5): 'k', (1.0, 0.7): '#1f77b4',
             (1.33, 0.5): '#ff7f0e', (1.33, 0.7): '#2ca02c', (1.33, 0.9): '#d62728'}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.4), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
         for (n, na), c in NCOL.items():
             for model, ls in (('s', '-o'), ('scalar', '--')):

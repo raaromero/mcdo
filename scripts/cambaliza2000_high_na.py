@@ -91,7 +91,7 @@ def sel(n, sig, axis, th):
 # ── widths against NA, one figure per medium and direction: 2PE and 2CE side by side; solid vector, dashed scalar ──
 for n, tag in ((1.0, 'air'), (1.33, 'water')):
     for axis in ('x', 'z'):
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 5.8))
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
         for ax, sig in zip(axes, ('2PE', '2CE')):
             for th in THETAS:
                 d = sel(n, sig, axis, th)

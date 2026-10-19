@@ -85,13 +85,14 @@ export function renderInsights(host: HTMLElement, data: Data) {
     return c;
   };
   // keys are overlay names ("fig2a") or [file, caption] pairs
+  const PANEL: Record<string, string> = { "2": "Across the axis", "3": "Along the axis", "6": "Across the axis", "7": "Along the axis" };
   const images = (parent: HTMLElement, keys: (string | [string, string])[], caption: string) => {
     const grid = el("div", "ins-images", "", parent);
     for (const k of keys) {
-      const [file, cap] = typeof k === "string" ? [k, `Fig. ${k.slice(3)}`] : k;
+      const [file, cap] = typeof k === "string" ? [k, `${PANEL[k.slice(3, 4)]}, ${k.endsWith("a") ? "2PE" : "2CE"} (Fig. ${k.slice(3)})`] : k;
       const fig = el("figure", "", "", grid);
       const img = el("img", "", "", fig) as HTMLImageElement;
-      img.src = `./img/${file}.png`; img.alt = typeof k === "string" ? `${cap}: current work over the paper` : cap; img.loading = "lazy";
+      img.src = `./img/${file}.png`; img.alt = typeof k === "string" ? `${cap}: current work compared to the published curves` : cap; img.loading = "lazy";
       el("figcaption", "", cap, fig);
     }
     el("p", "ins-footnote", caption, parent);
@@ -99,20 +100,20 @@ export function renderInsights(host: HTMLElement, data: Data) {
 
   // ---------------- Replication ----------------
   const rep = section("Replication at NA 0.5");
-  images(card(rep, "Circular pupils come back from the equations",
-    "Figs. 2–3 rebuilt from Eqs. 1–6 of the paper (paraxial scalar, NA 0.5, air): current work in color over the printed curves.",
+  images(card(rep, "Circular pupils: 2PE and 2CE profiles recomputed from Eqs. 1–6",
+    "Paraxial scalar model, NA 0.5, air: current work in color, compared to the published curves in black.",
     [["See the profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=x&mo=scalar&p=circ&i=uni&th=0.pi2.pi"]]),
   ["fig2a", "fig2b", "fig3a", "fig3b"], "(a) 2PE, (b) 2CE; Fig. 2 across the axis, Fig. 3 along it.");
-  images(card(rep, "Annular pupils: Figs. 6(a) and 7(a) plot the excitation",
-    "With annular pupils (ε = 0.99) the 2CE panels match. The printed 2PE curves of Figs. 6(a) and 7(a) are the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴).",
+  images(card(rep, "Annular pupils: the published 2PE curves are the excitation",
+    "With annular pupils (ε = 0.99) the 2CE profiles agree with the published curves. The published 2PE curves are the excitation |U₁ + U₂|², not Eq. 6 (|U₁ + U₂|⁴).",
     [["See the annular profiles", "#v=profiles&m=air&na=0.5&s=2CE&a=z&mo=scalar&p=ann&i=uni&th=0.pi2.pi"]]),
   ["fig6a", "fig6b", "fig7a", "fig7b"], "Orange: |U₁ + U₂|²; blue: Eq. 6.");
   const gap = card(rep, "A wider gap between the two wavelengths",
-    "Figs. 4–5: the 2CE focus at θ = π/2 as Δλ = λ₁ − λ₂ grows from 10 to 94 nm. As in the paper, the spot widens by about 6% (p. 30) and the depth of focus shortens, here by about 5%.",
+    "The 2CE focus at θ = π/2 as Δλ = λ₁ − λ₂ grows from 10 to 94 nm. The spot widens by about 6%, as reported on p. 30, and the depth of focus shortens by about 5%.",
     []);
   gap.classList.add("ins-card-wide");
-  images(gap, [["paper4a", "Fig. 4a, paper"], ["paper4b", "Fig. 4b, paper"], ["paper5", "Fig. 5, paper"],
-   ["cw4a", "Fig. 4a, current work"], ["cw4b", "Fig. 4b, current work"], ["cw5", "Fig. 5, current work"]],
+  images(gap, [["paper4a", "Across the axis, published (Fig. 4a)"], ["paper4b", "Along the axis, published (Fig. 4b)"], ["paper5", "Width and depth of focus, published (Fig. 5)"],
+   ["cw4a", "Across the axis, current work"], ["cw4b", "Along the axis, current work"], ["cw5", "Width and depth of focus, current work"]],
   "Fig. 4: (a) across the axis, (b) along it. Fig. 5: width across the axis (FWHM) and depth of focus (DOF) against Δλ.");
 
   // ---------------- High and low NA ----------------
@@ -122,7 +123,7 @@ export function renderInsights(host: HTMLElement, data: Data) {
   {
     const air = dof("air"), water = dof("water");
     const c = card(hn, "The paraxial depth of focus is too long at high NA",
-      `The scalar model of the paper gives a longer focus than the vector one: ${pct(at(air, 0.5))} at NA 0.5, ${pct(at(air, 0.9))} at NA 0.9 in air. ` +
+      `The paraxial scalar model gives a longer focus than the vector one: ${pct(at(air, 0.5))} at NA 0.5, ${pct(at(air, 0.9))} at NA 0.9 in air. ` +
       `In water the gap at the same NA is smaller (${pct(at(water, 0.9))} at NA 0.9). Across the axis the two agree within 6% to NA 0.9.`,
       [["Depth of focus against NA", "#v=widths&m=air&na=0.9&s=2CE&a=z&mo=both&p=circ&i=uni&th=0.pi2.pi"],
        ["Axial profiles at NA 0.9", "#v=profiles&m=air&na=0.9&s=2CE&a=z&mo=both&p=circ&i=uni&th=0"]]);
@@ -131,7 +132,7 @@ export function renderInsights(host: HTMLElement, data: Data) {
   }
   {
     const r = (m: "vector" | "scalar", med: Medium) => ratio(data, W2("2CE", "x", "pi2", m, "circ", "uni", med), W2("2PE", "x", "pi2", m, "circ", "uni", med));
-    const c = card(hn, "The paper's comparisons hold at high NA",
+    const c = card(hn, "2CE–2PE comparisons hold at high NA",
       `At θ = π/2 the 2CE spot stays wider than the 2PE spot, by less as NA grows: ${at(r("vector", "air"), 0.5).toFixed(1)}× at NA 0.5, ` +
       `${at(r("vector", "air"), 0.7).toFixed(1)}× at NA 0.7. Scalar and vector agree within 4%.`,
       [["Widths across the axis", "#v=widths&m=air&na=0.7&s=2CE&a=x&mo=both&p=circ&i=uni&th=pi2"]]);
@@ -152,7 +153,7 @@ export function renderInsights(host: HTMLElement, data: Data) {
   {
     const keys: [string, string, string][] = [["air|0.3", "NA 0.3, air", "t0"], ["air|0.7", "NA 0.7, air", "t1"], ["water|0.9", "NA 0.9, water", "t2"]];
     const c = card(hn, "The wavelength gap acts the same at all NA",
-      "Figs. 4–5 of the paper: widening the gap Δλ between the two wavelengths widens the 2CE spot at θ = π/2 by about 6% from 10 to 94 nm, " +
+      "Widening the gap Δλ between the two wavelengths widens the 2CE spot at θ = π/2 by about 6% from 10 to 94 nm, " +
       "and shortens its depth of focus by about 5%, at low and high NA alike.");
     const wrap = el("div", "ins-chart", "", c);
     const W = Math.max(260, wrap.clientWidth || 520), H = 200, m = { t: 26, r: 104, b: 26, l: 44 };
