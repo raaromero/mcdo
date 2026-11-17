@@ -15,7 +15,7 @@ from PIL import ImageFont
 from pptx.util import Inches, Pt
 
 import cambaliza2000_pulses_delay as P
-from mcdo.deckstyle import bullets, equation, where
+from mcdo.deckstyle import GREY, bullets, equation, text, where
 
 F = P.ROOT
 EQ_T = r'\frac{F(\Delta t)}{F(0)} = \exp\left(-2\ln 2\,\frac{\Delta t^2}{\tau^2}\right)'
@@ -43,6 +43,61 @@ def fitted(slide):
     return make
 
 
+DASH = os.environ.get('DASHBOARD', 'http://localhost:4317/')     # the local dashboard (npm run dev in dashboard/cambaliza)
+# slide title -> the highlight of the dashboard that shows the same result (dashboard/cambaliza/src/highlights.ts), or
+# the address of the view when no highlight exists
+LINKS = {
+    'Two-color excitation with two confocal beams at an angle θ': '#mode=live',
+    'Transverse 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π': '#mode=theta&wdir=x&pk=90',
+    'Axial 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π': '#mode=theta&wdir=z&pk=90',
+    'Central spot and depth of focus against NA: 2CE, θ = 0 and π': '#hl=cw-dof-collinear',
+    'Axial 2CE PSF at NA 0.5 and NA 0.9: paraxial and vector focus': '#hl=cw-scalar-dof',
+    'Paraxial over vector widths of 2CE against NA': '#hl=cw-scalar-5pct',
+    'Central spot and depth of focus against NA: 2CE, θ = π/2': '#hl=cw-dof-crossed',
+    'Central spot and depth of focus against NA: 2PE, θ = π/2': '#hl=cw-2pe-crossed',
+    'Depth of focus, collinear and crossed lenses': '#hl=pulse-collinear',
+    'Depth of focus, facing lenses': '#hl=pulse-facing-dof',
+    'Overlap in time of the two facing pulses': '#hl=pulse-facing-dof',
+    'Pulse width that matches continuous beams against NA, θ = π': '#hl=pulse-facing-na',
+    'Pulse width that matches continuous beams, θ = 0 and π/2': '#hl=pulse-crossed',
+    'Pulse width that matches continuous beams: pupils, θ = π': '#hl=pulse-facing-pupil',
+    'Delay between the two pulses and their temporal overlap': '#hl=delay-collinear',
+    'Peak 2CE fluorescence and its position against the delay, θ = π': '#hl=delay-facing-lowna',
+    'Peak 2CE fluorescence at a delay of one pulse width against NA': '#hl=delay-pupils',
+    'Peak 2CE fluorescence against the delay, τ = 5 fs, NA 0.5': '#hl=delay-fringes',
+    'Peak 2CE fluorescence against the delay, τ = 10 fs, NA 0.5': '#hl=delay-fringes',
+    'Peak 2CE fluorescence against the delay for two polarizations': '#hl=delay-polarization',
+}
+
+
+def title_of(s):
+    """Title of a white slide (the text box at 1.2 in, 0.28 in), or None for a title or divider slide."""
+    for sh in s.shapes:
+        if sh.has_text_frame and abs(sh.left - Inches(1.2)) < 2000 and abs(sh.top - Inches(0.28)) < 2000:
+            return sh.text_frame.text
+    return None
+
+
+def finish(prs, keep=None):
+    """Last pass over a deck: with `keep`, drop the white slides whose title is not in it and the divider slides;
+    number the pages by their position in the deck; add the link to the dashboard under the slides that have one."""
+    ids = prs.slides._sldIdLst
+    if keep is not None:
+        for i in reversed(range(len(prs.slides))):
+            t = title_of(prs.slides[i])
+            if (t is None and i > 0) or (t is not None and t not in keep):
+                prs.part.drop_rel(ids[i].rId)
+                ids.remove(ids[i])
+    for i, s in enumerate(prs.slides, 1):
+        for sh in s.shapes:                                  # the page number, written at (9.0 in, 5.28 in) by slide()
+            if sh.has_text_frame and abs(sh.left - Inches(9.0)) < 2000 and abs(sh.top - Inches(5.28)) < 2000:
+                sh.text_frame.paragraphs[0].runs[0].text = str(i)
+        link = LINKS.get(title_of(s))
+        if link:
+            tf = text(s, 0.5, 5.45, 3.0, 0.16, 'Open in the dashboard', 8.5, GREY)   # under the figure frame
+            tf.paragraphs[0].runs[0].hyperlink.address = DASH + link
+
+
 def tolerance(q, level=0.8):
     """Delay, in units of τ, at which the peak of the 350-nm pairs has fallen to `level` of its value without delay."""
     q = q.sort_values('delay_tau')
@@ -60,6 +115,7 @@ def delay_slides(slide, big, notes):
     face = f100[f100.delay_tau == 1].set_index('na')
     tol = {na: tolerance(f100[f100.na == na]) for na in (0.1, 0.2, 0.3, 0.5, 0.9)}
     tf = P.load('rw_air', 'fine')
+    tf = tf[tf.sig == '2ce']
     gap = tf.assign(gap=(tf.rel_total - tf.rel_cross).abs()).groupby(['theta', 'cut', 'tau', 'na']).gap.max()
     lost = lambda na: 100 * (1 - face.loc[na, 'rel_cross'])
 

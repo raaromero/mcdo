@@ -151,5 +151,94 @@
   "h": "mode=psum&nth=90&nm=dof&nset=rw_air_eps0.9&ny=dof",
   "wait": 6000,
   "find": "Depth of focus of 2CE against the pulse width"
+ },
+ {
+  "id": "b46",
+  "h": "mode=psum&xth=0&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "b47",
+  "h": "mode=psum&xth=180&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "b48a",
+  "h": "mode=psum&xth=180&xtau=100&xnas=10.20.30.50.70.90&hl=delay-facing-lowna",
+  "wait": 6000,
+  "card": "With facing lenses at low NA, the",
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "b48b",
+  "h": "mode=psum&xth=180&xtau=100&xnas=50.70.90&hl=delay-facing-highna",
+  "wait": 6000,
+  "card": "With facing lenses at NA 0.5 and",
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "b49a",
+  "h": "mode=psum&xth=180&xtau=100&hl=delay-pupils",
+  "wait": 6000,
+  "card": "With facing lenses, pupils with a longer",
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "b49b",
+  "h": "mode=psum&xth=180&xtau=30",
+  "wait": 6000,
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "b50a",
+  "h": "mode=psum&xth=0&xtau=5&xna=0.5&xpol=s&hl=delay-fringes",
+  "wait": 6000,
+  "card": "Below 20 fs, phase-locked pulses with all",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b50b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b51",
+  "h": "mode=psum&xth=0&xtau=10&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b52",
+  "h": "mode=psum&xth=0&xtau=20&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b53a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.3",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b53b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.7",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b54a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=p&hl=delay-polarization",
+  "wait": 6000,
+  "card": "With crossed lenses and the polarization in",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "b54b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=s",
+  "wait": 6000,
+  "scroll": "#c-xfi"
  }
 ]

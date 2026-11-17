@@ -13,7 +13,7 @@ from mcdo.deckstyle import prs, slide, text, bullets, figure, dots, NAVY, WHITE,
 from PIL import Image
 
 import cambaliza2000_pulses_delay as P
-from pulse_delay_slides import delay_slides, fitted
+from pulse_delay_slides import delay_slides, finish, fitted
 
 ds.CITE = ''
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
@@ -87,6 +87,7 @@ notes(s, 'A delay reduces the peak 2CE fluorescence through the temporal overlap
 
 delay_slides(slide, big, notes)
 
+finish(prs)
 ds.keynote_fonts()
 path = os.path.join(OUT, 'pulse_delay.pptx')
 prs.save(path)

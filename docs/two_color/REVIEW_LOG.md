@@ -23,11 +23,27 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
    Still open in this deck: the figures of Part 1 (slides 4 to 11) are in the older style, with small fonts and
    titles inside the figure; redraw them at the figure standards with the scripts that made them
    (`scripts/validate_romallosa.py`, `scripts/visual_na_checks.py`, `scripts/verify_*.py`), as new files.
-2. **Guides of that deck** repeat its bullets (`docs/two_color/walkthrough/walkthrough_high_na_pulses.src.md`,
-   `docs/two_color/presenter_guide_high_na_pulses.md`). After item 1, copy the new titles and bullets into them and
-   rebuild (commands in `NEXT_STEPS.md`, "Guides"). The built HTML and PDF files still carry the old title text.
-3. **Presenter guides: check each number and each answer** against the stored data and the derivations. They were
-   written by a subagent and have not been reviewed line by line.
+2. **Guides of that deck: done 2026-11-17, midday.** The two guides of `2ce_high_na_pulses.pptx` and the two of
+   `pulse_delay.pptx` now have one card per slide, with the slide number (position in the deck), the title and the
+   bullets word for word from the decks (checked by script against the text read with python-pptx), Part 4 (slides 46
+   to 54) added from the delay guides, and every other sentence rewritten as a full sentence. Steps b46 to b54b of
+   `steps_high_na_pulses.json` reuse the screenshots of `img_delay/` (copied). All four are rebuilt
+   (`high_na_pulses_guide`, 49 pages; `presenter_guide_high_na_pulses`, 37; `delay_guide`, 13;
+   `presenter_guide_delay`, 9). Remains: the user's reading of them. If the wording of a slide changes again, copy
+   the new title and bullets into the cards and rebuild; the number printed in the corner of a slide is smaller than
+   its position, because it skips the title and the dividers.
+3. **Presenter guides: numbers and answers checked 2026-11-17, midday**, against the speaker notes,
+   `work_to_date.tex`, `pulse_derivations.tex`, `review_07.tex`, `KEY_RESULTS.md`, `widths.csv`, `tau_cw.txt` and the
+   numbers files. Corrected in the guides: the 2CE spot at θ = 0 and π is 0.516 µm (was 0.517, the 2PE value); the
+   facing-lens pulse width at NA 0.3 is 264 fs (was 260); at 10 fs the 375-nm pairs are 18% and the 328-nm pairs 14%
+   of the 350-nm pairs in amplitude (was "18%" for both); with crossed lenses the focus of L2 moves along, not across,
+   the axis of L1 for a misalignment z_c; the scalar Debye spot in optical units is not constant (3.23 at NA 0.3,
+   3.19 at NA 0.9); the E_z error was in the two-beam calculation, not in the one-beam focus of Part 1. Remains, in
+   the deck notes (not changed, the decks are not mine to edit): slide 14 notes give 0.517 µm for 2CE at θ = 0 and π
+   (stored 0.516); slides 2 and 38 notes give "about 60%" at 10 fs next to 1.92 µm, which is 54% of 3.56 µm (60% is
+   the value with all pairs, 2.14 µm); slides 2 and 40 notes give "18%" for the 375- and 328-nm pairs together;
+   slide 50 notes give 0.95 for the collinear fringe at 5 fs where slide 53 and the derivations give 0.92 (different
+   normalization). Answers without a written source are listed in the pass below.
 4. **Derivations, piece by piece, in LaTeX** (asked 2026-11-16: "review everything including derivations (have latex
    docs piece by piece)"). Existing: `docs/two_color/two_color_plan.tex` (background from Maxwell's equations, brief),
    `docs/two_color/pulse_derivations.tex` (pulses, delay, the E_z factor; slow steps). Wanted: one document per piece,
@@ -63,6 +79,13 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 ## Passes
 
 ### 2026-11-17, midday
+- Brought the four guides in line with the rewritten decks (items 2 and 3): one card per slide, titles and bullets
+  word for word, Part 4 added, numbers checked; rebuilt all four. Answers in the presenter guides without a written
+  source, kept: why the zeros fill with pulses (slide 11), why profiles and not widths (slide 22), the Savitzky–Golay
+  parameters of the fringe amplitude (delay slide 11, main slide 54), "no comparison with experiment is planned"
+  (from START_HERE.md, not from the listed sources). `replication_numbers.txt` and `lim2002_numbers.txt` give
+  different fits for θ = π across the axis (−0.588 x_c² + 0.883 against −0.601 x_c² + 0.888); the deck and guides
+  use the second.
 - Added the delay results to the deck as Part 4 (65 slides now) from one shared module, and rewrote the delay deck
   with it. The delay that reduces the peak by 20% with facing lenses at 100 fs is 0.40 τ at NA 0.9, 0.41 τ at NA 0.5,
   0.44 τ at NA 0.3, 0.58 τ at NA 0.2 and 1.74 τ at NA 0.1.

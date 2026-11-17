@@ -55,6 +55,8 @@ const DEF = { ...S };
 
 function readHash() {
   const q = new URLSearchParams(location.hash.slice(1));
+  const short = q.has("hl") && !q.has("mode") ? HIGHLIGHTS.find((h) => h.id === q.get("hl")) : undefined;
+  if (short) Object.assign(S, short.preset);            // a link "#hl=<id>" alone opens that highlight (used by the slides)
   for (const k of Object.keys(DEF) as K[]) {
     const v = q.get(k);
     if (v === null) continue;

@@ -4,7 +4,10 @@ pulse_delay_slides.py, shared with make_pulse_delay_deck.py). Figures are the ex
 the Cambaliza & Saloma and Lim & Saloma replications and their high-NA extension, and the pulse figures); numbers are
 in the speaker notes.
 
-    python scripts/make_2ce_high_na_pulses_deck.py -> output/08_two_color/decks/2ce_high_na_pulses.pptx
+    python scripts/make_2ce_high_na_pulses_deck.py -> output/08_two_color/decks/2ce_high_na_pulses.pptx (all slides)
+    MAIN=1 python scripts/make_2ce_high_na_pulses_deck.py -> …/2ce_high_na_pulses_main_results.pptx (the main results)
+
+Slides with a matching view in the dashboard carry a link to it (pulse_delay_slides.LINKS); DASHBOARD sets its address.
 """
 import os
 import sys
@@ -16,7 +19,7 @@ from PIL import Image
 import mcdo.deckstyle as ds
 from mcdo.deckstyle import NAVY, PALE, PURPLE, WHITE, bullets, dots, equation, figure, label, prs, slide, text, where
 
-from pulse_delay_slides import delay_slides, fitted
+from pulse_delay_slides import delay_slides, finish, fitted
 
 Image.MAX_IMAGE_PIXELS = None
 ds.CITE = ''
@@ -143,8 +146,9 @@ words('Summary', [
     'Richards–Wolf focus, then 2CE at high NA, then 2CE with optical pulses.',
     'The paraxial depth of focus of 2CE with collinear and facing lenses is 5% longer than the vector one from NA 0.43 '
     'in air (0.57 in water), 7% at NA 0.5 and 36% at NA 0.9. With facing lenses at NA 0.5, the 2CE depth of focus is '
-    'about 80% of the continuous-beam value at 20 fs and 60% at 10 fs; at NA 0.3 and 20 fs it is 40%. The 375- and '
-    '328-nm pairs have 18% of the amplitude of the 350-nm pairs at 10 fs and below 1% at 20 fs.', size=13, h=4.4)
+    'about 80% of the continuous-beam value at 20 fs and 60% at 10 fs (through the fringe crests, with all pairs); at '
+    'NA 0.3 and 20 fs it is 40%. At 10 fs the 375- and 328-nm pairs have 18% and 14% of the amplitude of the 350-nm '
+    'pairs, and at 20 fs both are below 1%.', size=13, h=4.4)
 
 # ── Part 1. The focus at high NA with the Richards–Wolf theory ───────────
 navy('1. Replication of Romallosa et al. (2003) and its extension to Gaussian input and annular pupils: intensity '
@@ -275,7 +279,7 @@ pair('Transverse 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', [
     path(CB, 'original', 'fig2b.png'), path(CB, 'panels', 'fig2b.png'),
     'Current work reproduces the transverse 2CE profiles of Cambaliza & Saloma (2000).',
     'Paraxial scalar model, NA 0.5, circular pupils, as published. Current work lies on the published curves. The '
-    'FWHM is 0.763 µm at θ = π/2 and 0.517 µm at θ = 0 and π. Beam 2 is rotated in real space (x, z). Several ratios '
+    'FWHM is 0.763 µm at θ = π/2 and 0.516 µm at θ = 0 and π. Beam 2 is rotated in real space (x, z). Several ratios '
     'quoted in the text of Cambaliza & Saloma (2000) differ from their own curves at θ = π/2 (for example 0.67 '
     'against 0.49 for the 2PE spot at π/2 over that at 0), while the plotted widths agree with current work.',
     labels=('Cambaliza & Saloma (2000), Fig. 2b', 'Current work'))
@@ -486,7 +490,7 @@ notes(s, 'The excitation counts the photon pairs that add up to 350 nm.',
       PA1 + '\n' + PA2)
 
 big('2CE with 100-fs pulses and with continuous beams, θ = 0 and π', [
-    'At 100 fs, the pulsed 2CE distribution along the axis is the same as with continuous beams, with collinear (θ = 0) and with facing (θ = π) lenses.'],
+    'At 100 fs, pulsed 2CE is the same as with continuous beams at all three lens angles, so the continuous-beam results of Cambaliza & Saloma (2000) hold for pulses of that length.'],
     os.path.join(PU, 'sweep', 'profiles_100fs_2ce_0_pi.png'),
     'At 100 fs the pulses give the continuous-beam 2CE.',
     'Total 2CE accumulated as the pulses pass the focus, along the axis, paraxial model, NA 0.5, air. The depth of '
@@ -495,7 +499,7 @@ big('2CE with 100-fs pulses and with continuous beams, θ = 0 and π', [
     'that length.')
 
 big('2CE with 100-fs pulses and with continuous beams, θ = π/2', [
-    'At 100 fs, pulsed 2CE is the same as with continuous beams at all three lens angles, so the continuous-beam results of Cambaliza & Saloma (2000) hold for pulses of that length.'],
+    'With crossed lenses, the pulsed 2CE distribution across the axis at 100 fs is also the same as with continuous beams.'],
     os.path.join(PU, 'sweep', 'profiles_100fs_2ce_pi2.png'),
     'At 100 fs the pulses give the continuous-beam 2CE with crossed lenses too.',
     'Total 2CE accumulated as the pulses pass the focus, across the axis, paraxial model, NA 0.5, air. The width is '
@@ -519,7 +523,7 @@ big('Depth of focus, facing lenses', [
     os.path.join(PU, 'sweep', 'dof_na_pi.png'),
     'Pulses shorten the 2CE depth of focus with facing lenses, more at lower NA.',
     'Paraxial model, NA 0.3 to 0.5. At NA 0.5 the 2CE depth of focus is 3.56 µm for continuous beams, 2.81 µm at '
-    '20 fs and 1.92 µm at 10 fs, about 80% and 60% of the continuous-beam value. At NA 0.3 and 20 fs it is 40% of the '
+    '20 fs (79%); at 10 fs it is 2.14 µm through the fringe crests with all pairs (60%) and 1.92 µm for the 350-nm pairs (54%). At NA 0.3 and 20 fs it is 40% of the '
     'continuous-beam value. 2PE shortens less, because the 350-nm pairs within one pulse need no overlap.')
 
 big('Overlap in time of the two facing pulses', [
@@ -541,7 +545,7 @@ big('Signal added by the 375- and 328-nm pairs', [
     os.path.join(PU, 'sweep', 'strength_vs_tau.png'),
     'Pairs within one pulse matter below 15 fs.',
     'With continuous beams, 2CE needs both beams, which gives its weak background in scattering media. The amplitude '
-    'of the 375- and 328-nm pairs is 18% of that of the 350-nm pairs at 10 fs and below 1% at 20 fs. The peak of the '
+    'of the 375- and 328-nm pairs is 18% and 14% of that of the 350-nm pairs at 10 fs, and below 1% for both at 20 fs. The peak of the '
     'total over that of the 350-nm pairs is 1.02 at 20 fs, 1.15 at 15 fs, 1.73 at 10 fs and 3.1 at 5 fs.')
 
 big('Pulse width that matches continuous beams against NA, θ = π', [
@@ -550,7 +554,7 @@ big('Pulse width that matches continuous beams against NA, θ = π', [
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_2ce_pi.png'),
     'Facing lenses need the longest pulses to behave like continuous beams, more so at lower NA.',
     'The pulse width from which the largest difference between the pulsed and continuous-beam profiles stays below 1% '
-    'of the peak. Facing lenses, 2CE, vector model in air: about 25 fs at NA 0.9, 87 fs at NA 0.5, 260 fs at NA 0.3 '
+    'of the peak. Facing lenses, 2CE, vector model in air: about 25 fs at NA 0.9, 87 fs at NA 0.5, 264 fs at NA 0.3 '
     'and 610 fs at NA 0.2. For 2PE it is shorter (62 fs at NA 0.5), because the 350-nm pairs within one pulse need no '
     'overlap. At NA 0.5: 87 fs in air, 164 fs in water and 216 fs in oil. With collinear lenses 4-fs pulses already '
     'give the continuous-beam profiles, and with crossed lenses 2CE does from about 20 to 28 fs (next slide). Solid: '
@@ -684,8 +688,26 @@ big('Side lobes of 2PE against NA: distance from the peak and height', [
     '0.42 at NA 0.9. Their distance from the peak is λ/2n with facing lenses and λ/n with crossed lenses at low NA. '
     '2CE side lobes stay below 1e-3 of the peak.')
 
+# MAIN=1: the concise deck, the main results alone, from the same slides (no dividers, no backup)
+KEEP = None
+if os.environ.get('MAIN'):
+    KEEP = {'Summary', 'Intensity distributions near focus with a 1-fs pulse, NA 0.8',
+            'Transverse intensity distribution at NA 0.3 and NA 0.9', 'Annular pupils with few-cycle pulses: depth of focus',
+            'Two-color excitation with two confocal beams at an angle θ',
+            'Axial 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π',
+            'Misalignment for a 20% loss of the 2CE peak against NA, θ = π',
+            'Central spot and depth of focus against NA: 2CE, θ = 0 and π',
+            'Axial 2CE PSF at NA 0.5 and NA 0.9: paraxial and vector focus',
+            'Central spot and depth of focus against NA: 2CE, θ = π/2', 'Photon pairs that excite the 350-nm level',
+            '2CE with 100-fs pulses and with continuous beams, θ = 0 and π', 'Depth of focus, collinear and crossed lenses',
+            'Depth of focus, facing lenses', 'Pulse width that matches continuous beams against NA, θ = π',
+            'Signal added by the 375- and 328-nm pairs', 'Delay between the two pulses and their temporal overlap',
+            'Peak 2CE fluorescence and its position against the delay, θ = π',
+            'Peak 2CE fluorescence at a delay of one pulse width against NA', 'Summary: 2CE with optical pulses',
+            'Next steps', 'Glossary (1/2)', 'Glossary (2/2)'}
+finish(prs, KEEP)
 ds.keynote_fonts()
-out = os.path.join(OUT, '2ce_high_na_pulses.pptx')
+out = os.path.join(OUT, '2ce_high_na_pulses_main_results.pptx' if KEEP else '2ce_high_na_pulses.pptx')
 prs.save(out)
 print('Saved ->', out, f'({len(prs.slides)} slides)')
 for f in MISSING:
