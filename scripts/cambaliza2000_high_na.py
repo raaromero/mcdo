@@ -20,10 +20,11 @@ import matplotlib.pyplot as plt
 
 from mcdo.style import apply as _apply_style
 from mcdo.twobeam import beam_field, two_color, two_photon
+from mcdo.cutinset import cut_inset, fig_legend
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plots
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000', 'high_na')
 os.makedirs(OUT, exist_ok=True)
@@ -91,7 +92,7 @@ def sel(n, sig, axis, th):
 # ── widths against NA, one figure per medium and direction: 2PE and 2CE side by side; solid vector, dashed scalar ──
 for n, tag in ((1.0, 'air'), (1.33, 'water')):
     for axis in ('x', 'z'):
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
         for ax, sig in zip(axes, ('2PE', '2CE')):
             for th in THETAS:
                 d = sel(n, sig, axis, th)
@@ -106,8 +107,7 @@ for n, tag in ((1.0, 'air'), (1.33, 'water')):
             ax.set_title(f'{sig}, {"transverse FWHM" if axis == "x" else "DOF (axial FWHM)"}')
             ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
         h, l = axes[0].get_legend_handles_labels()
-        fig.legend(h, l, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 0.0), frameon=False)
-        plt.tight_layout()
+        fig_legend(fig, h, l)
         fig.savefig(os.path.join(OUT, f'widths_{tag}_{axis}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> widths_{tag}_{axis}.png')
 
@@ -129,14 +129,14 @@ def ratio_axes(ax, lab, a, b):
                 ms=8, label=f'Scalar, {tag}')
     ax.axvline(0.5, color='#999999', lw=2, ls=':')
     ax.set_title(lab); ax.set_xlabel('NA'); ax.set_ylabel('Ratio')
+    cut_inset(ax, a[1], sig=a[0], theta=a[2])
 
 
-fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.2))               # across the axis: two comparisons
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))               # across the axis: two comparisons
 for ax, (lab, a, b) in zip(axes, RAT[:2]):
     ratio_axes(ax, lab, a, b)
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-plt.tight_layout()
+fig_legend(fig, h, l)
 fig.savefig(os.path.join(OUT, 'ratios_x.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
 fig, ax = plt.subplots(figsize=(17, 7.0))                            # along the axis: the DOF comparison
 ratio_axes(ax, *RAT[2])
@@ -170,7 +170,7 @@ SPLIT = {'0pi': ('θ = 0 and π', {'x': (('2CE', 0.0, '#ff7f0e', '2PE and 2CE'),
                              'z': (('2PE', np.pi / 2, '#d62728', '2PE'), ('2CE', np.pi / 2, '#ff7f0e', '2CE'))})}
 split_lines = []
 for key, (ttl, curves) in SPLIT.items():
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.9), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
         ax.axhspan(-5, 5, color='#cccccc', alpha=0.45, lw=0, label='±5%')
         ax.axhline(0, color='#888888', lw=1.5)
@@ -187,11 +187,10 @@ for key, (ttl, curves) in SPLIT.items():
                                    f'{ttl} | {axis} | {lab} | {tag} | within 5% to NA {d[-1, 0]:g}')
         ax.set_xlabel('NA'); ax.set_xlim(0.15, 1.3)
         ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
-    axes[0].set_ylabel('Scalar over vector − 1 (%)')
+    axes[0].set_ylabel('Scalar / vector − 1 (%)')
     axes[0].set_ylim(*((-10, 50) if key == '0pi' else (-8, 12)))
     h, l = axes[1].get_legend_handles_labels()
-    fig.legend(h, l, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 0.0), frameon=False)
-    plt.tight_layout()
+    fig_legend(fig, h, l)
     fig.savefig(os.path.join(OUT, f'split_{key}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
     print(f'Saved -> split_{key}.png')
 open(os.path.join(OUT, 'split.txt'), 'w').write('\n'.join(split_lines) + '\n')
@@ -201,7 +200,7 @@ print('\n'.join(split_lines))
 # ── one configuration per figure: medium and θ; across | along; 2PE black, 2CE orange; vector solid, scalar dashed ──
 for n, tag in ((1.0, 'air'), (1.33, 'water')):
     for th, tk in ((0.0, '0'), (np.pi / 2, 'pi2'), (np.pi, 'pi')):
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
         for ax, axis in zip(axes, ('x', 'z')):
             for sig, col in (('2PE', 'k'), ('2CE', '#ff7f0e')):
                 d = sel(n, sig, axis, th)
@@ -219,8 +218,7 @@ for n, tag in ((1.0, 'air'), (1.33, 'water')):
             ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
             ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
         h, l = axes[0].get_legend_handles_labels()
-        fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-        plt.tight_layout()
+        fig_legend(fig, h, l)
         fig.savefig(os.path.join(OUT, f'theta_{tag}_{tk}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> theta_{tag}_{tk}.png')
 
@@ -228,20 +226,23 @@ for n, tag in ((1.0, 'air'), (1.33, 'water')):
 # ── one signal and angle per figure, air and water together, linear axes so the split reads directly ──
 MED = ((1.0, 'air', '#1f77b4', 'o'), (1.33, 'water', '#2ca02c', 's'))
 for sig, th, tk in (('2CE', 0.0, '0'), ('2CE', np.pi / 2, 'pi2'), ('2PE', 0.0, '0'), ('2PE', np.pi / 2, 'pi2'), ('2PE', np.pi, 'pi')):
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.4))
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
     for ax, axis in zip(axes, ('x', 'z')):
         for n, tag, col, mk in MED:
             d = sel(n, sig, axis, th)
             ax.plot(d[:, 0], d[:, 2], '-' + mk, color=col, lw=3, ms=8, mfc=col, label=f'{tag}, vector')
             ax.plot(d[:, 0], d[:, 1], '--', color=col, lw=3, label=f'{tag}, scalar')
-        ax.set_xlim(0.15, 1.3); ax.set_ylim(bottom=0)
+        ax.set_xlim(0.15, 1.3); ax.set_yscale('log')          # widths span a decade or more: log scale
+        ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1, 2, 5)))
+        ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
+        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         same = axis == 'x' and th != np.pi / 2                 # across the axis the width depends on NA only
         ax.set_title(('Across the axis (FWHM): air = water' if same else 'Across the axis (FWHM)') if axis == 'x'
                      else 'Along the axis (DOF)')
         ax.set_xlabel('NA'); ax.set_ylabel('Width (µm)')
+        cut_inset(ax, axis, sig=sig, theta=th)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-    plt.tight_layout()
+    fig_legend(fig, h, l)
     fig.savefig(os.path.join(OUT, f'cfg_{sig.lower()}_{tk}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
     print(f'Saved -> cfg_{sig.lower()}_{tk}.png')
 
@@ -249,9 +250,10 @@ for sig, th, tk in (('2CE', 0.0, '0'), ('2CE', np.pi / 2, 'pi2'), ('2PE', 0.0, '
 GAPS = {'2ce': (('2CE', 0.0, '#ff7f0e', 'θ = 0 and π'), ('2CE', np.pi / 2, '#d62728', 'θ = π/2')),
         '2pe': (('2PE', 0.0, 'k', 'θ = 0'), ('2PE', np.pi / 2, '#d62728', 'θ = π/2'), ('2PE', np.pi, '#1f77b4', 'θ = π'))}
 for key, curves in GAPS.items():
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.4), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
-        ax.axhspan(-5, 5, color='#cccccc', alpha=0.45, lw=0, label='±5%')
+        lo = 0 if key == '2ce' else -5                         # the 2CE gaps are never negative
+        ax.axhspan(lo, 5, color='#cccccc', alpha=0.45, lw=0, label='0 to 5%' if lo == 0 else '±5%')
         ax.axhline(0, color='#888888', lw=1.5)
         for sig, th, col, lab in curves:
             if key == '2pe' and th == np.pi and axis == 'x':
@@ -266,9 +268,10 @@ for key, curves in GAPS.items():
                     ax.plot([c], [5 if gap[-1] > 0 else -5], 'D', color=col, ms=14, mfc=col if n == 1 else 'white', mew=2.5)
         ax.set_xlabel('NA'); ax.set_xlim(0.15, 1.3)
         ax.set_title('Across the axis (FWHM)' if axis == 'x' else 'Along the axis (DOF)')
-    axes[0].set_ylabel('Scalar over vector − 1 (%)'); axes[0].set_ylim(-10, 50)
+    axes[0].set_ylabel('Scalar / vector − 1 (%)'); axes[0].set_ylim(-2 if key == '2ce' else -10, 50)
+    for ax, axis in zip(axes, ('x', 'z')):
+        cut_inset(ax, axis, sig=key.upper())
     h, l = axes[1].get_legend_handles_labels()
-    fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-    plt.tight_layout()
+    fig_legend(fig, h, l)
     fig.savefig(os.path.join(OUT, f'gap_{key}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
     print(f'Saved -> gap_{key}.png')

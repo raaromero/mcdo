@@ -21,15 +21,16 @@ import matplotlib.pyplot as plt
 
 from mcdo.style import apply as _apply_style
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plot
 
 from mcdo.twobeam import beam_field
+from mcdo.cutinset import cut_inset, place_legend, inset_figure
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
 os.makedirs(OUT, exist_ok=True)
 NA, L1, L2, L2P, LE = 0.5, 0.750, 0.656, 0.700, 0.350
-THETAS = ((0.0, 'θ = 0'), (np.pi / 2, 'θ = π/2'), (np.pi, 'θ = π'))
+THETAS = ((0.0, 'θ = 0'), (np.pi / 2, 'π/2'), (np.pi, 'π'))      # short labels, as on the published panels
 STYLE = {0.0: ('k', '-', 3), np.pi / 2: ('#d62728', '-', 3), np.pi: ('#1f77b4', '--', 3)}
 xs = np.linspace(-1.0, 1.0, 2001)
 zs = np.linspace(-5.0, 5.0, 8001)
@@ -168,6 +169,7 @@ print('\n'.join(LINES))
 # ── one panel per image, on the axes of the paper, for the side-by-side slides ──
 PAN = os.path.join(OUT, 'panels')
 os.makedirs(PAN, exist_ok=True)
+XL = {'x': 'x (µm), at z = 0', 'z': 'z (µm), at x = 0'}       # the cut each profile is taken along
 
 
 # width/height of the plot box of each original panel, measured from its axis lines (pixels)
@@ -176,8 +178,8 @@ BOX = {'fig2a': 478 / 245, 'fig2b': 478 / 243, 'fig3a': 486 / 270, 'fig3b': 486 
        'fig7b': 491 / 288}
 
 
-def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True):
-    fig, ax = plt.subplots(figsize=(9, 9 / BOX[name[:5]] + 2.5))
+def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True, psf=None):
+    fig, ax = plt.subplots(figsize=(9, 9 / BOX[name[:5]] + 1.2))
     ax.set_box_aspect(1 / BOX[name[:5]])                     # same plot-box shape as the paper's panel
     for x, y, lab, c, ls, lw in curves:
         ax.plot(x, y, ls, color=c, lw=lw, label=lab)
@@ -188,22 +190,24 @@ def one(name, curves, xlabel, xlim, ylim=(0, 1), legend=True):
     if xlim == (-1, 1):                                       # rotated, as printed in Figs. 2 and 6
         ax.tick_params(axis='x', labelrotation=90)
     if legend:
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[name[:5]] - (0.16 if xlim == (-1, 1) else 0)), ncol=3,
-                  frameon=False)
+        place_legend(ax)                              # inside where it covers no curve, else one row above the plot
     fig.savefig(os.path.join(PAN, name), dpi=300, bbox_inches='tight'); plt.close(fig)
+    # the computed PSF and the cut the profile is taken along: its own image, placed on the slide beside the panel,
+    # so the plot box keeps the size of the published panel
+    inset_figure(os.path.join(PAN, 'inset_' + name), xlabel[0], **(psf or {}))
 
 
 for fig_no, data, axis in ((2, T, 'x'), (3, A, 'z'), (6, TA, 'x'), (7, AA, 'z')):
     for t, kind in (('a', '2PE'), ('b', '2CE')):
         cs = [(*data[(kind, th)], lab, *STYLE[th]) for th, lab in THETAS]
-        one(f'fig{fig_no}{t}.png', cs, 'x (µm)' if axis == 'x' else 'z (µm)', (-1, 1) if axis == 'x' else (-5, 5))
+        one(f'fig{fig_no}{t}.png', cs, XL[axis], (-1, 1) if axis == 'x' else (-5, 5), psf=dict(sig=kind, eps=0.99 if fig_no > 5 else 0.0))
 for fig_no, eps, axis, s in ((6, 0.99, 'x', xs), (7, 0.99, 'z', zs)):     # 2PE as the excitation |U1 + U2|^2
     cs = []
     for th, lab in THETAS:
         U = (lambda a, b: beam_field(a, b, L2P, NA, eps=eps) + beam_field(a, b, L2P, NA, theta=th, eps=eps))
         v = np.abs(U(s, 0 * s) if axis == 'x' else U(0 * s, s)) ** 2
         cs.append((s, norm(v), lab, *STYLE[th]))
-    one(f'fig{fig_no}a_excitation.png', cs, 'x (µm)' if axis == 'x' else 'z (µm)', (-1, 1) if axis == 'x' else (-5, 5))
+    one(f'fig{fig_no}a_excitation.png', cs, XL[axis], (-1, 1) if axis == 'x' else (-5, 5), psf=dict(sig='2PE', eps=eps))
 for t, axis in (('a', 'x'), ('b', 'z')):
     cs = []
     for dl, ls in ((0.010, '-'), (0.094, ':'), (0.039, '-.')):
@@ -211,8 +215,8 @@ for t, axis in (('a', 'x'), ('b', 'z')):
         s = xh
         v = F2c(s, 0 * s, np.pi / 2, l1=l1, l2=l2) if axis == 'x' else F2c(0 * s, s, np.pi / 2, l1=l1, l2=l2)
         cs.append((s, norm(v), f'{dl * 1000:.0f} nm', 'k', ls, 3))
-    one(f'fig4{t}.png', cs, 'x (µm)' if axis == 'x' else 'z (µm)', (0, 1))
-fig, ax = plt.subplots(figsize=(9, 9 / BOX['fig5'] + 2.5))
+    one(f'fig4{t}.png', cs, XL[axis], (0, 1))
+fig, ax = plt.subplots(figsize=(9, 9 / BOX['fig5'] + 1.2))
 ax.set_box_aspect(1 / BOX['fig5'])
 ax.plot(d_nm, fw, 'o', color='k', ms=11, label='FWHM')
 ax.plot(d_nm, dof, 'o', color='k', mfc='white', ms=11, mew=2, label='DOF')
@@ -220,6 +224,7 @@ for p in (pf, pd):
     ax.plot([0, 100], np.polyval(p, [0, 100]), '-', color='k', lw=2)
 ax.set_xlim(0, 100); ax.set_ylim(0.65, 0.775); ax.set_xlabel('Δλ (nm)'); ax.set_ylabel('Magnitude (µm)')
 ax.set_yticks(np.arange(0.65, 0.7751, 0.025)); ax.tick_params(axis='x', pad=12)
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX['fig5']), ncol=2, frameon=False)
+place_legend(ax)
 fig.savefig(os.path.join(PAN, 'fig5.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+inset_figure(os.path.join(PAN, 'inset_fig5.png'), 'xz')
 print('Saved panels ->', PAN)

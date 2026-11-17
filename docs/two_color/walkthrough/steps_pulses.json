@@ -1,0 +1,178 @@
+[
+ {
+  "id": "p04a",
+  "h": "mode=ptime",
+  "find": "Spectrum arriving",
+  "wait": 2000
+ },
+ {
+  "id": "p04b",
+  "h": "mode=ptime&qtau=100",
+  "find": "Spectrum arriving",
+  "wait": 2000
+ },
+ {
+  "id": "p05a",
+  "h": "mode=ptime&qtau=20",
+  "find": "Spectrum arriving",
+  "wait": 2000
+ },
+ {
+  "id": "p05b",
+  "h": "mode=ptime&qtau=5",
+  "find": "Spectrum arriving",
+  "wait": 2000
+ },
+ {
+  "id": "p06a",
+  "h": "mode=ptime&qth=0",
+  "wait": 2000
+ },
+ {
+  "id": "p06b",
+  "h": "mode=ptime&qth=90",
+  "wait": 2000
+ },
+ {
+  "id": "p06c",
+  "h": "mode=ptime",
+  "wait": 2000
+ },
+ {
+  "id": "p09a",
+  "h": "mode=psum",
+  "find": "width along the axis, θ = π",
+  "wait": 6000
+ },
+ {
+  "id": "p09b",
+  "h": "mode=psum&rsig=2PE",
+  "find": "width along the axis, θ = π",
+  "wait": 6000
+ },
+ {
+  "id": "p09c",
+  "h": "mode=ptime&qna=0.3&qtau=20",
+  "find": "along the axis, accumulated",
+  "wait": 3000
+ },
+ {
+  "id": "p10a",
+  "h": "mode=psum",
+  "find": "width along the axis, θ = 0",
+  "wait": 6000
+ },
+ {
+  "id": "p10b",
+  "h": "mode=psum&rcut=x",
+  "find": "width across, θ = π/2",
+  "wait": 6000
+ },
+ {
+  "id": "p11a",
+  "h": "mode=psum&rk=10",
+  "wait": 9000
+ },
+ {
+  "id": "p11b",
+  "h": "mode=psum&rk=10",
+  "find": "along the axis, τ = 10 fs",
+  "wait": 9000
+ },
+ {
+  "id": "p11c",
+  "h": "mode=psum&rk=5",
+  "wait": 9000
+ },
+ {
+  "id": "p12a",
+  "h": "mode=ptime&qvid=1",
+  "wait": 3000
+ },
+ {
+  "id": "p13a",
+  "h": "mode=psum&rsig=2PE&rk=10",
+  "wait": 9000
+ },
+ {
+  "id": "p13b",
+  "h": "mode=psum&rsig=2PE&rk=10",
+  "find": "along the axis, τ = 10 fs",
+  "wait": 9000
+ },
+ {
+  "id": "p14a",
+  "h": "mode=ptime&qsig=2PE&qvid=1",
+  "wait": 3000
+ },
+ {
+  "id": "p15a",
+  "h": "mode=psum",
+  "find": "Signal added by",
+  "wait": 6000
+ },
+ {
+  "id": "p15b",
+  "h": "mode=ptime",
+  "find": "Pair sums at the focus",
+  "wait": 3000
+ },
+ {
+  "id": "p17a",
+  "h": "mode=psum&rdt=20",
+  "find": "Peak of the total",
+  "wait": 6000
+ },
+ {
+  "id": "p17b",
+  "h": "mode=psum&rsig=2PE&rdt=20",
+  "find": "Peak of the total",
+  "wait": 6000
+ },
+ {
+  "id": "p17c",
+  "h": "mode=ptime&qtau=20&qdel=8",
+  "wait": 3000
+ },
+ {
+  "id": "p19a",
+  "h": "mode=psum&rdt=20&rdn=8",
+  "find": "Total 2CE, 20 fs, N = 0",
+  "wait": 12000
+ },
+ {
+  "id": "p19b",
+  "h": "mode=psum&rdt=20&rdn=8",
+  "find": "Total 2CE along the axis, τ = 20 fs",
+  "wait": 12000
+ },
+ {
+  "id": "p20a",
+  "h": "mode=psum&rdth=0&rdt=20",
+  "find": "Peak of the total",
+  "wait": 6000
+ },
+ {
+  "id": "p20b",
+  "h": "mode=psum&rdth=90&rdt=20",
+  "find": "Peak of the total",
+  "wait": 6000
+ },
+ {
+  "id": "p09n",
+  "h": "mode=psum&rk=100",
+  "wait": 9000
+ },
+ {
+  "id": "p11n",
+  "h": "mode=ptime&qtau=20",
+  "find": "along the axis, accumulated",
+  "wait": 3000
+ },
+ {
+  "id": "p12n",
+  "h": "mode=ptime&qtau=100",
+  "find": "along the axis, accumulated",
+  "wait": 3000
+ }
+]

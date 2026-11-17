@@ -9,6 +9,8 @@ continuous colorbar.
 
     python scripts/fig_lim2002_slides.py
     -> output/08_two_color/lim2002/slides/*.png
+    PANELS=1 python scripts/fig_lim2002_slides.py
+    -> …/slides/axial_2ce_paraxial_vector_na0.5_na0.9.png alone (2CE along the axis at NA 0.5 and 0.9)
 """
 
 import glob
@@ -411,7 +413,7 @@ def profiles():
     na = 0.8
     xs, zs = np.linspace(-0.8, 0.8, 801), np.linspace(-2.0, 2.0, 1601)
 
-    def I(x, z, lam, th, model):
+    def inten(x, z, lam, th, model):
         if model == 'rw':
             return 0.5 * sum(intensity(beam_field(x, z, lam, na, theta=th, model='rw', psi=p)) for p in (0.0, np.pi / 2))
         kw = {} if model == 'paraxial' else dict(model='debye')
@@ -419,8 +421,8 @@ def profiles():
     fig, axes = plt.subplots(1, 2, figsize=WIDE, sharey=True)
     for model, lab, c, ls in (('paraxial', 'Paraxial scalar', RED, '--'), ('debye', 'Scalar Debye', '#ff7f0e', ':'),
                               ('rw', 'Vector', BLUE, '-')):
-        px = I(xs, 0 * xs, L1, 0, model) * I(xs, 0 * xs, L2, np.pi, model)
-        pz = I(0 * zs, zs, L1, 0, model) * I(0 * zs, zs, L2, np.pi, model)
+        px = inten(xs, 0 * xs, L1, 0, model) * inten(xs, 0 * xs, L2, np.pi, model)
+        pz = inten(0 * zs, zs, L1, 0, model) * inten(0 * zs, zs, L2, np.pi, model)
         axes[0].plot(xs, px / px.max(), ls, color=c, lw=4, label=lab)
         axes[1].plot(zs, pz / pz.max(), ls, color=c, lw=4)
     axes[0].set_title('Across the axis'); axes[1].set_title('Along the axis')
@@ -429,6 +431,30 @@ def profiles():
     fig.legend(h, l, loc='lower center', ncol=3, bbox_to_anchor=(0.5, -0.12), frameon=False)
     plt.tight_layout()
     save(fig, 'profiles_pi_na0.8.png')
+
+
+# ── 2CE along the axis at NA 0.5 and 0.9, θ = 0 and π: paraxial scalar against vector (PANELS=1 draws this alone) ──
+def axial_na():
+    def fw(z, y):                                 # FWHM, the half-maximum crossings interpolated
+        y = y / y.max(); k = np.where(y >= 0.5)[0]; a, b = k[0], k[-1]
+        return np.interp(0.5, [y[b + 1], y[b]], [z[b + 1], z[b]]) - np.interp(0.5, [y[a - 1], y[a]], [z[a - 1], z[a]])
+    fig, axes = plt.subplots(1, 2, figsize=(22, 10), sharey=True)
+    fig.subplots_adjust(wspace=0.08)
+    for ax, na, zh in zip(axes, (0.5, 0.9), (5.0, 1.5)):
+        zs = np.linspace(-zh, zh, 2001)
+        for model, lab, c, ls in (('paraxial', 'paraxial scalar', RED, '--'), ('rw', 'vector', BLUE, '-')):
+            def inten(lam, th):
+                if model == 'rw':
+                    return 0.5 * sum(intensity(beam_field(0 * zs, zs, lam, na, theta=th, model='rw', psi=p))
+                                     for p in (0.0, np.pi / 2))
+                return intensity(beam_field(0 * zs, zs, lam, na, theta=th))
+            pz = inten(L1, 0) * inten(L2, np.pi)
+            ax.plot(zs, pz / pz.max(), ls, color=c, lw=4, label=f'{lab}, depth of focus {fw(zs, pz):.2f} µm')
+            print(f'NA {na} {model}: 2CE depth of focus {fw(zs, pz):.3f} µm')
+        ax.set_title(f'NA {na}'); ax.set_xlabel('z (µm), at x = 0'); ax.set_xlim(-zh, zh); ax.set_ylim(0, 1.3)
+        ax.legend(loc='upper center', frameon=False)
+    axes[0].set_ylabel('2CE signal, normalized to its peak')
+    save(fig, 'axial_2ce_paraxial_vector_na0.5_na0.9.png')
 
 
 # ── single beam on axis: scalar against vector at NA 0.5, and uniform against Gaussian input ──
@@ -721,6 +747,9 @@ def maps_same_na(stem, xkey, zkey, key_fmt, tag, theta, suf, xlabel, zlabel):
 
 
 if __name__ == '__main__':
+    if os.environ.get('PANELS'):                 # PANELS=1: the axial 2CE at NA 0.5 and 0.9 only
+        axial_na()
+        sys.exit()
     for suf, n in (('', 1.0), ('_at4', 1.0), ('_n1.33', 1.33), ('_at4_n1.33', 1.33)):
         for key in ('pi', 'pi2'):
             tolerance(key, suf, n)

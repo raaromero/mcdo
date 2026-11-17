@@ -15,14 +15,15 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mcdo.cutinset import cut_inset, fig_legend
 
 from mcdo.style import apply as _apply_style
 from mcdo.twobeam import beam_field, two_color, two_photon
 from mcdo.pulsed2ce import two_color_pulsed, _fields, C_UM_FS
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plots
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000', 'pulses')
 os.makedirs(OUT, exist_ok=True)
@@ -88,16 +89,16 @@ print('\n'.join(lines))
 # ── axial profiles at θ = π (head-on pulses), 2PE and 2CE ──
 STY = {'cw': ('k', '-', 3.5, 'Continuous'), 100.0: ('#1f77b4', '--', 3, 'τ = 100 fs'),
        20.0: ('#ff7f0e', '-', 3, 'τ = 20 fs'), 10.0: ('#d62728', '-', 3, 'τ = 10 fs')}
-fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
 for ax, sig in zip(axes, ('2PE', '2CE')):
     for k in ('cw',) + TAUS:
         c, ls, lw, lab = STY[k]
         v = P[(sig, 'z', np.pi, k)]
         ax.plot(zs, v / v.max(), ls, color=c, lw=lw, label=lab)
-    ax.set_xlim(-5, 5); ax.set_ylim(0, 1.0); ax.set_xlabel('z (µm)'); ax.set_title(f'{sig}, axial, θ = π')
+    ax.set_xlim(-5, 5); ax.set_ylim(0, 1.0); ax.set_xlabel('z (µm), at x = 0'); ax.set_title(f'{sig}, axial, θ = π')
+    cut_inset(ax, 'z', sig=sig, theta=np.pi)
 axes[0].set_ylabel('Intensity')
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1), frameon=False)
-plt.tight_layout()
+fig_legend(fig, h, l)
 fig.savefig(os.path.join(OUT, 'axial_pi.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
 print('Saved -> axial_pi.png')

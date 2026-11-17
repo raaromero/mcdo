@@ -6,7 +6,7 @@ import {
 } from "./data";
 import { download, svgImage } from "./export";
 
-export type View = "home" | "insights" | "profiles" | "widths";
+export type View = "profiles" | "widths";
 export type State = {
   view: View;
   medium: Medium;

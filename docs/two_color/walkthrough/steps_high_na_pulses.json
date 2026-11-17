@@ -1,0 +1,155 @@
+[
+ {
+  "id": "b13",
+  "h": "mode=live",
+  "wait": 2000
+ },
+ {
+  "id": "b14",
+  "h": "mode=theta&wdir=x&pk=90",
+  "wait": 3000
+ },
+ {
+  "id": "b15",
+  "h": "mode=theta&wdir=z&pk=90",
+  "wait": 3000
+ },
+ {
+  "id": "b21",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&na=0.9&hl=cw-dof-collinear",
+  "wait": 3000,
+  "card": "With collinear lenses, as NA increases, the"
+ },
+ {
+  "id": "b22",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0&axis=z&model=both&na=0.9&hl=cw-scalar-dof",
+  "wait": 3000,
+  "card": "At NA 0.9 the paraxial 2CE depth",
+  "scroll": "#c-naz"
+ },
+ {
+  "id": "b23",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi2&axis=z&na=0.7&hl=cw-dof-crossed",
+  "wait": 3000,
+  "card": "With crossed lenses the depth of focus"
+ },
+ {
+  "id": "b24",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "b25",
+  "h": "mode=na&metric=C&sig=2CE&ths=0.pi&axis=z&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "b26",
+  "h": "mode=na&metric=F&sig=2CE&ths=pi2&axis=x&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "b27",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&pupil=ann&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "b28",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=x&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "b30",
+  "h": "mode=ptime",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "b31",
+  "h": "mode=ptime",
+  "wait": 2000,
+  "find": "I₁, I₂ along the axis, now"
+ },
+ {
+  "id": "b32",
+  "h": "mode=ptime&qtau=20",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "b33",
+  "h": "mode=ptime&qtau=5",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "b34",
+  "h": "mode=ptime&qtau=10",
+  "wait": 2000,
+  "find": "Pair sums at the focus"
+ },
+ {
+  "id": "b35",
+  "h": "mode=psum&rk=100",
+  "wait": 9000,
+  "find": "2CE along the axis, τ = 100 fs"
+ },
+ {
+  "id": "b36",
+  "h": "mode=psum&rcut=x&rpth=90&rk=100",
+  "wait": 9000,
+  "find": "2CE across, τ = 100 fs"
+ },
+ {
+  "id": "b37",
+  "h": "mode=psum",
+  "wait": 6000,
+  "find": "2CE width along the axis, θ = 0"
+ },
+ {
+  "id": "b38",
+  "h": "mode=psum&rcut=z&rpth=180&rk=20&hl=pulse-facing-dof",
+  "wait": 9000,
+  "card": "With facing lenses and pulses, 2CE forms",
+  "scroll": "#c-a180"
+ },
+ {
+  "id": "b39",
+  "h": "mode=psum&rk=20",
+  "wait": 9000,
+  "find": "2CE along the axis, τ = 20 fs"
+ },
+ {
+  "id": "b40",
+  "h": "mode=psum",
+  "wait": 6000,
+  "find": "Signal added by"
+ },
+ {
+  "id": "b41",
+  "h": "mode=psum&rpth=180&nth=180&nm=diff&nset=rw_air&nx=tau&ny=diff&hl=pulse-facing-na",
+  "wait": 6000,
+  "card": "With facing lenses, the pulse width from",
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "b42",
+  "h": "mode=psum&rpth=90&rk=10&nth=90&nm=diff&nset=rw_air&nx=tau&ny=dof&hl=pulse-crossed",
+  "wait": 6000,
+  "card": "With crossed lenses and pulses, the 2CE",
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "b43",
+  "h": "mode=psum&rpth=180&nth=180&nm=diff&nset=rw_air_eps0.9&nx=tau&ny=diff&hl=pulse-facing-pupil",
+  "wait": 6000,
+  "card": "With facing lenses, a longer depth of",
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "b44",
+  "h": "mode=psum&nth=90&nm=dof&nset=rw_air_eps0.9&ny=dof",
+  "wait": 6000,
+  "find": "Depth of focus of 2CE against the pulse width"
+ }
+]

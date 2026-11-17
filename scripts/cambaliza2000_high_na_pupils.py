@@ -23,14 +23,15 @@ import matplotlib
 import matplotlib.ticker
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mcdo.cutinset import cut_inset, fig_legend
 
 from mcdo.style import apply as _apply_style
 from mcdo.twobeam import beam_field, intensity
 from mcdo.apodization import gaussian
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plots
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000', 'high_na', 'pupils')
 os.makedirs(OUT, exist_ok=True)
@@ -169,8 +170,7 @@ def log_na_axes(ax, xmax=1.25):
 
 def save(fig, name, axes, ncol, legend_axes=None):
     h, l = (legend_axes or axes[0]).get_legend_handles_labels()
-    fig.legend(h, l, loc='upper center', ncol=ncol, bbox_to_anchor=(0.5, 0.0), frameon=False)
-    plt.tight_layout()
+    fig_legend(fig, h, l)
     fig.savefig(os.path.join(OUT, name), dpi=300, bbox_inches='tight'); plt.close(fig)
     print('Saved ->', name)
 
@@ -186,7 +186,7 @@ def figures():
     # 1. annular pupils: widths against NA, vector (s) solid, scalar dashed — as widths_<medium>_<axis>.png for circular
     for n, tag in ((1.0, 'air'), (1.33, 'water')):
         for axis in ('x', 'z'):
-            fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7))
+            fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
             for ax, sig in zip(axes, ('2PE', '2CE')):
                 for th in THETAS:
                     ax.plot(*sel(n, EPS, 0, sig, axis, th, 's'), '-o', color=TCOL[th], lw=3, ms=8, label=f'{TLAB[th]}, vector')
@@ -195,11 +195,12 @@ def figures():
                 log_na_axes(ax); ax.set_yscale('log')
                 ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
                 ax.set_title(f'{sig}, annular, {"transverse FWHM" if axis == "x" else "DOF"}'); ax.set_ylabel('Width (µm)')
+                cut_inset(ax, axis, sig=sig, eps=EPS)
             save(fig, f'annular_widths_{tag}_{axis}.png', axes, 3)
 
     # 2. annular / circular width against NA (vector s), air solid, water dashed
     for axis in ('x', 'z'):
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
         for ax, sig in zip(axes, ('2PE', '2CE')):
             for n, ls, tag in ((1.0, '-o', 'air'), (1.33, '--s', 'water')):
                 for th in THETAS:
@@ -223,7 +224,7 @@ def figures():
     # which gives 34% for the 2PE comparison), from replicate_cambaliza2000.py / numbers.txt
     CURVES = {RAT[0][0]: 0.673, RAT[1][0]: 0.340, RAT[2][0]: 0.295, RAT[3][0]: 0.848}
     for part, rats in (('x', RAT[:2]), ('z', RAT[2:])):           # two comparisons per slide: larger panels
-        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.9))
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
         for ax, (lab, a, b, paper, tr) in zip(axes, rats):
             for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
                 for model, c, ls in (('s', '#1f77b4', '-'), ('scalar', '#d62728', '--')):
@@ -235,6 +236,7 @@ def figures():
             ax.plot([0.5], [paper], '*', color='k', ms=22, label='Stated in the text (NA 0.5)')
             ax.plot([0.5], [CURVES[lab]], 'X', color='#7f7f7f', ms=18, label='On the published curves')
             ax.set_title(lab, fontsize=24); ax.set_xlabel('NA')
+            cut_inset(ax, a[1], sig=a[0], theta=a[2], eps=a[3])
         save(fig, f'annular_quoted_{part}.png', axes, 3)
 
     # 4. Gaussian input (α_t = 4) / uniform: width ratio against NA, vector (s), circular and annular
@@ -272,7 +274,7 @@ def figures():
         save(fig, f'polarization_2ce_{etag}.png', axes, 3)
 
     # 6. polarization: vector / scalar 2CE width against NA, for s, p and unpolarized beams (circular, uniform)
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
     PC = {'s': '#1f77b4', 'p': '#2ca02c', 'unpol': '#ff7f0e'}
     PL = {'s': 's', 'p': 'p', 'unpol': 'unpolarized'}
     for ax, axis in zip(axes, ('x', 'z')):
@@ -290,16 +292,19 @@ def figures():
     E = pd.read_csv(DCSV)
     NCOL = {(1.0, 0.3): '#9467bd', (1.0, 0.5): 'k', (1.0, 0.7): '#1f77b4',
             (1.33, 0.5): '#ff7f0e', (1.33, 0.7): '#2ca02c', (1.33, 0.9): '#d62728'}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
     for ax, axis in zip(axes, ('x', 'z')):
         for (n, na), c in NCOL.items():
             for model, ls in (('s', '-o'), ('scalar', '--')):
                 d = E[(E.n == n) & np.isclose(E.NA, na) & (E.axis == axis) & (E.model == model)].sort_values('dl_nm')
                 ax.plot(d.dl_nm, d.fwhm / d.fwhm.iloc[0], ls, color=c, lw=3 if model == 's' else 2.5, ms=8,
-                        label=f'NA {na:g} {"air" if n == 1 else "water"}, {"vector" if model == "s" else "scalar"}')
+                        label=f'NA {na:g}, {"air" if n == 1 else "water"}' if model == 's' else None)
         ax.set_xlabel('Δλ (nm)'); ax.set_xlim(0, 100)
         ax.set_title(f'2CE θ = π/2, {"FWHM" if axis == "x" else "DOF"} / value at 10 nm')
     axes[0].set_ylabel('Relative width')
+    for ax, axis in zip(axes, ('x', 'z')):
+        cut_inset(ax, axis)
+    axes[0].plot([], [], '-', color='#888888', lw=3, label='vector'); axes[0].plot([], [], '--', color='#888888', lw=2.5, label='scalar')
     save(fig, 'dlambda_vs_na.png', axes, 4)
 
     # numbers quoted on the slides

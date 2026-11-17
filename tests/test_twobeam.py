@@ -205,3 +205,18 @@ def test_vector_annulus_matches_paraxial_at_low_na():
         v = 0.5 * sum(np.sum(np.abs(beam_field(X, Z, L1, na, model='rw', psi=p, eps=eps)) ** 2, axis=0)
                       for p in (0.0, np.pi / 2))
         assert np.max(np.abs(s / s.max() - v / v.max())) < 1e-2
+
+
+def test_vector_field_has_zero_divergence():
+    """∇·E = 0 for the vector field at points of the plane y = 0, input polarized along x. This fixes the factor
+    of the longitudinal component, E_z = −2 I₁ cos φ (Richards & Wolf; Romallosa et al. (2003) Eq. 4): a real
+    factor, in quadrature with E_x. With a factor −2i the divergence is of the order of k|E|."""
+    from mcdo.twobeam import _rw
+    h, k, alpha = 1e-4, 2 * np.pi / L1, np.arcsin(0.9)
+    pts = np.array([[0.2, 0.0, 0.15], [0.05, 0.0, -0.4], [0.4, 0.0, 0.0], [0.3, 0.0, 0.6]])
+
+    def E(p):                                                       # beam-frame field at points (x, y, z)
+        return _rw(np.hypot(p[:, 0], p[:, 1]), np.arctan2(p[:, 1], p[:, 0]), p[:, 2], k, alpha, 0.0)
+
+    div = sum((E(pts + h * np.eye(3)[i])[i] - E(pts - h * np.eye(3)[i])[i]) / (2 * h) for i in range(3))
+    assert np.max(np.abs(div)) < 1e-5 * k * np.max(np.abs(E(pts)))

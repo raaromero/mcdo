@@ -93,13 +93,15 @@ $\tfrac12(1+\cos\vartheta)-\tfrac12(1-\cos\vartheta)\cos2\varphi$ and integratin
 $\int_0^{2\pi}\cos(m\varphi)\,e^{iv\cos(\varphi-\psi)}d\varphi=2\pi i^m J_m(v)\cos(m\psi)$ gives the focal field
 \cite{RichardsWolf, Rom03}:
 \[
-E_x=-i(I_0+I_2\cos2\psi),\qquad E_y=-iI_2\sin2\psi,\qquad E_z=-2iI_1\cos\psi,
+E_x=-i(I_0+I_2\cos2\psi),\qquad E_y=-iI_2\sin2\psi,\qquad E_z=-2I_1\cos\psi,
 \]
 \[
 I_m=\int_0^{\alpha}A(\vartheta)\sqrt{\cos\vartheta}\,\sin\vartheta\;g_m(\vartheta)\,J_m(kr\sin\vartheta)\,
 e^{ikz\cos\vartheta}\,d\vartheta,\qquad g_0=1+\cos\vartheta,\; g_1=\sin\vartheta,\; g_2=1-\cos\vartheta .
 \]
-$I_0$ is the familiar focusing term; $I_2$ breaks the circular symmetry of the spot; $I_1$ is the longitudinal
+The $m=1$ integral gives $E_z$ a factor $-2i$ before the common prefactor $-i$ is applied; with it,
+$-2i\cdot(-i) = -2$, a real factor. An earlier version of this document and of the code had $-2i$, which left the
+prefactor out; it was corrected on 2026-11-10, and the steps are in \texttt{pulse\_derivations.pdf}, Section 9. $I_0$ is the familiar focusing term; $I_2$ breaks the circular symmetry of the spot; $I_1$ is the longitudinal
 field $E_z$. This is the field the current work computes (Romallosa replication, 472.8\,nm checkpoint).
 
 \section{The low-NA limit: the model the two-color papers use}

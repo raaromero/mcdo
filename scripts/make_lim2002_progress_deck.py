@@ -43,6 +43,35 @@ SL = lambda name: os.path.join(FIG, 'slides', name)
 PD = lambda name: os.path.join(FIG, 'phase_delay', name)
 ds.CITE = ''
 
+# what each slide is built from (figure sources, equations, panel labels), for the slide manifest the dashboard reads
+_REC = {}
+_figure0, _equation0, _where0, _label0 = figure, equation, where, label
+
+
+def _rec(s):
+    return _REC.setdefault(s.slide_id, {'figs': [], 'eqs': [], 'labels': []})
+
+
+def figure(s, path, *a, **k):
+    _rec(s)['figs'].append(os.path.abspath(path))
+    return _figure0(s, path, *a, **k)
+
+
+def equation(s, l, t, w, tex, *a, **k):
+    _rec(s)['eqs'].append({'tex': tex, 'where': ''})
+    return _equation0(s, l, t, w, tex, *a, **k)
+
+
+def where(s, l, t, w, txt, *a, **k):
+    if _rec(s)['eqs']:
+        _rec(s)['eqs'][-1]['where'] = txt
+    return _where0(s, l, t, w, txt, *a, **k)
+
+
+def label(s, l, t, w, txt, *a, **k):
+    _rec(s)['labels'].append(txt)
+    return _label0(s, l, t, w, txt, *a, **k)
+
 if SECTION is None:                                            # build each section in a fresh process
     for sec in SECTIONS:
         r = subprocess.run([sys.executable, __file__], env={**os.environ, 'SECTION': sec}, capture_output=True, text=True)
@@ -85,9 +114,11 @@ def words(name, items, main, script, latex=None, size=13):
 def wide(name, path, items, main, script, latex=None):
     s = slide(name, '')
     if SECTION in ('cambaliza', CMEETING):                     # figure as tall as the bullets beneath allow
-        h = 4.12 - 0.3 * (len(items) - 1)
+        import re as _re
+        nl = sum(-(-len(_re.sub(r'[_^]\{([^}]*)\}', r'\1', t_)) // 105) for t_ in items)   # wrapped lines at 13 pt
+        h = 4.12 - 0.25 * (nl - 1) - 0.05 * (len(items) - 1)
         figure(s, path, 0.45, 0.92, 9.1, h)
-        bullets(s, 0.6, 0.98 + h, 8.6, 0.3 * len(items) + 0.05, items, 13)
+        bullets(s, 0.6, 0.98 + h, 8.6, 0.25 * nl + 0.05 * len(items), items, 13)
     else:
         figure(s, path, 0.45, 0.95, 9.1, 3.72)
         bullets(s, 0.6, 4.72, 8.9, 0.55, items, 11.5)
@@ -128,18 +159,30 @@ def side(title, path, items, main, script, size=14):
 def cpanel(title, key, ours, line, script=None):
     """Original panel of Cambaliza & Saloma (2000) beside current work, one line (or one per curve) beneath."""
     lines = [line] if isinstance(line, str) else list(line)
-    hmax = 3.9 - 0.28 * (len(lines) - 1)
+    import re as _re
+    vis = lambda t_: len(_re.sub(r'[_^]\{([^}]*)\}', r'\1', t_))      # characters shown, markup removed
+    nl = sum(-(-vis(t_) // 100) for t_ in lines)                    # wrapped lines at 13 pt beside the inset
+    hmax = 3.9 - 0.24 * (nl - 1)
     s = slide(title, '')
     left, right = trimmed(os.path.join(CB, 'original', f'{key}.png')), os.path.join(CB, 'panels', ours)
     a1, a2 = (Image.open(p).size[0] / Image.open(p).size[1] for p in (left, right))
+    if os.path.exists(os.path.join(CB, 'panels', 'inset_' + ours)):
+        hmax = min(hmax, 5.25 - 1.22 - 1.2)                    # leave 1.2 in under the panels for the cut inset
     h = min(hmax, (9.5 - 0.15 - 0.2) / (a1 + a2) + 0.1)        # same height for both, as large as the width allows
     w1, w2 = a1 * (h - 0.1) + 0.1, a2 * (h - 0.1) + 0.1
     x1 = (10 - (w1 + w2 + 0.15)) / 2
-    label(s, x1, 0.9, w1, 'Cambaliza & Saloma (2000)')
+    label(s, x1, 0.9, w1, 'Cambaliza & Saloma (2000)' + (f', Fig. {key[3:]}' if key.startswith('fig') else ''))   # figure number here, not in the title
     label(s, x1 + w1 + 0.15, 0.9, w2, 'Current work', PURPLE)
     figure(s, left, x1, 1.15, w1, h)
     figure(s, right, x1 + w1 + 0.15, 1.15, w2, h)
-    bullets(s, 0.6, 1.2 + h, 8.6, 0.28 * len(lines) + 0.07, lines, 14 if len(lines) == 1 else 13)
+    ins = os.path.join(CB, 'panels', 'inset_' + ours)        # where the profile is cut: beside the bullets, not in the plot
+    bw = 8.6
+    if os.path.exists(ins):
+        ih = min(5.25 - (1.22 + h), 1.35)
+        iw = ih * Image.open(ins).size[0] / Image.open(ins).size[1]
+        figure(s, ins, x1 + w1 + 0.15 + w2 - iw, 1.22 + h, iw, ih)
+        bw = x1 + w1 + 0.15 + w2 - iw - 0.75
+    bullets(s, 0.6, 1.2 + h, bw, 0.24 * nl + 0.1, lines, 14 if nl == 1 else 13)
     notes(s, title, script or ' '.join(lines))
 
 
@@ -176,33 +219,123 @@ def chigh_na(part='High NA', water_x=False, summary=None):
         WHY_0 = 'Why: the paraxial phase uses sin²α/2 for 1 − cos α, which lengthens the focus by tan²(α/2).'
         for key, ttl, items in (
                 ('2ce_0', '2CE, θ = 0 and π', [
-                    'Across the axis scalar and vector agree within 5% up to NA 0.86 in air and 1.14 in water.',
-                    'Along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air, 0.57 in water.', WHY_0]),
+                    'As NA increases both widths shrink, but the paraxial depth of focus shrinks more slowly than the vector one and becomes too long.',
+                    'The paraxial DOF of F_{2c}(0, 0, z; 0) is 5% longer from NA 0.43 in air (0.57 in water), below the NA 0.7 stated on p. 27; '
+                    'the central spot stays within 5% up to NA 0.86.',
+                    'Eq. (1) uses sin²α/2 for 1 − cos α, which lengthens the DOF by the factor 1 + tan²(α/2).']),
                 ('2ce_pi2', '2CE, θ = π/2', [
-                    'Scalar and vector agree within 4% up to NA 0.7 in air and 0.9 in water, where crossed lenses fit.',
-                    'Why: each width is set by the other beam’s narrow spot, which the paraxial model reproduces.']),
+                    'As NA increases both widths of F_{2c} at θ = π/2 shrink, and the paraxial model follows the vector focus within 4% '
+                    'wherever crossed lenses fit (NA 0.71 in air, 0.94 in water).',
+                    'Each width is set by the narrow transverse spot of the other beam, which Eq. (1) reproduces.']),
                 ('2pe_0', '2PE, θ = 0', [
-                    'The same as 2CE at θ = 0: along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air.',
-                    WHY_0]),
+                    'F_{2p} at θ = 0 is identical with F_{2c} at θ = 0, so it changes with NA in the same way: the paraxial DOF is 5% '
+                    'longer from NA 0.43 in air.']),
                 ('2pe_pi2', '2PE, θ = π/2', [
-                    'Scalar and vector agree within 0.4% in air and water.',
-                    'Why: the width is the interference fringe of the two crossed beams, set by the wavelength.']),
+                    'As NA increases the central spot of F_{2p} at θ = π/2 keeps its width, 0.26 µm in air and 0.19 µm in water, '
+                    'in both models (within 0.4%).',
+                    'The spot is one interference fringe of the two crossed beams, so its width is set by the wavelength in the medium, λ_{2p}/n (n = 1 air, 1.33 water), not by the NA.',
+                    'It stays the sharpest distribution at every NA, as at NA 0.5 (p. 28).']),
                 ('2pe_pi', '2PE, θ = π', [
-                    'Across the axis: the same as θ = 0. Along the axis the fringe agrees within 5% up to NA 0.91 in air.',
-                    'Why: along the axis the width is the fringe of the two facing beams, λ/4n, not the focus.'])):
-            wide(f'Widths against NA: {ttl}', os.path.join(hn, f'cfg_{key}.png'), items,
+                    'Across the axis, F_{2p}(x, 0, 0; π) is identical with F_{2p}(x, 0, 0; 0).',
+                    'As NA increases fewer fringes fit inside the focus, about 9 at NA 0.5 and 2 at NA 0.9 in air: the focus '
+                    'shortens as 1/NA², while the fringes stay about λ/2n apart, half the wavelength in the medium (0.37 µm at NA 0.5, 0.44 µm at NA 0.9; λ/2n = 0.35 µm in air).',
+                    'The fringes spread slightly with NA because the converging waves cross the axis at an angle; the central '
+                    'fringe widens from 0.13 to 0.17 µm, and paraxial and vector agree within 5% up to NA 0.91 in air.'])):
+            wide(f'Central spot and depth of focus against NA: {ttl}', os.path.join(hn, f'cfg_{key}.png'), items,
                  f'Scalar against vector widths, {ttl}.',
                  'Solid: vector (Richards-Wolf), beams along y; dashed: paraxial scalar. Blue: air; green: water. '
-                 'Linear axes. Gap numbers from high_na/split.txt.')
-        wide('Scalar over vector width against NA: 2CE', os.path.join(hn, 'gap_2ce.png'), [
-            'Along the axis the gap reaches 5% at NA 0.43 in air and 0.57 in water; across the axis at 0.86 and 1.14.',
-            'At θ = π/2 the gap stays below 4%.'],
+                 'Linear axes. Gap numbers from high_na/split.txt.' + (
+                 ' Facing lenses: the two beams form a standing wave with peaks about lambda/2n apart (n = refractive '
+                 'index; lambda/2n = 0.35 um in air, 0.26 um in water): 0.37 um at NA 0.5 and 0.44 um at NA 0.9 in air. The '
+                 'spacing grows a little with NA because the converging waves cross the axis at an angle. Fringes inside '
+                 'the focus (its length over the spacing): air about 9 at NA 0.5, 4 at 0.7, 2 at 0.9; water about 17 at '
+                 'NA 0.5, 4 at 0.9, 2 at 1.2. The focus shortens as 1/NA^2 while the spacing stays near lambda/2n.'
+                 if key == '2pe_pi' else ''))
+        wide('Paraxial over vector widths of 2CE against NA', os.path.join(hn, 'gap_2ce.png'), [
+            'As NA increases the paraxial 2CE widths become larger than the vector ones, first along the axis.',
+            'Along the axis at θ = 0 and π the difference reaches 5% at NA 0.43 in air (0.57 in water); across the axis at NA 0.86 '
+            '(1.14); with crossed lenses it stays within 4%.'],
             'Where the paraxial 2CE widths depart from the vector ones.',
             'Gap = scalar / vector - 1. Diamonds: NA where the gap reaches 5% (interpolated).')
-        wide('Scalar over vector width against NA: 2PE', os.path.join(hn, 'gap_2pe.png'), [
-            'θ = 0: as 2CE. θ = π/2: below 0.4%. θ = π along the axis: −5% at NA 0.91 in air, 1.21 in water.'],
+        wide('Paraxial over vector widths of 2PE against NA', os.path.join(hn, 'gap_2pe.png'), [
+            'As NA increases the paraxial 2PE widths at θ = 0 depart as the 2CE ones; with crossed lenses they stay within 0.4%.',
+            'At θ = π the paraxial central fringe becomes narrower than the vector one, by 5% at NA 0.91 in air (1.21 in water).'],
             'Where the paraxial 2PE widths depart from the vector ones.',
             'Gap = scalar / vector - 1. 2PE across the axis at theta = pi equals theta = 0 and is not drawn twice.')
+        LF1 = r'\sum_k a_k\,\Delta s = \sum_k r_k\,\Delta s = 1'
+        LF2 = r'\mathrm{NRMSE} = \sqrt{\frac{\sum_k (a_k - r_k)^2}{\sum_k r_k^2}}'
+        LF3 = (r'F = 1 - \frac{\sum_k (a_k - r_k)^2}{\sum_k r_k^2}, \qquad C = \frac{\sum_k a_k^2}{\sum_k r_k^2}, \qquad '
+               r'Q = \frac{\sum_k a_k\, r_k}{\sum_k r_k^2}')
+        LF4 = r'F = 2Q - C, \qquad \mathrm{NRMSE} = \sqrt{1 - F}'
+        eqslide('Whole-profile measures: NRMSE and Linfoot’s F, C, Q', 'Both profiles are scaled to the same energy, so the '
+                'comparison counts the side lobes and the tails, not only the width.', [
+            (LF1, 'Both profiles scaled to the same energy, so side lobes and tails count, not only the width.'),
+            (LF2, 'NRMSE: the root-mean-square difference of the two profiles; 0 when they are identical.'),
+            (LF3, 'Fidelity F, structural content C, correlation quality Q: 1 for identical profiles; C < 1 for a flatter, longer focus.'),
+            (LF4, 'F, C and Q are linked; NRMSE carries the same information as F.')],
+            'Whole-profile measures and their equations.',
+            'Linfoot (1956) criteria with the vector profile as reference. Unit energy over the window: a profile that is '
+            'longer but lower is not counted as better. The dashboard shows these on the profile (How it is measured).',
+            '\n'.join((LF1, LF2, LF3, LF4)), size=15)
+        wide('Whole-profile difference of 2CE, paraxial against vector', os.path.join(hn, 'nrmse_2ce.png'), [
+            'As NA increases the paraxial F_{2c} departs from the vector one along the axis much more than across it.',
+            'Along the axis at θ = 0 and π: 6% at NA 0.5 and 25% at NA 0.9 in air; across the axis 1% and 5%; with crossed lenses 3% or less.'],
+            'Whole profiles: the same picture as the widths.',
+            'r = vector profile, a = scalar profile, both normalized to unit area over the plotted window (x +-1 um x 0.5/NA, '
+            'z +-5 um x n (0.5/NA)^2), 401 points. NRMSE = sqrt(1 - F), F = Linfoot fidelity.')
+        wide('Whole-profile difference of 2PE, paraxial against vector', os.path.join(hn, 'nrmse_2pe.png'), [
+            'As NA increases the paraxial F_{2p} departs as F_{2c} at θ = 0; along the axis at θ = π by 7% at NA 0.5 and 29% at NA 0.9 in air.',
+            'With crossed lenses it differs by 5% or less: the fringes are set by the wavelength in both models.'],
+            'Whole 2PE profiles, scalar against vector.',
+            'Same normalization as the 2CE slide. 2PE across the axis at theta = pi equals theta = 0.')
+        # Linfoot's criteria against NA: a section of its own, one slide per signal and angle (as the width slides)
+        LD = os.path.join(hn, 'linfoot')
+        navy('Linfoot’s criteria against NA: paraxial scalar against vector, air and water', [])
+        words('Summary: Linfoot’s criteria', [
+            'As NA increases the paraxial profiles keep their shape across the axis: F ≥ 0.996 for both signals and all θ.',
+            'Along the axis with facing lenses they become longer and lower than the vector ones: C < 0.95 from NA 0.44 in air '
+            '(0.58 in water), where the DOF departs by 5%.',
+            'With crossed lenses (θ = π/2), F ≥ 0.997 and C ≥ 0.9 wherever the lenses fit.',
+            'F falls below 0.99 from NA 0.6 in air; C responds first, because the paraxial focus is longer and lower.'],
+            'Linfoot’s criteria: main points.',
+            'F = 1 - sum (a-r)^2 / sum r^2, C = sum a^2 / sum r^2, Q = sum a r / sum r^2, with r = vector, a = scalar, each '
+            'normalized to unit energy over the window (circular pupils, uniform input). All cases, also annular and Gaussian: '
+            'output/08_two_color/cambaliza2000/high_na/linfoot/linfoot_<signal>_<pupil>_<input>.png and the dashboard.', size=16)
+        wide('Linfoot’s criteria against NA: 2CE, θ = 0 and π', os.path.join(LD, 'linfoot_na_2ce_0.png'), [
+            'As NA increases the paraxial F_{2c}(0, 0, z; π) becomes longer and lower than the vector one, so C falls first: '
+            'below 0.95 from NA 0.44 in air (0.58 in water).',
+            'F stays above 0.99 up to NA 0.63 (0.84 in water); across the axis F ≥ 0.996 at all NA.'],
+            'F changes least; C and Q show the split first, along the axis.',
+            'Why C falls first: with unit energy, the longer scalar focus has a lower peak, so sum a^2 drops below sum r^2.')
+        wide('Linfoot’s criteria against NA: 2CE, θ = π/2', os.path.join(LD, 'linfoot_na_2ce_pi2.png'), [
+            'As NA increases the paraxial and vector F_{2c} at θ = π/2 stay alike: F ≥ 0.999, C ≥ 0.97 and Q ≥ 0.98 wherever '
+            'crossed lenses fit (NA 0.71 in air, 0.94 in water).',
+            'With crossed lenses, Eq. (1) gives the profiles of the vector focus.'],
+            'Crossed lenses: scalar and vector profiles agree.', 'Same normalization; crossed lenses fit up to NA = n sin 45 degrees.')
+        wide('Linfoot’s criteria against NA: 2PE, θ = 0', os.path.join(LD, 'linfoot_na_2pe_0.png'), [
+            'As NA increases F_{2p} at θ = 0 departs as F_{2c} at θ = 0: along the axis C < 0.95 from NA 0.44 in air and F < 0.99 from NA 0.63.',
+            'Across the axis F ≥ 0.996 at all NA.'],
+            '2PE at theta = 0: as 2CE.', 'Same normalization.')
+        wide('Linfoot’s criteria against NA: 2PE, θ = π/2', os.path.join(LD, 'linfoot_na_2pe_pi2.png'), [
+            'As NA increases the paraxial F_{2p} at θ = π/2 keeps F ≥ 0.997 wherever the lenses fit.',
+            'Along the axis C falls to 0.91; across the axis F, C and Q stay above 0.97.'],
+            '2PE with crossed lenses: close agreement.', 'Same normalization.')
+        wide('Linfoot’s criteria against NA: 2PE, θ = π', os.path.join(LD, 'linfoot_na_2pe_pi.png'), [
+            'As NA increases the paraxial envelope of the F_{2p}(0, 0, z; π) fringes becomes too long: C < 0.95 from NA 0.44 in air '
+            '(0.58 in water), F < 0.99 from NA 0.58 (0.78).',
+            'At NA 0.95 in air F = 0.85, the lowest of all cases.'],
+            '2PE with facing lenses: the envelope sets the difference.', 'Same normalization.')
+        wide('Side lobes of 2PE against NA: distance from the peak and height', os.path.join(hn, 'sidelobes.png'), [
+            'As NA increases the 2PE side lobes weaken: at θ = π/2 from 0.11 of the peak at NA 0.5 to 0.04 at NA 0.7 (air); '
+            'at θ = π from 0.97 to 0.42 at NA 0.9.',
+            'Their distance from the peak follows the wavelength in the medium (n = 1 air, 1.33 water): λ/2n with facing lenses (the standing-wave fringe) and λ/n '
+            'with crossed lenses, at low NA.',
+            'Weaker side lobes give images of higher contrast, so the drawback of 2PE reported at NA 0.5 (pp. 28–29) shrinks at high NA.'],
+            'The 2PE side lobes follow the wavelength: lambda/2n facing, lambda/n crossed.',
+            'At theta = pi/2 the side lobe rides on the narrow spot of the other beam, which narrows with NA, so it moves in '
+            'and drops. First local maximum beyond the first minimum, vector (solid) and scalar (dashed); lambda = 0.7 um. At theta = pi '
+            'the vector side lobe is lower than the scalar one at high NA (0.42 against 0.65 at NA 0.9 in air), because the '
+            'vector focus, which sets the fringe envelope, is shorter. 2CE side lobes stay below 1e-3 of the peak.')
     else:
         wide('Widths across the axis against NA, air', os.path.join(hn, 'widths_air_x.png'), [
             'Across the axis the paraxial widths agree with the vector ones within 6% up to NA 0.9.'],
@@ -238,14 +371,16 @@ def chigh_na(part='High NA', water_x=False, summary=None):
         'At theta = pi/2 the two models do not split.',
         'Crossed lenses fit up to a half-angle of 45 degrees: NA 0.71 in air, 0.94 in water. Largest gap: 2CE across the '
         'axis, 3.4% (air, NA 0.7) and 3.1% (water, NA 0.9).')
-    wide('Comparisons across the axis against NA, θ = π/2', os.path.join(hn, 'ratios_x.png'), [
-        'Scalar and vector agree within 4%: the 2CE–2PE comparisons made at NA 0.5 hold at high NA.',
-        'The 2CE spot shrinks with NA while the 2PE fringe keeps its width, so their ratio falls.'],
+    wide('2PE and 2CE central spots against NA, circular pupils', os.path.join(hn, 'ratios_x.png'), [
+        'As NA increases the 2CE spot at θ = π/2 shrinks while the 2PE spot keeps its width: 2.9 times the 2PE spot at NA 0.5, 2.0 at NA 0.7 in air.',
+        'Relative to θ = 0, the 2PE spot at θ = π/2 is 0.50 times as wide at NA 0.5 and 0.71 at NA 0.7.',
+        '2PE at θ = π/2 stays the sharpest distribution at every NA, as on p. 28; scalar and vector agree within 4%.'],
         'The 2CE-2PE comparisons hold at high NA; their size depends on NA.',
         'Within 4% to NA 0.7 (air) and 0.9 (water). 2CE over 2PE at theta = pi/2: 2.9x at NA 0.5, 2.0x at NA 0.7 in air. '
         '2PE crossed over facing: 0.50 at NA 0.5, 0.71 at NA 0.7 in air.')
-    wide('Depth-of-focus comparison against NA, θ = π/2', os.path.join(hn, 'ratios_z.png'), [
-        'The 2CE depth of focus shrinks with NA while the 2PE fringe keeps its width, so their ratio falls.'],
+    wide('2CE and 2PE depth of focus against NA, θ = π/2', os.path.join(hn, 'ratios_z.png'), [
+        'As NA increases the 2CE DOF shortens while the 2PE DOF stays one fringe: 2.6 times the 2PE DOF at NA 0.5, 1.8 at NA 0.7 in air.',
+        'The “broader DOF” of 2CE at θ = π/2 (p. 30) remains at high NA, but the difference shrinks.'],
         'The DOF comparison holds at high NA.',
         'DOF of 2CE over 2PE at theta = pi/2: 2.6 at NA 0.5, 1.8 at NA 0.7 in air; 3.5 at 0.5, 1.9 at 0.9 in water. '
         'Scalar and vector within 4%. The 2PE width is that of the central fringe, which does not change with NA, '
@@ -335,7 +470,11 @@ GLOSS_TEX = [   # meeting deck on Cambaliza & Saloma (2000): (LaTeX symbol, mean
     (r'\varepsilon', 'obstruction ratio of the annular pupil, inner over outer radius: 0.99'),
     (r'\mathrm{FWHM},\ \mathrm{DOF}', 'full width at half maximum of the central peak; depth of focus, the FWHM along the axis'),
     (r'\mathrm{scalar},\ \mathrm{vector}', 'paraxial scalar model (Eqs. 1–6); Richards–Wolf focus, with exact phase and polarization'),
+    (r'\theta_{\mathrm{opt}}', 'direction of beam 2 in optical coordinates (u, v); tan θ_opt = tan θ / NA'),
+    (r'\mathrm{NRMSE}', 'root-mean-square difference of two profiles over the root-mean-square of the reference, unit energy'),
+    (r'F,\ C,\ Q', 'Linfoot’s criteria: fidelity, structural content, correlation quality (1 for identical profiles)'),
     (r'\tau', 'pulse duration, FWHM of the intensity; transform-limited pulses are the shortest for their spectrum'),
+    (r'p_i(\mathbf{r}, t),\ p_i(\nu)', 'probability of a photon of beam i at r and time t; probability of its frequency ν'),
     (r'h,\ d_s,\ g', 'slab half-thickness; mean free path between scattering events; anisotropy, the mean cosine of one scattering'),
 ]
 
@@ -400,21 +539,52 @@ def geometry():
 
 def eqslide(title, takeaway, eqs, main, script, latex, side=None, fig=None, size=17):
     """Equation slide: numbered LaTeX equations, each with its 'where' line; a card or a figure at the right."""
-    s = slide(title, takeaway)
+    meeting = SECTION == CMEETING                              # meeting deck: no subtitle; one line under each equation
+    s = slide(title, '' if meeting else takeaway)
     w = 9.0 if side is None and fig is None else (5.9 if fig is None else 5.5)
-    t = 1.4
+    t = 1.05 if meeting else 1.4
     for tex, wh in eqs:
         h = equation(s, 0.55, t, w, tex, size)
         t += h + 0.06
-        if wh:
+        if wh and meeting:
+            line = wh[0].upper() + wh[1:]
+            bullets(s, 0.7, t, w - 0.6, 0.5, [line], 12)
+            t += 0.21 * -(-len(line) // int((w - 0.6) * 13)) + 0.06
+        elif wh:
             t += where(s, 0.6, t, w - 0.6, wh)
-        t += 0.1
-    if side:
+        t += 0.12 if meeting else 0.1
+    if side and meeting:
+        head, lines = side
+        bullets(s, 6.75, 1.15, 2.75, 3.9, lines, 13)
+    elif side:
         head, lines = side
         card(s, 6.75, 1.4, 2.75, 3.7, head, RED, lines, 10.5, bulleted=False)
     if fig:
         figure(s, fig, 6.15, 1.35, 3.4, 3.8)
     notes(s, main, script, latex)
+    return s
+
+
+def peqslide(title, eqs, main, script, size=17, lead=None):
+    """Equations numbered as in the source paper (number None: unnumbered), each followed by the steps it takes, one
+    bullet per step (a string or a list); lead = the context line above the first equation."""
+    s = slide(title, '')
+    t = 1.0
+    latex = []
+    if lead:
+        bullets(s, 0.55, t, 8.9, 0.3, [lead], 13.5)
+        t += 0.24 * -(-len(lead) // 110) + 0.14
+    for tex, num, line in eqs:
+        if num is not None:
+            ds.EQN[0] = num - 1
+        h = equation(s, 0.55, t, 9.0, tex, size, number=num is not None)
+        t += h + 0.06
+        lines = [line] if isinstance(line, str) else list(line)
+        bullets(s, 0.7, t, 8.6, 0.6, lines, 12.5)
+        t += sum(0.22 * -(-len(l_) // 118) + 0.06 for l_ in lines) + 0.24
+        latex.append(tex)
+    ds.EQN[0] = max(n for _, n, _ in eqs if n is not None)
+    notes(s, main, script, '\n'.join(latex))
     return s
 
 
@@ -1652,170 +1822,265 @@ elif SECTION == 'cambaliza':
     red(DIFF)
 
 elif SECTION == CMEETING:
-    title('Replication of Cambaliza & Saloma (2000) and its extension to high NA and optical pulses', 'Opt. Commun. 184 (2000) 25–35')
+    title('Replication of Cambaliza & Saloma (2000) and its extension to high NA and optical pulses',
+          'M. O. Cambaliza and C. Saloma, “Advantages of two-color excitation fluorescence microscopy with two confocal '
+          'excitation beams,” Opt. Commun. 184 (2000) 25–35')
     words('Summary', [
-        'Replication of Cambaliza & Saloma (2000), NA 0.5, paraxial scalar model',
-        '– Identical: the 2PE and 2CE profiles of Figs. 2–4, 6 and 7 (2PE in 6a and 7a as the excitation |U₁ + U₂|²).',
-        '– Not matching: the Fig. 5 slopes (5–9% apart), the width ratios given on pp. 28, 29 and 32, and the Fig. 5 caption equations.',
-        'Extension to high NA: paraxial scalar model against the vector (Richards–Wolf) focus',
-        '– The paraxial depth of focus departs by 5% at NA 0.43 in air and 0.57 in water.',
-        '– The 2CE–2PE comparisons at θ = π/2 agree within 4% between the two models.',
-        'Extension to optical pulses: transform-limited, zero delay',
-        '– At θ = π, 10-fs pulses shorten the 2CE depth of focus from 3.3 to 1.9 µm at NA 0.5.',
-        '– At high NA the focus is shorter than the pulse overlap, and the change is 4% or less.'],
-        'Replication, high NA, optical pulses.',
-        'Part 1: rebuilt from Eqs. 1-6 (paraxial scalar, NA 0.5). Figs. 6a and 7a plot the 2PE excitation |U1+U2|^2, not Eq. 6. '
-        'Quoted ratios not in the figures: 0.67, 1.58x wider, 20% longer. Fig. 8 (Monte Carlo, scattering) is left out for now. '
-        'Part 2: paraxial DOF error grows as tan^2(alpha/2). Part 3: head-on pulses overlap within sqrt(2) c tau / 2 of the focus.', size=14)
+        'Replication of Cambaliza & Saloma (2000), paraxial scalar model, NA = 0.5',
+        '– Figs. 2–8 are reproduced.',
+        '– With circular pupils 2CE offers no definite advantage in resolution; with annular pupils at θ = π/2 its profile '
+        'has zero points and weaker side lobes.',
+        '– Three ratios in the text differ from the published curves: 0.49 for 0.67 (p. 28), 2.98 for 1.58 (p. 29), and '
+        '85% for 20% (p. 32).',
+        'Extension to high NA, vector (Richards–Wolf) focus, air and water',
+        '– The main conclusion holds at high NA: 2CE offers no definite advantage in resolution, and 2PE at θ = π/2 stays '
+        'the sharpest distribution, but its lead shrinks (2CE spot 2.9 times wider at NA 0.5, 2.0 at NA 0.7).',
+        '– The 2PE side lobes weaken with NA (0.11 to 0.04 of the peak at θ = π/2), so the higher contrast of 2CE matters less.',
+        '– Crossed lenses (θ = π/2) fit only up to NA 0.71 in air and 0.94 in water, the limit of NA 0.7 noted on p. 34.',
+        '– The paraxial Eq. (1) gives the right spot width up to NA 0.86, but overestimates the depth of focus above NA 0.43 '
+        '(by 36% at NA 0.9).',
+        'Extension to femtosecond pulses',
+        '– A transform-limited pulse has a spectral width Δν = 0.441/τ: 44 THz at 10 fs, 83 nm at 750 nm and 63 nm at 656 nm.',
+        '– At 100 and 20 fs the spectra stay apart: with facing lenses, 20-fs pulses shorten the 2CE depth of focus from 3.3 '
+        'to 2.7 µm at NA 0.5; 2PE changes by 2% or less.',
+        '– At 10 fs the spectra overlap, so every photon pair from both beams, with their interference, is needed: next step.'],
+        'What the results mean in practice.',
+        'Part 1: Eqs. 1-6 at NA 0.5. Figs. 6a and 7a plot the 2PE excitation |U1+U2|^2, not Eq. 6. '
+        'Part 2: paraxial DOF error grows as tan^2(alpha/2); theta = pi/2 within 4% where the lenses fit (NA 0.71 air, '
+        '0.94 water). Part 3: head-on pulses overlap within sqrt(2) c tau / 2 of the focus (2.1 um at 10 fs in air); '
+        '2CE DOF at 10 fs: 0.57 of the continuous value at NA 0.5, 0.96 at NA 0.9 (air); 2PE: 0.995 at every NA. '
+        '2PE side lobe at theta = pi/2 (vector, air): 0.42 of the peak at NA 0.3, 0.11 at 0.5, 0.04 at 0.7.', size=12)
     navy('1. Replication of Cambaliza & Saloma (2000): 2PE and 2CE point spread functions, paraxial scalar model, NA 0.5', [])
     words('Summary: replication', [
-        'Identical to the published curves (paraxial scalar model, NA 0.5)',
-        '– 2PE and 2CE profiles for circular pupils (Figs. 2–3) and for the wavelength gap (Fig. 4).',
-        '– 2CE profiles for annular pupils (Figs. 6b, 7b); 2PE (Figs. 6a, 7a) as the excitation |U₁ + U₂|².',
-        'Not matching the published figures',
-        '– Fig. 5: the same linear trends, with slopes 5–9% apart.',
-        '– Width ratios given in the text: the curves give 0.49, 2.98 and 85% where pp. 28, 29 and 32 give 0.67, 1.58 and 20%.',
-        '– Fig. 5 caption: its fit equations do not describe the plotted lines.'],
-        'Replication: main points.', 'Eqs. 1-6 computed at NA 0.5 (paraxial scalar); every panel of Figs. 2-7 compared with '
+        'Reproduced with Eqs. (1)–(6), paraxial scalar model, NA = 0.5',
+        '– 2PE and 2CE profiles for circular pupils (Figs. 2–3) and three wavelength gaps (Fig. 4).',
+        '– 2CE profiles for annular pupils (Figs. 6b, 7b); the 2PE panels of Figs. 6a and 7a are the excitation |U_1 + U_2|^2, not Eq. (6).',
+        'Different from the published figures',
+        '– Fig. 5: the same linear trends, with slopes 5–9% apart; the caption fits do not describe the plotted lines.',
+        '– Three ratios in the text: the curves give 0.49, 2.98 and 85% where pp. 28, 29 and 32 state 0.67, 1.58 and 20%.'],
+        'Replication: main points.', 'Eqs. 1-6 computed at NA 0.5 (paraxial scalar); every panel of Figs. 2-8 compared with '
         'the published one. Ranges for the quoted ratios depend on the width measure, which the text does not state. '
         'Fig. 5 caption: FWHM = 2.4e-4 dl + 0.0356, DOF = +4.81e-4 dl + 0.7112; plotted: 5.2e-4 dl + 0.713, -4.6e-4 dl + 0.713.', size=13)
-    cmodel(os.path.join(FIG, '..', 'setup_model.png'))
-    eqslide('Rotation of beam 2: (x, z) against (u, v)',
+    side('Two-color excitation with two confocal beams at an angle θ', os.path.join(FIG, '..', 'setup_model.png'), [
+        '2CE: “two excitation photons of different wavelengths,” with 1/λ_e = 1/λ_1 + 1/λ_2 (p. 26).',
+        'The two beams “do not interfere with each other” (p. 26).',
+        'θ = angle between the two lens axes: θ = 0 is single-beam 2PE, θ = π is 4Pi 2PE (p. 26).'],
+        'Two lenses focus two colors onto one point, at an angle theta.',
+        'pp. 26-27: 2PE is the special case lambda1 = lambda2 = 2 lambda_e = lambda_2p. L1 defines the z-axis; at theta = 0 '
+        'only one lens is needed. Detector: large area, along the z-axis of L1.', size=13)
+    peqslide('Field near the focus of a lens with a circular pupil', [
+        (r'U(P;\theta) = -j\,\frac{\pi\,(\mathrm{NA})^2 A\, \exp[\,j(2f/D)^2 u\,]}{\lambda}\,'
+         r'\left[C(v_r, w_r, u_r) - jS(v_r, w_r, u_r)\right]', 1,
+         ['A lens with a uniformly illuminated circular pupil focuses a plane wave; Eq. (1) is its field at P near the focus.',
+          'C and S are Lommel functions. The paraxial form is “accurate for small to moderate NA values (NA < 0.7)” (p. 27).']),
+        (r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta, \quad '
+         r'u = \frac{2\pi\mathrm{NA}^2}{\lambda}z, \quad v = \frac{2\pi\mathrm{NA}}{\lambda}x', None,
+         ['Lens L2 is turned by θ about the focus: its field is Eq. (1) at the rotated coordinates u_r and v_r.',
+          'u and v are the distances along and across the axis of L1, in optical units.']),
+        (r'I(P) = |U(P)|^2, \qquad U_1(P) = U(P;\,0)\ \mathrm{at}\ \lambda_1, \qquad U_2(P;\theta)\ \mathrm{at}\ \lambda_2', None,
+         'Each beam’s intensity is |U|^2: U_1 from L1 at λ_1 along z, U_2 from L2 at λ_2, turned by θ.')],
+        'Eq. (1): the field of one lens near its focus.',
+        'Section 2.1, p. 27. f = focal length, D = pupil diameter, A/f = amplitude of the incident plane wave, '
+        'w = 2 pi NA y / lambda. Current work evaluates the integral form of Eq. 1 by Simpson\'s rule (401 radii).',
+        lead='Each lens focuses one color onto the common focus O; P(x, y, z) is a point near O.')
+    peqslide('Fluorescence from two colors (2CE) and from two photons of one color (2PE)', [
+        (r'F_{2c}(P;\theta) = \kappa\,|U_1(P)|^2\,|U_2(P;\theta)|^2 = \kappa\, I_1(P)\, I_2(P;\theta)', 2,
+         ['2CE absorbs one photon of each color, so the signal is the product of the two intensities.',
+          'It is generated “only in regions where there is a simultaneous presence of I_1(P) and I_2(P; θ)” (p. 28).']),
+        (r'|U_1(P) + U_2(P;\theta)|^2 = I_1 + I_2 + 2\,\mathrm{Re}\left[U_1 U_2^{*}\right]', None,
+         '2PE uses one color in both beams, so the two fields add first: the excitation has interference terms (p. 28).'),
+        (r"F_{2p}(P;\theta) = \kappa'\,|U_1(P) + U_2(P;\theta)|^4", 3,
+         ['2PE absorbs two photons, so the signal is the square of the excitation: the fourth power of the summed field.',
+          '2PE is “possible even with only one excitation beam” (p. 28): I_1^2 and I_2^2 remain where the other beam is absent.'])],
+        'Eqs. (2)-(3): 2CE multiplies two intensities; 2PE squares the summed intensity of two interfering beams.',
+        'kappa, kappa\' = fluorescence cross-sections. 2CE: lambda1 = 0.750 um on L1, lambda2 = 0.656 um on L2. '
+        '2PE: lambda_2p = 0.7 um on both.', lead='At each point P, the fluorescence depends on how the two focused beams combine.')
+    peqslide('Fields and fluorescence with annular (ring) pupils', [
+        (r'U_a(P;\theta) = U_R(P;\theta) - U_{\varepsilon R}(P;\theta)', 4,
+         ['A ring is a full pupil of radius R with its centre, of radius εR, blocked: its field is the difference of two Eq. (1) fields.',
+          'As ε → 1 “the transverse PSF approaches a J_0 distribution while the axial PSF exhibits an infinitely long DOF” (p. 28).']),
+        (r'F_{2c/a}(P;\theta) = \kappa\,|U_{a1}(P)|^2\,|U_{a2}(P;\theta)|^2 = \kappa\, I_{a1}(P)\, I_{a2}(P;\theta)', 5,
+         '2CE with ring pupils: Eq. (2) with the two annular intensities.'),
+        (r"F_{2p/a}(P;\theta) = \kappa'\,|U_{a1}(P) + U_{a2}(P;\theta)|^4", 6,
+         '2PE with ring pupils: Eq. (3) with the two annular fields, which add and interfere before the fourth power.')],
+        'Eqs. (4)-(6): the same signals with ring pupils.',
+        'Section 2.2, p. 28. epsilon = inner over outer radius; epsilon = 0.99 in Section 3.2, with the same outer '
+        'diameter as the circular pupil.', lead='Section 2.2 repeats Eqs. (1)–(3) with a ring-shaped pupil in each lens.')
+    eqslide('Rotating beam 2: in real space (x, z) or in optical coordinates (u, v)',
             'u and v scale z and x by different factors, so a rotation in (u, v) is not a rotation of the lens.', [
         (r'u = \frac{2\pi\,\mathrm{NA}^2}{\lambda}\,z, \qquad v = \frac{2\pi\,\mathrm{NA}}{\lambda}\,x',
          'optical coordinates: z is scaled by NA², x by NA.'),
-        (r'\mathrm{Eq.\ 1:}\quad u_r = u\cos\theta - v\sin\theta = \frac{2\pi\,\mathrm{NA}}{\lambda}\left(\mathrm{NA}\,z\cos\theta - x\sin\theta\right)',
-         'the rotation written in (u, v) weights z by an extra factor NA.'),
-        (r'\mathrm{lens\ turned\ by\ }\theta:\quad u_r = \frac{2\pi\,\mathrm{NA}^2}{\lambda}\left(z\cos\theta - x\sin\theta\right)',
-         'rotating (x, z) first and then scaling; both agree at θ = 0 and π.')],
+        (r'\mathrm{Eq.\ 1:}\quad u_r = u\cos\theta - v\sin\theta, \qquad v_r = v\cos\theta + u\sin\theta',
+         'the rotation as written with Eq. (1), in (u, v).'),
+        (r'\mathrm{lens\ turned\ by\ }\theta:\quad u_r = u\cos\theta - \mathrm{NA}\,v\sin\theta, \qquad '
+         r'v_r = v\cos\theta + \frac{u}{\mathrm{NA}}\sin\theta',
+         'rotation in (x, z), then scaled: the sin θ terms carry NA and 1/NA; both forms agree at θ = 0 and π.'),
+        (r'\tan\theta_{\mathrm{opt}} = \frac{\tan\theta}{\mathrm{NA}}',
+         'a lens turned by θ points at θ_{opt} in (u, v): 63° for θ = 45° at NA 0.5; the two angles agree at 0, π/2 and π.')],
         'Beam 2 should be rotated in real space.',
         'At theta = pi/2 the (u, v) rotation gives v_r = u: the transverse coordinate of beam 2 along z is scaled by NA^2 '
-        'instead of NA, which stretches beam 2 along z by 1/NA (2x at NA 0.5).',
+        'instead of NA, which stretches beam 2 along z by 1/NA (2x at NA 0.5) and shortens it along x by NA. '
+        'Direction (sin t, cos t) in (x, z) maps to (NA sin t, NA^2 cos t) in (v, u), hence tan t_opt = tan t / NA.',
         '\n'.join((r'u = 2\pi\mathrm{NA}^2 z/\lambda, \quad v = 2\pi\mathrm{NA}\, x/\lambda',
-                   r'u_r = u\cos\theta - v\sin\theta', r'z_r = z\cos\theta - x\sin\theta, \quad x_r = x\cos\theta + z\sin\theta')), size=15)
-    cpanel('Rotation in (x, z) against (u, v), 2CE along the axis (Fig. 3b)', 'fig3b', '../evidence/rotation.png', (
+                   r'u_r = u\cos\theta - v\sin\theta, \quad v_r = v\cos\theta + u\sin\theta',
+                   r'u_r = u\cos\theta - \mathrm{NA}\,v\sin\theta, \quad v_r = v\cos\theta + (u/\mathrm{NA})\sin\theta',
+                   r'\tan\theta_{\mathrm{opt}} = \tan\theta / \mathrm{NA}')), size=14)
+    cpanel('Axial 2CE PSF at θ = π/2 with beam 2 rotated in (x, z) or in (u, v), NA 0.5', 'fig3b', '../evidence/rotation.png', (
         'At θ = 0 and π both rotations give the same curve, as published.',
-        'At θ = π/2 the published width, 0.67 µm, is that of the (x, z) rotation; the (u, v) rotation gives 1.31 µm.',
+        'At θ = π/2 the published depth of focus, 0.67 µm, is that of the (x, z) rotation; the (u, v) rotation gives 1.31 µm.',
         'Current work rotates beam 2 in (x, z).'),
         '2CE, theta = pi/2, NA 0.5. Across the axis (Fig. 2b) the two rotations nearly coincide.')
-    for key, ttl, lines in (
-            ('fig2a', '2PE across the axis, circular pupils (Fig. 2a)', (
-                'At θ = 0 and π the profiles are identical (p. 28).',
-                'At θ = π/2 the central spot is the sharpest, with stronger side lobes from the interference of the two beams (p. 28).')),
-            ('fig2b', '2CE across the axis, circular pupils (Fig. 2b)', (
-                'At θ = 0 and π the profiles are identical, and equal to the 2PE profile at θ = 0 (p. 28).',
-                'At θ = π/2 the central spot is wider, with no interference side lobes (p. 29).')),
-            ('fig3a', '2PE along the axis, circular pupils (Fig. 3a)', (
-                'At θ = π/2 the central peak is of the order of λ₂ₚ, with strong side lobes from interference (p. 29).',
-                'At θ = π the interference of the two beams modulates the profile; its envelope is the 2CE profile at θ = 0 (p. 29).')),
-            ('fig3b', '2CE along the axis, circular pupils (Fig. 3b)', (
-                'At θ = 0 and π the profiles are identical, and equal to the 2PE profile at θ = 0 (p. 29).',
-                'At θ = π/2 the side lobes are weaker than for 2PE, with a longer depth of focus (p. 30).'))):
-        cpanel(ttl, key, f'{key}.png', lines, f'{ttl}. Current work matches the published curves. Bullets: the statements of the paper, with page. ' + ' '.join(lines))
-    words('Section 3.1: gap between the two wavelengths', [
-        'The two 2CE wavelengths move apart, Δλ = 10 to 94 nm, with the sum of their photon energies fixed.',
-        'Circular pupils, NA 0.5, lens angle θ = π/2.',
-        'A wider gap widens the spot by less than 6% and shortens the depth of focus (p. 30).'],
-        'Section 3.1: the wavelength gap, Figs. 4-5.',
-        'p. 30: 1/lambda_e = 1/lambda_1 + 1/lambda_2 with lambda_e = 0.35 um; Delta lambda = 10 nm (705, 695), 39 nm '
-        '(720, 681), 94 nm (750, 656). The shorter wavelength is on lens L2. Fig. 4: profiles for three gaps; Fig. 5: '
-        'FWHM and DOF against the gap, with a linear fit.', size=18)
-    for key, ttl, lines in (
-            ('fig4a', '2CE across the axis for three wavelength gaps (Fig. 4a)', (
-                'The central spot widens as Δλ grows from 10 to 94 nm (p. 30: by less than 6%).',
-                'Why: across the axis the spot follows beam 1, which scales with λ₁: +6.4%; FWHM +6.1%.')),
-            ('fig4b', '2CE along the axis for three wavelength gaps (Fig. 4b)', (
-                'The depth of focus becomes sharper as Δλ grows (p. 30).',
-                'Why: along the axis it follows beam 2, which scales with λ₂: −5.6%; depth of focus −5.5%.'))):
-        cpanel(ttl, key, f'{key}.png', lines, f'{ttl}. Current work matches the published curves; theta = pi/2. ' + ' '.join(lines))
-    cpanel('Spot width and depth of focus against the wavelength gap (Fig. 5)', 'fig5', 'fig5.png', (
-        'The FWHM increases and the depth of focus decreases linearly with Δλ, as in the published plot.',
-        'FWHM slope 5.2 ×10⁻⁴ µm/nm against 4.9 ×10⁻⁴ from the published points; values within 0.004 µm.'),
-        'Caption: FWHM = 2.4e-4 dl + 0.0356, DOF = +4.81e-4 dl + 0.7112; plotted lines: 5.2e-4 dl + 0.713 and -4.6e-4 dl '
-        '+ 0.713. The published points scatter by a few nm about the line; current work places the half maximum by '
-        'interpolation on a 0.5-nm grid (scatter 0.3 nm). Reading the width at the nearest sample of a 5-nm grid gives '
-        'a scatter of 4 nm, as in the published plot.')
-    side('Source of the difference in Fig. 5', os.path.join(CB, 'evidence', 'fig5_overlay.png'), [
-        'Blue, green: current work. Orange dashed: the DOF fit of the caption.',
-        'Current work lies within 0.004 µm of the published points.',
-        'The published points scatter by 0.002 µm rms, so their slope is uncertain by ±0.2 ×10⁻⁴ µm/nm: half the gap.',
-        'Current work follows Eqs. 1–6; its slopes match the λ₁ and λ₂ scaling, about ±5 ×10⁻⁴ µm/nm.',
-        'The caption fits match neither plotted line; the FWHM fit lies off the plot.'],
-        'Fig. 5: same trends; slopes differ; caption fits inconsistent with the plot.',
-        'Published points digitized from the scan: FWHM slope 4.86e-4, intercept 0.712, rms scatter 0.0016 um. Checked: the wavelength pairs (705, 695), (720, 681), (750, 656) nm satisfy 1/l1 + 1/l2 = 1/350 nm. Reading the '
-        'width at the nearest sample of a 5-nm grid scatters the points as in the published plot but raises the FWHM '
-        'slope to 5.7e-4, so it does not explain the lower published slope. Published lines: about +4.8e-4 dl + 0.711 '
-        '(FWHM) and -4.8e-4 dl + 0.711 (DOF); the caption DOF line is +4.81e-4 dl + 0.7112. Current work: +5.24e-4 dl + '
-        '0.7131 and -4.57e-4 dl + 0.7131.')
-    words('Section 3.2: annular pupils', [
-        'Each lens has a thin ring pupil, ε = 0.99, with the same outer diameter as the circular pupil.',
-        'A thin ring gives a long focus along the axis.',
-        'At θ = π/2 2CE has zeros and weaker side lobes than 2PE, a better axial response (p. 32).'],
-        'Section 3.2: annular pupils, Figs. 6-7.',
-        'pp. 30-32: epsilon = inner over outer radius of the ring. At theta = 0 and pi the annular 2CE response is flat '
-        'along the axis (no sectioning); at theta = pi/2 its central peak is about 1 um. 2PE at theta = pi/2 has a 35% '
-        'narrower spot but no zeros. Fig. 6: across the axis; Fig. 7: along it.', size=18)
-    for key, ttl, ours, lines in (
-            ('fig6a', '2PE across the axis, annular pupils (Fig. 6a)', 'fig6a_excitation.png', (
-                'At θ = 0 and π the profiles are identical (p. 30).',
-                'At θ = π/2 the central spot is 0.71 times as wide (0.36 against 0.50 µm), with no zeros (p. 31).',
-                'The published minimum, 0.08, is that of |U₁ + U₂|² (0.086), not Eq. 6 (0.007).')),
-            ('fig6b', '2CE across the axis, annular pupils (Fig. 6b)', 'fig6b.png', (
-                'At θ = 0 and π the profiles are identical, with zero points (p. 31).',
-                'At θ = π/2 the central spot is wider, with stronger side lobes, and also has zero points (p. 31).')),
-            ('fig7a', '2PE along the axis, annular pupils (Fig. 7a)', 'fig7a_excitation.png', (
-                'At θ = 0 the profile is constant along z: no optical sectioning (p. 32).',
-                'At θ = π/2 the central spot is near λ₂ₚ, without zeros; its 0.25 background is that of |U₁ + U₂|², not Eq. 6.',
-                'At θ = π the two counter-propagating waves give a uniform sinusoidal modulation (p. 32).')),
-            ('fig7b', '2CE along the axis, annular pupils (Fig. 7b)', 'fig7b.png', (
-                'At θ = 0 and π the profile is 1.0 along z: no optical sectioning (p. 32).',
-                'At θ = π/2 the central spot is about 1 µm (1.43 λ₂ₚ), with zero points across the range (p. 32).'))):
-        cpanel(ttl, key, ours, lines, f'{ttl}. ' + ' '.join(lines))
-    wide('Source of the difference in Figs. 6a and 7a', os.path.join(CB, 'evidence', 'eq6_excitation.png'), [
-        'Eq. 6 defines 2PE as |U₁ + U₂|⁴ (red); Figs. 6a and 7a plot |U₁ + U₂|² (orange), the excitation, not Eq. 6.',
-        'Fig. 6a minimum 0.08: |U₁ + U₂|² gives 0.086, Eq. 6 0.007. Fig. 7a background 0.25: Eq. 6 gives 0.06.',
-        'Figs. 2a and 3a follow Eq. 6, as current work does.'],
-        'Figs. 6a and 7a plot the excitation, not the 2PE signal of Eq. 6.',
-        'The side peaks of the published Fig. 7a curve at theta = pi/2 match |U1+U2|^2 within 0.02 um (correlation 0.98). '
-        'Evidence: minimum of Fig. 6a at theta = pi/2, published 0.08: |U1+U2|^2 gives 0.086, Eq. 6 0.007. Background of '
-        'Fig. 7a, published 0.25: |U1+U2|^2 gives 0.25, Eq. 6 1/16. The circular 2PE panels (Figs. 2a, 3a) follow Eq. 6.')
-    words('Values stated in the text compared to the published figures', [
-        'Consistent with the figures: 30%, 35%, 32% and 1 µm (pp. 31–32).',
-        'Consistent for some width measure, which the text does not state: 0.75, 0.82, 40% and "twice".',
-        'Not consistent with the figures:',
-        '– p. 28, 2PE spot at θ = π/2 over θ = 0: "0.67"; the curves and current work give 0.49.',
-        '– p. 29, 2CE over 2PE spot at θ = π/2: "1.58 times wider"; the curves and current work give 2.98.',
-        '– p. 32, annular 2CE over circular 2PE depth of focus at θ = π/2: "20% longer"; the curves and current work give 85%.'],
-        'Values stated in the text against the published figures.', 'Match: 30% (29.7%), 35% (34.0% with |U1+U2|^2), 32% (29.1%), 1 um (1.01 zero to zero). Width measure not stated: 0.75 and 0.82 give 0.68-0.87; 40% gives 30-37%; DOF 2x gives 2.2-2.6. Fig. 4 caption dl = l2 - l1; text dl = l1 - l2.', size=16)
-    wide('Spot ratio stated on p. 28 (Fig. 2a)', os.path.join(CB, 'evidence', 'ratio_fig2a.png'), [
-        'Stated: the 2PE spot at θ = π/2 is about 0.67 times the spot at θ = 0.',
-        'Current work, which matches Fig. 2a, gives FWHM 0.256 and 0.517 µm: a ratio of 0.49.'],
+    words('Numerical parameters and method', [
+        'NA = 0.5, λ_1 = 0.750 µm, λ_2 = 0.656 µm, λ_e = 0.35 µm; 2PE at λ_{2p} = 0.7 µm (p. 28).',
+        'Detector along the z-axis of lens L1 (p. 28).',
+        'Both foci at O. In the laboratory, one lens is moved until the 2CE signal from a thin fluorescent layer peaks.',
+        'Current work: Simpson’s rule over the pupil (Eq. 1); pulses as sums over frequency and time.'],
+        'Section 3 parameters, and how current work computes them.',
+        'A misaligned focus lowers the 2CE peak (Lim & Saloma 2002, confocality condition). Pulses: frequency sum with at '
+        'least 21 samples over +-3.5 sigma; time integral as a Riemann sum with dt = tau/15 over +-(3 tau + travel time). '
+        'Sampling check: uniform sums converge to machine precision by about 20 frequencies. Integration: no Runge-Kutta.', size=14)
+    CQ = {   # Sections 3.1-3.2 panels: what Cambaliza & Saloma (2000) point out on each figure, in their words
+        'fig2a': ('Transverse 2PE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', 'fig2a.png', (
+            'θ = 0 and π: identical profiles. θ = π/2: “the sharpest distribution” (p. 28).',
+            'θ = π/2: “stronger side lobes” from interference, so images of “lower contrast” (p. 28).')),
+        'fig2b': ('Transverse 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', 'fig2b.png', (
+            'θ = 0 and π: identical, and equal to 2PE at θ = 0. θ = π/2: no “second-order interference effects” (p. 29).',
+            'Circular pupils: 2CE does “not offer a definite advantage” in transverse resolution (p. 29).')),
+        'fig3a': ('Axial 2PE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', 'fig3a.png', (
+            'θ = π: “strong intensity modulation”, so “unsuitable for imaging thick samples” (p. 29).',
+            'θ = π/2: central peak “in the order of λ_{2p}”, but “strong side lobes” (p. 29).')),
+        'fig3b': ('Axial 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', 'fig3b.png', (
+            'θ = 0 and π: identical, and equal to 2PE at θ = 0 (p. 29).',
+            'θ = π/2: “weaker side lobes” than 2PE, “but with a broader DOF” (p. 30).')),
+        'fig4a': ('Transverse 2CE PSF for three wavelength gaps Δλ, θ = π/2, NA 0.5', 'fig4a.png', (
+            'From Δλ = 10 to 94 nm, “the FWHM increases by less than 6%” (p. 30).',
+            'The spot follows the focus of L1, which grows with λ_1 (+6.4%).')),
+        'fig4b': ('Axial 2CE PSF for three wavelength gaps Δλ, θ = π/2, NA 0.5', 'fig4b.png', (
+            'The DOF “becomes sharper with increasing Δλ” (p. 30).',
+            'The depth of focus follows the focus of L2, which shrinks with λ_2 (−5.6%).')),
+        'fig5': ('2CE central spot and depth of focus against the wavelength gap Δλ, θ = π/2', 'fig5.png', (
+            '“A trade-off” between central spot sharpness and DOF for a given Δλ (p. 30).',
+            'Same linear trends; FWHM slope 5.2 against 4.9 × 10^{−4} µm/nm from the published points.')),
+        'fig6a': ('Transverse 2PE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π', 'fig6a_excitation.png', (
+            'θ = π/2: narrower spot, “stronger side lobes”, and it “lacks zero points”: images “of low contrast” (p. 31).',
+            'The published curve is the excitation |U_1 + U_2|^2 (minimum 0.08); the 2PE signal of Eq. (6) is its square, 0.08^2 ≈ 0.007.')),
+        'fig6b': ('Transverse 2CE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π', 'fig6b.png', (
+            'θ = 0 and π: identical; θ = π/2: wider spot, “stronger side lobes” (p. 31).',
+            'Both “possess zero points”, unlike annular 2PE at θ = π/2 (p. 31).')),
+        'fig7a': ('Axial 2PE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π', 'fig7a_excitation.png', (
+            'θ = 0: constant along z; θ = π: “uniform sinusoidal modulation”; no “optical sectioning capability” (p. 32).',
+            'θ = π/2: no zero points, “much stronger side lobes” (p. 32).',
+            'The published curve is the excitation |U_1 + U_2|^2 (background 0.25); the 2PE signal of Eq. (6) is its square, 0.25^2 ≈ 0.06.')),
+        'fig7b': ('Axial 2CE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π', 'fig7b.png', (
+            'θ = 0 and π: 1.0 along z, no “optical sectioning capability” (p. 32).',
+            'θ = π/2: central spot “about 1 µm (1.43λ_{2p})”, with “zero points” (p. 32).'))}
+
+    def cq(key, script=''):
+        ttl, ours, lines = CQ[key]
+        cpanel(ttl, key, ours, lines, f'{ttl}. Current work matches the published curves. {script}')
+
+    def ratio(ttl, path, items, main, script):
+        wide(ttl, path, items, main, script)
+
+    words('Circular pupils: what is compared', [
+        'Circular pupils (ε = 0): 2PE and 2CE at θ = 0, π/2 and π (Figs. 2–3).',
+        'Across the axis: the central spot. Along the axis: the depth of focus (DOF).',
+        'Each published panel beside current work, from Eqs. (1)–(3).'],
+        'Section 3.1: circular pupils, Figs. 2-5.',
+        'pp. 28-30. The text compares central-spot diameters and depths of focus; it does not state the width measure.', size=16)
+    cq('fig2a')
+    ratio('2PE central spot at θ = π/2 relative to θ = 0, circular pupils', os.path.join(CB, 'evidence', 'ratio_fig2a.png'), [
+        'Stated: the 2PE spot at θ = π/2 is “approximately 0.67 times” that at θ = 0 (p. 28).',
+        'Current work matches Fig. 2a: FWHM 0.256 against 0.517 µm, a ratio of 0.49.',
+        'Measured at 1/e² (13.5%) of the peak instead of at half, the widths give the same ratio, 0.49.'],
         'Fig. 2a gives 0.49, not 0.67.',
-        'Current work matches the published curves (previous slides). '
-        'With the 1/e^2 or zero-to-zero width the ratio is 0.43-0.50.')
-    wide('2CE over 2PE spot stated on p. 29 (Figs. 2a, 2b)', os.path.join(CB, 'evidence', 'ratio_158.png'), [
-        'Stated: the 2CE spot at θ = π/2 is 1.58 times wider than the 2PE spot.',
-        'Current work, which matches Figs. 2a and 2b, gives FWHM 0.763 and 0.256 µm: a ratio of 2.98.'],
+        'Current work matches the published curves (previous slide). With the zero-to-zero width the ratio is 0.43-0.50.')
+    cq('fig2b')
+    ratio('2CE central spot relative to 2PE at θ = π/2, circular pupils', os.path.join(CB, 'evidence', 'ratio_158.png'), [
+        'Stated: the 2CE spot at θ = π/2 is “1.58 times wider” than the 2PE spot (p. 29).',
+        'Current work matches Figs. 2a and 2b: FWHM 0.763 against 0.256 µm, a ratio of 2.98.',
+        'Measured at 1/e² (13.5%) of the peak instead of at half, the widths give 2.93.'],
         'Figs. 2a and 2b give 2.98, not 1.58.',
         'Other width measures give 2.5-3.0. 1.58 is also not the 2CE spot at pi/2 over the 2PE spot at 0 (1.48).')
-    wide('Depth-of-focus ratio stated on p. 32 (Figs. 3a, 7b)', os.path.join(CB, 'evidence', 'ratio_20pct.png'), [
-        'Stated: the annular 2CE depth of focus at θ = π/2 is 20% longer than the circular 2PE one.',
-        'Current work, which matches Figs. 3a and 7b, gives FWHM 0.473 and 0.256 µm: 85% longer.'],
+    cq('fig3a')
+    cq('fig3b')
+    words('Gap Δλ between the two 2CE wavelengths: what is compared', [
+        'Δλ = λ_1 − λ_2 = 10, 39 and 94 nm, with 1/λ_1 + 1/λ_2 = 1/λ_e fixed (p. 30).',
+        '“The shorter excitation wavelength λ_2 is focused using lens L2” (p. 30).',
+        'Circular pupils, θ = π/2, NA = 0.5.'],
+        'Section 3.1: the wavelength gap, Figs. 4-5.',
+        'Circular pupils, NA 0.5, theta = pi/2. Fig. 4: profiles for three gaps; Fig. 5: FWHM and DOF against the gap, '
+        'with a linear fit.', size=16)
+    cq('fig4a')
+    cq('fig4b')
+    cq('fig5', 'Caption: FWHM = 2.4e-4 dl + 0.0356, DOF = +4.81e-4 dl + 0.7112; plotted lines: 5.2e-4 dl + 0.713 and '
+       '-4.6e-4 dl + 0.713. A +-5 nm laser-diode tolerance moves the spot by +-0.7%.')
+    side('Slopes against Δλ: current work, published points and caption fits', os.path.join(CB, 'evidence', 'fig5_overlay.png'), [
+        'Blue and green: current work. Orange dashed: the DOF fit given in the caption.',
+        'Current work lies within 0.004 µm of the published points.',
+        'The published points scatter by 0.002 µm rms, so their slope is uncertain by ±0.2 × 10^{−4} µm/nm, half the difference.',
+        'Current work follows Eqs. (1)–(3); its slopes match the scaling of the two foci with λ_1 and λ_2.',
+        'The fit equations in the caption match neither plotted line; the FWHM fit lies off the plot.'],
+        'Fig. 5: same trends; slopes differ; caption fits inconsistent with the plot.',
+        'Published points digitized from the scan: FWHM slope 4.86e-4, intercept 0.712, rms scatter 0.0016 um. The '
+        'wavelength pairs (705, 695), (720, 681), (750, 656) nm satisfy 1/l1 + 1/l2 = 1/350 nm. Reading the width at the '
+        'nearest sample of a 5-nm grid scatters the points as in the published plot but raises the FWHM slope to 5.7e-4. '
+        'Current work: +5.24e-4 dl + 0.7131 and -4.57e-4 dl + 0.7131.')
+    words('Annular pupils: what is compared', [
+        'Thin ring pupils, ε = 0.99, with the outer diameter of Section 3.1 (p. 30).',
+        'At θ = π/2, annular 2CE gives a PSF “superior to the 2PE microscope” (p. 26).'],
+        'Section 3.2: annular pupils, Figs. 6-7.',
+        'pp. 30-32: epsilon = inner over outer radius of the ring.', size=16)
+    cq('fig6a')
+    cq('fig6b')
+    cq('fig7a')
+    cq('fig7b')
+    wide('2PE with annular pupils: excitation |U₁ + U₂|² against the signal |U₁ + U₂|⁴', os.path.join(CB, 'evidence', 'eq6_excitation.png'), [
+        'The excitation |U_1 + U_2|^2 (orange) is the focused intensity; the 2PE signal of Eq. (6), |U_1 + U_2|^4 (red), is its square.',
+        'Squaring lowers every value below the peak: the minimum across the axis goes from 0.08 to 0.007, the background along it from 0.25 to 0.06.',
+        'The published annular 2PE curves show 0.08 and 0.25, so they plot the excitation, not the signal.',
+        'The published circular 2PE curves follow Eq. (3), |U_1 + U_2|^4, as current work does.'],
+        'Figs. 6a and 7a plot the excitation, not the 2PE signal of Eq. 6.',
+        'The side peaks of the published Fig. 7a curve at theta = pi/2 match |U1+U2|^2 within 0.02 um (correlation 0.98).')
+    ratio('Annular 2CE depth of focus relative to circular 2PE at θ = π/2', os.path.join(CB, 'evidence', 'ratio_20pct.png'), [
+        'Stated: the annular 2CE DOF at θ = π/2 is “20% longer” than the circular 2PE DOF (p. 32).',
+        'Current work matches Figs. 3a and 7b: 0.473 against 0.256 µm, 85% longer.',
+        'Measured at 1/e² (13.5%) of the peak instead of at half, the widths give 76%.'],
         'Figs. 3a and 7b give 85%, not 20%.', 'Other width measures give 38-85%.')
+    words('Ratios stated in the text against the published curves', [
+        'Four values stated on pp. 31–32 agree with the published figures: 30%, 35%, 32% and 1 µm.',
+        'Four more agree for some width measure, which the text does not state: 0.75, 0.82, 40% and "twice".',
+        'Three do not agree with the published figures:',
+        '– p. 28: the 2PE spot at θ = π/2 is "0.67" times that at θ = 0; the curves give 0.49.',
+        '– p. 29: the 2CE spot at θ = π/2 is "1.58 times wider" than the 2PE spot; the curves give 2.98.',
+        '– p. 32: the annular 2CE depth of focus at θ = π/2 is "20% longer" than the circular 2PE one; the curves give 85%.'],
+        'Values stated in the text against the published figures.', 'Match: 30% (29.7%), 35% (34.0% with |U1+U2|^2), 32% '
+        '(29.1%), 1 um (1.01 zero to zero). Width measure not stated: 0.75 and 0.82 give 0.68-0.87; 40% gives 30-37%; DOF '
+        '2x gives 2.2-2.6. Fig. 4 caption dl = l2 - l1; text dl = l1 - l2.', size=15)
+    words('Discussion and conclusion of Cambaliza & Saloma (2000)', [
+        'Circular pupils: the 2CE advantage “is arguable” (p. 34).',
+        'Annular lenses: the 2CE advantage “is more apparent” (p. 34).',
+        'Main advantage: “observation of objects through highly scattering media”, not resolution (p. 34).',
+        'Long-DOF axicons ease “the confocality condition for the two excitation beams” (p. 34).'],
+        'Conclusions of Cambaliza & Saloma (2000).',
+        'p. 34 also: dual-beam excitation with two identical objectives for 0 <= theta <= pi/2 is possible only for NA <= 0.7; '
+        'a cw excitation beam could replace femtosecond pulses when the intermediate state is real.', size=15)
     chigh_na('2. Extension to high NA: paraxial scalar model against the vector (Richards–Wolf) focus, air and water', summary=('Summary: high NA', [
-        'Paraxial scalar model against the vector (Richards–Wolf) focus, θ = 0 and π',
-        '– Along the axis the paraxial depth of focus is 5% longer at NA 0.43 in air and 0.57 in water.',
-        '– Across the axis the paraxial width is 5% larger at NA 0.86 in air and 1.14 in water.',
-        'θ = π/2 and the 2CE–2PE comparisons',
-        '– Scalar and vector agree within 4% up to NA 0.7 in air and 0.9 in water, where the lenses fit.',
-        '– The 2CE spot is 2.9 times the 2PE spot at NA 0.5 and 2.0 times at NA 0.7 in air.'],
+        'The conclusions of Cambaliza & Saloma hold at high NA, but the differences between 2PE and 2CE shrink.',
+        '2PE at θ = π/2 stays the sharpest distribution at all NA: its spot is one interference fringe, 0.26 µm in air, while '
+        'the 2CE spot shrinks with NA, from 2.9 times the 2PE spot at NA 0.5 to 2.0 at NA 0.7.',
+        'The 2PE side lobes weaken with NA, from 0.11 to 0.04 of the peak at θ = π/2 (NA 0.5 to 0.7) and from 0.97 to 0.42 '
+        'at θ = π (NA 0.5 to 0.9), so 2PE images gain contrast.',
+        'Crossed lenses (θ = π/2) fit only up to NA 0.71 in air and 0.94 in water, the limit of NA 0.7 noted on p. 34.',
+        'The paraxial Eq. (1) gives the right spot width up to NA 0.86 in air, but overestimates the depth of focus above '
+        'NA 0.43 (by 36% at NA 0.9).'],
         'High NA: main points.', 'Vector = Richards-Wolf, both beams polarized along y. Paraxial DOF error grows as '
         'tan^2(alpha/2); in water it is about half that in air at the same NA. Annular pupils: paraxial DOF 2.2x too long '
         'at NA 0.9 in air.'))
     PU = os.path.join(CB, 'high_na', 'pupils')
     wide('Annular pupils: depth of focus against NA, air', os.path.join(PU, 'annular_widths_air_z.png'), [
-        'With annular pupils the paraxial depth of focus is 2.2 times too long at NA 0.9 in air.',
-        'Why: a thin ring uses only the pupil edge, where the paraxial phase error is largest.'],
+        'As NA increases the paraxial annular DOF departs sooner than the circular one: 15% too long at NA 0.5 and 2.2 times at NA 0.9 in air.',
+        'A thin ring uses the edge of the pupil, where the paraxial phase error is largest.'],
         'Along the axis the paraxial model departs sooner with annular pupils.',
         'Vector (Richards-Wolf) with the annulus sin(theta) >= eps sin(alpha) (sine condition), beams polarized along y. '
         'Annular DOF (2CE, theta = 0), vector / scalar: 155 / 179 um at NA 0.5 (scalar 15% longer), 65 / 91 um at 0.7 '
@@ -1823,50 +2088,95 @@ elif SECTION == CMEETING:
         'DOF: 47x at NA 0.5, 42x at 0.7, 31x at 0.9 (paraxial: 1/(1 - eps^2) = 50). Spot across the axis: 0.70x the '
         'circular one at all NA. theta = pi/2: set by the narrow transverse spot of the other beam, so scalar and vector '
         'agree within 2%.')
-    wide('Annular comparisons across the axis against NA', os.path.join(PU, 'annular_quoted_x.png'), [
-        'Star: the value written on p. 31. Cross: the same ratio measured on the published figures; the paraxial curve passes through it.',
-        'Fig. 6b: 0.82 stated, 0.67 on the curves. 2PE narrower: 35% stated, 34% on the curves.'],
+    wide('Annular central spots against NA: the comparisons of p. 31', os.path.join(PU, 'annular_quoted_x.png'), [
+        'As NA increases the annular 2CE spot at θ = 0 stays 0.67 of that at θ = π/2, and the annular 2PE spot loses its lead '
+        'over 2CE: 53% narrower at NA 0.5, 34% at NA 0.7 in air.',
+        'Star: value stated on p. 31; cross: the same ratio on the published curves. 0.82 stated, 0.67 on Fig. 6b; 35% stated, '
+        '34% on Fig. 6a, which plots the excitation (Eq. (6) gives 53%).'],
         'Annular comparisons across the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water. The replication '
         'gives 0.67 at NA 0.5 for the Fig. 6b ratio.')
-    wide('Annular comparisons along the axis against NA', os.path.join(PU, 'annular_quoted_z.png'), [
-        'Star: the value written on p. 32. Cross: the same ratio measured on the published figures; the paraxial curve passes through it.',
-        'Shorter than circular: 40% stated, 30% on the curves. Longer than 2PE: 20% stated, 85%.'],
+    wide('Annular depth of focus against NA: the comparisons of p. 32', os.path.join(PU, 'annular_quoted_z.png'), [
+        'As NA increases the annular 2CE DOF at θ = π/2 stays about 30% shorter than the circular one, and its lead over the 2PE DOF '
+        'shrinks: 85% longer at NA 0.5.',
+        'Star: value stated on p. 32; cross: the same ratio on the published curves. 40% stated, 30% on the curves; 20% stated, 85%.'],
         'Annular comparisons along the axis.',
         'Stars: values quoted at NA 0.5. Solid: vector; dashed: paraxial scalar; filled: air; open: water.')
-    wide('Wavelength gap Δλ against NA (Figs. 4–5)', os.path.join(PU, 'dlambda_vs_na.png'), [
-        'The Δλ dependence of Figs. 4–5 holds from NA 0.3 to 0.9, in air and water.',
-        'Why: at θ = π/2 the spot follows λ₁ and the depth of focus λ₂ at every NA.'],
+    wide('2CE response to the wavelength gap Δλ against NA, θ = π/2', os.path.join(PU, 'dlambda_vs_na.png'), [
+        'As NA increases the effect of Δλ stays the same: from 10 to 94 nm the central spot grows by about 6% and the DOF '
+        'shrinks by about 5%, from NA 0.3 to 0.9, in air and water.',
+        'At θ = π/2 the central spot follows λ_1 and the DOF follows λ_2 at all NA, so the trade-off of p. 30 holds.'],
         'The wavelength gap changes the 2CE response by the same fraction at all NA.',
         '2CE, theta = pi/2, circular pupils; 1/lambda1 + 1/lambda2 = 1/350 nm. From 10 to 94 nm the FWHM grows by 6.3% at '
         'NA 0.3, 6.1% at 0.5, 5.7% at 0.7 (air), 5.8% at 0.9 (water); the DOF shrinks by 5.5% to 5.2%. Vector (y), '
         'unpolarized and scalar within 0.3% of each other in this relative change.')
     navy('3. Extension to optical pulses: 2PE and 2CE point spread functions with transform-limited femtosecond pulses', [])
     words('Summary: optical pulses', [
-        'Transform-limited pulses, zero delay between them',
-        '– θ = π: 10-fs pulses shorten the 2CE depth of focus from 3.3 to 1.9 µm at NA 0.5 in air, 4.6 to 1.6 µm in water.',
-        '– θ = π, 2PE: the fringes remain only where the two pulses overlap.',
-        '– θ = 0 and π/2: the widths change by 2% or less.',
-        'Pulses at high NA',
-        '– At NA 0.9 in air and 1.2 in water the focus is shorter than the pulse overlap; the 2CE depth of focus changes by 4%.'],
+        'A transform-limited pulse of duration τ has the same spectral width Δν = 0.441/τ for every color: 4.4, 22 and 44 THz '
+        'at τ = 100, 20 and 10 fs.',
+        'In wavelength the width differs by color: 83 nm at 750 nm and 63 nm at 656 nm for 10 fs.',
+        'At 100 and 20 fs the two 2CE spectra stay apart, so one photon from each beam describes 2CE completely.',
+        'There, with facing lenses, 20-fs pulses shorten the 2CE depth of focus from 3.3 to 2.7 µm at NA 0.5 (19%), and '
+        '100-fs pulses by about 1%; 2PE and the other angles change by 2% or less.',
+        'At 10 fs the spectra overlap (31% of each peak at 700 nm): the PSFs must sum every photon pair from both beams, '
+        'with their interference. Next step.'],
         'Optical pulses: main points.', 'Vector focus, beams along y. Head-on pulses overlap within sqrt(2) c tau / 2 of '
         'the focus (2.1 um at 10 fs in air). The NA 0.5 slide uses the paraxial model: 3.6 to 1.9 um.', size=14)
     PE1 = r'E(t) = A(t)\cos(2\pi\nu_0 t), \qquad A(t) = e^{-2\ln 2\, t^2/\tau^2}, \qquad \Delta\nu = \frac{0.441}{\tau}'
     PE2 = r't_i(P) = \frac{n\, z_{b,i}(P)}{c}'
     eqslide('What an optical pulse adds', 'A pulse lasts τ, carries a spread of frequencies Δν, and passes each point at its own time.', [
-        (PE1, 'transform-limited Gaussian pulse: τ = FWHM of the intensity; Δν = FWHM of the spectrum (no chirp).'),
-        (PE2, 'time at which pulse i passes the point P; z_{b,i} = distance along the axis of beam i.')],
+        (PE1, 'A transform-limited Gaussian pulse: its duration τ fixes its spectral width Δν.'),
+        (PE2, 'The time at which pulse i passes the point P.')],
         'A pulse has a duration, a spectrum and an arrival time.',
         'Continuous beams have one frequency and are present at all times; a pulse has a band of frequencies and is present '
         'at each point only for about tau. 10 fs: delta nu = 44 THz, about 40 nm at 750 nm.', '\n'.join((PE1, PE2)), size=17)
+    wide('Pulse spectra against frequency, τ = 100, 20 and 10 fs', os.path.join(CB, 'pulses', 'spectra_frequency.png'), [
+        'A transform-limited pulse of duration τ has the same spectral width Δν = 0.441/τ for every color: 4.4, 22 and 44 THz.',
+        'At 10 fs the 750- and 656-nm spectra overlap, and each still has 31% of its peak at 428 THz (700 nm), where two '
+        'photons of one beam add up to the 350-nm transition.'],
+        'Spectra of the three lasers against frequency.',
+        'Gaussian, transform-limited: delta nu = 0.441 / tau. Centres: 399.7 THz (750 nm), 457.0 THz (656 nm), 428.3 THz '
+        '(700 nm). Spectrum at 700 nm relative to its peak: 0.31 at 10 fs, 0.01 at 20 fs.')
+    wide('Pulse spectra against wavelength, τ = 100, 20 and 10 fs', os.path.join(CB, 'pulses', 'spectra_wavelength.png'), [
+        'In wavelength the width is λ²Δν/c, so it differs by color: 8, 41 and 83 nm at 750 nm; 6, 32 and 63 nm at 656 nm.',
+        'Current work keeps one photon from each beam (the 2CE pairs of the next slides); the single-beam pairs at 10 fs are '
+        'not included.'],
+        'Spectra of the three lasers against wavelength.',
+        'Spectral FWHM (nm), 100 / 20 / 10 fs: 750 nm 8.3 / 41.4 / 83.0; 656 nm 6.3 / 31.7 / 63.5; 700 nm 7.2 / 36.1 / 72.3. '
+        'Rough estimate of the single-beam two-photon rate at 10 fs: about 10% of the 2CE rate for each beam, for a narrow '
+        'transition.')
+    words('Next steps', [
+        'Scattering medium',
+        '– Compare the 2PE and 2CE backgrounds for the slab half-thicknesses h that give the published curves.',
+        '– Count each photon once, in one depth bin, and compare the noise with the published curves.',
+        'Optical pulses',
+        '– Sum every photon pair from both beams, with their interference, and recompute the pulsed 2CE and 2PE PSFs.',
+        '– Then the time delay between the two pulses.',
+        'High NA',
+        '– Oil immersion (n = 1.515), up to NA 1.4.'],
+        'Next steps.', 'Scattering backgrounds against h; time-delay results; oil immersion.', size=15)
+    navy('Backup: pulsed PSFs with one photon from each beam (to be recomputed with all photon pairs)', [])
+    PJ1 = r'p_i(\mathbf{r}, t) \propto I_i(\mathbf{r}, t) = I_i^{\mathrm{CW}}(\mathbf{r})\; A_i^2\!\left(t - t_i(\mathbf{r})\right)'
+    PJ2 = r"p_i(\nu) = \frac{|\tilde{E}_i(\nu)|^2}{\int |\tilde{E}_i(\nu')|^2\, d\nu'}"
+    PJ3 = (r'P_{12}(\mathbf{r}) \propto \int p_1(\mathbf{r}, t)\, p_2(\mathbf{r}, t)\, dt \propto I_1^{\mathrm{CW}} I_2^{\mathrm{CW}}\; '
+           r'\exp\left(-\frac{2\ln 2\,(t_1 - t_2)^2}{\tau^2}\right)')
+    eqslide('Joint probability of a photon pair in space and time', 'The intensity is the probability of finding a photon '
+            'there and then; the spectrum is the probability of its frequency.', [
+        (PJ1, 'The intensity is the probability of finding a photon of beam i at r and time t.'),
+        (PJ2, 'The spectrum is the probability that the photon has frequency ν.'),
+        (PJ3, 'A 2CE event needs one photon of each beam at the same place and time: the pulses must arrive within about τ.')],
+        'A 2CE event needs one photon of each beam at the same point and time.',
+        'With A^2(t) = exp(-4 ln2 t^2 / tau^2): integral over t of A^2(t - t1) A^2(t - t2) = tau sqrt(pi / (8 ln2)) '
+        'exp(-2 ln2 (t1 - t2)^2 / tau^2). The same factor comes out of the sum over photon pairs (next slides).',
+        '\n'.join((PJ1, PJ2, PJ3)), size=16)
     PP1 = r'\nu_a + \nu_b = \nu_e \;\Leftrightarrow\; \frac{1}{\lambda_a} + \frac{1}{\lambda_b} = \frac{1}{350\ \mathrm{nm}}'
     PP2 = r'P(\nu_a) = p_1(\nu_a)\; p_2(\nu_e - \nu_a)'
     PP3 = r'A(P) = \int \sqrt{P(\nu_a)}\; U_1(P, \nu_a)\, U_2(P, \nu_e - \nu_a)\, d\nu_a, \qquad F_{2c} = \kappa_{2c}\, |A|^2'
     eqslide('Photon pairs: which pairs excite the transition', '2CE needs one photon from each laser whose frequencies add up to the '
             'transition; every such pair contributes.', [
-        (PP1, 'resonance: a photon of laser 1 (750 nm band) and one of laser 2 (656 nm band) add up to the 350 nm transition.'),
-        (PP2, 'joint probability of a resonant pair: the two lasers are independent, so the spectral probabilities p_i multiply.'),
-        (PP3, 'two-photon amplitude: the sum over resonant pairs, each with its focused fields U_1, U_2; the signal is its square.')],
+        (PP1, 'One photon of each laser, whose energies add up to the 350-nm transition.'),
+        (PP2, 'The two lasers are independent, so the probabilities of the two frequencies multiply.'),
+        (PP3, 'The two-photon amplitude sums every resonant pair; the 2CE signal is its square.')],
         'Pairwise probabilities: resonant pairs, weighted by their joint probability, summed in amplitude.',
         'The pairs add with the phase of the times at which the two pulses pass P. Where the pulses arrive together all pairs '
         'add in phase; where they arrive apart, the pairs partly cancel.', '\n'.join((PP1, PP2, PP3)), size=16)
@@ -1875,92 +2185,110 @@ elif SECTION == CMEETING:
     PC2 = r'\theta = \pi:\quad t_1 - t_2 = \frac{2nz}{c} \;\Rightarrow\; \mathrm{FWHM}_z = \frac{\sqrt{2}\, c\,\tau}{2n}'
     eqslide('Pulsed 2CE PSF: the pulses must meet', 'Summing the pairs gives the continuous PSF times the overlap of the two pulses '
             'in time; at θ = π they meet only near the focus.', [
-        (PC1, 'I^CW_1 I^CW_2 = continuous 2CE PSF (Eq. 2); δ = detuning of the transition, 0 here; t_1 − t_2 = difference of '
-              'arrival times.'),
-        (PC2, 'facing pulses meet on a slab 2.1 µm long in air at 10 fs (1.6 µm in water); at θ = 0 they travel together, '
-              'so there is no gating.')],
+        (PC1, 'The pulsed 2CE PSF: the continuous PSF times the overlap of the two pulses in time.'),
+        (PC2, 'Facing pulses overlap only near the focus: 2.1 µm in air at 10 fs. At θ = 0 they travel together.')],
         'The photon-pair sum and the overlap in time give the same pulsed PSF at zero delay.',
         'The Gaussian sum over pairs gives exp(-2 ln2 (t1-t2)^2/tau^2), the same as the integral of I1(t) I2(t) over t. '
         'tau -> infinity recovers the continuous PSF.', '\n'.join((PC1, PC2)), size=16)
-    wide('Axial response with pulses, NA 0.5, θ = π', os.path.join(CB, 'pulses', 'axial_pi.png'), [
-        'Short pulses shorten the 2CE depth of focus: from 3.6 µm to 1.9 µm at 10 fs.',
-        'Why: facing pulses meet only within the 2.1-µm overlap around the focus.'],
+    P2E1 = r'|E_1 + E_2|^2 = I_1 + I_2 + 2\sqrt{I_1 I_2}\,\cos\varphi'
+    P2E2 = (r'\int |E_1 + E_2|^4\, dt = \underbrace{\int (I_1^2 + I_2^2)\, dt}_{\text{one beam}} + '
+            r'\underbrace{\int \left[4(I_1 + I_2)\sqrt{I_1 I_2}\cos\varphi + 4 I_1 I_2 \cos^2\varphi\right] dt}_{\text{both beams}}')
+    eqslide('Pulsed 2PE: what the pulses change', 'Both 2PE beams come from the same 700-nm laser, so '
+            'one beam alone can excite: pulses change 2PE much less than 2CE.', [
+        (P2E1, 'The two 2PE beams interfere: fringes λ/2n apart along the axis at θ = π, half the wavelength in the medium (0.35 µm in air).'),
+        (P2E2, 'One beam alone excites 2PE without any overlap; the fringes need both pulses at once.')],
+        'Pulsed 2PE: the single-beam terms stay, the fringes fade where the pulses do not meet.',
+        'Depth of focus (FWHM of the central fringe, set by lambda): 0.995 of the continuous value at 10 fs at every NA. '
+        'Share of the axial 2PE signal outside the central fringe at NA 0.5 in air: 89% continuous, 85% at 10 fs. '
+        '2CE has no single-beam term (I1 I2 only), so it is gated completely by the pulse overlap.',
+        '\n'.join((P2E1, P2E2)), side=('Result', ['The 2PE depth of focus changes by 0.5% at 10 fs, at all NA.',
+                                                    'The central fringe is set by λ, not by the pulse.',
+                                                    'Away from the focus the fringes fade; each beam’s own 2PE remains.']), size=15)
+    wide('Axial 2PE and 2CE PSF with pulses, facing lenses, NA 0.5 (paraxial model)', os.path.join(CB, 'pulses', 'axial_pi.png'), [
+        'Facing pulses meet only within 2.1 µm of the focus, so 10-fs pulses shorten the 2CE DOF from 3.6 to 1.9 µm.',
+        'The 2PE central fringe does not change; the outer fringes fade where the pulses do not meet.'],
         'Short pulses shorten the 2CE response along the axis at theta = pi.',
         'Paraxial scalar. 2CE DOF 3.56 um continuous, 3.52 at 100 fs, 2.81 at 20 fs, 1.92 at 10 fs. theta = 0 and pi/2: '
         'change of 2% or less. 2PE fringes kept only where the pulses overlap.')
     PH = os.path.join(CB, 'pulses', 'high_na')
     if os.path.exists(os.path.join(PH, 'dof_pi.png')):
-        wide('Depth of focus with pulses against NA, θ = π', os.path.join(PH, 'dof_pi.png'), [
-            '2CE: at high NA the focus is shorter than the pulse overlap, so the pulse no longer shortens it.',
-            '2PE: the depth of focus is the central fringe, far shorter than the overlap, so pulses leave it unchanged.'],
+        wide('Depth of focus with pulses against NA, facing lenses', os.path.join(PH, 'dof_pi.png'), [
+            'As NA increases the shortening of the 2CE DOF by the pulses fades: the focus becomes shorter than the pulse overlap.',
+            'The 2PE DOF is the central fringe, much shorter than the overlap, and changes by 0.5% at every NA.'],
             'The effect of the pulse length fades as NA grows.',
             'Vector (Richards-Wolf), both beams polarized along y, zero delay. DOF = central-peak FWHM along z; '
             'pulsed over continuous. Widths (um), CW | 20 fs | 10 fs: '
             + '; '.join(l for l in open(os.path.join(PH, 'widths.txt')).read().splitlines()[1:] if ' z π |' in l))
     PULSE = {
-        ('air', 0.5): ('2CE: 10-fs pulses shorten the depth of focus from 3.3 to 1.9 µm.',
-                       '2PE: the fringes remain only where the two pulses overlap, within about 1 µm of the focus.',
-                       'Why: facing pulses meet only near the focus; the overlap is 2.1 µm long at 10 fs.'),
-        ('air', 0.7): ('2CE: 10-fs pulses shorten the depth of focus from 1.6 to 1.3 µm.',
-                       '2PE: the outer fringes drop; the central fringe is unchanged.'),
-        ('air', 0.9): ('2CE: the depth of focus changes by 4%, from 0.81 to 0.77 µm.',
-                       'Why: the focus is already shorter than the 2.1-µm overlap.'),
-        ('water', 0.5): ('2CE: 10-fs pulses shorten the depth of focus from 4.6 to 1.6 µm.',
-                         '2PE: the fringes remain only where the two pulses overlap (1.6 µm in water at 10 fs).'),
-        ('water', 0.9): ('2CE: 10-fs pulses shorten the depth of focus from 1.3 to 1.0 µm.',
-                         '2PE: the outer fringes drop; the central fringe is unchanged.'),
-        ('water', 1.2): ('2CE: the depth of focus changes by 4%, from 0.60 to 0.58 µm.',
-                         'Why: the focus is already shorter than the 1.6-µm overlap.')}
+        ('air', 0.5): ('The 3.3-µm 2CE focus is longer than the 2.1-µm pulse overlap, so 10-fs pulses shorten the 2CE DOF to 1.9 µm.',
+                       'The 2PE central fringe does not change; of the 9 fringes in the 3.3-µm focus, only those within about 1 µm of the focus remain.'),
+        ('air', 0.7): ('The 2CE focus, 1.6 µm, is now shorter than the overlap, so 10-fs pulses shorten it less, to 1.3 µm.',
+                       'The 2PE central fringe does not change; about 4 fringes fit in the 1.6-µm focus, and the outer ones drop.'),
+        ('air', 0.9): ('The 2CE focus, 0.81 µm, is well inside the 2.1-µm overlap: the pulses change the 2CE DOF by 4%, to 0.77 µm.',
+                       'The 2PE central fringe does not change; only about 2 fringes fit in the 0.81-µm focus.'),
+        ('water', 0.5): ('In water the focus is longer (4.6 µm) and the overlap shorter (1.6 µm), so 10-fs pulses shorten the 2CE DOF to 1.6 µm.',
+                         'Of the 17 2PE fringes in the 4.6-µm focus, only those within the 1.6-µm overlap of the pulses remain.'),
+        ('water', 0.9): ('The 2CE focus, 1.3 µm, is close to the 1.6-µm overlap: 10-fs pulses shorten the 2CE DOF to 1.0 µm.',
+                         'The 2PE central fringe does not change; about 4 fringes fit in the 1.3-µm focus, and the outer ones drop.'),
+        ('water', 1.2): ('The 2CE focus, 0.60 µm, is well inside the 1.6-µm overlap: the pulses change the 2CE DOF by 4%, to 0.58 µm.',
+                         'The 2PE central fringe does not change; only about 2 fringes fit in the 0.60-µm focus.')}
     for (med, na), items in PULSE.items():
         path = os.path.join(PH, f'axial_pi_{med}_na{na:g}.png')
         if os.path.exists(path):
-            wide(f'Along the axis with pulses, {med}, NA {na:g}, θ = π', path, list(items),
+            wide(f'Axial 2PE and 2CE PSF with pulses, facing lenses, NA {na:g}, {med}', path, list(items),
                  f'Pulses at NA {na:g}, {med}.',
-                 'Vector (Richards-Wolf), beams along y (unpolarized 2CE: the same on the axis). 2PE: continuous and 10 fs; '
+                 'Vector (Richards-Wolf), beams along y (unpolarized 2CE: the same on the axis). 2PE: continuous and 10 fs '
+                 '(100 and 20 fs lie between the two, on the continuous curve); '
                  '2CE: continuous and tau = 100, 20, 10 fs; zero delay; each curve normalized to its own peak.')
-    words('Next steps', [
-        'Fig. 8, two-beam excitation through a scattering medium',
-        '– Monte Carlo simulation of the excitation beams (method of Blanca & Saloma, 1998).',
-        '– Set the slab half-thickness h, which the paper does not give, and compare the 2PE and 2CE backgrounds.',
-        'Optical pulses',
-        '– Add a time delay between the two pulses and follow the 2CE response as the delay grows.'],
-        'Next steps.', 'Monte Carlo for Fig. 8; time delay between the pulses.', size=16)
-    navy('Preview: Fig. 8, 2PE and 2CE through a scattering medium, Monte Carlo simulation', [])
-    cpanel('2PE along the axis through a scattering slab, θ = π (Fig. 8a)', 'fig8a', 'fig8a.png', (
-        'At the focus the unscattered (ballistic) photons give the peak.',
-        'Away from the focus the 2PE background is 0.09 (published: 0.1–0.2).'))
-    cpanel('2CE along the axis through a scattering slab, θ = π (Fig. 8b)', 'fig8b', 'fig8b.png', (
-        'At the focus the unscattered photons of both beams give the peak.',
-        'Away from the focus the 2CE background is 0.07 (published: near 0).'),
+    navy('Backup: fluorescence imaging in highly scattering media, Monte Carlo simulation (Section 3.3)', [])
+    words('Scattering slab: what is simulated', [
+        'Monte Carlo, forward-scattering medium: g = 0.9, h/d_s = 8, facing lenses (θ = π) (p. 32).',
+        'Focal plane at the centre of a slab of thickness 2h; h/d_s = scattering events before the focus (pp. 32–33).'],
+        'Section 3.3: scattering, Fig. 8.',
+        'Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey-Greenstein phase function, g = 0.9, up to 40 '
+        'events; 1e7 photons per beam as published.', size=15)
+    cpanel('Axial 2PE profile through a scattering slab, facing lenses', 'fig8a', 'fig8a.png', (
+        'At z = 0: “mostly … unscattered (ballistic) photons” (p. 33).',
+        'Out of focus: 2PE “considerably reduced but still not to negligible values” (p. 33).',
+        'Current work: background 0.09 (published 0.1–0.2), with 10⁷ photons per beam.'))
+    cpanel('Axial 2CE profile through a scattering slab, facing lenses', 'fig8b', 'fig8b.png', (
+        '2CE: no “significant contributions from the out-of-focus planes” (p. 33).',
+        'Current work: background 0.07 (published near 0).'),
         'Current work is smoother: the mean of 10 runs of 1e6 photons, and I(z) counts each photon at every plane it crosses '
-        'inside the beam radius w(z) (Blanca & Saloma 1998), so neighbouring points share photons. The paper uses 1e7 photons '
-        'but does not state its binning; a single run or finer bins would give its noise.')
-    wide('Fig. 8 background against the slab half-thickness h', os.path.join(CB, 'panels', 'fig8_h_scan.png'), [
-        'The paper does not give h: a thin slab gives a broad pedestal, a thick slab no background.',
-        'No h gives both the published 2PE background (0.1–0.2) and no 2CE background; h = 100 µm is used.'],
-        'Fig. 8 depends on h, which the paper does not give.',
-        "Method of Blanca & Saloma (1998): Gaussian-beam photons, Henyey-Greenstein g = 0.9, up to 40 events; I(z) = photons "
-        "inside w(z) per area; 10 trials x 1e6 photons per beam. Not stated: h and the lambda dependence of d_s; used "
-        "d_s ~ lambda^2, h/d_s = 8 at 700 nm for every h. Background for |z| > 10 um, 2PE / 2CE: h = 20 um broad pedestal; "
-        "50 um 0.26 / 0.14; 100 um 0.09 / 0.07; 300 um 0.004 / 0.005; 1 mm none.")
+        'inside the beam radius w(z) (Blanca & Saloma 1998), so neighbouring points share photons. The published curves '
+        'use 1e7 photons; their binning is not stated.')
+    wide('Monte Carlo noise: one run of 10⁶ photons', os.path.join(CB, 'panels', 'fig8_noise.png'), [
+        'One run of 10⁶ photons is nearly as smooth as the mean of 10 runs: 0.5% noise away from the focus.',
+        'Each photon counts at every plane it crosses inside w(z), so each point of I(z) uses most photons.',
+        'Counting each photon once, in one depth bin, gives more scatter; the published count is not stated.'],
+        'The smooth curves come from the counting, not from the number of photons.',
+        'Relative SD of one run (10 runs): 2PE excitation 0.55% for |z| > 10 um and 5.1% for |z| < 1 um; lambda_1 0.43% '
+        'and 3.2%; lambda_2 0.61% and 5.8%. Fluorescence of one run against the mean, rms for |z| > 10 um: 2PE 0.004, '
+        '2CE 0.005, on backgrounds of 0.09 and 0.07.')
+    wide('Out-of-focus background against the slab half-thickness h', os.path.join(CB, 'panels', 'fig8_h_scan.png'), [
+        'h is not given: a thin slab gives a broad background pedestal, a thick slab none.',
+        'No single h gives the published 2PE background (0.1–0.2) and no 2CE background; h = 100 µm is used.'],
+        'Fig. 8 depends on h, which is not given.',
+        "Not stated: h and the lambda dependence of d_s; used d_s ~ lambda^2, h/d_s = 8 at 700 nm for every h. Background "
+        "for |z| > 10 um, 2PE / 2CE: h = 20 um broad pedestal; 50 um 0.26 / 0.14; 100 um 0.09 / 0.07; 300 um 0.004 / 0.005; "
+        "1 mm none.")
     green({
-        'Rotation in (x, z) against (u, v), 2CE along the axis (Fig. 3b)': ('Current work rotates',),
-        'Source of the difference in Fig. 5': ('Current work follows Eqs. 1–6',),
-        'Source of the difference in Figs. 6a and 7a': ('as current work does',),
-        'Spot ratio stated on p. 28 (Fig. 2a)': ('Current work, which matches',),
-        '2CE over 2PE spot stated on p. 29 (Figs. 2a, 2b)': ('Current work, which matches',),
-        'Depth-of-focus ratio stated on p. 32 (Figs. 3a, 7b)': ('Current work, which matches',)})
+        'Axial 2CE PSF at θ = π/2 with beam 2 rotated in (x, z) or in (u, v), NA 0.5': ('Current work rotates',),
+        'Slopes against Δλ: current work, published points and caption fits': ('Current work follows Eqs.',),
+        '2PE with annular pupils: excitation |U₁ + U₂|² against the signal |U₁ + U₂|⁴': ('as current work does',),
+        '2PE central spot at θ = π/2 relative to θ = 0, circular pupils': ('Current work matches',),
+        '2CE central spot relative to 2PE at θ = π/2, circular pupils': ('Current work matches',),
+        'Annular 2CE depth of focus relative to circular 2PE at θ = π/2': ('Current work matches',)})
     red({                                                     # differences from the published text, on their own slides only
-        'Paraxial scalar model: Eqs. 1–6': ('Eq. 1 writes',),
-        '2PE across the axis, annular pupils (Fig. 6a)': ('not Eq. 6',),
-        '2PE along the axis, annular pupils (Fig. 7a)': ('not Eq. 6',),
-        'Values stated in the text compared to the published figures': ('Not consistent', '"0.67"', '"1.58', '"20%'),
-        'Spot ratio stated on p. 28 (Fig. 2a)': ('Stated:',),
-        '2CE over 2PE spot stated on p. 29 (Figs. 2a, 2b)': ('Stated:',),
-        'Depth-of-focus ratio stated on p. 32 (Figs. 3a, 7b)': ('Stated:',),
-        'Source of the difference in Fig. 5': ('match neither',),
-        'Source of the difference in Figs. 6a and 7a': ('not Eq. 6',),
-        'Spot width and depth of focus against the wavelength gap (Fig. 5)': ('FWHM slope',)})
+        'Transverse 2PE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π': ('the 2PE signal of Eq. (6)',),
+        'Axial 2PE PSF, annular pupils, NA 0.5: θ = 0, π/2 and π': ('the 2PE signal of Eq. (6)',),
+        'Ratios stated in the text against the published curves': ('Three do not agree', '"0.67"', '"1.58', '"20%'),
+        '2PE central spot at θ = π/2 relative to θ = 0, circular pupils': ('Stated:',),
+        '2CE central spot relative to 2PE at θ = π/2, circular pupils': ('Stated:',),
+        'Annular 2CE depth of focus relative to circular 2PE at θ = π/2': ('Stated:',),
+        'Slopes against Δλ: current work, published points and caption fits': ('match neither',),
+        '2PE with annular pupils: excitation |U₁ + U₂|² against the signal |U₁ + U₂|⁴': ('so they plot the excitation',),
+        '2CE central spot and depth of focus against the wavelength gap Δλ, θ = π/2': ('FWHM slope',)})
 
 pass                                                         # physics checks: see scripts/check_lim2002_physics.py
 glossary()
@@ -1978,6 +2306,8 @@ for path, shown in ds.FIGURES:
     if path.endswith('.png'):                                    # 24-pt smallest text at 600 dpi; the pair figures use 28 pt
         im = Image.open(path)
         small = 28 if os.path.basename(path).startswith('pairs_') else 24
+        if 'cambaliza2000' in path.replace(os.sep, '/').split('/'):   # the 2color excitation scripts: 28-pt smallest text
+            small = 28
         if os.path.basename(os.path.dirname(path)) == 'evidence' and os.path.basename(path) in ('fig5_caption.png', 'rotation.png'):
             small = 31
         if os.path.basename(path) == 'fig5_overlay.png':
@@ -2001,6 +2331,47 @@ for sl in prs.slides:
             im.save(buf, 'PNG', dpi=(600, 600), optimize=True)
             ipart._blob = buf.getvalue()
         done.add(id(ipart))
+if SECTION == CMEETING:                                         # slide manifest for the dashboard
+    import json
+    import re
+    man = []
+    for i, sl in enumerate(prs.slides, 1):
+        rec = _REC.get(sl.slide_id, {'figs': [], 'eqs': [], 'labels': []})
+        dark = sl.background.fill.type is not None and sl.background.fill.fore_color.rgb == NAVY
+        title_, sub, items, texts = '', '', [], []
+        for sh in sl.shapes:
+            if not sh.has_text_frame or not sh.text_frame.text.strip():
+                continue
+            top, left, txt = sh.top / 914400, sh.left / 914400, sh.text_frame.text.strip()
+            if (abs(left - 9.0) < 0.01 and abs(top - 5.28) < 0.01) or re.fullmatch(r'\(\d+\)', txt) \
+                    or txt.startswith('where ') or txt in rec['labels']:
+                continue
+            if not title_:
+                title_ = txt
+                continue
+            if not dark and abs(top - 0.78) < 0.01 and abs(left - 0.5) < 0.01:
+                sub = txt
+                continue
+            for para in sh.text_frame.paragraphs:
+                t_ = para.text.strip()
+                if not t_:
+                    continue
+                cols = {str(r_.font.color.rgb) for r_ in para.runs if r_.font.color and r_.font.color.type is not None}
+                tag = 'diff' if str(RED) in cols else 'ok' if str(GREEN) in cols else ''
+                pp = para._p.pPr
+                sub_item = t_.startswith('– ') or (pp is not None and pp.get('marL') == '457200')   # '– ' items of bullets()
+                items.append({'text': t_[2:] if t_.startswith('– ') else t_, 'sub': sub_item, 'tag': tag})
+                texts.append(t_)
+        body = sl.notes_slide.notes_text_frame.text if sl.has_notes_slide else ''
+        main_ = body.split('\n\n')[0].replace('MAIN POINT: ', '') if body else ''
+        script_ = body.split('\n\n')[1] if body.count('\n\n') >= 1 else ''
+        kind = 'title' if i == 1 else 'section' if dark else 'glossary' if title_.startswith('Glossary') else 'slide'
+        man.append({'n': i, 'kind': kind, 'title': title_, 'subtitle': sub, 'items': items, 'figs': rec['figs'],
+                    'labels': rec['labels'], 'eqs': rec['eqs'], 'main': main_, 'notes': script_})
+    MAN = os.path.join(HERE, '..', 'output', '08_two_color', 'decks', '2ce_meeting_manifest.json')
+    os.makedirs(os.path.dirname(MAN), exist_ok=True)
+    json.dump(man, open(MAN, 'w'), ensure_ascii=False, indent=1)
+    print('Manifest ->', os.path.abspath(MAN))
 OUT = os.path.join(DIR, {MEETING: '2ce_meeting_2026-10-15.pptx', 'cambaliza': '2ce_cambaliza_replication.pptx',
                          CMEETING: '2ce_meeting_cambaliza.pptx'}.get(
     SECTION) or f'2ce_{SECTIONS.index(SECTION):02d}_{SECTION}.pptx')

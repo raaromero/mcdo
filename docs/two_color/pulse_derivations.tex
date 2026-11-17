@@ -1,0 +1,397 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{STIX Two Text}
+\usepackage{unicode-math}
+\setmathfont{STIX Two Math}
+\usepackage{graphicx,booktabs,enumitem,hyperref,float,amsmath}
+\setlist{nosep,leftmargin=1.4em}
+\setlength{\parskip}{5pt}\setlength{\parindent}{0pt}
+\title{Two-color excitation with optical pulses and a delay:\\ derivations, step by step}
+\date{12 November 2026}
+\author{}
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+This document continues \texttt{two\_color\_plan.pdf}, which builds the focal field of one lens from Maxwell's
+equations and the two-color signal for continuous beams. Here each step from a Gaussian pulse to the delay
+results is written out, with no step skipped, and each result is compared with the stored computations. The
+equations of the papers are cited where they enter: Cambaliza \& Saloma (2000) [CS00], Lim \& Saloma (2002) [LS02],
+Lim \& Saloma (2003) [LS03] and Romallosa, Bantang \& Saloma (2003) [Rom03].
+
+\section*{Symbols}
+\begin{center}\small\begin{tabular}{ll}\toprule
+$\lambda_1, \lambda_2$ & wavelengths of beams 1 and 2, 750 and 656 nm\\
+$\omega_1, \omega_2$ & their angular frequencies, $2\pi c/\lambda$: 2.5115 and 2.8714 rad/fs\\
+$\omega_e$ & angular frequency of the level, $2\pi c/(350\ \mathrm{nm}) = 5.3819$ rad/fs\\
+$\tau$ & pulse width: the FWHM of the intensity $|E(t)|^2$\\
+$\Delta t$ & delay of pulse 2 after pulse 1\\
+$\theta$ & angle between the two lens axes: 0 collinear, $\pi/2$ crossed, $\pi$ facing\\
+$n$ & refractive index of the medium; $k = n\omega/c$\\
+$z_b$ & distance of a point from the focus of a beam, measured along that beam\\
+$\mathbf{E}_\omega(P)$ & focal field of a continuous wave of frequency $\omega$ at the point $P$\\
+$c$ & speed of light, 0.29979 $\mu$m/fs\\\bottomrule\end{tabular}\end{center}
+
+\section{The Gaussian pulse}
+\textbf{Step 1.} I write the field of the pulse as a carrier times a Gaussian envelope,
+\begin{equation}E(t) = e^{-at^2}\,e^{-i\omega_0t},\qquad a > 0 .\end{equation}
+This is Eq.~8 of [Rom03] with no chirp ($b = 0$).
+
+\textbf{Step 2.} The intensity is the squared modulus. The carrier has modulus 1, so
+\begin{equation}|E(t)|^2 = \left(e^{-at^2}\right)^2 = e^{-2at^2} .\end{equation}
+
+\textbf{Step 3.} The FWHM $\tau$ is the full width at which the intensity is one half of its peak. The peak is at
+$t = 0$ and equals 1. Setting $t = \tau/2$:
+\begin{align}e^{-2a(\tau/2)^2} &= \tfrac12\\ -2a\,\frac{\tau^2}{4} &= -\ln 2\\ a &= \frac{2\ln 2}{\tau^2} .\end{align}
+
+\textbf{Step 4.} Putting $a$ back,
+\begin{equation}E(t) = \exp\!\left(-2\ln 2\,\frac{t^2}{\tau^2}\right)e^{-i\omega_0t},\qquad
+|E(t)|^2 = \exp\!\left(-4\ln 2\,\frac{t^2}{\tau^2}\right) ,\label{eq:pulse}\end{equation}
+which is Eq.~9 of [Rom03], where $\tau = (2\ln 2/a)^{1/2}$.
+
+\section{The spectrum of the pulse}
+\textbf{Step 1.} The spectrum is the Fourier transform of the field,
+\begin{equation}\tilde E(\omega) = \int_{-\infty}^{\infty}E(t)\,e^{i\omega t}\,dt
+= \int_{-\infty}^{\infty}e^{-at^2}\,e^{i(\omega-\omega_0)t}\,dt .\end{equation}
+I write $\Omega = \omega - \omega_0$ for the distance from the carrier.
+
+\textbf{Step 2.} I complete the square in the exponent:
+\begin{align}-at^2 + i\Omega t &= -a\left(t^2 - \frac{i\Omega}{a}t\right)\\
+&= -a\left[\left(t - \frac{i\Omega}{2a}\right)^2 - \left(\frac{i\Omega}{2a}\right)^2\right]\\
+&= -a\left(t - \frac{i\Omega}{2a}\right)^2 + a\,\frac{i^2\Omega^2}{4a^2}\\
+&= -a\left(t - \frac{i\Omega}{2a}\right)^2 - \frac{\Omega^2}{4a} .\end{align}
+
+\textbf{Step 3.} The second term does not depend on $t$ and leaves the integral. The first is a Gaussian, and
+$\int e^{-a(t-t_0)^2}dt = \sqrt{\pi/a}$ for any shift $t_0$, so
+\begin{equation}\tilde E(\omega) = \sqrt{\frac{\pi}{a}}\,\exp\!\left[-\frac{(\omega-\omega_0)^2}{4a}\right] .\end{equation}
+This is the spectrum of [Rom03], $E(\omega) \propto \exp[-(\omega-\omega_c)^2/4a]$.
+
+\textbf{Step 4.} With $a = 2\ln 2/\tau^2$, $1/4a = \tau^2/(8\ln 2)$. Dropping the constant $\sqrt{\pi/a}$,
+\begin{equation}a(\omega) = \exp\!\left[-\frac{(\omega-\omega_0)^2\tau^2}{8\ln 2}\right]
+= \exp\!\left[-\frac{(\omega-\omega_0)^2}{2s^2}\right],\qquad s^2 = \frac{4\ln 2}{\tau^2},\quad
+s = \frac{2\sqrt{\ln 2}}{\tau} .\label{eq:spec}\end{equation}
+This is the function in \texttt{mcdo.pulsed2ce.spectrum}.
+
+\textbf{Step 5, a check with the numbers of [Rom03].} The power spectrum is $|a(\omega)|^2 = e^{-\Omega^2/s^2}$. It is
+one half at $\Omega^2 = s^2\ln 2$, so its FWHM is $\Delta\omega = 2s\sqrt{\ln 2} = 4\ln 2/\tau$. In frequency,
+\begin{equation}\Delta\nu = \frac{\Delta\omega}{2\pi} = \frac{4\ln 2}{2\pi\tau} = \frac{0.441}{\tau} .\end{equation}
+For $\tau = 1$ fs this is $4.4\times10^{14}$ Hz. With $\nu_c = 3.997\times10^{14}$ Hz the band runs from
+$\nu_c - \Delta\nu/2 = 1.79\times10^{14}$ Hz (1.67 $\mu$m) to $\nu_c + \Delta\nu/2 = 6.20\times10^{14}$ Hz (483 nm),
+the values quoted in [Rom03].
+
+\section{The pulse at the focus, and the meaning of a delay}
+\textbf{Step 1.} Each frequency of the pulse is a continuous wave, and the lens focuses it into the field
+$\mathbf{E}_\omega(P)$ of the papers ([CS00] Eq.~1 for the scalar model, [Rom03] Eqs.~1--7 for the vector model).
+The diffraction integral has the prefactor $1/\lambda \propto \omega$. The pulse at the point $P$ is the sum
+\begin{equation}\mathbf{E}(P,t) = \int a(\omega)\,\frac{\omega}{\omega_0}\,\mathbf{E}_\omega(P)\,e^{-i\omega t}\,d\omega .\label{eq:field}\end{equation}
+
+\textbf{Step 2, when the pulse arrives.} On the axis of a beam, $\mathbf{E}_\omega$ carries the propagation phase
+$e^{ikz_b}$ with $k = n\omega/c$. Keeping this factor and treating the rest as slowly varying in $\omega$,
+\begin{equation}e^{ikz_b}\,e^{-i\omega t} = e^{i\omega nz_b/c}\,e^{-i\omega t} = e^{-i\omega(t - nz_b/c)} .\end{equation}
+The sum over $\omega$ is then the same function of $t - nz_b/c$ that it is of $t$ at the focus. So the pulse is at
+the focus at $t = 0$ and at the point $z_b$ at
+\begin{equation}t_{\text{arrival}} = \frac{n z_b}{c} .\label{eq:arr}\end{equation}
+
+\textbf{Step 3, the delay.} A delay line makes the whole field of beam 2 arrive later by $\Delta t$:
+\begin{equation}\mathbf{E}_2(P,t) \longrightarrow \mathbf{E}_2(P,t-\Delta t)
+= \int a_2(\omega)\,\frac{\omega}{\omega_2}\,\mathbf{E}_\omega(P)\,e^{-i\omega t}\,e^{+i\omega\Delta t}\,d\omega .\label{eq:delay}\end{equation}
+Each frequency of beam 2 is multiplied by the phase $e^{i\omega\Delta t}$. This is what the code applies, with the
+carrier included.
+
+\section{The signal: photon pairs that reach the level}
+\textbf{Step 1.} For a transition from the ground state $g$ to the level $f$ through intermediate states $m$,
+second-order perturbation theory gives the amplitude
+\begin{equation}a_f = \left(\frac{-i}{\hbar}\right)^2\sum_m\mu_{fm}\mu_{mg}
+\int_{-\infty}^{\infty}dt\,E(t)\,e^{i\omega_{fm}t}\int_{-\infty}^{t}dt'\,E(t')\,e^{i\omega_{mg}t'} .\end{equation}
+
+\textbf{Step 2.} The intermediate states are not resonant with the light: $\omega_{mg}$ differs from all frequencies
+of the pulses by much more than their bandwidth. For a component $E(t') \propto e^{-i\omega t'}$ the inner integral
+is then
+\begin{equation}\int_{-\infty}^{t}e^{i(\omega_{mg}-\omega)t'}dt' = \frac{e^{i(\omega_{mg}-\omega)t}}{i(\omega_{mg}-\omega)} ,\end{equation}
+and since $\omega_{mg} - \omega$ is nearly the same for all $\omega$ in the pulse, the inner integral is
+proportional to $E(t)\,e^{i\omega_{mg}t}$.
+
+\textbf{Step 3.} The two exponentials combine, $e^{i\omega_{fm}t}e^{i\omega_{mg}t} = e^{i\omega_{fg}t}$, and
+$\omega_{fg} = \omega_e$. So, up to a constant,
+\begin{equation}A(P) = \int_{-\infty}^{\infty}E^2(P,t)\,e^{i\omega_et}\,dt .\end{equation}
+The level is taken to be narrow compared with the spectra, so one frequency $\omega_e$ enters.
+
+\textbf{Step 4, the same amplitude in frequencies.} Writing each factor of $E^2$ through its spectrum,
+$E(t) = \frac{1}{2\pi}\int\tilde E(\omega)e^{-i\omega t}d\omega$,
+\begin{align}A &= \frac{1}{(2\pi)^2}\iint\tilde E(\omega_a)\tilde E(\omega_b)
+\left[\int e^{i(\omega_e-\omega_a-\omega_b)t}dt\right]d\omega_a\,d\omega_b\\
+&= \frac{1}{(2\pi)^2}\iint\tilde E(\omega_a)\tilde E(\omega_b)\;2\pi\,\delta(\omega_e-\omega_a-\omega_b)\;d\omega_a\,d\omega_b\\
+&= \frac{1}{2\pi}\int\tilde E(\omega_a)\,\tilde E(\omega_e-\omega_a)\,d\omega_a .\label{eq:pairs}\end{align}
+The delta function says that a pair of photons contributes when $\omega_a + \omega_b = \omega_e$, and the integral
+says that all such pairs add with their phases.
+
+\textbf{Step 5, the three kinds of pairs.} With two beams, $E = E_1 + E_2$ and
+\begin{equation}E^2 = E_1^2 + 2E_1E_2 + E_2^2 ,\end{equation}
+so
+\begin{equation}A = A^{11} + 2A^{12} + A^{22},\qquad A^{ab} = \int E_a(P,t)\,E_b(P,t)\,e^{i\omega_et}\,dt .\end{equation}
+\begin{center}\small\begin{tabular}{lll}\toprule
+Term & Photons & Name\\\midrule
+$2A^{12}$ & one from each beam, 750 + 656 nm & 350-nm pairs\\
+$A^{11}$ & both from beam 1, 750 + 750 nm & 375-nm pairs\\
+$A^{22}$ & both from beam 2, 656 + 656 nm & 328-nm pairs\\\bottomrule\end{tabular}\end{center}
+The names give the wavelength that two photons at the carriers would reach. The 375- and 328-nm pairs reach the
+350-nm level through the edges of the spectra. The signal is
+\begin{equation}F(P) = |A(P)|^2 .\end{equation}
+
+\textbf{Step 6, the limit of long pulses.} For long pulses each spectrum is a line, $E_a \to U_a e^{-i\omega_at}$,
+with $U_a$ the continuous-wave field. Then
+\begin{equation}A^{ab} \to U_aU_b\int e^{i(\omega_e-\omega_a-\omega_b)t}dt ,\end{equation}
+which is zero unless $\omega_a + \omega_b = \omega_e$. For 2CE, $\omega_1 + \omega_2 = \omega_e$ but
+$2\omega_1 \ne \omega_e$ and $2\omega_2 \ne \omega_e$, so the 350-nm pairs alone remain:
+\begin{equation}F \to |2U_1U_2|^2 = 4|U_1|^2|U_2|^2 \propto I_1I_2 ,\end{equation}
+which is Eq.~2 of [CS00]. For 2PE, $\omega_1 = \omega_2 = \omega_e/2$ and all three terms remain:
+\begin{equation}F \to |U_1^2 + 2U_1U_2 + U_2^2|^2 = |U_1 + U_2|^4 ,\end{equation}
+which is Eq.~3 of [CS00]. The pulsed model therefore contains the continuous-beam results of the papers as its
+limit.
+
+\section{How large the 375- and 328-nm pairs are}
+\textbf{Step 1.} At one point, with both pulses arriving together, the amplitude of a pair of beams $a, b$ is the
+integral of Step 4 with the two Gaussian spectra of Eq.~\ref{eq:spec}:
+\begin{equation}A^{ab} \propto \int\exp\!\left[-\frac{(\omega-\omega_a)^2}{2s^2}\right]
+\exp\!\left[-\frac{(\omega_e-\omega-\omega_b)^2}{2s^2}\right]d\omega .\end{equation}
+
+\textbf{Step 2.} I write $x = \omega - \omega_a$ and $\Delta = \omega_e - \omega_a - \omega_b$, the distance of
+the level from the sum of the two carriers. Then $\omega_e - \omega - \omega_b = \Delta - x$ and the exponent is
+\begin{align}-\frac{1}{2s^2}\left[x^2 + (\Delta - x)^2\right]
+&= -\frac{1}{2s^2}\left[2x^2 - 2\Delta x + \Delta^2\right]\\
+&= -\frac{1}{2s^2}\left[2\left(x - \frac{\Delta}{2}\right)^2 - \frac{\Delta^2}{2} + \Delta^2\right]\\
+&= -\frac{1}{s^2}\left(x - \frac{\Delta}{2}\right)^2 - \frac{\Delta^2}{4s^2} .\end{align}
+
+\textbf{Step 3.} The integral over $x$ of the first term is $s\sqrt{\pi}$ for any $\Delta$. So
+\begin{equation}A^{ab} \propto \exp\!\left[-\frac{\Delta^2}{4s^2}\right]
+= \exp\!\left[-\frac{(\omega_e-\omega_a-\omega_b)^2\tau^2}{16\ln 2}\right],\end{equation}
+using $4s^2 = 16\ln 2/\tau^2$.
+
+\textbf{Step 4.} For the 350-nm pairs $\Delta = \omega_e - \omega_1 - \omega_2 \approx 0$ and the exponential is 1.
+For the 375-nm pairs $\Delta = \omega_e - 2\omega_1 = 0.3589$ rad/fs. The first term also lacks the factor 2 of
+$2A^{12}$. The factor $\omega/\omega_0$ of Eq.~\ref{eq:field} enters once for each photon; the 375-nm pairs that reach the level
+have both photons near $\omega_e/2$, which gives $(\omega_e/2\omega_1)^2 = 1.148$. So
+\begin{equation}\frac{|A^{11}|}{|2A^{12}|} = \frac12\left(\frac{\omega_e}{2\omega_1}\right)^2
+\exp\!\left[-\frac{(\omega_e-2\omega_1)^2\tau^2}{16\ln 2}\right] ,\label{eq:ratio}\end{equation}
+and the same with $\omega_2$ for the 328-nm pairs, where $\omega_e - 2\omega_2 = -0.3609$ rad/fs and
+$(\omega_e/2\omega_2)^2 = 0.878$.
+
+\textbf{Step 5, the numbers.} At $\tau = 10$ fs: $(0.3589)^2\times100/(16\ln 2) = 12.88/11.09 = 1.161$,
+$e^{-1.161} = 0.313$, and $\tfrac12\times1.148\times0.313 = 0.180$.
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+ & \multicolumn{2}{c}{375-nm pairs over 350-nm pairs} & \multicolumn{2}{c}{328-nm pairs over 350-nm pairs}\\
+$\tau$ & Eq.~\ref{eq:ratio} & computed at the focus & Eq.~\ref{eq:ratio} & computed at the focus\\\midrule
+5 fs & 0.429 & 0.430 & 0.327 & 0.327\\
+10 fs & 0.180 & 0.180 & 0.136 & 0.136\\
+20 fs & 0.0055 & 0.005 & 0.0040 & 0.004\\\bottomrule\end{tabular}\end{center}
+[LS03] state that spectral broadening is negligible for pulse widths longer than 10 fs. Eq.~\ref{eq:ratio} gives the size:
+below 1\% at 20 fs, 18\% at 10 fs.
+
+\section{A delay at a fixed point: the temporal overlap}
+\textbf{Step 1.} At a point where the two pulses arrive together when $\Delta t = 0$, the envelopes with a delay
+are, from Eq.~\ref{eq:pulse},
+\begin{equation}e_1(t) = \exp\!\left(-2\ln 2\,\frac{t^2}{\tau^2}\right),\qquad
+e_2(t) = \exp\!\left(-2\ln 2\,\frac{(t-\Delta t)^2}{\tau^2}\right) .\end{equation}
+
+\textbf{Step 2.} The 350-nm pairs are $2A^{12} \propto \int e_1(t)\,e_2(t)\,dt$ (the carriers cancel against
+$e^{i\omega_et}$, since $\omega_1 + \omega_2 = \omega_e$). The product has the exponent
+\begin{equation}-\frac{2\ln 2}{\tau^2}\left[t^2 + (t-\Delta t)^2\right] .\end{equation}
+
+\textbf{Step 3.} I complete the square in the bracket:
+\begin{align}t^2 + (t-\Delta t)^2 &= 2t^2 - 2t\,\Delta t + \Delta t^2\\
+&= 2\left(t^2 - t\,\Delta t + \frac{\Delta t^2}{4}\right) - \frac{\Delta t^2}{2} + \Delta t^2\\
+&= 2\left(t - \frac{\Delta t}{2}\right)^2 + \frac{\Delta t^2}{2} .\end{align}
+
+\textbf{Step 4.} So
+\begin{equation}e_1(t)\,e_2(t) = \exp\!\left[-\frac{4\ln 2}{\tau^2}\left(t - \frac{\Delta t}{2}\right)^2\right]
+\exp\!\left(-\ln 2\,\frac{\Delta t^2}{\tau^2}\right) .\end{equation}
+The first factor is a Gaussian centered halfway between the two pulses, and its integral over $t$ does not depend
+on $\Delta t$. The second factor leaves the integral:
+\begin{equation}|2A^{12}| \propto \exp\!\left(-\ln 2\,\frac{\Delta t^2}{\tau^2}\right) .\label{eq:g}\end{equation}
+
+\textbf{Step 5.} The signal is the square,
+\begin{equation}\frac{F(\Delta t)}{F(0)} = \exp\!\left(-2\ln 2\,\frac{\Delta t^2}{\tau^2}\right) .\label{eq:overlap}\end{equation}
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+$\Delta t$ & $0.5\tau$ & $\tau/\sqrt2 = 0.71\tau$ & $\tau$ & $2\tau$\\\midrule
+$F(\Delta t)/F(0)$ & $2^{-1/2} = 0.707$ & $2^{-1} = 0.5$ & $2^{-2} = 0.25$ & $2^{-8} = 0.0039$\\
+stored, collinear lenses, 100 fs & 0.70712 & & 0.25001 & 0.00391\\
+stored, collinear lenses, 5 fs & 0.71095 & & 0.25545 & 0.00425\\\bottomrule\end{tabular}\end{center}
+Each value is a power of 2, since $\exp(-2\ln 2\,x^2) = 2^{-2x^2}$. The difference of 2\% at 5 fs is the factor
+$\omega/\omega_0$ of Eq.~\ref{eq:field}, which makes the spectrum slightly wider than Eq.~\ref{eq:spec}.
+
+\textbf{Step 6.} The overlap of the two intensities gives the same function:
+$\int I_1(t)I_2(t-\Delta t)\,dt \propto \exp(-2\ln 2\,\Delta t^2/\tau^2)$, by Steps 2 to 4 with the intensities
+of Eq.~\ref{eq:pulse} in place of the envelopes. This is the sense in which [CS00] require $I_1$ and $I_2$ to be
+``simultaneously present in both space and time''.
+
+\section{Facing lenses: where the pulses meet}
+\textbf{Step 1, arrival times.} With facing lenses, beam 1 travels along $+z$ and beam 2 along $-z$. From Eq.~\ref{eq:arr},
+pulse 1 reaches the point $z$ at $t_1 = nz/c$. For beam 2, $z_b = -z$, and it is delayed, so
+$t_2 = -nz/c + \Delta t$.
+
+\textbf{Step 2.} At the point $z$ the two pulses are apart in time by
+\begin{equation}t_1 - t_2 = \frac{2nz}{c} - \Delta t .\end{equation}
+Eq.~\ref{eq:overlap} holds at each point with this difference in place of $\Delta t$, and the continuous-beam intensities give
+the strength of each pulse there:
+\begin{equation}F_{2c}(z,\Delta t) = I_1(z)\,I_2(z)\,
+\exp\!\left[-\frac{2\ln 2}{\tau^2}\left(\frac{2nz}{c} - \Delta t\right)^2\right] .\label{eq:gate}\end{equation}
+
+\textbf{Step 3, the meeting point.} The exponential is 1 where $2nz/c = \Delta t$:
+\begin{equation}z_m = \frac{c\,\Delta t}{2n} .\end{equation}
+For $\Delta t = 100$ fs in air, $z_m = 0.29979\times100/2 = 15.0\ \mu$m.
+
+\textbf{Step 4, the length of the stretch where the pulses meet.} With $2nz/c - \Delta t = (2n/c)(z - z_m)$, the
+exponential is
+\begin{equation}\exp\!\left[-\frac{8\ln 2\,n^2}{c^2\tau^2}(z - z_m)^2\right]
+= \exp\!\left[-4\ln 2\,\frac{(z-z_m)^2}{G^2}\right],\qquad G = \frac{c\tau}{\sqrt2\,n} ,\end{equation}
+since $4\ln 2/G^2 = 8\ln 2\,n^2/c^2\tau^2$ gives $G^2 = c^2\tau^2/2n^2$. By Eq.~\ref{eq:pulse} a Gaussian written this way has
+FWHM $G$. In air $G = 21.2\ \mu$m at 100 fs, 4.2 $\mu$m at 20 fs and 2.1 $\mu$m at 10 fs.
+
+\textbf{Step 5, the peak when the focus is approximated by a Gaussian.} Near the focus I write the
+continuous-beam product as a Gaussian of FWHM $D$, the continuous-beam depth of focus of 2CE:
+$I_1I_2 \approx \exp(-4\ln 2\,z^2/D^2)$. Then
+\begin{equation}F_{2c}(z,\Delta t) \approx \exp\!\left[-4\ln 2\left(\frac{z^2}{D^2} + \frac{(z-z_m)^2}{G^2}\right)\right] .\end{equation}
+The peak is where the derivative of the bracket is zero:
+\begin{align}\frac{2z}{D^2} + \frac{2(z - z_m)}{G^2} &= 0\\
+z\left(\frac{1}{D^2} + \frac{1}{G^2}\right) &= \frac{z_m}{G^2}\\
+z_p &= z_m\,\frac{D^2}{D^2 + G^2} .\label{eq:zp}\end{align}
+
+\textbf{Step 6, the height of the peak.} At $z_p$, $z_p - z_m = -z_mG^2/(D^2+G^2)$, so
+\begin{align}\frac{z_p^2}{D^2} + \frac{(z_p - z_m)^2}{G^2}
+&= \frac{z_m^2D^2}{(D^2+G^2)^2} + \frac{z_m^2G^2}{(D^2+G^2)^2}
+= \frac{z_m^2}{D^2+G^2} ,\end{align}
+and
+\begin{equation}\frac{F_{\text{peak}}(\Delta t)}{F_{\text{peak}}(0)}
+= \exp\!\left[-4\ln 2\,\frac{z_m^2}{D^2 + G^2}\right] .\end{equation}
+
+\textbf{Step 7, the width.} The sum of the two exponents has the coefficient $1/D^2 + 1/G^2 = 1/W^2$, so the
+profile along the axis has FWHM
+\begin{equation}W = \frac{DG}{\sqrt{D^2 + G^2}} ,\label{eq:W}\end{equation}
+which is $G$ where the focus is long ($D \gg G$) and $D$ where it is short.
+
+\textbf{Step 8, the two limits at $\Delta t = \tau$.} Here $z_m = c\tau/2n = G/\sqrt2$, so $z_m^2 = G^2/2$ and
+\begin{equation}\frac{F_{\text{peak}}(\tau)}{F_{\text{peak}}(0)} = \exp\!\left[-2\ln 2\,\frac{G^2}{D^2 + G^2}\right] .\label{eq:peaktau}\end{equation}
+For a short focus, $D \ll G$, this is $e^{-2\ln 2} = 0.25$ and $z_p \to 0$: the peak stays at the focus and falls
+with the temporal overlap. For a long focus, $D \gg G$, it is 1 and $z_p \to z_m$: the peak moves with the
+meeting point and is kept.
+
+\textbf{Step 9, comparison with the stored results.} For 100 fs in air, $G = 21.2\ \mu$m and $z_m = 15.0\ \mu$m.
+$D$ is 3.56 $\mu$m at NA 0.5 and grows as $1/\mathrm{NA}^2$ in the paraxial model.
+\begin{center}\small\begin{tabular}{lccccccc}\toprule
+ & & \multicolumn{2}{c}{peak at $\Delta t = \tau$} & \multicolumn{2}{c}{position ($\mu$m)} &
+\multicolumn{2}{c}{FWHM, no delay ($\mu$m)}\\
+NA & $D$ ($\mu$m) & Eq.~\ref{eq:peaktau} & stored & Eq.~\ref{eq:zp} & stored & Eq.~\ref{eq:W} & stored\\\midrule
+0.1 & 89.1 & 0.928 & 0.930 & 14.2 & 14.2 & 20.6 & 20.7\\
+0.2 & 22.3 & 0.518 & 0.513 & 7.9 & 7.8 & 15.4 & 15.4\\
+0.3 & 9.9 & 0.320 & 0.316 & 2.7 & 2.6 & 9.0 & 8.9\\
+0.5 & 3.56 & 0.260 & 0.258 & 0.41 & 0.34 & 3.5 & 3.3\\\bottomrule\end{tabular}\end{center}
+The stored values are from the vector model. Without the Gaussian approximation, Eq.~\ref{eq:gate} with the computed
+$I_1I_2$ agrees with the stored profiles to 0.004 of the peak at 100 fs, 0.019 at 20 fs and 0.039 at 10 fs.
+\begin{center}\includegraphics[width=0.95\textwidth]{../../output/08_two_color/cambaliza2000/pulses/delay_sweep/delay_facing_vs_na.png}\end{center}
+
+\section{Fringes against the delay}
+\textbf{Step 1.} From Eq.~\ref{eq:delay}, the delay multiplies each photon of beam 2 by $e^{i\omega\Delta t}$. I count the
+photons of beam 2 in each kind of pair.
+\begin{itemize}
+\item A 375-nm pair has no photon of beam 2. $A^{11}$ does not change.
+\item A 350-nm pair has one, of frequency $\omega_b$ near $\omega_2$. $2A^{12}$ gains about $e^{i\omega_2\Delta t}$,
+and its size falls as $g(\Delta t) = \exp(-\ln 2\,\Delta t^2/\tau^2)$ (Eq.~\ref{eq:g}).
+\item A 328-nm pair has two, with $\omega_a + \omega_b = \omega_e$ exactly (Eq.~\ref{eq:pairs}). $A^{22}$ gains
+$e^{i\omega_a\Delta t}e^{i\omega_b\Delta t} = e^{i\omega_e\Delta t}$, and its size does not change.
+\end{itemize}
+\begin{equation}A(\Delta t) = A^{11} + 2A^{12}_0\,g(\Delta t)\,e^{i\omega_2\Delta t} + A^{22}\,e^{i\omega_e\Delta t} .\end{equation}
+
+\textbf{Step 2.} $|A|^2$ contains the three cross terms of this sum. Each oscillates with the difference of the
+phases of its two terms, with period $2\pi$ over that difference:
+\begin{center}\small\begin{tabular}{llll}\toprule
+Pairs that interfere & Phase difference & Period & From the computed phases\\\midrule
+350-nm and 375-nm & $\omega_2\Delta t$ & $2\pi/\omega_2 = \lambda_2/c = 2.19$ fs & 2.19 fs\\
+350-nm and 328-nm & $(\omega_e - \omega_2)\Delta t = \omega_1\Delta t$ & $\lambda_1/c = 2.50$ fs & 2.50 fs\\
+375-nm and 328-nm & $\omega_e\Delta t$ & $\lambda_e/c = 1.17$ fs & 1.17 fs\\\bottomrule\end{tabular}\end{center}
+The first two fall with $g(\Delta t)$. The third keeps its depth at all delays, since neither of its terms needs
+the two pulses to overlap.
+
+\textbf{Step 3, when there are no fringes.} The fringes need the phase between the two beams to be fixed from
+pulse to pulse. With two lasers that are not phase-locked the cross terms average to zero, and the signal of the
+350-nm pairs, Eq.~\ref{eq:overlap}, remains. The fluorescence probes are also chosen against two-photon excitation by
+$\lambda_1$ or $\lambda_2$ alone [LS03]. For both reasons the 2CE signal in the delay results is the 350-nm pairs,
+and the total with all pairs is shown beside it below 20 fs.
+
+\textbf{Step 4, the fringes in space.} Each term also carries the carriers of its beams along the axis. With
+facing lenses beam 1 has $e^{ik_1z}$ and beam 2 has $e^{-ik_2z}$:
+\begin{equation}A^{11} \propto e^{2ik_1z},\qquad 2A^{12} \propto e^{i(k_1-k_2)z},\qquad A^{22} \propto e^{-2ik_2z} .\end{equation}
+The phase difference between $A^{11}$ and $2A^{12}$ is $(2k_1 - k_1 + k_2)z = (k_1+k_2)z$, and between $2A^{12}$
+and $A^{22}$ it is also $(k_1+k_2)z$. The period along $z$ is
+\begin{equation}\frac{2\pi}{k_1 + k_2} = \frac{1}{1/\lambda_1 + 1/\lambda_2} = \lambda_e = 350\ \text{nm (in air).}\end{equation}
+
+\textbf{Step 5, why the depth depends on NA.} A delay changes the phases of Step 1, which moves the fringes of
+Step 4 along $z$. The peak along the axis is the largest value on the line, so it follows a fringe as it moves.
+Where the focus is many fringes long, some fringe is always near the top of the envelope and the peak changes
+little. Where the focus is about one fringe long (high NA), the peak rises and falls with the fringe. With
+collinear lenses the three terms have the same carrier, $e^{i(k_a+k_b)z}$ with $k_a + k_b = n\omega_e/c$ for all of
+them, so there are no fringes in space and the depth against the delay is the same at all NAs.
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+Largest gap, all pairs minus 350-nm pairs & NA 0.1 & 0.3 & 0.5 & 0.7\\\midrule
+collinear, 5 fs / 10 fs / 20 fs & \multicolumn{4}{c}{0.917 / 0.710 / 0.036 at all NAs}\\
+crossed, along $x$, 5 fs & 0.062 & 0.197 & 0.416 & 0.652\\
+facing, along $z$, 5 fs & 0.014 & 0.013 & 0.033 & 0.070\\\bottomrule\end{tabular}\end{center}
+With crossed lenses the fringes run along the diagonal of the $x$--$z$ plane. Over the whole plane the gap at
+5 fs is 0.278 at NA 0.5 and 0.478 at NA 0.7, about two thirds of the values along $x$.
+
+\section{The longitudinal component of the vector field}
+This section derives the factor of $E_z$, which the two-beam code had with an extra $i$ until 2026-11-10.
+
+\textbf{Step 1.} For input polarized along $x$, the ray at polar angle $\vartheta$ and azimuth $\varphi$ carries
+the unit field (Section 5 of \texttt{two\_color\_plan.pdf})
+\begin{equation}\hat{\mathbf e} = \big(\tfrac12(1+\cos\vartheta) - \tfrac12(1-\cos\vartheta)\cos 2\varphi,\;
+-\tfrac12(1-\cos\vartheta)\sin 2\varphi,\; -\sin\vartheta\cos\varphi\big) .\end{equation}
+
+\textbf{Step 2.} The focal field at the point with cylindrical coordinates $(r, \psi, z)$ is the sum over rays,
+\begin{equation}\mathbf{E} = C\int_0^\alpha\!\!\int_0^{2\pi}\hat{\mathbf e}\;\sqrt{\cos\vartheta}\,\sin\vartheta\;
+e^{ikz\cos\vartheta}\,e^{ikr\sin\vartheta\cos(\varphi-\psi)}\,d\varphi\,d\vartheta ,\end{equation}
+with one constant $C$ for the three components.
+
+\textbf{Step 3.} The integral over $\varphi$ uses
+$\int_0^{2\pi}\cos(m\varphi)\,e^{iv\cos(\varphi-\psi)}d\varphi = 2\pi\,i^m J_m(v)\cos(m\psi)$, with
+$v = kr\sin\vartheta$:
+\begin{align}m = 0:&\quad 2\pi J_0(v)\\ m = 1:&\quad 2\pi\,i\,J_1(v)\cos\psi\\
+m = 2:&\quad 2\pi\,i^2J_2(v)\cos 2\psi = -2\pi J_2(v)\cos 2\psi .\end{align}
+
+\textbf{Step 4, the $x$ component.} The term $\tfrac12(1+\cos\vartheta)$ has $m = 0$ and the term
+$-\tfrac12(1-\cos\vartheta)\cos 2\varphi$ has $m = 2$, whose $-1$ from $i^2$ cancels its own minus sign:
+\begin{equation}E_x = C\pi\left[I_0 + I_2\cos 2\psi\right],\end{equation}
+with $I_0$, $I_1$, $I_2$ the integrals over $\vartheta$ of [Rom03] Eqs.~5--7.
+
+\textbf{Step 5, the $z$ component.} The term $-\sin\vartheta\cos\varphi$ has $m = 1$:
+\begin{equation}E_z = C\,(-1)\,(2\pi i)\,I_1\cos\psi = -2i\,C\pi\,I_1\cos\psi .\end{equation}
+
+\textbf{Step 6.} Richards \& Wolf fix the constant so that $E_x = -i(I_0 + I_2\cos 2\psi)$, that is $C\pi = -i$.
+The same constant multiplies $E_z$:
+\begin{equation}E_z = -2i\,(-i)\,I_1\cos\psi = 2i^2\,I_1\cos\psi = -2\,I_1\cos\psi .\end{equation}
+This is Eq.~4 of [Rom03]. The factor is real: $E_z$ is a quarter period out of phase with $E_x$. Writing
+$-2i$ here uses the $i$ of Step 5 and leaves out the $-i$ of the constant.
+
+\textbf{Step 7, a check with Gauss's law.} In a region without charges $\nabla\cdot\mathbf{E} = 0$. Near the axis
+at low NA, $E_x \approx -iI_0$, and $E_y$ is of second order in the angle, so
+$\partial E_z/\partial z = -\partial E_x/\partial x$. With $E_z \approx ikE_z$ under $\partial/\partial z$,
+\begin{equation}ik\,E_z = i\,\frac{\partial I_0}{\partial x}\quad\Longrightarrow\quad
+E_z = \frac{1}{k}\frac{\partial I_0}{\partial x} ,\end{equation}
+which is real where $I_0$ is real, as in the focal plane. Numerically, at NA 0.9,
+$|\nabla\cdot\mathbf{E}| = 1.9\times10^{-8}\,k|E|$ with the factor $-2$ and $0.77\,k|E|$ with $-2i$.
+
+\textbf{Step 8, what the factor changes.} $|E_z|^2$ is the same with either factor, so the intensity of one beam
+and the 2CE product $I_1I_2$ do not change, and neither does the Romallosa replication, which uses $|I_1|^2$.
+The factor matters where $E_z$ of one beam is added to another component before squaring. That happens in 2PE
+with crossed lenses when the polarization lies in the plane of the two beams: the $E_z$ of beam 2 points along
+the lab $x$ axis and adds to the $E_x$ of beam 1. With the polarization perpendicular to that plane, which the
+pulse and delay runs use, $\cos\psi = 0$ on the points computed and $E_z = 0$.
+
+\section*{References}
+\small
+[CS00] M. O. Cambaliza and C. Saloma, Opt.\ Commun.\ 184, 25--35 (2000).\\
+\relax[LS02] M. Lim and C. Saloma, Opt.\ Commun.\ 207, 121--130 (2002).\\
+\relax[LS03] M. Lim and C. Saloma, Appl.\ Opt.\ 42(17), 3398--3406 (2003).\\
+\relax[Rom03] K. M. Romallosa, J. Bantang and C. Saloma, Phys.\ Rev.\ A 68, 033812 (2003).\\
+B. Richards and E. Wolf, Proc.\ R.\ Soc.\ London Ser.\ A 253, 358--379 (1959).
+\end{document}

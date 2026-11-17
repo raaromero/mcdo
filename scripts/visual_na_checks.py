@@ -6,6 +6,7 @@ Visual verification plots for Phase 2 (one focused figure per question).
   check3_fwhm_thresholds.png   — where does vector theory become necessary?
   check4_axial.png             — axial behavior vs NA (zeros migrate & fill)
   check5_apodization.png       — pupil A(θ) and the resulting focal spots
+  PANELS=1: check2_na0.3_na0.9.png — the profiles of check 2 at NA 0.3 and 0.9 only, two panels for a slide
 """
 
 import sys, os
@@ -63,6 +64,33 @@ def fwhm_x(x, y):
 
 
 airy = airy_intensity(v_arr)
+
+if os.environ.get('PANELS'):
+    # PANELS=1: the profiles of check 2 at one low and one high NA, the vector field along and across the polarization
+    # beside the scalar Debye field, two panels for a slide (fonts 32, 28, 24; about 11 × 10 in per panel; 600 DPI).
+    # Writes check2_na0.3_na0.9.png and nothing else.
+    matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 28, 'xtick.labelsize': 24,
+                                'ytick.labelsize': 24, 'legend.fontsize': 24})
+    fig, axes = plt.subplots(1, 2, figsize=(22, 10), sharey=True)
+    fig.subplots_adjust(wspace=0.08)
+    for ax, xna in zip(axes, (0.3, 0.9)):
+        cfg = cfg_at(xna)
+        I_y, I_x = rw_profiles(cfg)
+        I_s = scalar_profile(cfg)
+        ax.plot(v_arr, I_s, '-', color='0.6', lw=6, label='scalar Debye')
+        ax.plot(v_arr, I_x, '-', color='#d62728', lw=2.6, label='vector, along the polarization (x)')
+        ax.plot(v_arr, I_y, '--', color='#1f77b4', lw=2.6, label='vector, across the polarization (y)')
+        ax.set_yscale('log'); ax.set_ylim(1e-6, 1.5); ax.set_xlim(0, 10)
+        ax.set_xlabel('Optical radius v = k r sin α'); ax.set_title(f'NA {xna}, n = {N_MED:g}')
+        print(f'NA {xna}: FWHM in v, vector x {fwhm_x(v_arr, I_x):.3f}, vector y {fwhm_x(v_arr, I_y):.3f}, '
+              f'scalar {fwhm_x(v_arr, I_s):.3f}; x over scalar {fwhm_x(v_arr, I_x) / fwhm_x(v_arr, I_s):.4f}; '
+              f'deepest point of the first ring, vector x {I_x[(v_arr > 3) & (v_arr < 4.5)].min():.2e}, '
+              f'scalar {I_s[(v_arr > 3) & (v_arr < 4.5)].min():.2e}')
+    axes[0].set_ylabel('Intensity, normalized to the peak')
+    axes[0].legend(loc='lower left', frameon=False)
+    fig.savefig(os.path.join(OUT, 'check2_na0.3_na0.9.png'), dpi=600, bbox_inches='tight'); plt.close(fig)
+    print('Saved ->', os.path.join(OUT, 'check2_na0.3_na0.9.png'))
+    sys.exit()
 
 # ── check 1: low-NA convergence ────────────────────────────────────────────
 cfg = cfg_at(0.1)

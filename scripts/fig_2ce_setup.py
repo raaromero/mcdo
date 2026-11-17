@@ -48,18 +48,22 @@ def beam(ax, theta, focus, color, lens_label, beam_label, draw_lens=True):
     e1, e2 = lens_c + A * p, lens_c - A * p
     cone = Polygon([e1, (fx, fz), e2], closed=True, fc=color, alpha=0.18, lw=0)
     ax.add_patch(cone)
-    for e in (e1, e2):
+    for e in (e1, e2):                                   # marginal rays: lens rim -> focus, arrow halfway
         ax.plot([e[0], fx], [e[1], fz], color=color, lw=2.4)
-    # collimated input beam above the lens
-    for s in (1, -1):
-        a = lens_c + s * 0.8 * A * p
-        ax.plot([a[0] - 1.3 * d[0], a[0]], [a[1] - 1.3 * d[1], a[1]], color=color, lw=2.4)
+        m = e + 0.55 * (np.array([fx, fz]) - e)
+        ax.add_patch(FancyArrowPatch(e + 0.45 * (np.array([fx, fz]) - e), m, arrowstyle='-|>',
+                                     mutation_scale=22, color=color, lw=0))
+    # collimated input beam: its edges meet the lens rim
+    for e in (e1, e2):
+        ax.plot([e[0] - 1.3 * d[0], e[0]], [e[1] - 1.3 * d[1], e[1]], color=color, lw=2.4)
     ax.add_patch(FancyArrowPatch(lens_c - 1.3 * d, lens_c - 0.5 * d, arrowstyle='-|>',
                                  mutation_scale=28, color=color, lw=2.4))
-    if draw_lens:
-        ang = np.degrees(np.arctan2(p[1], p[0]))
-        ax.add_patch(Ellipse(lens_c, 2.3 * A, 0.32, angle=ang, fc='white', ec='k', lw=2.2,
-                             zorder=4))
+    if draw_lens:                                        # biconvex lens: two curved faces meeting at the rim
+        t = np.linspace(-1, 1, 81)
+        h = 0.2 * (1 - t ** 2)
+        front = [lens_c + A * ti * p + hi * d for ti, hi in zip(t, h)]
+        back = [lens_c + A * ti * p - hi * d for ti, hi in zip(t[::-1], h[::-1])]
+        ax.add_patch(Polygon(front + back, closed=True, fc='white', ec='k', lw=2.2, zorder=4))
         lab = lens_c - 1.55 * A * p
         ax.text(lab[0], lab[1], lens_label, ha='center', va='center', fontsize=28, zorder=5)
     if beam_label:

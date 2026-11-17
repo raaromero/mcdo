@@ -1,0 +1,315 @@
+[
+ {
+  "id": "s05a",
+  "h": "mode=live"
+ },
+ {
+  "id": "s05b",
+  "h": "mode=live&th=0"
+ },
+ {
+  "id": "s05c",
+  "h": "mode=live&th=180"
+ },
+ {
+  "id": "s05d",
+  "h": "mode=live&map=contour"
+ },
+ {
+  "id": "s07a",
+  "h": "mode=live&th=45&map=contour"
+ },
+ {
+  "id": "s07b",
+  "h": "mode=live&th=45&map=contour&rot=uv"
+ },
+ {
+  "id": "s08a",
+  "h": "mode=theta&wdir=z&pk=90"
+ },
+ {
+  "id": "s08b",
+  "h": "mode=theta&wdir=z&pk=90&rot=uv"
+ },
+ {
+  "id": "s09a",
+  "h": "mode=theta&wdir=x&pk=0"
+ },
+ {
+  "id": "s09b",
+  "h": "mode=theta&wdir=x&pk=90"
+ },
+ {
+  "id": "s09c",
+  "h": "mode=theta&wdir=x&pk=180"
+ },
+ {
+  "id": "s09d",
+  "h": "mode=theta&wdir=x&pk=90",
+  "scroll": ".paper"
+ },
+ {
+  "id": "s11a",
+  "h": "mode=theta&wdir=z&pk=180"
+ },
+ {
+  "id": "s11b",
+  "h": "mode=theta&wdir=z&pk=0"
+ },
+ {
+  "id": "s11c",
+  "h": "mode=theta&wdir=xz&pk=90&map=contour"
+ },
+ {
+  "id": "s11d",
+  "h": "mode=theta&wdir=x&pk=90&msc=energy"
+ },
+ {
+  "id": "s11e",
+  "h": "mode=live&cz=0.5"
+ },
+ {
+  "id": "s13a",
+  "h": "mode=live&dl=0"
+ },
+ {
+  "id": "s13b",
+  "h": "mode=live&dl=94"
+ },
+ {
+  "id": "s14a",
+  "h": "mode=dl&wdir=x&pk=10"
+ },
+ {
+  "id": "s14b",
+  "h": "mode=dl&wdir=x&pk=94"
+ },
+ {
+  "id": "s15a",
+  "h": "mode=dl&wdir=z&pk=94"
+ },
+ {
+  "id": "s16a",
+  "h": "mode=dl&wdir=xz&pk=94"
+ },
+ {
+  "id": "s16b",
+  "h": "mode=dl&wdir=xz&pk=94&wth=0"
+ },
+ {
+  "id": "s16c",
+  "h": "mode=dl&wdir=xz&pk=0&wth=0"
+ },
+ {
+  "id": "s19a",
+  "h": "mode=theta&weps=0.99&wdir=x&pk=90"
+ },
+ {
+  "id": "s19b",
+  "h": "mode=theta&weps=0.99&wdir=x&pk=0"
+ },
+ {
+  "id": "s21a",
+  "h": "mode=theta&weps=0.99&wdir=z&pk=90"
+ },
+ {
+  "id": "s21b",
+  "h": "mode=theta&weps=0.99&wdir=z&pk=0"
+ },
+ {
+  "id": "s23a",
+  "h": "mode=theta&weps=0.99&wdir=z&pk=90&pe=1"
+ },
+ {
+  "id": "s23b",
+  "h": "mode=live&eps=0.99&map=contour"
+ },
+ {
+  "id": "s23c",
+  "h": "mode=eps&wdir=z&pk=0.99"
+ },
+ {
+  "id": "s23d",
+  "h": "mode=eps&wdir=x&pk=0.99"
+ },
+ {
+  "id": "s25a",
+  "h": "mode=na&metric=cmp&cmp=r1&na=0.5"
+ },
+ {
+  "id": "s26a",
+  "h": "mode=na&metric=cmp&cmp=r2&na=0.5&how=1"
+ },
+ {
+  "id": "s27a",
+  "h": "mode=na&metric=cmp&cmp=a4&na=0.5"
+ },
+ {
+  "id": "s30a",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi&axis=z&na=0.5"
+ },
+ {
+  "id": "s30b",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi&axis=z&na=0.9"
+ },
+ {
+  "id": "s30c",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi&axis=z&na=0.9&map=contour"
+ },
+ {
+  "id": "s30d",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi&axis=z&na=0.9&msc=energy"
+ },
+ {
+  "id": "s31a",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=z&na=0.7"
+ },
+ {
+  "id": "s31b",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=x&na=0.7"
+ },
+ {
+  "id": "s32a",
+  "h": "mode=na&metric=width&sig=2PE&ths=0&axis=z&na=0.9"
+ },
+ {
+  "id": "s33a",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi2&axis=z&na=0.7"
+ },
+ {
+  "id": "s34a",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi&axis=z&na=0.9&map=contour"
+ },
+ {
+  "id": "s35a",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9"
+ },
+ {
+  "id": "s35b",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9&med=water"
+ },
+ {
+  "id": "s35c",
+  "h": "mode=live&lna=0.9&th=180&map=contour"
+ },
+ {
+  "id": "s37a",
+  "h": "mode=na&metric=F&sig=2CE&ths=0&axis=z&na=0.9&how=1"
+ },
+ {
+  "id": "s38a",
+  "h": "mode=na&metric=nrmse&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9"
+ },
+ {
+  "id": "s42a",
+  "h": "mode=na&metric=F&sig=2CE&ths=0.pi&axis=z&na=0.9"
+ },
+ {
+  "id": "s42b",
+  "h": "mode=na&metric=C&sig=2CE&ths=0.pi&axis=z&na=0.9&how=1"
+ },
+ {
+  "id": "s42c",
+  "h": "mode=na&metric=Q&sig=2CE&ths=0.pi&axis=z&na=0.9&how=1"
+ },
+ {
+  "id": "s42d",
+  "h": "mode=na&metric=C&sig=2CE&ths=0.pi&axis=z&na=0.9&msc=energy&map=contour"
+ },
+ {
+  "id": "s43a",
+  "h": "mode=na&metric=F&sig=2CE&ths=pi2&axis=z&na=0.7"
+ },
+ {
+  "id": "s46a",
+  "h": "mode=na&metric=F&sig=2PE&ths=pi&axis=z&na=0.9"
+ },
+ {
+  "id": "s47a",
+  "h": "mode=na&metric=lobe&sig=2PE&ths=pi&axis=z&na=0.9&how=1"
+ },
+ {
+  "id": "s47b",
+  "h": "mode=na&metric=lobeh&sig=2PE&ths=pi2&axis=x&na=0.7&how=1"
+ },
+ {
+  "id": "s48a",
+  "h": "mode=na&metric=cmp&cmp=r2&na=0.7"
+ },
+ {
+  "id": "s49a",
+  "h": "mode=na&metric=cmp&cmp=r3&na=0.7"
+ },
+ {
+  "id": "s50a",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&pupil=ann&na=0.9"
+ },
+ {
+  "id": "s51a",
+  "h": "mode=na&metric=cmp&cmp=a2&na=0.7"
+ },
+ {
+  "id": "s52a",
+  "h": "mode=na&metric=cmp&cmp=a4&na=0.7"
+ },
+ {
+  "id": "s53a",
+  "h": "mode=dl&wdir=xz&pk=94",
+  "scroll": ".wide"
+ },
+ {
+  "id": "s59a",
+  "h": "mode=pulses&wdir=z&pk=10"
+ },
+ {
+  "id": "s59b",
+  "h": "mode=pulses&wdir=z&pk=10",
+  "scroll": ".stack2"
+ },
+ {
+  "id": "s60a",
+  "h": "mode=pulses&wdir=z&pk=10&map=contour",
+  "scroll": ".stack2"
+ },
+ {
+  "id": "s61a",
+  "h": "mode=pulses&wdir=z&pk=10&pplot=ratio"
+ },
+ {
+  "id": "s62a",
+  "h": "mode=pulses&wdir=z&pk=10",
+  "scroll": ".wide"
+ },
+ {
+  "id": "s63a",
+  "h": "mode=pulses&wdir=z&pk=10&wna=0.9"
+ },
+ {
+  "id": "s66a",
+  "h": "mode=pulses&wdir=z&pk=10&wna=1.2&wn=1.33"
+ },
+ {
+  "id": "s68a",
+  "h": "mode=pulses&wdir=z&pk=10&pth=90"
+ },
+ {
+  "id": "s68b",
+  "h": "mode=pulses&wdir=x&pk=10&pth=0"
+ },
+ {
+  "id": "s68c",
+  "h": "mode=live&th=180&tau=10&map=contour"
+ },
+ {
+  "id": "s71a",
+  "h": "mode=scatter&h=100"
+ },
+ {
+  "id": "s73a",
+  "h": "mode=scatter&h=100&one=1"
+ },
+ {
+  "id": "s74a",
+  "h": "mode=scatter&h=20"
+ }
+]

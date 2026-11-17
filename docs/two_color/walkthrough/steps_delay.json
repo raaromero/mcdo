@@ -1,0 +1,91 @@
+[
+ {
+  "id": "d03",
+  "h": "mode=psum&xth=0&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "d04",
+  "h": "mode=psum&xth=180&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "d05a",
+  "h": "mode=psum&xth=180&xtau=100&xnas=10.20.30.50.70.90&hl=delay-facing-lowna",
+  "wait": 6000,
+  "card": "With facing lenses at low NA, the",
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "d05b",
+  "h": "mode=psum&xth=180&xtau=100&xnas=50.70.90&hl=delay-facing-highna",
+  "wait": 6000,
+  "card": "With facing lenses at NA 0.5 and",
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "d06a",
+  "h": "mode=psum&xth=180&xtau=100&hl=delay-pupils",
+  "wait": 6000,
+  "card": "With facing lenses, pupils with a longer",
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "d06b",
+  "h": "mode=psum&xth=180&xtau=30",
+  "wait": 6000,
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "d07a",
+  "h": "mode=psum&xth=0&xtau=5&xna=0.5&xpol=s&hl=delay-fringes",
+  "wait": 6000,
+  "card": "Below 20 fs, phase-locked pulses with all",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d07b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d08",
+  "h": "mode=psum&xth=0&xtau=10&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d09",
+  "h": "mode=psum&xth=0&xtau=20&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d10a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.3",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d10b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.7",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d11a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=p&hl=delay-polarization",
+  "wait": 6000,
+  "card": "With crossed lenses and the polarization in",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "d11b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=s",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ }
+]

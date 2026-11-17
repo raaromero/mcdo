@@ -28,10 +28,11 @@ import matplotlib.pyplot as plt
 
 from mcdo.style import apply as _apply_style
 from mcdo.scatter import hg_sample, rotate
+from mcdo.cutinset import cut_inset
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plot
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
 G, HDS, LREF, MAXS = 0.9, 8.0, 0.700, 40
@@ -112,6 +113,13 @@ def run():
     return res
 
 
+def background_band(ax):
+    """Shade where the out-of-focus background is measured: the mean of the normalized fluorescence over |z| > 10 µm."""
+    for a, b in ((-20, -10), (10, 20)):
+        ax.axvspan(a, b, color='#d62728', alpha=0.07, lw=0, zorder=0)
+    ax.text(-15, 0.97, 'background:\nmean over\n|z| > 10 µm', ha='center', va='top', fontsize=20, color='#a61b1b')
+
+
 def ref(lam):
     """Unscattered axial excitation of a Gaussian beam, I ∝ w₀²/w²(z)."""
     return (waist(lam) / w_of_z(lam, ZP)) ** 2
@@ -138,10 +146,34 @@ if __name__ == '__main__':
         k = max(1, round(0.5 / DZ))                                  # markers 0.5 µm apart
         ax.plot(z[::k], nz(F)[::k], 'o', mfc='none', mec='#1f77b4', mew=2, ms=9, label='Fluorescence')
         ax.set_xlim(-20, 20); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-20, 21, 5))
-        ax.set_xlabel('z (µm)'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
+        ax.set_xlabel('z (µm), at x = 0'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
+        background_band(ax)
+        cut_inset(ax, 'z', sig=title, theta=np.pi, profile=True)
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125 * BOX[key] - 0.08), ncol=2, frameon=False)
         fig.savefig(os.path.join(PAN, f'{key}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print('Saved ->', key)
+    # noise: one run of N_PH photons against the mean of the N_TR runs (the number of photons sets the noise)
+    if TAG == 'h100':
+        fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.4), sharey=True)
+        for ax, sig, f in zip(axes, ('2PE', '2CE'), (lambda a, b: (a + b) ** 2, lambda a, b: a * b)):
+            a, b = (('2p_a', '2p_b') if sig == '2PE' else ('l1', 'l2'))
+            runs = np.array([f(R[a][t], R[b][t][::-1]) for t in range(N_TR)])
+            mean = f(R[a].mean(0), R[b].mean(0)[::-1])
+            top = mean.max()
+            ax.fill_between(z, (runs.mean(0) - runs.std(0)) / top, (runs.mean(0) + runs.std(0)) / top, color='#1f77b4',
+                            alpha=0.3, lw=0, label=f'Mean ± SD of {N_TR} runs')
+            ax.plot(z, mean / top, '-', color='k', lw=3, label=f'Mean of {N_TR} runs (10⁷ photons)')
+            ax.plot(z, runs[0] / top, 'o', mfc='none', mec='#d62728', mew=2, ms=7, label='One run (10⁶ photons)')
+            ax.set_xlim(-20, 20); ax.set_ylim(0, 1.15); ax.set_xticks(np.arange(-20, 21, 5))
+            ax.set_xlabel('z (µm), at x = 0'); ax.set_title(f'{sig}, θ = π, h = {H:g} µm')
+            background_band(ax)
+            cut_inset(ax, 'z', sig=sig, theta=np.pi, profile=True)
+        axes[0].set_ylabel('Fluorescence')
+        hd, lb = axes[0].get_legend_handles_labels()
+        fig.legend(hd, lb, loc='upper center', ncol=3, bbox_to_anchor=(0.5, 0.0), frameon=False)
+        plt.tight_layout()
+        fig.savefig(os.path.join(PAN, 'fig8_noise.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
+        print('Saved -> fig8_noise')
     sd = lambda k: R[k].std(0)
     i0 = np.argmin(np.abs(z))
     for k in ('2p_a', 'l1', 'l2'):

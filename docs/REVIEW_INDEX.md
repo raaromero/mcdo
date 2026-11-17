@@ -16,6 +16,7 @@ Everything produced, in review order. Each row: what it is, where, what to check
 | 4 | `docs/review/04_axicon/review_04.pdf` | focal segment; Durnin J₀² ⚠ (SPA-limited, not vector) |
 | 5 | `docs/review/05_pulsed_pupils/review_05.pdf` | DOF pulse-invariant; ring contrast erodes ⚠ (non-monotonic) |
 | 6 | `docs/review/06_monte_carlo/review_06.pdf` | MC clear-limit gate + launcher initialization proof (1st-principles) + sampling/N + voxel + vector + scatter-kernel; opens with the pipeline schematic |
+| 7 | `docs/review/07_two_color_pulses/review_07.pdf` | 2CE with pulses and a delay: equations of the four papers against the code, derivations, checks; E_z factor corrected |
 
 **Overview schematic** of every model since Romallosa (pupil → focusing cone →
 focal signature + the shared pipeline): `output/00_overview/models_schematic.png`

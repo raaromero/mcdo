@@ -17,6 +17,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mcdo.cutinset import cut_inset, fig_legend, place_legend
 import matplotlib.ticker
 from mcdo.twobeam import beam_field
 
@@ -24,7 +25,7 @@ D = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cam
 OUT = os.path.join(D, 'evidence'); os.makedirs(OUT, exist_ok=True)
 NA, L1, L2, LP, LE = 0.5, 0.750, 0.656, 0.700, 0.350
 P2 = np.pi / 2
-plt.rcParams.update({'font.size': 26, 'axes.titlesize': 28, 'axes.labelsize': 28, 'legend.fontsize': 24,
+plt.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'legend.fontsize': 28, 'xtick.labelsize': 28, 'ytick.labelsize': 28,
                      'lines.linewidth': 3.5, 'axes.grid': True, 'grid.alpha': 0.35})
 
 
@@ -58,11 +59,11 @@ def save(fig, name):
     print('Saved ->', name)
 
 
-def one(name, s, curves, xlabel, title, xlim, panel=False):
+def one(name, s, curves, xlabel, title, xlim, panel=False, psf=None):
     """Curves on one axes, legend outside; returns the FWHM of each. Full slide width (legend at the right), or
     panel=True for the slot beside a published panel (no title, legend beneath, larger text)."""
     with plt.rc_context({'font.size': 30, 'axes.labelsize': 30, 'legend.fontsize': 27} if panel else {}):
-        fig, ax = plt.subplots(figsize=(10.5, 5.6) if panel else (18.5, 6.6))
+        fig, ax = plt.subplots(figsize=(10.5, 5.6) if panel else (18.5, 8.0))
         out = []
         for y, col, ls, lab in curves:
             w = fwhm(s, y)
@@ -70,11 +71,8 @@ def one(name, s, curves, xlabel, title, xlim, panel=False):
             ax.plot(s, y, ls, color=col, label=f'{lab}: {w:.3f} µm' if panel else f'{lab}: FWHM {w:.3f} µm')
         ax.set_xlim(*xlim); ax.set_ylim(0, 1.02); ax.set_yticks(np.arange(0, 1.01, 0.2 if panel else 0.1))
         ax.set_xlabel(xlabel); ax.set_ylabel('Intensity')
-        if panel:
-            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
-        else:
-            ax.set_title(title)
-            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.17), ncol=2, frameon=False)
+        place_legend(ax)                                      # the slide title says what is shown                                      # inside where it covers no curve, else one row above
+        cut_inset(ax, xlabel[0], **(psf or {'sig': '2PE'}))
         save(fig, name)
     return out
 
@@ -83,16 +81,38 @@ LINES = []
 x = np.linspace(-1, 1, 8001); z = np.linspace(-5, 5, 20001)
 X0, Z0 = x, 0 * x
 w0, w2 = one('ratio_fig2a.png', x, [(f2pe(X0, Z0, 0.0), 'k', '-', '2PE, θ = 0'), (f2pe(X0, Z0, P2), '#d62728', '-', '2PE, θ = π/2')],
-             'x (µm)', '2PE across the axis, circular pupils (Fig. 2a)', (-1, 1))
+             'x (µm), at z = 0', '2PE across the axis, circular pupils (Fig. 2a)', (-1, 1))
 LINES.append(f'p. 28, 0.67: {w2:.3f} / {w0:.3f} = {w2 / w0:.3f}')
 wp, wc = one('ratio_158.png', x, [(f2pe(X0, Z0, P2), '#d62728', '-', '2PE, θ = π/2 (Fig. 2a)'),
                                   (f2ce(X0, Z0, P2), '#1f77b4', '-', '2CE, θ = π/2 (Fig. 2b)')],
-             'x (µm)', 'Across the axis, θ = π/2, circular pupils', (-1, 1))
+             'x (µm), at z = 0', 'Across the axis, θ = π/2, circular pupils', (-1, 1))
 LINES.append(f'p. 29, 1.58: {wc:.3f} / {wp:.3f} = {wc / wp:.3f}')
 wp, wa = one('ratio_20pct.png', z, [(f2pe(0 * z, z, P2), '#d62728', '-', '2PE, circular (Fig. 3a)'),
                                     (f2ce(0 * z, z, P2, eps=0.99), '#1f77b4', '-', '2CE, annular (Fig. 7b)')],
-             'z (µm)', 'Along the axis, θ = π/2', (-2, 2))
+             'z (µm), at x = 0', 'Along the axis, θ = π/2', (-2, 2))
 LINES.append(f'p. 32, 20% longer: {wa:.3f} / {wp:.3f} = {wa / wp:.3f}')
+
+
+def width_at(s, y, level):
+    """Full width of the central peak at a fraction level of its value at s = 0."""
+    i0 = int(np.argmin(np.abs(s)))
+    y = y / y[i0]
+    r = i0
+    while r < len(y) - 1 and y[r] >= level:
+        r += 1
+    l = i0
+    while l > 0 and y[l] >= level:
+        l -= 1
+    return np.interp(level, [y[r], y[r - 1]], [s[r], s[r - 1]]) - np.interp(level, [y[l], y[l + 1]], [s[l], s[l + 1]])
+
+
+E2 = np.exp(-2)
+for tag, sa, ya, sb, yb in (('p. 28, 0.67 (2PE π/2 over 0)', x, f2pe(X0, Z0, P2), x, f2pe(X0, Z0, 0.0)),
+                            ('p. 29, 1.58 (2CE over 2PE, π/2)', x, f2ce(X0, Z0, P2), x, f2pe(X0, Z0, P2)),
+                            ('p. 32, 20% (annular 2CE over circular 2PE DOF, π/2)', z, f2ce(0 * z, z, P2, eps=0.99), z,
+                             f2pe(0 * z, z, P2))):
+    wa, wb = width_at(sa, ya, E2), width_at(sb, yb, E2)
+    LINES.append(f'{tag}, 1/e^2 widths: {wa:.3f} / {wb:.3f} = {wa / wb:.3f}')
 
 
 def pair(dl):
@@ -114,7 +134,8 @@ with plt.rc_context({'font.size': 32, 'axes.labelsize': 32, 'legend.fontsize': 3
     ax.plot(L, 4.81e-4 * L + 0.7112, '--', color='#ff7f0e', label='Caption fit')
     ax.set_xlim(0, 100); ax.set_ylim(0.65, 0.775)
     ax.set_xlabel('Δλ (nm)'); ax.set_ylabel('Width (µm)')
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, frameon=False, columnspacing=1.0, handletextpad=0.4)
+    place_legend(ax)
+    cut_inset(ax, 'xz')
     save(fig, 'fig5_caption.png')
 pf, pd = np.polyfit(dn, fw, 1), np.polyfit(dn, dof, 1)
 LINES.append(f'Fig. 5 current work: FWHM {pf[0]:.3e} dl + {pf[1]:.4f}; DOF {pd[0]:.3e} dl + {pd[1]:.4f}')
@@ -125,30 +146,31 @@ BOX3B = 486 / 294
 yg, yo = f2ce(0 * z, z, P2), f2ce(0 * z, z, P2, rotation='optical')
 wg, wo = fwhm(z, yg), fwhm(z, yo)
 with plt.rc_context({'font.size': 30, 'axes.labelsize': 30, 'legend.fontsize': 28, 'axes.grid': False}):
-    fig, ax = plt.subplots(figsize=(9, 9 / BOX3B + 2.5))
+    fig, ax = plt.subplots(figsize=(9, 9 / BOX3B + 1.2))
     ax.set_box_aspect(1 / BOX3B)
     y0 = f2ce(0 * z, z, 0.0)                                  # θ = 0 and π: both rotations give this curve
     ax.plot(z, y0, '-', color='k', label='θ = 0, π')
-    ax.plot(z, yg, '-', color='#1f77b4', label='θ = π/2, rotated in (x, z)')
-    ax.plot(z, yo, '--', color='#d62728', label='θ = π/2, rotated in (u, v)')
+    ax.plot(z, yg, '-', color='#1f77b4', label='θ = π/2, (x, z)')
+    ax.plot(z, yo, '--', color='#d62728', label='θ = π/2, (u, v)')
     ax.set_xlim(-5, 5); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-5, 5.1, 1)); ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%g'))
-    ax.set_xlabel('z (µm)'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False)
+    ax.set_xlabel('z (µm), at x = 0'); ax.set_ylabel('Intensity'); ax.tick_params(axis='x', pad=12)
+    place_legend(ax)
+    cut_inset(ax, 'z')
     save(fig, 'rotation.png')
 LINES.append(f'rotation, 2CE z pi/2: (x, z) {wg:.3f}, (u, v) {wo:.3f}')
 
 # annular 2PE at θ = π/2: Eq. 6 against the excitation
-fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0))
-for ax, (s, X, Z, lab, xl) in zip(axes, ((x, X0, Z0, 'across (Fig. 6a)', 'x (µm)'),
-                                         (z, 0 * z, z, 'along (Fig. 7a)', 'z (µm)'))):
+fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0))
+for ax, (s, X, Z, lab, xl) in zip(axes, ((x, X0, Z0, 'across (Fig. 6a)', 'x (µm), at z = 0'),
+                                         (z, 0 * z, z, 'along (Fig. 7a)', 'z (µm), at x = 0'))):
     ax.plot(s, f2pe(X, Z, P2, eps=0.99, power=4), '-', color='#d62728', label='Eq. 6, |U₁ + U₂|⁴')
     ax.plot(s, f2pe(X, Z, P2, eps=0.99, power=2), '--', color='#ff7f0e', label='Excitation, |U₁ + U₂|²')
     ax.set_xlim(s[0], s[-1]); ax.set_ylim(0, 1.02); ax.set_xlabel(xl); ax.set_title(f'2PE, annular, θ = π/2, {lab}')
+    cut_inset(ax, xl[0], sig='2PE', eps=0.99)
 axes[0].set_ylabel('Intensity')
 h, l = axes[0].get_legend_handles_labels()
-fig.legend(h, l, loc='upper center', bbox_to_anchor=(0.5, 0.0), ncol=2, frameon=False)
-plt.tight_layout()
+fig_legend(fig, h, l)
 save(fig, 'eq6_excitation.png')
 open(os.path.join(OUT, 'numbers.txt'), 'w').write('\n'.join(LINES) + '\n')
 print('\n'.join(LINES))

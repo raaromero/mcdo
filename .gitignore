@@ -32,3 +32,13 @@ dashboard/cambaliza/node_modules/
 dashboard/cambaliza/dist/
 dashboard/cambaliza/public/data/
 dashboard/cambaliza/public/img/
+dashboard/cambaliza/public/video/
+
+# In a worktree, output is a link to the main checkout's output/ (generated, as above)
+/output
+
+# Guides paired with the dashboard: the screenshots are generated (docs/two_color/walkthrough/shoot.mjs) and some show
+# published figures; the two files below state the dashboard password in their subtitle and this repository is PUBLIC.
+docs/two_color/walkthrough/img*/
+docs/two_color/walkthrough/walkthrough.src.md
+docs/two_color/walkthrough/walkthrough.md

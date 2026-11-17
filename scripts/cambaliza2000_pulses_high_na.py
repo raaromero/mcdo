@@ -21,14 +21,15 @@ import matplotlib
 import matplotlib.ticker
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mcdo.cutinset import cut_inset, fig_legend, place_legend
 
 from mcdo.style import apply as _apply_style
 from mcdo.twobeam import beam_field, two_photon, intensity
 from mcdo.pulsed2ce import _fields, C_UM_FS
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plots
 
 BASE = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000', 'pulses', 'high_na')
 POL = os.environ.get('POL', 'y')
@@ -132,7 +133,7 @@ def main():
 
     # ── DOF at θ = π against NA: pulsed over continuous, 2PE and 2CE, air and water ──
     STY = {20.0: ('#ff7f0e', 'τ = 20 fs'), 10.0: ('#d62728', 'τ = 10 fs')}
-    fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.7), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
     for ax, sig in zip(axes, ('2PE', '2CE')):
         for n, mk, tag in ((1.0, 'o', 'air'), (1.33, 's', 'water')):
             cw = sel(n, sig, 'z', np.pi, 0.0)
@@ -143,10 +144,10 @@ def main():
                         lw=3, ms=10, label=f'{lab}, {tag}')
         ax.axhline(1, color='k', lw=2, ls=':')
         ax.set_xlabel('NA'); ax.set_title(f'{sig}, DOF at θ = π, pulsed / continuous')
+        cut_inset(ax, 'z', sig=sig, theta=np.pi)
     axes[0].set_ylabel('DOF ratio')
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.1), frameon=False)
-    plt.tight_layout()
+    fig_legend(fig, h, l)
     fig.savefig(os.path.join(OUT, 'dof_pi.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
     print('Saved -> dof_pi.png')
 
@@ -215,14 +216,13 @@ def profiles():
                 if c == 0:
                     ax.set_ylabel('Intensity')
         h, l = axes[0, 0].get_legend_handles_labels()
-        fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-        plt.tight_layout()
+        fig_legend(fig, h, l)
         fig.savefig(os.path.join(BASE, f'axial_pi_{tag}.png'), dpi=300, bbox_inches='tight'); plt.close(fig)
         print(f'Saved -> axial_pi_{tag}.png')
         for na in nas:                                                                  # one NA per slide: 2PE | 2CE
             k0 = f'n{n:g}_na{na:g}_'
             zs = P[k0 + 'z']
-            fig, axes = plt.subplots(1, 2, figsize=(18.5, 6.0), sharey=True)
+            fig, axes = plt.subplots(1, 2, figsize=(18.5, 7.0), sharey=True)
             for ax, (sig, lab, keys) in zip(axes, (('2PE', '2PE', ('cw', '10')), ('2CE_y', '2CE', ('cw', '100', '20', '10')))):
                 for k in keys:                                                          # 2PE: continuous and 10 fs only, so the fringes read
                     col, ls, lw, l = STY[k]
@@ -230,16 +230,15 @@ def profiles():
                     ax.plot(zs, v / v.max(), ls, color=col, lw=lw, label=l)
                 half = 4.0 if na <= 0.5 else zs[-1]
                 ax.set_xlim(-half, half); ax.set_ylim(0, 1.0)
-                ax.set_title(lab); ax.set_xlabel('z (µm)')
+                ax.set_title(lab); ax.set_xlabel('z (µm), at x = 0')
+                place_legend(ax)                                                        # each panel lists its own curves
+                cut_inset(ax, 'z', sig=lab, theta=np.pi, na=min(na, 0.5))
             axes[0].set_ylabel('Intensity')
-            h, l = axes[1].get_legend_handles_labels()
-            fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-            plt.tight_layout()
             name = f'axial_pi_{tag}_na{na:g}.png'
             fig.savefig(os.path.join(BASE, name), dpi=300, bbox_inches='tight'); plt.close(fig)
             print(f'Saved -> {name}')
         for sig, lab in (('2PE', '2PE'), ('2CE_y', '2CE')):                          # one signal per slide: larger panels
-            fig, axes = plt.subplots(1, len(nas), figsize=(18.5, 6.9), sharey=True)
+            fig, axes = plt.subplots(1, len(nas), figsize=(18.5, 7.0), sharey=True)
             for ax, na in zip(axes, nas):
                 k0 = f'n{n:g}_na{na:g}_'
                 zs = P[k0 + 'z']
@@ -251,8 +250,7 @@ def profiles():
                 ax.set_title(f'{lab}, NA {na:g}'); ax.set_xlabel('z (µm)')
             axes[0].set_ylabel('Intensity')
             h, l = axes[0].get_legend_handles_labels()
-            fig.legend(h, l, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 0.0), frameon=False)
-            plt.tight_layout()
+            fig_legend(fig, h, l)
             name = f'axial_pi_{tag}_{lab.lower()}.png'
             fig.savefig(os.path.join(BASE, name), dpi=300, bbox_inches='tight'); plt.close(fig)
             print(f'Saved -> {name}')

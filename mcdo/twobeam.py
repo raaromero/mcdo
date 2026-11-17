@@ -140,7 +140,7 @@ def _rw(rb, phib, zb, k, alpha, psi, n_theta=301, apodization=None, eps=0.0):
     # x-polarized solution [Rom03 Eqs. 2-4] in the frame rotated by psi
     ex = -1j * (I0 + I2 * np.cos(2 * phi))
     ey = -1j * I2 * np.sin(2 * phi)
-    ez = -2j * I1 * np.cos(phi)
+    ez = -2.0 * I1 * np.cos(phi)       # real factor: in quadrature with ex, as div E = 0 requires
     c, s = np.cos(psi), np.sin(psi)
     E = np.stack([c * ex - s * ey, s * ex + c * ey, ez])
     return E.reshape((3,) + zb.shape)

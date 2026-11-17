@@ -13,12 +13,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mcdo.cutinset import cut_inset
 
 from mcdo.style import apply as _apply_style
 
 _apply_style()
-matplotlib.rcParams.update({'font.size': 24, 'axes.titlesize': 28, 'axes.labelsize': 28, 'xtick.labelsize': 24,
-                            'ytick.labelsize': 24, 'legend.fontsize': 24})
+matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsize': 32, 'xtick.labelsize': 28,
+                            'ytick.labelsize': 28, 'legend.fontsize': 28})   # ≥ 11 pt on the slide with the inset beside the plots
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'output', '08_two_color', 'cambaliza2000')
 HS = (20, 50, 100, 300, 1000)
@@ -38,8 +39,13 @@ for h in HS:
         print(f'h = {h}: background (mean for |z| > 10 µm) {F[far].mean():.3f}')
 for ax, sig in zip(axes, ('2PE', '2CE')):
     ax.set_xlim(-20, 20); ax.set_ylim(0, 1); ax.set_xticks(np.arange(-20, 21, 5))
-    ax.set_xlabel('z (µm)'); ax.set_title(f'{sig}, θ = π')
+    ax.set_xlabel('z (µm), at x = 0'); ax.set_title(f'{sig}, θ = π')
+    for lo, hi in ((-20, -10), (10, 20)):
+        ax.axvspan(lo, hi, color='#d62728', alpha=0.07, lw=0, zorder=0)
+    ax.text(-15, 0.97, 'background:\nmean over\n|z| > 10 µm', ha='center', va='top', fontsize=20, color='#a61b1b')
 axes[0].set_ylabel('Fluorescence')
+plt.tight_layout()
+cut_inset(axes[1], 'z', sig='2CE', theta=np.pi, profile=True)   # outside, at the right of the figure
 hd, lb = axes[0].get_legend_handles_labels()
 fig.legend(hd, lb, loc='lower center', ncol=5, bbox_to_anchor=(0.5, -0.1), frameon=False)
 plt.tight_layout()

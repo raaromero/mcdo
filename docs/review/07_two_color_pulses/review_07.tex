@@ -1,0 +1,290 @@
+\documentclass[10pt]{article}
+\usepackage[margin=2.0cm]{geometry}
+\usepackage{graphicx}\usepackage{booktabs}\usepackage{amsmath}\usepackage{amssymb}
+\usepackage{xcolor}\usepackage[hidelinks]{hyperref}\usepackage{enumitem}\usepackage{fontspec}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}\setlist{itemsep=1pt,topsep=2pt}
+\graphicspath{{../../../output/08_two_color/cambaliza2000/pulses/delay_sweep/}}
+\title{\vspace{-1.2cm}\textbf{Review 07. Two-color excitation with optical pulses and a delay:\\ derivations and checks against the four papers}\\
+\large \texttt{mcdo\_2ce} \quad(\texttt{mcdo/twobeam.py}, \texttt{mcdo/pulsed2ce.py},
+\texttt{scripts/cambaliza2000\_pulses\_*.py})}
+\author{}\date{2026-11-10}
+\begin{document}\maketitle\vspace{-1.0cm}
+
+\section*{0. Outcome of the review}
+I read the four papers in full, compared each equation with the code, derived each step of the pulse and delay
+results again, and tested each step numerically. The papers are Cambaliza \& Saloma, Opt.\ Commun.\ 184, 25--35 (2000);
+Lim \& Saloma, Opt.\ Commun.\ 207, 121--130 (2002); Lim \& Saloma, Appl.\ Opt.\ 42(17), 3398--3406 (2003); and
+Romallosa, Bantang \& Saloma, Phys.\ Rev.\ A 68, 033812 (2003).
+\begin{enumerate}
+\item The scalar field, the 2CE and 2PE signals, the annular pupil, the misalignment, the aberration function and the
+Linfoot criteria in the code are those of the papers. Section 1 lists each equation and its place in the code.
+\item The vector field had one error. Its longitudinal component carried a factor $-2i$ where Richards \& Wolf and
+Romallosa et al.\ (Eq.~4) have $-2$, so $\nabla\cdot\mathbf{E}$ was not zero. I corrected it and added a test.
+It changes one stored case, 2PE with crossed lenses and the polarization in the plane of the two beams. It does not
+change the delay results or the pulse results, which use the polarization perpendicular to that plane, where
+$E_z = 0$ on the points computed.
+\item The delay results follow from three steps, each checked: the temporal overlap of two Gaussian pulses,
+$\exp(-2\ln 2\,\Delta t^2/\tau^2)$; the point where two facing pulses meet, $z = c\Delta t/2n$; and the phase
+that the delay gives to each kind of photon pair. Section 2 has the derivations and Section 3 the checks.
+\item Three statements in the delay deck needed a correction, and I made them (Section 4). The fringes against the
+delay have three periods, 2.19, 2.50 and 1.17 fs, and the deck had quoted one value, 2.3 fs.
+\item Four limits of the model remain and are stated in Section 5.
+\end{enumerate}
+
+\section*{1. The papers and the code}
+\subsection*{1.1 Equations}
+\begin{center}\small\begin{tabular}{p{4.3cm}p{6.6cm}p{5.2cm}}\toprule
+Paper & Statement & Code\\\midrule
+Cambaliza \& Saloma, Eq.~1; Lim \& Saloma (2002), Eq.~2 & Paraxial field of a uniformly illuminated circular pupil
+(Lommel functions), $u = (2\pi/\lambda)\mathrm{NA}^2 z$, $v = (2\pi/\lambda)\mathrm{NA}\,x$ &
+\texttt{twobeam.\_paraxial}: $U = e^{ikz}\,2\!\int_0^1 J_0(v\rho)e^{-iu\rho^2/2}\rho\,d\rho$, the integral that the
+Lommel functions evaluate\\
+Cambaliza \& Saloma, Eq.~2 & $F_{2c} = \kappa I_1 I_2$ & \texttt{twobeam.two\_color}\\
+Cambaliza \& Saloma, Eq.~3 & $F_{2p} = \kappa'|U_1 + U_2|^4$ & \texttt{twobeam.two\_photon}\\
+Cambaliza \& Saloma, Eqs.~4--6 & Annular pupil, $U_a = U_R - U_{\varepsilon R}$ & the pupil integral from
+$\rho = \varepsilon$ to 1, which is the same difference\\
+Lim \& Saloma (2002), Sec.~2 & Focus of beam 2 at $O'(x_c, z_c)$ & arguments \texttt{xc}, \texttt{zc} of
+\texttt{beam\_field}\\
+Lim \& Saloma (2002), Sec.~3.3; (2003), Sec.~3B & $F = 1 - \langle(t-a)^2\rangle/\langle t^2\rangle$,
+$C = \langle a^2\rangle/\langle t^2\rangle$, $Q = \langle|a||t|\rangle/\langle t^2\rangle$, $F = 2Q - C$ &
+\texttt{mcdo.linfoot}; the identity is a test\\
+Lim \& Saloma (2003), Eq.~1 & Aberration function $\Phi = (\phi/100)\lambda\rho^4$, so the pupil phase is
+$k\Phi = 2\pi(\phi/100)\rho^4$ & argument \texttt{sa} of \texttt{beam\_field}\\
+Romallosa et al., Eqs.~5--7 & $I_0, I_1, I_2$ with $\cos^{1/2}\vartheta$ and the factors $\sin\vartheta(1+\cos\vartheta)$,
+$\sin^2\vartheta$, $\sin\vartheta(1-\cos\vartheta)$ & \texttt{twobeam.\_rw}, the same factors\\
+Romallosa et al., Eqs.~2--4 & Components of the field & see 1.2, item 2\\
+Romallosa et al., Eqs.~8--9 & $|E(t)|^2 \propto \exp[-4\ln 2\,(t/\tau)^2]$, with $\tau$ the FWHM of the intensity, and
+$E(\omega) \propto \exp[-(\omega-\omega_c)^2/4a]$, $a = 2\ln 2/\tau^2$ & \texttt{pulsed2ce.spectrum}:
+$a(\omega) = \exp[-(\omega-\omega_0)^2\tau^2/(8\ln 2)]$, the same function\\
+\bottomrule\end{tabular}\end{center}
+The numbers that Romallosa et al.\ quote follow from these equations. The time--bandwidth product is
+$\Delta\nu\,\tau = 4\ln 2/2\pi = 0.441$. A 1-fs pulse at 750 nm has $\Delta\nu = 4.4\times10^{14}$ Hz and spans 483 nm to
+1.67 $\mu$m. A 1.2-fs pulse has $c\tau = 359.7$ nm, below $\lambda_c/2 = 375$ nm.
+
+\subsection*{1.2 Points where the current work departs from the papers, or reads them in a particular way}
+\begin{enumerate}
+\item Cambaliza \& Saloma and Lim \& Saloma (2002) rotate the optical coordinates,
+$u_r = u\cos\theta - v\sin\theta$, $v_r = v\cos\theta + u\sin\theta$. Since $u$ scales with $\mathrm{NA}^2$ and $v$ with
+NA, this is a rotation of real space at $\theta = 0$ and $\pi$ but not at $\pi/2$. The rotation of real space
+reproduces the fits of Lim \& Saloma (2002) ($-0.063\,x_c^2$ against $-0.06\,x_c^2$), and the rotation of the optical
+coordinates does not ($-0.21\,x_c^2$), so the replications and the current work rotate real space. The code keeps the
+other form as \texttt{rotation='optical'}.
+\item Romallosa et al.\ print $E_x = -j(I_0 + 2I_2\cos\phi)$ and $E_y = -jI_2\sin\phi$ (Eqs.~2 and 3). Richards \& Wolf
+(1959) have $E_x = -i(I_0 + I_2\cos 2\phi)$ and $E_y = -iI_2\sin 2\phi$, and the code uses these. With them and
+$E_z = -2I_1\cos\phi$ (Eq.~4), $\nabla\cdot\mathbf{E} = 0$ to $2\times10^{-8}\,k|E|$ (Section 3).
+\item Romallosa et al.\ (Eq.~10) add the intensities of the frequencies,
+$|E(P)|^2 = \int|E(\omega)|^2|E(P,\omega)|^2d\omega$. This is the intensity integrated over time, since
+$\int|E(P,t)|^2dt = 2\pi\int|\tilde E(P,\omega)|^2d\omega$ (Parseval). For two-photon signals they square this
+quantity. The current work keeps the field in time and integrates the two-photon amplitude (2.3), since
+$\int I^2dt$ is not $(\int I\,dt)^2$ and since 2CE depends on when the two pulses arrive.
+\item The field of each frequency carries the factor $\omega/\omega_0$ of the diffraction integral (the $1/\lambda$ of
+Cambaliza \& Saloma's Eq.~1). Romallosa et al.\ do not include it. It changes the 5-fs results by about 2\% (2.6) and
+the results at 20 fs and above by less than 0.2\%.
+\item With $\lambda_1 = 750$ nm and $\lambda_2 = 656$ nm, $1/\lambda_e = 1/\lambda_1 + 1/\lambda_2$ gives
+$\lambda_e = 349.93$ nm. The papers and the code take 350 nm. The level is then $1.1\times10^{-3}$ rad/fs from
+$\omega_1 + \omega_2$, which multiplies the 350-nm pairs by a constant that is the same at all delays and positions
+(0.9998 in amplitude at 100 fs), so the normalized results do not change.
+\item Lim \& Saloma (2003) cite Lim \& Saloma (2002) as pages 111--120. The journal pages are 121--130.
+\end{enumerate}
+
+\subsection*{1.3 What the papers say about pulses and timing}
+Cambaliza \& Saloma: ``Two-color absorption is possible only in regions of the stained specimen, where $I_1$ and
+$I_2$ are simultaneously present in both space and time.'' Lim \& Saloma (2003): ``Achieving optimal temporal
+overlap of the 2CE pulses is crucial because spatio-temporal simultaneity of the two confocal beams is a necessary
+condition for 2CE''; ``the effect of spectral broadening on the PSF structure is negligible for pulse widths that are
+longer than 10 femtoseconds''; and ``fluorescence probes that are used to label the samples are normally selected to
+minimize the effects of two-photon excitation from the individual $\lambda_1$ and $\lambda_2$ excitation beams.''
+The delay deck quotes the first and third of these sentences as printed. The third is the reason the 2CE signal in
+the delay results is the 350-nm pairs.
+
+\section*{2. Derivations}
+\subsection*{2.1 The pulse and its spectrum}
+The field of a transform-limited Gaussian pulse of carrier $\omega_0$ is
+\begin{equation}E(t) = \exp\!\left(-2\ln 2\,\frac{t^2}{\tau^2}\right)e^{-i\omega_0t},\qquad
+|E(t)|^2 = \exp\!\left(-4\ln 2\,\frac{t^2}{\tau^2}\right),\end{equation}
+so $|E|^2$ falls to one half at $t = \pm\tau/2$ and $\tau$ is its FWHM (Romallosa et al., Eq.~9). With
+$\int e^{-at^2}e^{i\Omega t}dt = \sqrt{\pi/a}\,e^{-\Omega^2/4a}$ and $a = 2\ln 2/\tau^2$,
+\begin{equation}a(\omega) = \exp\!\left[-\frac{(\omega-\omega_0)^2\tau^2}{8\ln 2}\right]
+= \exp\!\left[-\frac{(\omega-\omega_0)^2}{2s^2}\right],\qquad s = \frac{2\sqrt{\ln 2}}{\tau}.\end{equation}
+
+\subsection*{2.2 The pulsed field at the focus}
+Each frequency is a continuous wave focused by the lens, with field $\mathbf{E}_\omega(P)$ of Section 1. The pulse at
+$P$ is their sum,
+\begin{equation}\mathbf{E}(P,t) = \int a(\omega)\,\frac{\omega}{\omega_0}\,\mathbf{E}_\omega(P)\,e^{-i\omega t}\,d\omega .\end{equation}
+$\mathbf{E}_\omega$ carries the phase $e^{ikz_b}$ along its beam, so the pulse passes its focus at $t = 0$ and
+reaches a point at distance $z_b$ along the beam at $t = nz_b/c$. A delay $\Delta t$ of beam 2 replaces $t$ by
+$t - \Delta t$ in its field, carrier included, which multiplies each of its frequencies by $e^{i\omega\Delta t}$.
+
+\subsection*{2.3 The signal: photon pairs that reach the 350-nm level}
+For a level at $\omega_e$ that is narrow compared with the spectra, and no level near $\omega_1$ or $\omega_2$, the
+two-photon amplitude is the component of $E^2$ at $\omega_e$:
+\begin{equation}A(P) = \int E^2(P,t)\,e^{i\omega_et}\,dt = \int\tilde E(P,\omega)\,\tilde E(P,\omega_e-\omega)\,d\omega .\end{equation}
+The second form says that each pair of photons with $\omega_a + \omega_b = \omega_e$ contributes, and that the
+pairs add with their phases. With $E = E_1 + E_2$,
+\begin{equation}A = A^{11} + 2A^{12} + A^{22},\qquad A^{ab} = \int E_a(P,t)\,E_b(P,t)\,e^{i\omega_et}\,dt .\end{equation}
+$2A^{12}$ takes one photon from each beam: these are the 350-nm pairs (750 + 656 nm). $A^{11}$ takes both photons
+from beam 1, the 375-nm pairs (750 + 750 nm), and $A^{22}$ both from beam 2, the 328-nm pairs (656 + 656 nm). The
+signal is $F = |A|^2$; for the vector field the code sums $|A_{ij}|^2$ over the components $i, j$.
+
+\subsection*{2.4 The limit of long pulses is the result of the papers}
+For long pulses the spectra are lines. $A^{11}$ and $A^{22}$ oscillate at $\omega_e - 2\omega_1$ and
+$\omega_e - 2\omega_2$ and integrate to zero, and $2A^{12} \to 2E_1E_2$, so
+\begin{equation}F \to 4|E_1|^2|E_2|^2 \propto I_1I_2\quad\text{(Cambaliza \& Saloma, Eq.~2).}\end{equation}
+For 2PE, $\omega_1 = \omega_2 = \omega_e/2$, the three terms are all resonant and
+$A \to (E_1 + E_2)^2$, so $F \to |U_1 + U_2|^4$ (their Eq.~3). The stored 100-fs profiles at NA 0.5 match the
+continuous-beam ones at the three angles.
+
+\subsection*{2.5 The size of the 375- and 328-nm pairs}
+For two Gaussians of the same $s$, $\int a_1(\omega)a_2(\omega_e-\omega)d\omega \propto
+\exp[-(\omega_e-\omega_{01}-\omega_{02})^2/4s^2]$. With $4s^2 = 16\ln 2/\tau^2$ and the factor $\omega/\omega_0$ of
+each photon evaluated at $\omega_e/2$,
+\begin{equation}\frac{|A^{11}|}{|2A^{12}|} = \frac12\left(\frac{\omega_e}{2\omega_1}\right)^2
+\exp\!\left[-\frac{(\omega_e-2\omega_1)^2\tau^2}{16\ln 2}\right],\end{equation}
+and the same with $\omega_2$ for $A^{22}$. Here $\omega_1 = 2.5115$, $\omega_2 = 2.8714$ and $\omega_e = 5.3819$
+rad/fs.
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+ & \multicolumn{2}{c}{375-nm pairs over 350-nm pairs} & \multicolumn{2}{c}{328-nm pairs over 350-nm pairs}\\
+$\tau$ & Eq.~7 & computed at the focus & Eq.~7 & computed at the focus\\\midrule
+5 fs & 0.429 & 0.430 & 0.327 & 0.327\\
+10 fs & 0.180 & 0.180 & 0.136 & 0.136\\
+20 fs & 0.0055 & 0.005 & 0.0040 & 0.004\\\bottomrule\end{tabular}\end{center}
+The amplitudes of the pairs from one beam are below 1\% of the 350-nm pairs at 20 fs and reach 18\% at 10 fs. This is
+the statement of Lim \& Saloma (2003) that spectral broadening is negligible above 10 fs, with the pulse width at
+which it stops being negligible.
+
+\subsection*{2.6 A delay at a fixed point: the temporal overlap}
+At a point where both pulses arrive together when $\Delta t = 0$, the envelopes are
+$\exp(-2\ln 2\,t^2/\tau^2)$ and $\exp[-2\ln 2\,(t-\Delta t)^2/\tau^2]$. Their product is
+\begin{equation}\exp\!\left[-\frac{2\ln 2}{\tau^2}\left(t^2 + (t-\Delta t)^2\right)\right]
+= \exp\!\left[-\frac{4\ln 2}{\tau^2}\left(t-\frac{\Delta t}{2}\right)^2\right]
+\exp\!\left(-\ln 2\,\frac{\Delta t^2}{\tau^2}\right),\end{equation}
+since $t^2 + (t-\Delta t)^2 = 2(t-\Delta t/2)^2 + \Delta t^2/2$. The integral over $t$ of the first factor does
+not depend on $\Delta t$, so $|2A^{12}| \propto \exp(-\ln 2\,\Delta t^2/\tau^2)$ and
+\begin{equation}\frac{F(\Delta t)}{F(0)} = \exp\!\left(-2\ln 2\,\frac{\Delta t^2}{\tau^2}\right).\end{equation}
+The peak is one half at $\Delta t = \tau/\sqrt2 = 0.71\tau$, one quarter at $\Delta t = \tau$ and $0.0039$ at
+$2\tau$. The same function is the overlap $\int I_1(t)I_2(t-\Delta t)\,dt$ of the two intensities.
+\begin{center}\small\begin{tabular}{lccc}\toprule
+Collinear lenses, all NAs & $\Delta t = 0.5\tau$ & $\Delta t = \tau$ & $\Delta t = 2\tau$\\\midrule
+Eq.~9 & 0.70711 & 0.25000 & 0.00391\\
+stored, 100 fs & 0.70712 & 0.25001 & 0.00391\\
+stored, 20 fs & 0.70735 & 0.25034 & 0.00393\\
+stored, 5 fs & 0.71095 & 0.25545 & 0.00425\\\bottomrule\end{tabular}\end{center}
+The 2\% difference at 5 fs is the factor $\omega/\omega_0$, which makes the spectrum slightly wider than Eq.~2. With
+crossed lenses the stored values at 100 fs are 0.2500 to 0.2530.
+
+\subsection*{2.7 Facing lenses: the pulses meet at $c\Delta t/2n$}
+Pulse 1 travels along $+z$ and reaches $z$ at $t_1 = nz/c$. Pulse 2 travels along $-z$ with a delay and reaches $z$
+at $t_2 = -nz/c + \Delta t$. Eq.~9 holds with $\Delta t$ replaced by the difference of the arrival times,
+$t_1 - t_2 = 2nz/c - \Delta t$:
+\begin{equation}F_{2c}(z,\Delta t) = I_1(z)\,I_2(z)\,
+\exp\!\left[-\frac{2\ln 2}{\tau^2}\left(\frac{2nz}{c}-\Delta t\right)^2\right].\end{equation}
+The second factor is largest where the pulses meet, $z = c\Delta t/2n$ (15 $\mu$m in air for 100 fs), and its
+FWHM along $z$ is $\sqrt2\,c\tau/2n$ (21.2 $\mu$m at 100 fs, 4.2 $\mu$m at 20 fs). The stored 2CE profile along the
+axis is as long as the focus or this stretch, whichever is shorter: its FWHM without delay at 100 fs is 20.7 $\mu$m
+at NA 0.1, 15.4 $\mu$m at NA 0.2, 3.3 $\mu$m at NA 0.5 and 0.8 $\mu$m at NA 0.9.
+
+Two limits follow. Where the focus is longer than $c\Delta t/2n$, $I_1I_2$ is nearly constant over the distance the
+meeting point moves, so the peak moves with it and is kept. Where the focus is shorter, $I_1I_2$ holds the peak
+at the focus and Eq.~9 gives its height.
+\begin{center}\small\begin{tabular}{lcccccc}\toprule
+Facing lenses, 100 fs, $\Delta t = \tau$ & NA 0.1 & 0.2 & 0.3 & 0.5 & 0.7 & 0.9\\\midrule
+peak over the peak without delay & 0.930 & 0.513 & 0.316 & 0.258 & 0.251 & 0.250\\
+position of the peak ($\mu$m); $c\tau/2 = 15.0$ & 14.2 & 7.8 & 2.6 & 0.34 & 0.08 & 0.02\\\bottomrule\end{tabular}\end{center}
+\begin{center}\includegraphics[width=0.92\textwidth]{delay_facing_vs_na.png}\end{center}
+Shorter pulses keep more of the peak at $\Delta t = \tau$, since the meeting point moves by $c\tau/2n$: at NA 0.5 the
+peak is 0.258 at 100 fs, 0.409 at 20 fs and 0.868 at 5 fs. Pupils with a longer depth of focus keep more at the same
+NA: at NA 0.3 and 100 fs it is 0.316 for the circular pupil, 0.376 for the Gaussian input ($\alpha = 4$) and 0.800
+for the annular pupil with $\varepsilon = 0.9$.
+
+\subsection*{2.8 Fringes against the delay}
+The delay multiplies each photon of beam 2 by $e^{i\omega\Delta t}$. A 350-nm pair has one such photon, near
+$\omega_2$. A 328-nm pair has two, and their frequencies add to $\omega_e$. A 375-nm pair has none. So
+\begin{equation}A(\Delta t) = A^{11} + 2A^{12}_0\,g(\Delta t)\,e^{i\omega_2\Delta t} + A^{22}\,e^{i\omega_e\Delta t},\end{equation}
+with $g$ the overlap of 2.6. $|A|^2$ then has fringes at the three differences of these phases:
+\begin{center}\small\begin{tabular}{llcc}\toprule
+Pairs that interfere & Phase & Period & Measured at the focus\\\midrule
+350-nm and 375-nm pairs & $\omega_2\Delta t$ & $\lambda_2/c = 2.19$ fs & 2.19 fs\\
+350-nm and 328-nm pairs & $(\omega_e-\omega_2)\Delta t$ & $\lambda_1/c = 2.50$ fs & 2.50 fs\\
+375-nm and 328-nm pairs & $\omega_e\Delta t$ & $\lambda_e/c = 1.17$ fs & 1.17 fs\\\bottomrule\end{tabular}\end{center}
+The first two fall with $g(\Delta t)$. The third keeps its depth at all delays, since neither of its terms needs the
+two pulses to overlap. The fringes need pulses with a fixed phase between the two beams; with two lasers that are
+not phase-locked they average out and the 350-nm pairs remain (Eq.~9).
+
+In space the same three terms carry the carriers of their beams. With facing lenses these are $e^{2ik_1z}$,
+$e^{i(k_1-k_2)z}$ and $e^{-2ik_2z}$, so the 350-nm pairs interfere with either of the others with period
+$2\pi/(k_1+k_2) = \lambda_e = 350$ nm along $z$. A delay moves these fringes along $z$. The peak along the axis
+follows them, so its fringes against the delay are shallow where the focus is many fringes long and deepen with NA.
+With collinear lenses the three terms have the same carrier in space, so the depth is the same at all NAs.
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+Largest gap, all pairs minus 350-nm pairs & NA 0.1 & 0.3 & 0.5 & 0.7\\\midrule
+collinear, 5 fs / 10 fs / 20 fs & \multicolumn{4}{c}{0.917 / 0.710 / 0.036 at all NAs}\\
+crossed, along $x$, 5 fs & 0.062 & 0.197 & 0.416 & 0.652\\
+crossed, along $x$, 10 fs & 0.064 & 0.191 & 0.413 & 0.599\\
+facing, along $z$, 5 fs & 0.014 & 0.013 & 0.033 & 0.070\\
+facing, along $z$, 10 fs & 0.008 & 0.015 & 0.035 & 0.076\\\bottomrule\end{tabular}\end{center}
+At 20 fs the gap is at most 0.036 in all cases.
+\begin{center}\includegraphics[width=0.92\textwidth]{delay_fringe_depth_vs_na.png}\end{center}
+
+\section*{3. Checks}
+\begin{center}\small\begin{tabular}{p{7.4cm}p{8.6cm}}\toprule
+Check & Result\\\midrule
+$\nabla\cdot\mathbf{E}$ of the vector field, NA 0.9, by finite differences & $1.9\times10^{-8}\,k|E|$ with
+$E_z = -2I_1\cos\phi$; $0.77\,k|E|$ with the factor $-2i$ that the code had\\
+Temporal overlap, Eq.~9, against the stored peaks with collinear lenses & within $1\times10^{-5}$ at 100 fs, 0.006 at
+5 fs (table in 2.6)\\
+Closed form, Eq.~10, against the stored profiles with facing lenses, NA 0.1 to 0.9, five delays & largest
+difference of the normalized profiles 0.004 at 100 fs, 0.019 at 20 fs, 0.039 at 10 fs\\
+Ratio of the pairs, Eq.~7, against the amplitudes at the focus & within 0.001 at 5 and 10 fs (table in 2.5)\\
+Periods of the fringes against the delay, from the phase of each term at the focus & 2.19, 2.50 and 1.17 fs, as
+derived\\
+Peak at the edge of the computed line & 187 of 414\,012 stored rows, all at delays of $1.8\tau$ to $2\tau$ where
+the peak is below 0.01; none is in a figure\\
+Fields from the tables against the original code, before the runs & within $1.6\times10^{-10}$\\
+Sixteen samples of the delay runs recomputed with the original code & peaks within $1.8\times10^{-10}$, stored profiles (single precision) within $5.2\times10^{-8}$; all 16 pass\\
+Peak over the $x$--$z$ plane against the peak along $x$, crossed lenses & 5 fs, delays 0 to 2.5 fs: the gap is 0.278 over the plane and 0.416 along $x$ at NA 0.5, and 0.478 and 0.652 at NA 0.7\\
+Total with all pairs, recomputed as a sum over pairs of frequencies with no time grid (32 cases: both models, the
+three angles, 2CE and 2PE, 5 and 10 fs, NA 0.5 to 0.9) & within $1.1\times10^{-4}$ of the peak of the stored profiles\\
+350-nm pairs against the pairs summed in frequency and against $\int I_1I_2\,dt$, two other code paths (scalar
+model, five cases) & within 0.003 of the peak\\
+Test suite & 1074 tests pass, with the corrected $E_z$ and the new test\\\bottomrule\end{tabular}\end{center}
+The closed form assumes that each pulse keeps its shape through the focus and that the spot is the same at all
+frequencies. The differences of a few percent at 10 fs are the size of these two effects.
+
+\section*{4. Corrections made}
+\begin{enumerate}
+\item In \texttt{mcdo/twobeam.py} and in its copy in \texttt{scripts/cambaliza2000\_fast\_field.py}, the
+longitudinal component is now $E_z = -2I_1\cos\phi$. A new test,
+\texttt{test\_vector\_field\_has\_zero\_divergence}, passes with this factor and does not pass with the old one.
+The intensity of one beam, the 2CE product $I_1I_2$ and all results with the polarization along $y$ are unchanged.
+The 2PE profile with crossed lenses and the polarization in the plane of the beams changes by up to 0.34 of its
+peak at NA 0.5 and 0.47 at NA 0.7; it is computed in \texttt{scripts/cambaliza2000\_high\_na\_pupils.py} and I
+have not regenerated its outputs.
+\item Delay deck, the slides of the fringes: ``one optical period (2.3 fs) apart'' is now ``one optical period
+(2.2 to 2.5 fs) apart'', and the notes give the three periods.
+\item Delay deck, facing lenses: ``From NA 0.6 the focus is shorter than $c\Delta t/2$'' is now ``At NA 0.5 and
+above, the peak stays at the focus and falls with the temporal overlap.'' The focus is shorter than
+$c\tau/2 = 15\ \mu$m from about NA 0.2 at 100 fs; the peak is within 0.01 of the temporal overlap from NA 0.5.
+\item Delay deck, fringe depth: the notes now say the depth at 20 fs is at most 0.04, and that with crossed lenses
+the peak is taken along the $x$ axis through the focus.
+\item The reference in the notes is now Appl.\ Opt.\ 42(17), 3398--3406.
+\end{enumerate}
+\texttt{pulse\_results.pptx} and the main deck are unchanged.
+
+\section*{5. Limits of the model}
+\begin{enumerate}
+\item The pulses are transform-limited Gaussians and the two beams have a fixed phase. The fringes of 2.8 need
+both. The 350-nm pairs alone do not.
+\item The level at 350 nm is narrow compared with the spectra and there is no level near 750 or 656 nm. For a broad
+absorption band the signal of the 350-nm pairs is $\int I_1(t)I_2(t-\Delta t)\,dt$, which has the same dependence
+on the delay (2.6).
+\item The sum $\sum_{ij}|A_{ij}|^2$ over the field components is one choice for the response of the molecules. With
+the polarization along $y$ on the points computed there is one component, so the choice does not enter the results.
+For other polarizations the cross term $2A^{12}_{ij}$ should be made symmetric in $i$ and $j$,
+$A^{12}_{ij} + A^{12}_{ji}$, before it is added to $A^{11}$ and $A^{22}$.
+\item The peaks are found along the $z$ axis or the $x$ axis through the focus. With facing and collinear lenses
+the largest value in the $x$--$z$ plane lies on these lines. With crossed lenses the fringes run along the
+diagonal and the peak moves along it, up to 0.25 $\mu$m from the focus at NA 0.5. The fringe depth over the plane is
+about two thirds of the depth along $x$ (0.278 against 0.416 at NA 0.5, 0.478 against 0.652 at NA 0.7), and it
+deepens with NA in the same way. The crossed-lens values in 2.8 and in the deck are those along $x$.
+\end{enumerate}
+\end{document}

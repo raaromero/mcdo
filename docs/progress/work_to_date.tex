@@ -1,0 +1,286 @@
+\documentclass[10pt]{article}
+\usepackage[margin=2.0cm]{geometry}
+\usepackage{graphicx}\usepackage{booktabs}\usepackage{amsmath}\usepackage{amssymb}
+\usepackage{xcolor}\usepackage[hidelinks]{hyperref}\usepackage{enumitem}\usepackage{fontspec}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}\setlist{itemsep=1pt,topsep=2pt}
+\graphicspath{{../../output/08_two_color/cambaliza2000/pulses/delay_sweep/}}
+\title{\vspace{-1.2cm}\textbf{Work to date: from the focus of few-cycle pulses\\ to two-color excitation with optical pulses}}
+\author{Roland Albert A. Romero\\ \small National Institute of Physics, University of the Philippines Diliman}
+\date{2026-11-11}
+\begin{document}\maketitle\vspace{-0.6cm}
+
+This document states what I have done so far, in the order in which it was done. Each part gives what was computed,
+the main results against the paper it starts from, and where the details are. The numbers are those of the stored
+results in \texttt{output/} and of the review documents in \texttt{docs/review/}.
+
+\section*{Summary}
+\begin{enumerate}
+\item I reproduced the five figures of Romallosa, Bantang \& Saloma (2003) on the focus of few-cycle pulses with
+the Richards--Wolf theory, and found the conventions that the paper leaves unstated.
+\item I extended that focus to Gaussian input, annular pupils and an axicon, and found where the scalar theory stops
+being accurate as NA increases.
+\item I built a Monte Carlo model of the same focus, which gives the Debye--Wolf field without scattering, and
+validated it through a scattering slab against six independent checks.
+\item I reproduced Cambaliza \& Saloma (2000) and Lim \& Saloma (2002, 2003) on two-color excitation (2CE) with two
+focused beams, and extended their results to high NA, Gaussian input, water and oil.
+\item I extended 2CE to optical pulses. At 100 fs, pulsed 2CE is the same as with continuous beams. With facing
+lenses and shorter pulses, 2CE forms where the two pulses meet, so its depth of focus is shorter.
+\item I added a delay between the two pulses. A delay weakens 2CE through the temporal overlap of the pulses, and
+with facing lenses at low NA it moves the 2CE along the axis instead.
+\end{enumerate}
+
+\section*{1. The focus of few-cycle pulses: Romallosa et al.\ (2003)}
+Romallosa et al.\ compute the three-dimensional intensity near the focus of a 750-nm beam of Gaussian pulses, from
+1 fs to continuous, with the Richards--Wolf vector theory, and compare it with the continuous beam through the
+Linfoot criteria.
+\begin{enumerate}
+\item The five figures of the paper are reproduced. The structural content along the axis at 1 fs is 1.058, against
+1.057 in the paper, and the transverse FWHM is 472.8 nm. The remaining differences are within 1\% for Fig.~4 and about
+3\% for Fig.~3 at 1 fs.
+\item The paper integrates the whole positive spectrum, from 0 to $2\omega_c$. The band it quotes, 483 nm to
+1.67 $\mu$m, is the FWHM of the spectrum. With the FWHM band alone, 24\% of the spectral weight is lost and the
+quoted values are not reproduced.
+\item Three conventions had to be found from the figures: the panel labels of Fig.~2 are exchanged, Fig.~3 is an
+integral along a line, and the Linfoot arrays are in optical coordinates, which is why the criteria do not depend on
+NA.
+\end{enumerate}
+Details are in \texttt{docs/review/01\_romallosa/review\_01.pdf}.
+
+\section*{2. Numerical aperture and Gaussian input}
+\begin{enumerate}
+\item At NA 0.1 the vector theory, the scalar Debye integral and the Airy pattern agree to $10^{-4}$.
+\item As NA increases, the scalar theory departs from the vector theory first across the axis, along the
+polarization. The FWHM differs by 1\% at NA 0.30 and by 5\% at NA 0.60 for linear polarization. Along the axis the
+difference reaches 1\% at NA 1.15.
+\item The difference is the longitudinal field $E_z$, which fills the zeros and widens the spot along the
+polarization.
+\item A Gaussian input with truncation parameter $\alpha = 4$ keeps the scalar theory accurate to a higher NA
+(1\% at 0.40 and 5\% at 0.85), since it gives less weight to the marginal rays.
+\end{enumerate}
+Details are in \texttt{docs/review/02\_na\_apodization/review\_02.pdf}.
+
+\section*{3. Annular pupils and the axicon}
+\begin{enumerate}
+\item The field of an annular pupil with obstruction ratio $\varepsilon$ is the field of the full pupil minus
+that of the obstructed part. At low NA the depth of focus grows as $1/(1-\varepsilon^2)$, and the central lobe
+narrows.
+\item A thin annulus gives the $J_0^2$ profile of Durnin at low NA. At high NA the vector profile is narrower than
+the scalar one (FWHM 2.06 against 2.25 in optical units).
+\item The peak intensity falls as $(1-\varepsilon^2)^2$.
+\item An axicon gives a focal segment with a Bessel profile whose scale depends on the position along the axis.
+\end{enumerate}
+Details are in \texttt{review\_03.pdf} and \texttt{review\_04.pdf}.
+
+\section*{4. Few-cycle pulses with annular pupils}
+\begin{enumerate}
+\item The longer depth of focus of an annular pupil is kept with few-cycle pulses: the ratio of the depths of focus
+at $\varepsilon = 0.99$ is 44.35 for a continuous beam and 44.33 at 1 fs.
+\item The contrast of the transverse rings decreases with shorter pulses, as in Romallosa et al.\ for the circular
+pupil.
+\end{enumerate}
+Details are in \texttt{review\_05.pdf}.
+
+\section*{5. Monte Carlo model of the focus, with scattering}
+\begin{enumerate}
+\item Each photon is a plane-wave component of the converging field, and the photons are added with their phases.
+Without scattering the sum is the Debye--Wolf integral: with $10^5$ photons the RMS difference from the
+deterministic field is 0.0008.
+\item The same holds for the Gaussian input, the annular pupil, the axicon and the vector field, each within 0.002.
+\item Through a scattering slab, the unscattered part keeps the focus and loses amplitude, and the scattered part
+forms a wide background. Six checks pass: the limit of no scattering, the Beer--Lambert law over the cone of rays,
+energy, single scattering, the diffusion limit of a thick slab, and the diffusion solution for a point source with
+absorption.
+\item Each Monte Carlo result is the mean of at least ten independent runs, with the runs stored.
+\end{enumerate}
+Details are in \texttt{review\_06.pdf}. A comparison with an experiment or an independent full-wave calculation has
+not been done.
+
+\section*{6. Two-color excitation with continuous beams}
+\subsection*{6.1 The papers}
+In 2CE two beams of wavelengths $\lambda_1 = 750$ nm and $\lambda_2 = 656$ nm, with
+$1/\lambda_e = 1/\lambda_1 + 1/\lambda_2$ and $\lambda_e = 350$ nm, are focused by two lenses whose axes make an
+angle $\theta$. The fluorescence is $F_{2c} = \kappa I_1I_2$, and for two-photon excitation (2PE) at 700 nm it is
+$F_{2p} = \kappa'|U_1+U_2|^4$ (Cambaliza \& Saloma, 2000). Lim \& Saloma (2002) displace the focus of the second
+beam, and Lim \& Saloma (2003) give each beam a primary spherical aberration.
+
+\subsection*{6.2 Replication}
+\begin{enumerate}
+\item Cambaliza \& Saloma: the profiles of Figs.~2 to 7 are reproduced at NA 0.5 for collinear ($\theta = 0$),
+crossed ($\pi/2$) and facing ($\pi$) lenses, with circular and annular pupils. With crossed lenses the profiles
+are the sharpest, and 2PE is narrower than 2CE with stronger side lobes, as in the paper. Several of the ratios
+quoted in the text of the paper differ from the current work at $\theta = \pi/2$ (for example 0.67 against 0.49
+for the 2PE spot at $\pi/2$ over that at 0), under the FWHM, the $1/e^2$ width and the first minimum, while the
+widths plotted in Fig.~5 of the paper agree with the current work. The second beam is rotated in real space; the
+rotation of the optical coordinates written in the papers does not reproduce the fits of Lim \& Saloma (2002).
+\item Lim \& Saloma (2002): the peak 2CE fluorescence against the displacement of the focus follows the fits of the
+paper. With crossed lenses and a displacement in the focal plane, the fit is $-0.063\,x_c^2 + 0.999$ against
+$-0.06\,x_c^2 + 1$ in the paper. Along the axis it is $-0.045\,z_c^2 + 0.995$ against $-0.045\,z_c^2 + 0.986$.
+The maps of fidelity, structural content and correlation quality behave as described in the paper.
+\item Lim \& Saloma (2003): the peak is kept when the two aberration coefficients are equal at $\theta = 0$ and
+opposite at $\theta = \pi$, and with crossed lenses the 2CE fidelity stays above 0.9 for coefficients up to 40, as
+in the paper.
+\end{enumerate}
+
+\subsection*{6.3 Extension to high NA, Gaussian input and immersion}
+\begin{enumerate}
+\item As NA increases, the displacement of the foci that 2CE tolerates decreases as a power of NA: about
+$\mathrm{NA}^{-1}$ across the axis and $\mathrm{NA}^{-2}$ along it.
+\item The paraxial scalar model of the papers gives a larger tolerance along the axis than the vector model: by 7\%
+at NA 0.5 and by 47\% near NA 0.95. The difference comes from the paraxial phase, not from the polarization.
+\item The 2CE and 2PE profiles of the scalar model stay within 5\% of the vector ones up to NA 0.86 across the axis
+and NA 0.43 along it, in air. In water the two limits are NA 1.14 and 0.57.
+\item A Gaussian input ($\alpha = 4$) makes the tolerances about 1.4 times larger.
+\item Crossed lenses of the same NA fit in air up to NA 0.71, where the two cones of rays touch.
+\end{enumerate}
+Paraxial scalar results are shown for NA up to 0.5 in all figures.
+
+\section*{7. Two-color excitation with optical pulses}
+\subsection*{7.1 Model}
+Each beam is a transform-limited Gaussian pulse of intensity FWHM $\tau$, the sum of its frequencies focused by the
+lens. The signal is the two-photon amplitude at the 350-nm level,
+$A = A^{11} + 2A^{12} + A^{22}$ with $A^{ab} = \int E_aE_b\,e^{i\omega_et}dt$, and $F = |A|^2$. $2A^{12}$ takes one
+photon from each beam (the 350-nm pairs, 750 + 656 nm). $A^{11}$ and $A^{22}$ take both photons from one beam (the
+375-nm pairs, 750 + 750 nm, and the 328-nm pairs, 656 + 656 nm). For long pulses $F \to I_1I_2$, the result of
+Cambaliza \& Saloma. The derivations and their checks are in
+\texttt{docs/review/07\_two\_color\_pulses/review\_07.pdf}.
+
+\subsection*{7.2 What was run}
+The runs cover the three lens angles, NA 0.1 to 0.95 in air, to 1.25 in water and to 1.45 in oil, the scalar and
+vector models, circular and annular pupils ($\varepsilon = 0.5, 0.9, 0.99$) and the Gaussian input
+($\alpha = 4$). The pulse widths are 4 to 1000 fs without delay, and 5 to 100 fs with delays up to $2\tau$.
+Unless stated, the numbers below are for the vector model in air with the circular pupil, both beams polarized
+perpendicular to the plane of the lens axes. The table gives the continuous-beam widths that the pulsed results
+are compared with.
+\begin{center}\small\begin{tabular}{llccccc}\toprule
+Continuous beams, FWHM ($\mu$m) & & NA 0.2 & 0.3 & 0.5 & 0.7 & 0.9\\\midrule
+2CE, $\theta = 0$ and $\pi$ & across the axis & 1.29 & 0.86 & 0.51 & 0.36 & 0.27\\
+ & along the axis & 22.0 & 9.67 & 3.33 & 1.56 & 0.81\\
+ & along the axis, scalar model & 22.3 & 9.89 & 3.56 & 1.82 & 1.10\\
+2CE, $\theta = \pi/2$ & along $x$ & 1.92 & 1.28 & 0.75 & 0.52 & \\
+ & along $z$ & 1.68 & 1.12 & 0.66 & 0.46 & \\
+2PE, $\theta = \pi/2$ & along $x$ and $z$ & 0.255 & 0.255 & 0.256 & 0.256 & \\
+2PE, $\theta = \pi$ & along the axis, central lobe & 0.129 & 0.130 & 0.136 & 0.147 & 0.166\\\bottomrule
+\end{tabular}\end{center}
+
+\subsection*{7.3 Collinear lenses ($\theta = 0$)}
+\begin{enumerate}
+\item As NA increases, the 2CE spot and depth of focus decrease together, and 2CE and 2PE have nearly the same
+profile. The depth of focus is 3.33 $\mu$m at NA 0.5 and 0.81 $\mu$m at NA 0.9.
+\item The scalar model gives a longer depth of focus than the vector model, by 7\% at NA 0.5 and 36\% at NA 0.9.
+Across the axis the two agree to about 1\% at NA 0.5.
+\item With pulses, 2CE keeps the continuous-beam profile at all pulse widths computed, down to 4 fs, because the
+two pulses travel together and overlap over the whole focus.
+\item With a delay, the peak falls with the temporal overlap of the two pulses,
+$\exp(-2\ln 2\,\Delta t^2/\tau^2)$: to one half at $\Delta t = 0.71\tau$ and one quarter at $\Delta t = \tau$,
+at all NAs. The stored peaks follow this to $10^{-5}$ at 100 fs.
+\item Below 20 fs, pulses with a fixed phase between the beams give fringes in the peak against the delay, with
+periods of 2.19, 2.50 and 1.17 fs. Their swing is 0.92 of the peak at 5 fs and 0.04 at 20 fs, and it is the same
+at all NAs, because with collinear lenses the pairs have no fringes in space.
+\end{enumerate}
+
+\subsection*{7.4 Crossed lenses ($\theta = \pi/2$)}
+\begin{enumerate}
+\item As NA increases, both 2CE widths decrease as about 1/NA, because the transverse spot of the other beam sets
+each of them. The 2CE spot is 0.75 by 0.66 $\mu$m at NA 0.5.
+\item The depth of focus is shorter than with collinear lenses, and this advantage decreases as NA increases: it
+is 13 times shorter at NA 0.2 and 3.4 times at NA 0.7.
+\item Two lenses of the same NA fit at right angles up to NA 0.71 in air and 0.94 in water, where their cones of
+rays touch.
+\item The 2PE central spot stays at 0.256 $\mu$m at all NAs, because the interference of the two beams sets it.
+2PE is narrower than 2CE and has stronger side lobes, as in Cambaliza \& Saloma.
+\item With pulses, the profiles match the continuous-beam ones from about 20 to 28 fs for 2CE. Below that the
+depth of focus changes by a few percent, so crossed lenses keep the sharpest profile.
+\item With a delay, the peak falls with the temporal overlap, to 0.250 to 0.253 at $\Delta t = \tau$.
+\item Below 20 fs the fringes against the delay deepen with NA, because a smaller spot holds fewer of the fringes
+in space: at 5 fs the swing along $x$ is 0.20 at NA 0.3 and 0.65 at NA 0.7.
+\item With the polarization in the plane of the lens axes, the two fields are perpendicular at the focus and
+the three kinds of pairs fall in different field components. The fringes are then about a quarter as deep
+(amplitude about 0.05 against 0.21 at NA 0.5 and 5 fs), and the 2CE spot is wider (0.83 against 0.75 $\mu$m at
+NA 0.5). The 350-nm pairs fall with the delay in the same way for both polarizations.
+\end{enumerate}
+
+\subsection*{7.5 Facing lenses ($\theta = \pi$)}
+\begin{enumerate}
+\item With continuous beams, 2CE has the same profile as with collinear lenses, since $I_1I_2$ does not depend
+on the direction of beam 2. 2PE has a standing wave along the axis, with a central lobe of 0.13 to 0.17 $\mu$m.
+\item With pulses, 2CE forms where the two pulses meet, a stretch of FWHM $G = c\tau/\sqrt2\,n$ (4.2 $\mu$m at
+20 fs, 21 $\mu$m at 100 fs), so its depth of focus is shorter than with continuous beams. With $D$ the
+continuous-beam depth of focus, the pulsed one is $DG/\sqrt{D^2+G^2}$.
+\item The shortening is larger at lower NA, because the focus lengthens while the stretch where the pulses meet
+stays the same. At NA 0.5 the depth of focus is 3.56 $\mu$m for continuous beams, 2.81 $\mu$m at 20 fs and
+1.92 $\mu$m at 10 fs for the 350-nm pairs (scalar model); with all pairs at 10 fs it is 2.14 $\mu$m through the
+fringe crests.
+\item The pulse width from which the profiles match the continuous-beam ones to 1\% therefore grows as NA
+decreases: about 25 fs at NA 0.9, 87 fs at NA 0.5, 260 fs at NA 0.3 and 610 fs at NA 0.2. For 2PE it is
+shorter (62 fs at NA 0.5), because the 350-nm pairs within one pulse need no overlap.
+\item With a delay, the pulses meet at $z = c\Delta t/2n$. At low NA this point stays inside the long focus, so
+the peak moves along the axis and is kept: at NA 0.1 and 100 fs it is 0.93 of the peak without delay, 14 $\mu$m
+from the focus.
+\item At NA 0.5 and above the peak stays at the focus and falls with the temporal overlap, to 0.26 at
+$\Delta t = \tau$. For all NAs the peak at a delay is
+$\exp[-4\ln 2\,z_m^2/(D^2+G^2)]$ with $z_m = c\Delta t/2n$, which gives 0.52 at NA 0.2 against 0.51 stored.
+\item Shorter pulses keep more of the peak at $\Delta t = \tau$, since the meeting point moves a shorter
+distance: at NA 0.5 it is 0.26 at 100 fs, 0.41 at 20 fs and 0.87 at 5 fs.
+\item Below 20 fs the fringes against the delay are shallow along the axis and deepen at high NA (swing 0.03 at
+NA 0.5 and 0.27 at NA 0.95, at 5 fs), because the peak follows the 350-nm fringes in space as the delay moves
+them.
+\end{enumerate}
+\begin{center}\includegraphics[width=0.9\textwidth]{delay_facing_vs_na.png}\end{center}
+
+\subsection*{7.6 Medium, pupil, input and pairs}
+\begin{enumerate}
+\item In water and oil the same results hold at a higher NA, since the focus depends on $\mathrm{NA}/n$. With
+facing lenses at NA 0.5, the profiles match the continuous-beam ones from 87 fs in air, 164 fs in water and
+216 fs in oil.
+\item A longer depth of focus needs a longer pulse to match continuous beams with facing lenses: at NA 0.5,
+139 fs for the Gaussian input and 405 fs for the annular pupil with $\varepsilon = 0.9$, against 87 fs for the
+circular pupil.
+\item The same pupils keep more of the peak under a delay: at NA 0.3, 100 fs and $\Delta t = \tau$, 0.32 for
+the circular pupil, 0.38 for the Gaussian input and 0.80 for the annular pupil with $\varepsilon = 0.9$. This
+is the use that Cambaliza \& Saloma propose for annular lenses, here for the timing of the pulses.
+\item With continuous beams, 2CE needs both beams, which gives its weak background in scattering media. Below
+about 15 fs one beam alone also reaches the 350-nm level, through the 375- and 328-nm pairs: their amplitude is
+18\% of that of the 350-nm pairs at 10 fs and below 1\% at 20 fs.
+\end{enumerate}
+
+\subsection*{7.7 In short}
+The lens angle decides what a pulse changes. With collinear lenses a pulse changes nothing down to 4 fs, with
+crossed lenses a few percent below about 20 fs, and with facing lenses it shortens the 2CE focus, more so at
+lower NA. A delay costs signal through the temporal overlap at the three angles, except with facing lenses at
+low NA, where it moves the 2CE along the axis instead.
+
+\section*{8. Checks and corrections}
+\begin{enumerate}
+\item The test suite has 1074 tests, which pass. It includes the quoted numbers of the papers, the Linfoot identity
+$F = 2Q - C$, and $\nabla\cdot\mathbf{E} = 0$ for the vector field.
+\item The pulse and delay runs use tables of the fields. Before the runs the tables agreed with the original code
+to $1.6\times10^{-10}$, and 16 samples of the delay runs recomputed with the original code agree to
+$1.8\times10^{-10}$.
+\item In the review of 2026-11-10 I read the four papers again and compared each equation with the code. One error
+was found and corrected: the longitudinal component of the vector field in the two-beam code had a factor $-2i$
+in place of $-2$. It changes 2PE with crossed lenses when the polarization lies in the plane of the two beams. It
+does not change the 2CE results or the pulse and delay results. The study that holds that case was run again:
+208 of its 5712 widths changed, all of them that case, and none of them is on a slide or the dashboard.
+\end{enumerate}
+
+\section*{9. Limits and what remains}
+\begin{enumerate}
+\item The pulses are transform-limited Gaussians, the 350-nm level is narrow compared with the spectra, and the
+fringes assume a fixed phase between the two beams.
+\item The pulse results use the polarization perpendicular to the plane of the two beams, and crossed lenses
+were also run with the polarization in that plane. For real molecules the absorption of two photons with
+perpendicular polarizations differs from that of parallel ones by a factor that depends on the molecule, which
+the model does not include.
+\item 2CE with pulses through a scattering medium has not been computed. It would combine parts 5 and 7.
+\item No comparison with an experiment has been made.
+\end{enumerate}
+
+\section*{Where things are}
+\begin{center}\small\begin{tabular}{ll}\toprule
+Review documents, one per part & \texttt{docs/review/01} to \texttt{07}\\
+Field of two beams; pulses & \texttt{mcdo/twobeam.py}; \texttt{mcdo/pulsed2ce.py}\\
+Replications & \texttt{scripts/replicate\_cambaliza2000.py}, \texttt{scripts/fig\_lim2002\_*.py}\\
+Pulse and delay runs & \texttt{scripts/cambaliza2000\_pulses\_*.py}\\
+Decks & \texttt{output/08\_two\_color/cambaliza2000/deck/}\\
+Dashboard & \texttt{dashboard/cambaliza/}\\\bottomrule\end{tabular}\end{center}
+\end{document}
