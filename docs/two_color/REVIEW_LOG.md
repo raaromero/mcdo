@@ -37,7 +37,12 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
    2PE = |U₁+U₂|⁴, the fringe of 2PE at θ = π and π/2, the crossed-lens limit NA = n sin 45°, displacement,
    aberration, Linfoot's criteria); (4) pulses; (5) delay. Pieces 4 and 5 are the sections of
    `pulse_derivations.tex`. Keep each topic in one place.
-5. **Delay deck** (`pulse_delay.pptx`): the same wording review as item 1. Not needed for the meeting of 2026-11-17.
+5. **Delay slides: done 2026-11-17.** The user asked for the delay results in the same deck, as their own slides.
+   They are Part 4 of `2ce_high_na_pulses.pptx` (slides 45 to 54) and also the deck `pulse_delay.pptx`; both take
+   them from `scripts/pulse_delay_slides.py`, so edit the wording there and rebuild both decks. They are written
+   in the framework of Lim & Saloma (2002): the peak 2CE fluorescence against a misalignment, here in time
+   ("a delay of 0.40 τ reduces the peak by 20%"). The user, 2026-11-17: "we write and look for results in the
+   same framework as the original papers; this time we just extended it to high NA and optical pulses."
 6. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
 7. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
@@ -58,6 +63,9 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 ## Passes
 
 ### 2026-11-17, midday
+- Added the delay results to the deck as Part 4 (65 slides now) from one shared module, and rewrote the delay deck
+  with it. The delay that reduces the peak by 20% with facing lenses at 100 fs is 0.40 τ at NA 0.9, 0.41 τ at NA 0.5,
+  0.44 τ at NA 0.3, 0.58 τ at NA 0.2 and 1.74 τ at NA 0.1.
 - Rewrote all titles and bullets of the deck from the approved wording; fixed stray panel labels (a LaTeX string
   passed as labels); titles sized to one line; axis labels of the pulse-width figures written out; verified the
   focal-spot numbers of the NA 0.3 and 0.9 slide (1.1% and 13.7% wider along the polarization). Commits 16e9777, 36ed3a8.

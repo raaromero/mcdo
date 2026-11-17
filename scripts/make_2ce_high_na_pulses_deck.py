@@ -1,19 +1,22 @@
-r"""Deck of the work up to the delay between the pulses: the focus at high NA with the Richards–Wolf theory, two-color excitation (2CE) with
-continuous beams at high NA, and 2CE with optical pulses. Figures are the existing ones (mcdo/deck.py stages 1 to 5,
+r"""Deck of the work to date: the focus at high NA with the Richards–Wolf theory, two-color excitation (2CE) with
+continuous beams at high NA, 2CE with optical pulses, and the delay between the two pulses (Part 4, the slides of
+pulse_delay_slides.py, shared with make_pulse_delay_deck.py). Figures are the existing ones (mcdo/deck.py stages 1 to 5,
 the Cambaliza & Saloma and Lim & Saloma replications and their high-NA extension, and the pulse figures); numbers are
-in the speaker notes. The delay between the pulses is in the separate deck pulse_delay.pptx.
+in the speaker notes.
 
     python scripts/make_2ce_high_na_pulses_deck.py -> output/08_two_color/decks/2ce_high_na_pulses.pptx
 """
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from PIL import Image, ImageFont
-from pptx.util import Inches, Pt
+from PIL import Image
 
 import mcdo.deckstyle as ds
 from mcdo.deckstyle import NAVY, PALE, PURPLE, WHITE, bullets, dots, equation, figure, label, prs, slide, text, where
+
+from pulse_delay_slides import delay_slides, fitted
 
 Image.MAX_IMAGE_PIXELS = None
 ds.CITE = ''
@@ -53,23 +56,7 @@ def navy(title, lines=()):
     return s
 
 
-_slide = slide
-
-
-def slide(title, takeaway=''):
-    s = _slide(title, takeaway)
-    try:                                                # width of the title at 24 pt bold; the box is 8.6 in wide
-        w24 = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 100, index=1).getlength(title) * 24 / 7200
-    except OSError:
-        w24 = 0.157 * len(title)
-    size = 24 if w24 <= 8.5 else max(18, int(24 * 8.5 / w24))
-    if size != 24:
-        for sh in s.shapes:
-            if sh.has_text_frame and abs(sh.left - Inches(1.2)) < 2000 and abs(sh.top - Inches(0.28)) < 2000:
-                for par in sh.text_frame.paragraphs:
-                    for r in par.runs:
-                        r.font.size = Pt(size)
-    return s
+slide = fitted(slide)
 
 
 def head(title, items):
@@ -143,8 +130,7 @@ s = navy('Two-color excitation at high NA and with optical pulses', [
      PALE)])
 notes(s, 'Two-color excitation (2CE) at high NA and with optical pulses.',
       'Romallosa, Bantang & Saloma, Phys. Rev. A 68, 033812 (2003). Cambaliza & Saloma, Opt. Commun. 184, 25 (2000). '
-      'Lim & Saloma, Opt. Commun. 207, 121 (2002), and Appl. Opt. 42, 3398 (2003). The delay between the two pulses '
-      'is in the separate deck pulse_delay.pptx.')
+      'Lim & Saloma, Opt. Commun. 207, 121 (2002), and Appl. Opt. 42, 3398 (2003).')
 
 words('Summary', [
     'Reproduced the intensity distributions near the focus of few-cycle pulses of Romallosa, Bantang & Saloma (2003) with the Richards–Wolf theory, and extended them to Gaussian input and annular pupils.',
@@ -152,13 +138,13 @@ words('Summary', [
     'Found that the paraxial scalar model gives the central spot of the vector focus up to NA 0.86 in air, but overestimates the depth of focus above NA 0.43.',
     'Extended the 2CE and 2PE point spread functions from continuous beams to transform-limited femtosecond pulses. At 100 fs, pulsed 2CE is the same as with continuous beams at all three lens angles.',
     'Found that with facing lenses, pulsed 2CE forms where the two pulses meet, so its depth of focus is shorter than with continuous beams, more so at lower NA.',
-    'Found that below about 15 fs, one beam alone also excites the 350-nm level, so 2CE starts to lose its weak background in scattering media.'],
+    'Found that below about 15 fs, one beam alone also excites the 350-nm level, so 2CE starts to lose its weak background in scattering media.',
+    'Delayed one pulse relative to the other: the peak 2CE fluorescence decreases as their temporal overlap, except with facing lenses at low NA, where the peak moves along the axis and is largely retained.'],
     'Richards–Wolf focus, then 2CE at high NA, then 2CE with optical pulses.',
     'The paraxial depth of focus of 2CE with collinear and facing lenses is 5% longer than the vector one from NA 0.43 '
     'in air (0.57 in water), 7% at NA 0.5 and 36% at NA 0.9. With facing lenses at NA 0.5, the 2CE depth of focus is '
     'about 80% of the continuous-beam value at 20 fs and 60% at 10 fs; at NA 0.3 and 20 fs it is 40%. The 375- and '
-    '328-nm pairs have 18% of the amplitude of the 350-nm pairs at 10 fs and below 1% at 20 fs. The delay between the '
-    'two pulses is in the separate deck pulse_delay.pptx.', size=13, h=4.3)
+    '328-nm pairs have 18% of the amplitude of the 350-nm pairs at 10 fs and below 1% at 20 fs.', size=13, h=4.4)
 
 # ── Part 1. The focus at high NA with the Richards–Wolf theory ───────────
 navy('1. Replication of Romallosa et al. (2003) and its extension to Gaussian input and annular pupils: intensity '
@@ -602,19 +588,23 @@ big('Pulse width that matches continuous beams: pupils, θ = 0, π/2', [
     'pupils and 11 to 14 fs for the Gaussian input (α = 4). Below NA 0.4 it rises to 82 fs for the Gaussian input at '
     'NA 0.1 and 54 fs for the circular pupil.')
 
-# ── Part 4. Summary and next steps ───────────────────────────────────────
+# ── Part 4. Delay between the two pulses (the slides of pulse_delay.pptx) ─
+navy('4. Delay between the two pulses: peak 2CE fluorescence against a misalignment of the two pulses in time, at '
+     'θ = 0, π/2 and π')
+delay_slides(slide, big, notes)
+
+# ── Summary and next steps ───────────────────────────────────────────────
 words('Summary: 2CE with optical pulses', [
     'At 100 fs, pulsed 2CE is the same as with continuous beams.',
     'With collinear and crossed lenses, pulsed 2CE keeps the continuous-beam depth of focus and spot to within a few percent.',
     'With facing lenses, pulsed 2CE forms where the pulses meet, so its depth of focus is shorter than with continuous beams, more so at lower NA; 2PE shortens less.',
     'Below about 15 fs one beam alone also excites the 350-nm level, so 2CE carries fringes and starts to lose its weak background.',
+    'With a delay between the two pulses, the peak 2CE fluorescence decreases as their temporal overlap, to one quarter at a delay of one pulse width; with facing lenses at low NA the peak moves along the axis and is largely retained.',
     'The results assume phase-locked, transform-limited pulses and a 350-nm level that is narrow compared to the pulse spectra.'],
     'The lens angle decides what a pulse changes.',
-    'Collinear θ = 0, crossed θ = π/2, facing θ = π. The delay between the two pulses is in the separate deck '
-    'pulse_delay.pptx.')
+    'Collinear θ = 0, crossed θ = π/2, facing θ = π.')
 
 words('Next steps', [
-    'Report the 2CE peak and its position against a delay between the two pulses, computed for the same lens angles, NAs and pupils.',
     'Compute pulsed 2CE through a highly scattering medium, where Cambaliza & Saloma (2000) found the main advantage of 2CE compared to 2PE.',
     'Compute pulses of unequal width and chirped pulses, which change the overlap in time of the two pulses.',
     'Replace the narrow 350-nm level with a broad absorption band.'],

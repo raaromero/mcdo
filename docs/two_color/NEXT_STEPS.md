@@ -156,8 +156,10 @@ and run H3. Annular pupils with ε = 0.99 take hours; the others take minutes.
 Each deck is rebuilt by its script; never edit a `.pptx` by hand.
 
 ```bash
-$P scripts/make_2ce_high_na_pulses_deck.py         # -> output/08_two_color/decks/2ce_high_na_pulses.pptx (55 slides)
+$P scripts/make_2ce_high_na_pulses_deck.py         # -> output/08_two_color/decks/2ce_high_na_pulses.pptx (65 slides; Part 4 is the delay)
 $P scripts/make_pulse_delay_deck.py     # -> output/08_two_color/cambaliza2000/deck/pulse_delay.pptx (11 slides)
+$P scripts/pptx_resave_pdf.py <deck.pptx> …   # re-save through PowerPoint (so Keynote loads it) and write the PDF beside it
+# the delay slides of both decks are defined once, in scripts/pulse_delay_slides.py
 ```
 
 The polarization figure of the delay deck (`delay_sweep/delay_polarization_pi2.png`) is drawn by the function
