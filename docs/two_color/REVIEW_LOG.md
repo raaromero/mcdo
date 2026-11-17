@@ -5,27 +5,24 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Open items (do these, in this order)
 
-1. **Wording of the deck `2ce_high_na_pulses.pptx`** (`scripts/make_2ce_high_na_pulses_deck.py`). On 2026-11-17 the
-   user rejected its language three times in a row: "The focus at X" (a title that starts with "The …"), "scientific
-   presentation", and "no telegraphed phrases or sentences". The cause: titles and bullets had been shortened to fit
-   one line and lost their subject, verb or reason ("τ to match continuous beams against NA, θ = π", "a pulse changes
-   nothing down to 4 fs", "its zeros fill, because of E_z"). The rule that fixes it:
-   - **Never shorten a sentence to fit a line.** A bullet may take two lines. One or two bullets per slide.
-   - **Reuse the approved wording verbatim** wherever a slide is carried over. Part 3 (pulses): the titles and bullets
-     of `pulse_results.pptx` (read them from the file with python-pptx; do not import its script). Part 2 (continuous
-     beams, high NA): the `title` and `items` of `output/08_two_color/decks/2ce_meeting_manifest.json`. Lim & Saloma
-     slides: the wording of `~/Downloads/Research/two_color/pdfs/2ce_meeting_2026-10-15.pdf`, rewritten as full
-     sentences.
-   - **New slides** (Part 1, the Richards–Wolf work) use the vocabulary of Romallosa et al. (2003): "intensity
-     distribution near focus", "transverse and axial intensity distributions", "tightly focused beam", "few-cycle
-     optical pulses", "spectral broadening", "Linfoot's criteria of fidelity, structural content and correlation
-     quality". Extension results open with "As NA increases, …" and compare with the published or scalar result.
-   - Titles are plain labels of what is shown, in the form of the approved decks: "Central spot and depth of focus
-     against NA: 2CE, θ = 0 and π", "Pulse width that matches continuous beams", "2CE depth of focus against pulse
-     width". No title starts with "The". No coined shorthand.
-   - After a rewrite: rebuild, run `scripts/pptx_resave_pdf.py` on the deck (it opens PowerPoint on the user's
+1. **Wording of the deck `2ce_high_na_pulses.pptx`: done 2026-11-17, keep it that way.** The user rejected its
+   language three times ("The focus at X", "scientific presentation", "no telegraphed phrases or sentences"): titles
+   and bullets had been shortened to fit one line and had lost their subject, verb or reason. All titles and bullets
+   were rewritten (commit 36ed3a8). The rules for any later change:
+   - Never shorten a sentence to fit a line. A bullet may take two lines. One or two bullets per slide.
+   - A slide carried over keeps the approved wording word for word: Part 3 (pulses) from `pulse_results.pptx` (read
+     the file with python-pptx; do not import its script); Part 2 from the `title` and `items` of
+     `output/08_two_color/decks/2ce_meeting_manifest.json`.
+   - New slides use the vocabulary of the paper they extend (Romallosa et al. (2003): "intensity distribution near
+     focus", "zero points", "spectral bandwidth"; Lim & Saloma: "misalignment", "peak 2CE fluorescence").
+   - No title starts with "The". The deck script sizes each title from its measured width so that it stays on one
+     line (19 to 24 pt).
+   - After any change: rebuild, run `scripts/pptx_resave_pdf.py` on the deck (it opens PowerPoint on the user's
      screen, re-saves the file so that Keynote loads it, and writes the PDF beside it), then LOOK at the PDF pages
-     (`pdftoppm -r 60 -png`) before telling the user anything.
+     (`pdftoppm -r 100 -png`) before telling the user anything.
+   Still open in this deck: the figures of Part 1 (slides 4 to 11) are in the older style, with small fonts and
+   titles inside the figure; redraw them at the figure standards with the scripts that made them
+   (`scripts/validate_romallosa.py`, `scripts/visual_na_checks.py`, `scripts/verify_*.py`), as new files.
 2. **Guides of that deck** repeat its bullets (`docs/two_color/walkthrough/walkthrough_high_na_pulses.src.md`,
    `docs/two_color/presenter_guide_high_na_pulses.md`). After item 1, copy the new titles and bullets into them and
    rebuild (commands in `NEXT_STEPS.md`, "Guides"). The built HTML and PDF files still carry the old title text.
@@ -61,6 +58,9 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 ## Passes
 
 ### 2026-11-17, midday
+- Rewrote all titles and bullets of the deck from the approved wording; fixed stray panel labels (a LaTeX string
+  passed as labels); titles sized to one line; axis labels of the pulse-width figures written out; verified the
+  focal-spot numbers of the NA 0.3 and 0.9 slide (1.1% and 13.7% wider along the polarization). Commits 16e9777, 36ed3a8.
 - Renamed the deck, its script and its guides (were named after the adviser).
 - Added `scripts/pptx_resave_pdf.py`.
 - The user rejected the wording of the deck (item 1). Rewrite in progress.
