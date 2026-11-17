@@ -9,7 +9,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from PIL import Image
+from PIL import Image, ImageFont
+from pptx.util import Inches, Pt
 
 import mcdo.deckstyle as ds
 from mcdo.deckstyle import NAVY, PALE, PURPLE, WHITE, bullets, dots, equation, figure, label, prs, slide, text, where
@@ -52,6 +53,25 @@ def navy(title, lines=()):
     return s
 
 
+_slide = slide
+
+
+def slide(title, takeaway=''):
+    s = _slide(title, takeaway)
+    try:                                                # width of the title at 24 pt bold; the box is 8.6 in wide
+        w24 = ImageFont.truetype('/System/Library/Fonts/HelveticaNeue.ttc', 100, index=1).getlength(title) * 24 / 7200
+    except OSError:
+        w24 = 0.157 * len(title)
+    size = 24 if w24 <= 8.5 else max(18, int(24 * 8.5 / w24))
+    if size != 24:
+        for sh in s.shapes:
+            if sh.has_text_frame and abs(sh.left - Inches(1.2)) < 2000 and abs(sh.top - Inches(0.28)) < 2000:
+                for par in sh.text_frame.paragraphs:
+                    for r in par.runs:
+                        r.font.size = Pt(size)
+    return s
+
+
 def head(title, items):
     """Title and one or two one-line bullets; returns the slide and the top of the figure area."""
     s = slide(title, '')
@@ -88,6 +108,8 @@ def big(title, items, fig, main, script, latex=None):
 def pair(title, items, left, right, main, script, labels=None, latex=None):
     """One or two bullets and two panels side by side at the same height, as large as the slide allows; with labels,
     the published panel is on the left and current work on the right."""
+    if isinstance(labels, str):                         # the equation for the notes, given without its keyword
+        labels, latex = None, labels
     s, top = head(title, items)
     if labels:
         top += 0.27
@@ -125,34 +147,30 @@ notes(s, 'Two-color excitation (2CE) at high NA and with optical pulses.',
       'is in the separate deck pulse_delay.pptx.')
 
 words('Summary', [
-    'Reproduced the focus of few-cycle pulses of Romallosa, Bantang & Saloma (2003) with the Richards–Wolf theory, '
-    'and extended it to Gaussian input and annular pupils.',
-    'Reproduced Cambaliza & Saloma (2000) and Lim & Saloma (2002, 2003) on two-color excitation (2CE), and extended '
-    'them to high NA, where the paraxial model gives too long a depth of focus above NA 0.43.',
-    'Extended 2CE to optical pulses, and found that at 100 fs it is the same as with continuous beams at the three '
-    'lens angles.',
-    'Found that with facing lenses pulsed 2CE forms where the two pulses meet, so its depth of focus is shorter than '
-    'with continuous beams, more so at lower NA.',
-    'Found that below about 15 fs one beam alone also excites the 350-nm level, so 2CE starts to lose its weak '
-    'background in scattering media.',
-    'Added a delay between the two pulses, which weakens 2CE through their temporal overlap; these results are in '
-    'a separate deck.'],
+    'Reproduced the intensity distributions near the focus of few-cycle pulses of Romallosa, Bantang & Saloma (2003) with the Richards–Wolf theory, and extended them to Gaussian input and annular pupils.',
+    'Reproduced the 2CE and 2PE point spread functions of Cambaliza & Saloma (2000) and Lim & Saloma (2002, 2003), and extended them from NA 0.5 to high NA with the vector (Richards–Wolf) focus, in air and in water.',
+    'Found that the paraxial scalar model gives the central spot of the vector focus up to NA 0.86 in air, but overestimates the depth of focus above NA 0.43.',
+    'Extended the 2CE and 2PE point spread functions from continuous beams to transform-limited femtosecond pulses. At 100 fs, pulsed 2CE is the same as with continuous beams at all three lens angles.',
+    'Found that with facing lenses, pulsed 2CE forms where the two pulses meet, so its depth of focus is shorter than with continuous beams, more so at lower NA.',
+    'Found that below about 15 fs, one beam alone also excites the 350-nm level, so 2CE starts to lose its weak background in scattering media.'],
     'Richards–Wolf focus, then 2CE at high NA, then 2CE with optical pulses.',
     'The paraxial depth of focus of 2CE with collinear and facing lenses is 5% longer than the vector one from NA 0.43 '
     'in air (0.57 in water), 7% at NA 0.5 and 36% at NA 0.9. With facing lenses at NA 0.5, the 2CE depth of focus is '
     'about 80% of the continuous-beam value at 20 fs and 60% at 10 fs; at NA 0.3 and 20 fs it is 40%. The 375- and '
-    '328-nm pairs have 18% of the amplitude of the 350-nm pairs at 10 fs and below 1% at 20 fs.', size=14, h=4.3)
+    '328-nm pairs have 18% of the amplitude of the 350-nm pairs at 10 fs and below 1% at 20 fs. The delay between the '
+    'two pulses is in the separate deck pulse_delay.pptx.', size=13, h=4.3)
 
 # ── Part 1. The focus at high NA with the Richards–Wolf theory ───────────
-navy('Part 1. The focus at high NA with the Richards–Wolf theory')
+navy('1. Replication of Romallosa et al. (2003) and its extension to Gaussian input and annular pupils: intensity '
+     'distribution near focus with the Richards–Wolf theory')
 R1 = os.path.join(O, '01_romallosa', 'panels')
 A2 = os.path.join(O, '02_na_apodization', 'panels')
 A3 = os.path.join(O, '03_annular', 'panels')
 A5 = os.path.join(O, '05_pulsed_pupils', 'panels')
 
-pair('Focus of a 1-fs pulse and a continuous beam, NA 0.8', [
-    'A 1-fs pulse fills the zeros of the continuous-beam focus, as in Romallosa et al. (2003).',
-    'The structural content along the axis is 1.058, against 1.057 in Romallosa et al. (2003).'],
+pair('Intensity distributions near focus with a 1-fs pulse, NA 0.8', [
+    'With a 1-fs pulse, the transverse and axial intensity distributions contain no zero points and decrease more slowly from the maximum at the geometrical focus than with a continuous beam.',
+    'The distributions of Romallosa et al. (2003) are reproduced: the structural content of the axial distribution at 1 fs is 1.058, compared to 1.057 published.'],
     os.path.join(R1, 'fig2_profiles_p1.png'), os.path.join(R1, 'fig2_profiles_p2.png'),
     'The five figures of Romallosa, Bantang & Saloma (2003) are reproduced.',
     'Left: across the axis at z = 0; right: along the axis at r = 0; 750 nm, NA 0.8, n = 1.3, continuous beam and '
@@ -163,9 +181,9 @@ pair('Focus of a 1-fs pulse and a continuous beam, NA 0.8', [
     'Fig. 2 are exchanged, Fig. 3 is an integral along a line, and the Linfoot arrays are in optical coordinates. '
     'Details are in docs/review/01_romallosa/review_01.pdf.')
 
-pair("Linfoot's criteria against NA and against pulse width", [
-    'Fidelity and structural content do not depend on NA, as in Romallosa et al. (2003).',
-    'Below about 2 fs the fidelity falls below 1 and the structural content rises above 1.'],
+pair('Fidelity and structural content against NA and pulse width', [
+    'At a pulse width of 1 fs, the fidelity F and the structural content S of the pulsed distribution relative to the continuous-beam one are insensitive to NA from 0.1 to 1.2, as reported by Romallosa et al. (2003).',
+    'At NA 0.8, F and S stay within about 1% of unity for pulse widths down to 2 fs and deteriorate rapidly for shorter pulses, because the spectral bandwidth increases as the pulse width decreases.'],
     os.path.join(R1, 'fig4_linfoot_p1.png'), os.path.join(R1, 'fig4_linfoot_p2.png'),
     'Pulses shorter than about 2 fs change the focus; the change does not depend on NA.',
     'Left: the criteria at 1 fs against NA; right: against the pulse width at NA 0.8 (Romallosa et al. (2003), '
@@ -174,9 +192,9 @@ pair("Linfoot's criteria against NA and against pulse width", [
     'Linfoot arrays are in optical coordinates.',
     r'F = 1 - \frac{\sum (a - r)^2}{\sum r^2}, \quad S = \frac{\sum a^2}{\sum r^2}, \quad Q = \frac{\sum a r}{\sum r^2}')
 
-pair('Spot width against NA, scalar and vector theory', [
-    'As NA increases the vector spot becomes wider than the scalar Debye spot.',
-    'The difference is the longitudinal field E_z, which fills the zeros and widens the spot.'],
+pair('Focal spot FWHM against NA: scalar Debye and vector theory', [
+    'As NA increases, the FWHM of the vector focal spot in optical units rises above the Airy value of 3.23, while that of the scalar Debye spot falls below it.',
+    'The vector spot is wider because of the longitudinal field component E_z, which is largest along the polarization and fills the zero points of the transverse intensity (right, NA 1.2).'],
     os.path.join(A2, 'verify_na_convergence_p3.png'), os.path.join(A2, 'fig_na_profiles_p3.png'),
     'The scalar theory departs from the vector theory first across the axis, along the polarization.',
     'Left: FWHM of the focal spot in optical units against NA, for the vector field with all three components, the '
@@ -186,9 +204,9 @@ pair('Spot width against NA, scalar and vector theory', [
     'axis the difference reaches 1% at NA 1.15. Details are in docs/review/02_na_apodization/review_02.pdf.',
     r'E_x = -i(I_0 + I_2\cos 2\phi), \quad E_y = -i I_2 \sin 2\phi, \quad E_z = -2 I_1 \cos\phi')
 
-big('Focal spot at NA 0.3 and 0.9, scalar and vector', [
-    'At NA 0.3 the scalar and vector spots have the same width, to about 1%.',
-    'At NA 0.9 the vector spot is wider along the polarization and its zeros fill, because of E_z.'],
+big('Transverse intensity distribution at NA 0.3 and NA 0.9', [
+    'At NA 0.3, the scalar Debye and vector intensity distributions coincide; along the polarization, the vector FWHM is about 1% larger.',
+    'At NA 0.9, the vector distribution along the polarization is 14% wider than the scalar one and has no zero points, because the longitudinal field component E_z is largest in that direction; across the polarization the two coincide.'],
     os.path.join(O, '02_na_apodization', 'check2_na0.3_na0.9.png'),
     'As NA increases the vector spot widens along the polarization and its zeros fill.',
     'Intensity in the focal plane against the optical radius v = k r sin α, on a log scale; 750 nm, n = 1.3, continuous '
@@ -200,9 +218,9 @@ big('Focal spot at NA 0.3 and 0.9, scalar and vector', [
     'widens the spot along the polarization and not across it.',
     r'E_x = -i(I_0 + I_2\cos 2\phi), \quad E_z = -2 I_1 \cos\phi')
 
-pair('Gaussian input against uniform input at high NA', [
-    'A Gaussian input (α = 4) keeps the scalar theory accurate to a higher NA.',
-    'It gives less weight to the marginal rays, which carry the longitudinal field.'],
+pair('Gaussian and uniform input: vector against scalar focal width', [
+    'As NA increases, the FWHM of the vector focal spot deviates from that of scalar theory; with a Gaussian input of truncation parameter α = 4, the deviation is smaller than with uniform input at all NAs.',
+    'A Gaussian input gives less weight to the marginal rays, so scalar theory stays accurate up to a higher NA and the depth of focus is longer (right, NA 0.9).'],
     os.path.join(A2, 'verify_apod_thresholds_p1.png'), os.path.join(A2, 'fig_focal_plane_gaussian_p5.png'),
     'A Gaussian input extends the range of NA where the scalar theory holds.',
     'Left: deviation of the vector focal width from the scalar one against NA, for uniform input and Gaussian input '
@@ -212,9 +230,9 @@ pair('Gaussian input against uniform input at high NA', [
     'for the Gaussian input agree and the uniform input gives a shorter focus.',
     r'A(\rho) = \exp(-\alpha \rho^2)')
 
-pair('Depth of focus and peak against ε, annular pupils', [
-    'At low NA the depth of focus grows as 1/(1 − ε²); at high NA it grows less.',
-    'The peak intensity falls as (1 − ε²)², the cost of the longer focus.'],
+pair('Annular pupils: depth of focus and peak intensity against ε', [
+    'As the obstruction ratio ε increases, the depth of focus of an annular pupil grows as 1/(1 − ε²) at low NA; at high NA (sin α = 0.9) it grows more slowly.',
+    'The peak intensity decreases as (1 − ε²)² at low and at high NA, because the field at the focus is proportional to the open area of the pupil.'],
     os.path.join(A3, 'verify_annular_p3.png'), os.path.join(A3, 'verify_annular_energy_p1.png'),
     'An annular pupil lengthens the focus and lowers the peak.',
     'The field of an annular pupil is the field of the full pupil minus that of the obstructed part. At ε = 0.99 the '
@@ -224,38 +242,40 @@ pair('Depth of focus and peak against ε, annular pupils', [
     r'U_{\mathrm{annular}} = U_R - U_{\varepsilon R}, \quad \frac{\mathrm{DOF}(\varepsilon)}{\mathrm{DOF}(0)} = '
     r'\frac{1}{1 - \varepsilon^2}')
 
-pair('Depth of focus of annular pupils with few-cycle pulses', [
-    'The longer depth of focus of an annular pupil is kept with few-cycle pulses, down to 1 fs.'],
+pair('Annular pupils with few-cycle pulses: depth of focus', [
+    'The extension of the depth of focus by an annular pupil is retained with few-cycle pulses: at ε = 0.99, the depth of focus at 1 fs is within about 1% of its continuous-beam value.',
+    'Beyond the half-maximum point, the axial intensity decreases more slowly as the pulse width decreases (right), as with the circular pupil.'],
     os.path.join(A5, 'verify_pulsed_annular_p4.png'), os.path.join(A5, 'verify_pulsed_annular_p3.png'),
     'Few-cycle pulses keep the depth of focus that an annular pupil gives.',
     'Left: depth of focus over that of the full pupil against ε, continuous beam and 5, 2 and 1 fs, NA 0.8, 750 nm. '
     'At ε = 0.99 the ratio is 44.35 for a continuous beam and 44.33 at 1 fs. Right: the profile along the axis at '
     'ε = 0.99; at 1 fs the focus is 1.010 times longer than with a continuous beam. Details are in review_05.pdf.')
 
-pair('Transverse profile with pulses, full and annular pupils', [
-    'The contrast of the transverse rings decreases with shorter pulses, for both pupils.',
-    'This is the loss of focal quality of Romallosa et al. (2003), here with annular pupils.'],
+pair('Transverse intensity distribution with few-cycle pulses', [
+    'As the pulse width decreases from 5 fs to 1 fs, the zero points of the transverse intensity distribution fill in and the contrast of the rings decreases, for the circular pupil (left) and the annular pupil with ε = 0.99 (right).',
+    'The loss of contrast reported by Romallosa et al. (2003) for the circular pupil therefore also occurs with annular pupils.'],
     os.path.join(A5, 'verify_pulsed_annular_p2.png'), os.path.join(A5, 'verify_pulsed_annular_p1.png'),
     'Pulses fill the zeros between the rings, with the full pupil and with the annular one.',
     'Left: full pupil; right: annular pupil with ε = 0.99; NA 0.8, 750 nm, continuous beam and 5, 2 and 1 fs. The '
     'structural content across the axis is about 1.06 at 1 fs for both pupils.')
 
 # ── Part 2. Two-color excitation with continuous beams ───────────────────
-navy('Part 2. Two-color excitation with continuous beams')
-s = slide('Two beams focused at an angle θ', '')
+navy('2. Two-color excitation with continuous beams: replication of Cambaliza & Saloma (2000) and Lim & Saloma '
+     '(2002, 2003), and extension to high NA')
+s = slide('Two-color excitation with two confocal beams at an angle θ', '')
 figure(s, path(TC, 'setup_model.png'), 0.4, 0.95, 4.2, 4.25)
-bullets(s, 4.85, 0.95, 4.75, 1.4, [
-    'Lens L2 is lens L1 turned by θ about the focus O, with θ = 0, π/2 or π.',
-    '2CE absorbs one photon of each color, so the signal is the product of the two intensities.'], 13)
+bullets(s, 4.85, 0.95, 4.75, 1.9, [
+    'Lens L2 is lens L1 rotated by θ about the common focus O; L1 focuses 750 nm and L2 656 nm.',
+    '2CE absorbs one photon of each color, so the signal is the product of the two intensities.',
+    '2PE uses 700 nm in both beams, so the two fields add first and interfere.'], 13)
 EQ1 = r'\frac{1}{\lambda_e} = \frac{1}{\lambda_1} + \frac{1}{\lambda_2}'
 EQ2 = r'F_{2c} = \kappa\, I_1 I_2'
 EQ3 = r"F_{2p} = \kappa'\, |U_1 + U_2|^4"
-t = 2.45
+t = 2.95
 for tex in (EQ1, EQ2, EQ3):
     t += equation(s, 5.0, t, 4.5, tex, 20) + 0.12
-where(s, 5.0, t + 0.05, 4.5, 'λ_1 = 750 nm on L1, λ_2 = 656 nm on L2 and λ_e = 350 nm; I_1 and I_2 are the focused '
-      'intensities and U_1 and U_2 the fields. 2PE uses 700 nm in both lenses. θ = 0, π/2 and π are collinear, '
-      'crossed and facing lenses.', 11)
+where(s, 5.0, t + 0.05, 4.5, 'λ_e = 350 nm; I_1 and I_2 are the focused intensities and U_1 and U_2 the fields; '
+      'θ = 0, π/2 and π are collinear, crossed and facing lenses.', 11)
 notes(s, 'Two lenses focus two colors onto one point, at an angle θ.',
       'Cambaliza & Saloma (2000), pp. 26–28. 2CE absorbs one photon of each beam, so it forms where the two beams '
       'overlap; the two beams do not interfere. Two-photon excitation (2PE) uses one wavelength in both lenses, so '
@@ -263,8 +283,9 @@ notes(s, 'Two lenses focus two colors onto one point, at an angle θ.',
       'Saloma (2002) displace the focus of L2 by x_c across and z_c along the axis of L1, and Lim & Saloma (2003) give '
       'each beam a primary spherical aberration.', '\n'.join((EQ1, EQ2, EQ3)))
 
-pair('Transverse 2CE profiles, NA 0.5 (Fig. 2b)', [
-    'At θ = π/2 the 2CE spot is wider; at θ = 0 and π the profiles are identical.'],
+pair('Transverse 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', [
+    'At θ = 0 and π, the transverse 2CE distributions are identical and nearly equal to the 2PE distribution at θ = 0.',
+    'At θ = π/2, the central spot is wider and shows no second-order interference effects, so 2CE with circular pupils does not offer a definite advantage in transverse resolution (Cambaliza & Saloma, 2000, p. 29).'],
     path(CB, 'original', 'fig2b.png'), path(CB, 'panels', 'fig2b.png'),
     'Current work reproduces the transverse 2CE profiles of Cambaliza & Saloma (2000).',
     'Paraxial scalar model, NA 0.5, circular pupils, as published. Current work lies on the published curves. The '
@@ -273,8 +294,9 @@ pair('Transverse 2CE profiles, NA 0.5 (Fig. 2b)', [
     'against 0.49 for the 2PE spot at π/2 over that at 0), while the plotted widths agree with current work.',
     labels=('Cambaliza & Saloma (2000), Fig. 2b', 'Current work'))
 
-pair('Axial 2CE profiles, NA 0.5 (Fig. 3b)', [
-    'At θ = π/2 the 2CE depth of focus is shorter; at θ = 0 and π the profiles are identical.'],
+pair('Axial 2CE PSF, circular pupils, NA 0.5: θ = 0, π/2 and π', [
+    'At θ = 0 and π, the axial 2CE distributions are identical and nearly equal to the 2PE distribution at θ = 0.',
+    'At θ = π/2, the 2CE distribution has weaker side lobes than the 2PE one, but a broader depth of focus (Cambaliza & Saloma, 2000, p. 30).'],
     path(CB, 'original', 'fig3b.png'), path(CB, 'panels', 'fig3b.png'),
     'Current work reproduces the axial 2CE profiles of Cambaliza & Saloma (2000).',
     'Paraxial scalar model, NA 0.5. The published depth of focus at θ = π/2, 0.67 µm, is that of beam 2 rotated in '
@@ -283,8 +305,9 @@ pair('Axial 2CE profiles, NA 0.5 (Fig. 3b)', [
     labels=('Cambaliza & Saloma (2000), Fig. 3b', 'Current work'))
 
 LO = os.path.join(TC, 'lim2002')
-pair('2CE peak against displacement of L2, θ = π', [
-    'Displacing the focus of L2 lowers the 2CE peak, more slowly along the axis than across it.'],
+pair('Peak 2CE fluorescence against misalignment of the foci, θ = π', [
+    'With facing lenses, a misalignment of 0.37 λ_1 across the axis of L1 reduces the peak 2CE fluorescence by 18%, compared to the 20% reported by Lim & Saloma (2002).',
+    'Along the axis, a misalignment of 2.7 λ_1 reduces the peak by 19%, because the focus is longer than it is wide.'],
     path(LO, 'original', 'orig_fig4a.png'), path(LO, 'panels', 'fig4_peak_p1.png'),
     'With facing lenses the 2CE peak tolerates a larger displacement along the axis.',
     'Lim & Saloma (2002), Fig. 4(a): the 2CE peak in percent of the aligned peak against the displacement x_c, z_c of '
@@ -292,8 +315,9 @@ pair('2CE peak against displacement of L2, θ = π', [
     'across the axis and −0.027 z_c² + 0.998 along it.',
     labels=('Lim & Saloma (2002), Fig. 4a', 'Current work'))
 
-pair('2CE peak against displacement of L2, θ = π/2', [
-    'With crossed lenses the peak falls along z_c, set by the length of the focus of L1.'],
+pair('Peak 2CE fluorescence against misalignment of the foci, θ = π/2', [
+    'With crossed lenses, a misalignment of 1.33 λ_1 within the focal plane of L1 reduces the peak 2CE fluorescence by 11%, as reported by Lim & Saloma (2002).',
+    'Within the focal plane of L1, the peak deteriorates at a slower rate than with facing lenses, because the misalignment lies along the axis of L2, where its focus is long.'],
     path(LO, 'original', 'orig_fig4c.png'), path(LO, 'panels', 'fig4_peak_p3.png'),
     'With crossed lenses the 2CE peak changes little across the axis of L1.',
     'Lim & Saloma (2002), Fig. 4(c). Across the axis the fit is −0.063 x_c² + 0.999 against −0.06 x_c² + 1 in Lim & '
@@ -301,8 +325,9 @@ pair('2CE peak against displacement of L2, θ = π/2', [
     'structural content and correlation quality behave as described by Lim & Saloma (2002).',
     labels=('Lim & Saloma (2002), Fig. 4c', 'Current work'))
 
-pair('2CE peak against aberration, θ = 0 and π', [
-    'The 2CE peak is kept when the two coefficients are equal at θ = 0 and opposite at θ = π.'],
+pair('Peak 2CE fluorescence against spherical aberration, θ = 0 and π', [
+    'At θ = 0, the decrease of the peak 2CE fluorescence due to the spherical aberration of one beam is compensated by an aberration of the same magnitude and sign in the other beam (φ_1 = φ_2).',
+    'At θ = π, it is compensated by an aberration of the same magnitude and opposite sign (φ_1 = −φ_2), as reported by Lim & Saloma (2003).'],
     path(TC, 'panels', 'aberration_peak_p2.png'), path(TC, 'panels', 'aberration_peak_p6.png'),
     'Equal or opposite spherical aberration in the two beams keeps the 2CE peak, as in Lim & Saloma (2003).',
     'Peak in percent of the peak without aberration against the primary spherical aberration coefficients φ₁ and φ₂ '
@@ -311,8 +336,9 @@ pair('2CE peak against aberration, θ = 0 and π', [
     'fidelity stays above 0.9 for coefficients up to 40, as in Lim & Saloma (2003), pp. 3401 and 3403.')
 
 SLD = os.path.join(LO, 'slides')
-big('Displacement for 20% peak loss against NA, θ = π', [
-    'The tolerated displacement falls as about 1/NA across the axis and 1/NA² along it.'],
+big('Misalignment for a 20% loss of the 2CE peak against NA, θ = π', [
+    'As NA increases, the misalignment that reduces the peak 2CE fluorescence by 20% decreases as about 1/NA across the axis and 1/NA² along it, following the width and the length of the focus.',
+    'The paraxial scalar model overestimates the tolerated misalignment along the axis, by 7% at NA 0.5 and by 47% near NA 0.95.'],
     os.path.join(SLD, 'tolerance_media_pi.png'),
     'As NA increases the displacement that 2CE tolerates decreases as a power of NA, set by the width and the length '
     'of the focus.',
@@ -322,17 +348,18 @@ big('Displacement for 20% peak loss against NA, θ = π', [
     'the axis than the vector model, by 7% at NA 0.5 and 47% near NA 0.95. A Gaussian input (α = 4) makes the '
     'tolerances about 1.4 times larger.')
 
-big('Displacement for 20% peak loss against NA, θ = π/2', [
-    'With crossed lenses both displacements fall as about 1/NA², along the length of a beam.'],
+big('Misalignment for a 20% loss of the 2CE peak against NA, θ = π/2', [
+    'With crossed lenses, both tolerated misalignments decrease as about 1/NA², because each lies along the length of the focus of one of the two beams.',
+    'The vector focus is computed in air up to NA 0.71, where two crossed lenses fit, and in water up to NA 0.94.'],
     os.path.join(SLD, 'tolerance_media_pi2.png'),
     'With crossed lenses both tolerated displacements follow the length of the focus.',
     'Crossed lenses; vector in air up to NA 0.71, where the lenses fit, and in water up to 0.94. Fits from NA 0.1 to '
     '0.5 give exponents −2.03 and −2.04. Blue: vector; red: paraxial scalar; filled: air; open: water.')
 
 HN = os.path.join(CB, 'high_na')
-big('Spot and depth of focus against NA: 2CE, θ = 0 and π', [
-    'As NA increases the paraxial depth of focus shrinks more slowly than the vector one.',
-    'The scalar model gives a longer depth of focus, by 7% at NA 0.5 and 36% at NA 0.9.'],
+big('Central spot and depth of focus against NA: 2CE, θ = 0 and π', [
+    'As NA increases both widths shrink, but the paraxial depth of focus shrinks more slowly than the vector one and becomes too long.',
+    'The paraxial depth of focus of F_{2c}(0, 0, z; 0) is 5% longer from NA 0.43 in air (0.57 in water), below the NA 0.7 stated by Cambaliza & Saloma (2000, p. 27); the central spot stays within 5% up to NA 0.86.'],
     os.path.join(HN, 'cfg_2ce_0.png'),
     'Along the axis the paraxial model gives too long a focus at high NA.',
     'Solid: vector (Richards–Wolf), beams polarized along y; dashed: paraxial scalar; blue: air; green: water. The '
@@ -342,8 +369,9 @@ big('Spot and depth of focus against NA: 2CE, θ = 0 and π', [
     r'1 - \cos\alpha \approx \frac{\sin^2\alpha}{2}, \qquad \frac{\mathrm{DOF}_{\mathrm{paraxial}}}'
     r'{\mathrm{DOF}_{\mathrm{vector}}} \approx 1 + \tan^2\frac{\alpha}{2}')
 
-big('2CE along the axis at NA 0.5 and 0.9, θ = 0 and π', [
-    'At NA 0.9 the paraxial 2CE focus is 36% longer than the vector one, and 7% at NA 0.5.'],
+big('Axial 2CE PSF at NA 0.5 and NA 0.9: paraxial and vector focus', [
+    'At NA 0.5, the paraxial scalar and vector 2CE distributions along the axis nearly coincide: the paraxial depth of focus is 7% longer.',
+    'At NA 0.9, the paraxial depth of focus is 36% longer than the vector one (1.10 µm compared to 0.81 µm), because the paraxial model uses the small-angle form of the phase of each ray.'],
     os.path.join(LO, 'slides', 'axial_2ce_paraxial_vector_na0.5_na0.9.png'),
     'At high NA the paraxial model gives too long a 2CE focus.',
     'Continuous beams, 750 and 656 nm, air, uniform input; red dashed: paraxial scalar; blue: vector (Richards–Wolf). '
@@ -353,9 +381,9 @@ big('2CE along the axis at NA 0.5 and 0.9, θ = 0 and π', [
     'small-angle phase of the paraxial model causes the difference.',
     r'1 - \cos\alpha \approx \frac{\sin^2\alpha}{2}')
 
-big('Spot and depth of focus against NA: 2CE, θ = π/2', [
-    'As NA increases both 2CE widths decrease as about 1/NA, set by the spot of the other beam.',
-    'The paraxial model follows the vector focus within 4% wherever crossed lenses fit.'],
+big('Central spot and depth of focus against NA: 2CE, θ = π/2', [
+    'As NA increases both widths of F_{2c} at θ = π/2 shrink, and the paraxial model follows the vector focus within 4% wherever crossed lenses fit (NA 0.71 in air, 0.94 in water).',
+    'Each width is set by the narrow transverse spot of the other beam, which the paraxial model reproduces.'],
     os.path.join(HN, 'cfg_2ce_pi2.png'),
     'With crossed lenses the paraxial model gives the right widths.',
     'The 2CE spot is 0.75 by 0.66 µm at NA 0.5. The depth of focus is shorter than with collinear lenses, and this '
@@ -363,8 +391,8 @@ big('Spot and depth of focus against NA: 2CE, θ = π/2', [
     'NA 0.71 in air and 0.94 in water.')
 
 big('Paraxial over vector widths of 2CE against NA', [
-    'As NA increases the paraxial 2CE widths exceed the vector ones, first along the axis.',
-    'The difference comes from the paraxial phase, not from the polarization.'],
+    'As NA increases the paraxial 2CE widths become larger than the vector ones, first along the axis.',
+    'Along the axis at θ = 0 and π the difference reaches 5% at NA 0.43 in air (0.57 in water); across the axis at NA 0.86 (1.14); with crossed lenses it stays within 4%.'],
     os.path.join(HN, 'gap_2ce.png'),
     'The paraxial 2CE widths depart from the vector ones first along the axis.',
     'Gap = paraxial width over vector width − 1. Along the axis with collinear and facing lenses the gap reaches 5% '
@@ -373,8 +401,8 @@ big('Paraxial over vector widths of 2CE against NA', [
     'causes the difference.')
 
 big("Linfoot's criteria against NA: 2CE, θ = 0 and π", [
-    'The paraxial focus becomes longer and lower, so the structural content C falls first.',
-    'Across the axis the fidelity F stays at 0.996 or above at all NA.'],
+    'As NA increases, the paraxial F_{2c}(0, 0, z; π) becomes longer and lower than the vector one, so the structural content C falls first: below 0.95 from NA 0.44 in air (0.58 in water).',
+    'The fidelity F stays above 0.99 up to NA 0.63 (0.84 in water); across the axis, F ≥ 0.996 at all NA.'],
     os.path.join(HN, 'linfoot', 'linfoot_na_2ce_0.png'),
     'The structural content shows the paraxial error along the axis first.',
     'Fidelity F, structural content C and correlation quality Q of the paraxial profile a against the vector profile '
@@ -384,7 +412,8 @@ big("Linfoot's criteria against NA: 2CE, θ = 0 and π", [
     r'F = 1 - \frac{\sum (a - r)^2}{\sum r^2}, \quad C = \frac{\sum a^2}{\sum r^2}, \quad Q = \frac{\sum a r}{\sum r^2}')
 
 big("Linfoot's criteria against NA: 2CE, θ = π/2", [
-    'With crossed lenses the paraxial and vector 2CE stay alike wherever the lenses fit.'],
+    'As NA increases the paraxial and vector F_{2c} at θ = π/2 stay alike: F ≥ 0.999, C ≥ 0.97 and Q ≥ 0.98 wherever crossed lenses fit (NA 0.71 in air, 0.94 in water).',
+    'With crossed lenses, the paraxial model gives the profiles of the vector focus.'],
     os.path.join(HN, 'linfoot', 'linfoot_na_2ce_pi2.png'),
     'With crossed lenses the paraxial model gives the profiles of the vector focus.',
     'F ≥ 0.999, C ≥ 0.97 and Q ≥ 0.98 up to NA 0.71 in air and 0.94 in water. The scalar 2CE and 2PE profiles stay '
@@ -392,7 +421,7 @@ big("Linfoot's criteria against NA: 2CE, θ = π/2", [
     'are NA 1.14 and 0.57.')
 
 big('Annular pupils: depth of focus against NA, air', [
-    'As NA increases the paraxial annular depth of focus departs sooner than the circular one.',
+    'As NA increases the paraxial annular depth of focus departs sooner than the circular one: 15% too long at NA 0.5 and 2.2 times at NA 0.9 in air.',
     'A thin ring uses the edge of the pupil, where the paraxial phase error is largest.'],
     os.path.join(HN, 'pupils', 'annular_widths_air_z.png'),
     'Along the axis the paraxial model departs sooner with annular pupils.',
@@ -401,9 +430,9 @@ big('Annular pupils: depth of focus against NA, air', [
     '0.5 (scalar 15% longer), 65 against 91 µm at 0.7, 25 against 55 µm at 0.9. Annular over circular depth of focus: '
     '47 times at NA 0.5, 42 at 0.7 and 31 at 0.9, against 1/(1 − ε²) = 50 in the paraxial model.')
 
-big('Crossed lenses above NA 0.71', [
-    'Two lenses of the same NA fit at right angles up to NA 0.71 in air, where the cones touch.',
-    'In water the limit is NA 0.94; Cambaliza & Saloma (2000) note NA 0.7 on p. 34.'],
+big('Largest NA of two crossed lenses', [
+    'Two lenses with crossed axes (θ = π/2) fit side by side while the half-angle of each focusing cone is at most 45°, so NA ≤ n sin 45°: 0.71 in air and 0.94 in water.',
+    'Cambaliza & Saloma (2000) note that dual-beam excitation with two identical objectives is possible for NA ≤ 0.7 (p. 34).'],
     os.path.join(TC, 'na_crossing_limit_air.png'),
     'Crossed lenses of the same NA fit up to NA n/√2.',
     'The half-angle of each cone must be at most 45°, so NA ≤ n sin 45° = n/√2: 0.71 in air and 0.94 in water. '
@@ -412,19 +441,20 @@ big('Crossed lenses above NA 0.71', [
     r'\mathrm{NA} \le n \sin 45^\circ = \frac{n}{\sqrt{2}}')
 
 # ── Part 3. Two-color excitation with optical pulses ─────────────────────
-navy('Part 3. Two-color excitation with optical pulses')
+navy('3. Extension to optical pulses: 2PE and 2CE point spread functions with transform-limited femtosecond '
+     'pulses')
 PE = r'E(t) = \int a(\omega)\, e^{-i\omega t}\, d\omega, \quad a(\omega) = \exp\left[-\frac{(\omega-\omega_0)^2\tau^2}' \
     r'{8\ln 2}\right]'
-big('Spectrum and waves of a 10-fs pulse', [
-    'A pulse is a sum of continuous waves, in phase at t = 0 and out of phase away from it.'],
+big('An optical pulse in time', [
+    'The optical spectrum of a short pulse is a Gaussian in frequency about the carrier frequency (left), and each frequency is a continuous wave (right).'],
     os.path.join(PU, 'pulse_waves_spectrum.png'),
     'A pulse is a sum of continuous waves that are in phase near t = 0.',
     'Left: the Gaussian spectrum of a 10-fs pulse at 750 nm, with nine frequencies marked. Right: the waves at those '
     'frequencies, each with its weight a(ω); they are in phase at t = 0 (solid line) and out of phase at 15 fs (dashed '
     'line).', PE)
 
-big('An optical pulse in time', [
-    'The sum of the waves falls off away from t = 0 as a Gaussian of width τ, which is the pulse.'],
+big('Sum of the frequencies of a 10-fs optical pulse', [
+    'At t = 0 all the frequencies are in phase and add up; away from t = 0 they drift out of phase, so their sum falls off as a Gaussian of width τ, the pulse.'],
     os.path.join(PU, 'pulse_waves_sum.png'),
     'The sum of the waves is the pulse.',
     'The sum over the whole spectrum of the 10-fs pulse at 750 nm: the field E(t) and its envelope |E(t)|. The waves '
@@ -432,30 +462,32 @@ big('An optical pulse in time', [
     'few percent of its peak.', PE)
 
 big('Pulse width and spectral bandwidth', [
-    'A transform-limited Gaussian pulse of width τ has a spectral bandwidth Δν = 0.441/τ.'],
+    'A transform-limited Gaussian pulse is Gaussian in time (left) and in frequency (right), with spectral bandwidth Δν = 0.441/τ.'],
     os.path.join(PU, 'pulse_gaussian_time_frequency.png'),
     'Shorter pulses have wider spectra.',
     'Left: intensity in time exp(−4 ln2 t²/τ²), FWHM τ, the pulse width. Right: power spectrum against frequency, at '
     '750 nm (solid) and 656 nm (dashed). Spectral bandwidth (FWHM) 88 THz at 5 fs, 44 THz at 10 fs, 22 THz at 20 fs '
     'and 4.4 THz at 100 fs. The dotted line is 428 THz (700 nm).')
 
-big('Spectra of the two pulses against wavelength', [
-    'Below about 15 fs the spectra reach 700 nm, where two photons of one pulse make 350 nm.'],
+big('Pulse spectra against wavelength, τ = 5, 10, 20 and 100 fs', [
+    'Against wavelength, both colors lie at the red edge of the visible range.',
+    'Below about 15 fs the spectra reach 700 nm, where two photons of one pulse add up to 350 nm.'],
     os.path.join(PU, 'pulse_gaussian_wavelength.png'),
     'Short pulses reach 700 nm.',
     'Power spectrum per unit wavelength at 750 nm (solid) and 656 nm (dashed), for 5, 10, 20 and 100 fs; the visible '
     'range, 380 to 750 nm, is shaded. At 10 fs each spectrum has 31% of its peak at 700 nm (428 THz); at 20 fs and '
     'longer it has almost none.')
 
-s = slide('Photon pairs at the 350-nm level', '')
-bullets(s, 0.5, 0.9, 9.0, 1.0, [
-    'The signal adds the amplitudes of all photon pairs that reach 350 nm, then squares the sum.',
-    'The 350-nm pairs are 750 + 656 nm; the 375- and 328-nm pairs are 750 + 750 and 656 + 656 nm.'], 13)
+s = slide('Photon pairs that excite the 350-nm level', '')
+bullets(s, 0.5, 0.9, 9.0, 1.3, [
+    'Each lens focuses a transform-limited Gaussian pulse of width τ; the centres of both pulses reach the focus at t = 0.',
+    'The excitation adds the amplitudes of all photon pairs that sum to the 350-nm level, then squares the total: the '
+    '350-nm pairs (750 + 656 nm), the 375-nm pairs (750 + 750 nm) and the 328-nm pairs (656 + 656 nm).'], 13)
 PA1 = r'A = A^{11} + 2A^{12} + A^{22}, \qquad A^{ab} = \int E_a E_b\, e^{i\omega_e t}\, dt'
 PA2 = r'F = |A|^2'
-h = equation(s, 1.5, 2.1, 7.0, PA1, 20)
-h += equation(s, 1.5, 2.3 + h, 7.0, PA2, 20)
-where(s, 1.5, 2.55 + h, 7.0, 'E_1 and E_2 are the fields of the 750- and 656-nm pulses at a point, ω_e is the frequency '
+h = equation(s, 1.5, 2.4, 7.0, PA1, 20)
+h += equation(s, 1.5, 2.6 + h, 7.0, PA2, 20)
+where(s, 1.5, 2.85 + h, 7.0, 'E_1 and E_2 are the fields of the 750- and 656-nm pulses at a point, ω_e is the frequency '
       'of the 350-nm level and F is the total 2CE accumulated as the pulses pass the focus. For long pulses F becomes '
       'I_1 I_2, the result of Cambaliza & Saloma (2000).', 12)
 notes(s, 'The excitation counts the photon pairs that add up to 350 nm.',
@@ -467,8 +499,8 @@ notes(s, 'The excitation counts the photon pairs that add up to 350 nm.',
       'says otherwise. The derivations and their checks are in docs/review/07_two_color_pulses/review_07.pdf.',
       PA1 + '\n' + PA2)
 
-big('2CE at 100 fs and with continuous beams, θ = 0 and π', [
-    'At 100 fs, pulsed 2CE is the same as with continuous beams with collinear and facing lenses.'],
+big('2CE with 100-fs pulses and with continuous beams, θ = 0 and π', [
+    'At 100 fs, the pulsed 2CE distribution along the axis is the same as with continuous beams, with collinear (θ = 0) and with facing (θ = π) lenses.'],
     os.path.join(PU, 'sweep', 'profiles_100fs_2ce_0_pi.png'),
     'At 100 fs the pulses give the continuous-beam 2CE.',
     'Total 2CE accumulated as the pulses pass the focus, along the axis, paraxial model, NA 0.5, air. The depth of '
@@ -476,15 +508,16 @@ big('2CE at 100 fs and with continuous beams, θ = 0 and π', [
     'over 21 µm, six times the focus. So the continuous-beam results of Cambaliza & Saloma (2000) hold for pulses of '
     'that length.')
 
-big('2CE at 100 fs and with continuous beams, θ = π/2', [
-    'At 100 fs, pulsed 2CE is the same as with continuous beams with crossed lenses.'],
+big('2CE with 100-fs pulses and with continuous beams, θ = π/2', [
+    'At 100 fs, pulsed 2CE is the same as with continuous beams at all three lens angles, so the continuous-beam results of Cambaliza & Saloma (2000) hold for pulses of that length.'],
     os.path.join(PU, 'sweep', 'profiles_100fs_2ce_pi2.png'),
     'At 100 fs the pulses give the continuous-beam 2CE with crossed lenses too.',
     'Total 2CE accumulated as the pulses pass the focus, across the axis, paraxial model, NA 0.5, air. The width is '
     '0.76 µm with pulses and with continuous beams; the widths at the three lens angles agree to within 1%.')
 
 big('Depth of focus, collinear and crossed lenses', [
-    'With collinear and crossed lenses the 2CE depth of focus stays within a few percent.'],
+    'With collinear and crossed lenses, pulsed 2CE keeps the continuous-beam depth of focus and spot to within a few percent, because the pulses overlap over the whole focus.',
+    'Crossed lenses therefore keep the sharpest profiles, as with continuous beams.'],
     os.path.join(PU, 'sweep', 'dof_na_0_pi2.png'),
     'Collinear and crossed lenses keep their depth of focus, so crossed lenses keep the sharpest profile.',
     'Depth of focus with pulses over that with continuous beams, paraxial model, NA 0.3 to 0.5. With collinear '
@@ -495,16 +528,17 @@ big('Depth of focus, collinear and crossed lenses', [
     'for 2CE.')
 
 big('Depth of focus, facing lenses', [
-    'With facing lenses, 2CE forms where the pulses meet, so its depth of focus is shorter.',
-    'It shortens more at lower NA, because the focus grows while that stretch stays the same.'],
+    'With facing lenses, pulsed 2CE forms where the two pulses meet, so its depth of focus is shorter than with continuous beams.',
+    'The shortening is larger at lower NA, because the continuous-beam focus grows while the stretch where the pulses meet stays the same.'],
     os.path.join(PU, 'sweep', 'dof_na_pi.png'),
     'Pulses shorten the 2CE depth of focus with facing lenses, more at lower NA.',
     'Paraxial model, NA 0.3 to 0.5. At NA 0.5 the 2CE depth of focus is 3.56 µm for continuous beams, 2.81 µm at '
     '20 fs and 1.92 µm at 10 fs, about 80% and 60% of the continuous-beam value. At NA 0.3 and 20 fs it is 40% of the '
     'continuous-beam value. 2PE shortens less, because the 350-nm pairs within one pulse need no overlap.')
 
-big('Overlap of the facing pulses in time', [
-    'At 20 fs the facing pulses overlap over 4.2 µm, which cuts the 2CE focus to 2.78 µm.'],
+big('Overlap in time of the two facing pulses', [
+    'Pulse 1 passes a point z at t = z/c and pulse 2 at t = −z/c, so their intensities overlap in time over a stretch of cτ/√2 about the focus, 4.2 µm at 20 fs.',
+    'The pulsed 2CE is the continuous-beam profile times this overlap: at 20 fs the product gives 2.74 µm and the full calculation 2.78 µm.'],
     os.path.join(PU, 'sweep', 'gate_pi.png'),
     'The overlap of the pulses in time cuts the 2CE focus.',
     'The 2CE depth of focus at 20 fs is 2.78 µm with all pairs and 2.81 µm with the 350-nm pairs. The continuous-beam '
@@ -516,17 +550,17 @@ big('Overlap of the facing pulses in time', [
     r'\mathrm{DOF}_{\mathrm{pulsed}} = \frac{DG}{\sqrt{D^2 + G^2}}')
 
 big('Signal added by the 375- and 328-nm pairs', [
-    'Below about 15 fs one beam alone also excites, through the 375- and 328-nm pairs.',
-    '2CE then carries fringes and starts to lose the weak background of continuous beams.'],
+    'Below about 15 fs the spectra reach 700 nm, so two photons of one pulse also excite the 350-nm level, through the 375- and 328-nm pairs.',
+    'Their amplitude interferes with that of the 350-nm pairs, which gives the fringes, and one beam alone now excites, so 2CE starts to lose the weak background of continuous beams.'],
     os.path.join(PU, 'sweep', 'strength_vs_tau.png'),
     'Pairs within one pulse matter below 15 fs.',
     'With continuous beams, 2CE needs both beams, which gives its weak background in scattering media. The amplitude '
     'of the 375- and 328-nm pairs is 18% of that of the 350-nm pairs at 10 fs and below 1% at 20 fs. The peak of the '
     'total over that of the 350-nm pairs is 1.02 at 20 fs, 1.15 at 15 fs, 1.73 at 10 fs and 3.1 at 5 fs.')
 
-big('τ to match continuous beams against NA, θ = π', [
-    'With facing lenses the pulse width needed to match continuous beams grows as NA decreases.',
-    'In water and oil the same results hold at a higher NA, since the focus depends on NA/n.'],
+big('Pulse width that matches continuous beams against NA, θ = π', [
+    'With facing lenses, the pulsed 2CE matches the continuous-beam 2CE once the pulses are longer than about 25 fs at NA 0.9, 87 fs at NA 0.5 and 264 fs at NA 0.3 in air, because a lower NA gives a longer focus for the pulses to overlap over.',
+    'In water and in oil a longer pulse is needed at the same NA (164 fs and 216 fs at NA 0.5), because the focus is longer in a medium of higher refractive index.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_2ce_pi.png'),
     'Facing lenses need the longest pulses to behave like continuous beams, more so at lower NA.',
     'The pulse width from which the largest difference between the pulsed and continuous-beam profiles stays below 1% '
@@ -537,9 +571,9 @@ big('τ to match continuous beams against NA, θ = π', [
     'vector; dashed: scalar, drawn up to NA 0.5, where the paraxial model holds. The open triangles mark NAs where '
     'the longest pulse computed is still outside the tolerance.')
 
-big('τ to match continuous beams, θ = 0 and π/2', [
-    'With collinear lenses 4-fs pulses, the shortest computed, give the continuous-beam profiles.',
-    'With crossed lenses, from NA 0.2 up, 2CE matches continuous beams from about 20 to 28 fs.'],
+big('Pulse width that matches continuous beams, θ = 0 and π/2', [
+    'With collinear lenses, the pulsed 2CE matches the continuous-beam 2CE at all pulse widths computed, down to 4 fs, because the two pulses travel together and overlap over the whole focus.',
+    'With crossed lenses, it matches once the pulses are longer than about 28 fs at NA 0.2 and 21 fs at NA 0.7.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_2ce_0_pi2.png'),
     'Collinear and crossed lenses match continuous beams with short pulses.',
     'The same measure as the previous slide: the pulse width from which the largest difference between the pulsed '
@@ -548,8 +582,8 @@ big('τ to match continuous beams, θ = 0 and π/2', [
     '(vector model in air) it is 28 fs at NA 0.2 and 21 fs at NA 0.7; at NA 0.1 it is 54 fs. Crossed lenses fit up to '
     'NA 0.71 in air and 0.94 in water.')
 
-big('τ to match continuous beams, pupils, θ = π', [
-    'A longer depth of focus needs a longer pulse to match continuous beams with facing lenses.'],
+big('Pulse width that matches continuous beams: pupils, θ = π', [
+    'With facing lenses, a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α = 4) and 466 fs for the annular pupil with ε = 0.9.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_pupils_2ce_pi.png'),
     'Annular pupils and Gaussian input need longer pulses with facing lenses.',
     'Vector model in air. The figure gives the pulse width from which the 2CE depth of focus stays within 1% of its '
@@ -558,9 +592,9 @@ big('τ to match continuous beams, pupils, θ = π', [
     'of the slides before, the same three are 87, 139 and 405 fs. The annular pupil with ε = 0.99 stays outside the '
     'tolerance at the longest pulse computed below NA 0.8.')
 
-big('τ to match continuous beams, pupils, θ = 0 and π/2', [
-    'With collinear lenses the depth of focus matches continuous beams at 4 fs for all pupils.',
-    'With crossed lenses it matches from about 11 to 16 fs at NA 0.4 and above, for all pupils.'],
+big('Pulse width that matches continuous beams: pupils, θ = 0, π/2', [
+    'With collinear lenses, the 2CE depth of focus matches its continuous-beam value at all pulse widths computed, for all pupils and inputs.',
+    'With crossed lenses, it matches once the pulses are longer than about 11 to 16 fs at NA 0.4 and above, for all pupils and inputs.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_pupils_2ce_0_pi2.png'),
     'With collinear and crossed lenses the pupil changes the pulse width needed by little.',
     'Vector model in air, pulse width from which the 2CE depth of focus stays within 1% of its continuous-beam value. '
@@ -569,21 +603,20 @@ big('τ to match continuous beams, pupils, θ = 0 and π/2', [
     'NA 0.1 and 54 fs for the circular pupil.')
 
 # ── Part 4. Summary and next steps ───────────────────────────────────────
-words('Summary by lens angle', [
-    'With collinear lenses a pulse changes nothing down to 4 fs, because the two pulses travel together.',
-    'With crossed lenses pulses change the profiles by a few percent below about 20 fs, so crossed lenses keep the '
-    'sharpest profile; the lenses fit up to NA 0.71 in air.',
-    'With facing lenses pulses shorten the 2CE focus, more so at lower NA, because 2CE forms where the pulses meet.',
-    'At the three angles, the paraxial model gives the right spot across the axis to high NA, and too long a focus '
-    'along it above about NA 0.43 with collinear and facing lenses.'],
+words('Summary: 2CE with optical pulses', [
+    'At 100 fs, pulsed 2CE is the same as with continuous beams.',
+    'With collinear and crossed lenses, pulsed 2CE keeps the continuous-beam depth of focus and spot to within a few percent.',
+    'With facing lenses, pulsed 2CE forms where the pulses meet, so its depth of focus is shorter than with continuous beams, more so at lower NA; 2PE shortens less.',
+    'Below about 15 fs one beam alone also excites the 350-nm level, so 2CE carries fringes and starts to lose its weak background.',
+    'The results assume phase-locked, transform-limited pulses and a 350-nm level that is narrow compared to the pulse spectra.'],
     'The lens angle decides what a pulse changes.',
     'Collinear θ = 0, crossed θ = π/2, facing θ = π. The delay between the two pulses is in the separate deck '
     'pulse_delay.pptx.')
 
 words('Next steps', [
-    'Compute pulsed 2CE through a scattering medium, with the Monte Carlo model of the focus and the pulse model.',
-    'Give the two pulses unequal widths, which changes their temporal overlap.',
-    'Add a chirp, which lengthens the pulses at the focus.',
+    'Report the 2CE peak and its position against a delay between the two pulses, computed for the same lens angles, NAs and pupils.',
+    'Compute pulsed 2CE through a highly scattering medium, where Cambaliza & Saloma (2000) found the main advantage of 2CE compared to 2PE.',
+    'Compute pulses of unequal width and chirped pulses, which change the overlap in time of the two pulses.',
     'Replace the narrow 350-nm level with a broad absorption band.'],
     'Pulsed 2CE through a scattering medium is the first candidate.',
     'The scattering medium combines the Monte Carlo model of docs/review/06 with the pulse model; it would show '
@@ -591,63 +624,70 @@ words('Next steps', [
     'For a broad absorption band the signal of the 350-nm pairs is the integral of I₁ I₂ over time.')
 
 words('Glossary (1/2)', [
-    'NA = n sin α is the numerical aperture, with α the half-angle of the focusing cone and n the refractive index.',
-    'θ is the angle between the axes of lenses L1 and L2, 0 for collinear, π/2 for crossed and π for facing lenses.',
-    'λ_1 = 750 nm and λ_2 = 656 nm are the 2CE wavelengths, with 1/λ_e = 1/λ_1 + 1/λ_2 and λ_e = 350 nm.',
-    '2CE is two-color excitation, F_{2c} = κ I_1 I_2; 2PE is two-photon excitation at 700 nm, F_{2p} = κ′|U_1 + U_2|^4.',
-    'The depth of focus is the FWHM along the axis, and the central spot is the FWHM across it.',
-    'x_c and z_c are the displacements of the focus of L2 across and along the axis of L1.'],
-    'Glossary.', 'Symbols and terms used in the deck.', size=14)
+    'NA: numerical aperture, n sin α; α is the half-angle of the focusing cone and n the refractive index of the medium.',
+    'L1, L2; O: the two lenses and their common focus, the origin.',
+    'θ: angle between the two lens axes (0 collinear, π/2 crossed, π facing).',
+    'λ_1, λ_2, λ_{2p}: 2CE wavelengths 750 and 656 nm, with 1/λ_e = 1/λ_1 + 1/λ_2 and λ_e = 350 nm; 2PE wavelength 700 nm.',
+    '2CE, 2PE: two-color excitation, signal ∝ I_1 I_2; two-photon excitation, signal ∝ |U_1 + U_2|^4.',
+    'PSF: point spread function: the fluorescence from one point, scaled to its peak.',
+    'Central spot, depth of focus (DOF): FWHM of the PSF across and along the axis.',
+    'x_c, z_c: misalignment of the focus of L2 across and along the axis of L1.'],
+    'Glossary.', 'Symbols and terms used in the deck.', size=13)
 
 words('Glossary (2/2)', [
-    'The obstruction ratio ε is the inner over the outer radius of an annular pupil.',
-    'The truncation parameter α sets how strongly the pupil edge clips a Gaussian input.',
-    "Linfoot's fidelity F, structural content C and correlation quality Q are 1 for identical profiles.",
-    'The scalar model is the paraxial field of Cambaliza & Saloma (2000); the vector model is the Richards–Wolf field.',
-    'τ is the pulse width, the FWHM of the intensity; a transform-limited pulse has Δν = 0.441/τ.',
-    'The 350-nm pairs are 750 + 656 nm, the 375-nm pairs 750 + 750 nm and the 328-nm pairs 656 + 656 nm.'],
-    'Glossary.', 'Symbols and terms used in the deck.', size=14)
+    'Paraxial scalar model: small-angle phase, no polarization (Cambaliza & Saloma, 2000, Eq. 1).',
+    'Vector focus: the Richards–Wolf focus (exact phase and polarization).',
+    "F, C, Q: Linfoot's criteria: fidelity, structural content and correlation quality.",
+    'ε: obstruction ratio of an annular pupil, inner radius over outer radius.',
+    'α: truncation parameter of the Gaussian input; 0 is uniform input.',
+    'τ: pulse width: full width at half maximum of the intensity; Δν = 0.441/τ for a transform-limited pulse.',
+    '350-nm, 375-nm and 328-nm pairs: photon pairs of 750 + 656 nm, 750 + 750 nm and 656 + 656 nm.'],
+    'Glossary.', 'Symbols and terms used in the deck.', size=13)
 
 # ── Backup ───────────────────────────────────────────────────────────────
 navy('Backup')
-big('Spot and depth of focus against NA: 2PE, θ = π/2', [
-    'As NA increases the 2PE spot keeps its width, set by the interference of the two beams.'],
+big('Central spot and depth of focus against NA: 2PE, θ = π/2', [
+    'As NA increases the central spot of F_{2p} at θ = π/2 keeps its width, 0.26 µm in air and 0.19 µm in water, in both models (within 0.4%).',
+    'The spot is one interference fringe of the two crossed beams, so its width is set by the wavelength in the medium, λ_{2p}/n, not by the NA.'],
     os.path.join(HN, 'cfg_2pe_pi2.png'),
     'With crossed lenses the 2PE spot is one interference fringe.',
     'The 2PE central spot stays at 0.256 µm in air at all NAs, and 0.19 µm in water, in both models within 0.4%. 2PE '
     'is narrower than 2CE and has stronger side lobes, as in Cambaliza & Saloma (2000).')
 
-big('τ to match continuous beams, 2PE, θ = π', [
-    'With facing lenses 2PE matches continuous beams at shorter pulses than 2CE, 62 fs at NA 0.5.'],
+big('Pulse width that matches continuous beams: 2PE, θ = π', [
+    'With facing lenses, the pulsed 2PE matches the continuous-beam 2PE at shorter pulse widths than 2CE (62 fs compared to 87 fs at NA 0.5 in air), because pairs of photons from one pulse need no overlap.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_2pe_pi.png'),
     'With facing lenses 2PE needs shorter pulses than 2CE.',
     'Largest difference between the pulsed and continuous-beam 2PE profiles below 1% of the peak. At NA 0.5 in air '
     '(vector model) 2PE matches from 62 fs, against 87 fs for 2CE, because the photon pairs within one pulse need no '
     'overlap of the two pulses. Solid: vector; dashed: scalar, drawn up to NA 0.5.')
 
-big('τ to match continuous beams, 2PE, θ = 0 and π/2', [
-    'With collinear lenses 2PE matches at 4 fs, and with crossed lenses at 37 fs or shorter.'],
+big('Pulse width that matches continuous beams: 2PE, θ = 0, π/2', [
+    'With collinear lenses, the pulsed 2PE matches the continuous-beam 2PE at all pulse widths computed, down to 4 fs.',
+    'With crossed lenses, it matches once the pulses are longer than 37 fs at NA 0.1 and 6 fs at NA 0.5.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_2pe_0_pi2.png'),
     'With collinear and crossed lenses 2PE matches continuous beams with short pulses.',
     'Largest difference below 1% of the peak. With crossed lenses in air (vector model) the pulse width is 37 fs at '
     'NA 0.1, 5.7 fs at NA 0.5 and 4 fs, the shortest computed, from NA 0.6.')
 
-big('τ to match continuous beams, 2PE, pupils, θ = π', [
-    'With facing lenses a longer depth of focus also needs a longer pulse for 2PE.'],
+big('Pulse width that matches continuous beams: 2PE, pupils, θ = π', [
+    'With facing lenses, a pupil or an input that gives a longer depth of focus also needs a longer pulse for 2PE to match continuous beams.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_pupils_2pe_pi.png'),
     'Pupils with a longer focus need longer pulses for 2PE too.',
     'Vector model in air, pulse width from which the 2PE depth of focus stays within 1% of its continuous-beam value. '
     'At NA 0.5 it is 72 fs for the circular pupil.')
 
-big('τ to match continuous beams, 2PE, pupils, θ = 0, π/2', [
-    'With collinear lenses all pupils match at 4 fs, and with crossed lenses at 68 fs or shorter.'],
+big('Pulse width that matches continuous beams: 2PE, pupils, θ = 0, π/2', [
+    'With collinear lenses, the 2PE depth of focus matches its continuous-beam value at all pulse widths computed, for all pupils and inputs.',
+    'With crossed lenses, the pulse width needed is largest at low NA (68 fs for the Gaussian input at NA 0.1) and falls below 10 fs at NA 0.7.'],
     os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_pupils_2pe_0_pi2.png'),
     'With collinear and crossed lenses the pupils need short pulses for 2PE.',
     'Vector model in air, depth of focus within 1%. With crossed lenses the pulse width is largest at low NA, 68 fs for '
     'the Gaussian input and 44 fs for the circular pupil at NA 0.1, and falls below 10 fs at NA 0.7 for all pupils.')
 
-big('Side lobes of 2PE against NA', [
-    'As NA increases the 2PE side lobes weaken, so 2PE images gain contrast.'],
+big('Side lobes of 2PE against NA: distance from the peak and height', [
+    'As NA increases the 2PE side lobes weaken: at θ = π/2 from 0.11 of the peak at NA 0.5 to 0.04 at NA 0.7 (air); at θ = π from 0.97 to 0.42 at NA 0.9.',
+    'Weaker side lobes give images of higher contrast, so the drawback of 2PE reported at NA 0.5 (Cambaliza & Saloma, 2000, pp. 28–29) shrinks at high NA.'],
     os.path.join(HN, 'sidelobes.png'),
     'The 2PE side lobes follow the wavelength in the medium.',
     'At θ = π/2 the side lobe falls from 0.11 of the peak at NA 0.5 to 0.04 at NA 0.7 in air; at θ = π from 0.97 to '

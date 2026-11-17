@@ -150,7 +150,7 @@ if os.environ.get('PANELS'):
     spectrum(sp); waves(ax, 24); strip(sp); strip(ax)
     fig.savefig(os.path.join(OUT, 'pulse_waves_spectrum.png'), dpi=600, bbox_inches='tight'); plt.close(fig)
     fig, ax = plt.subplots(figsize=(11, 10))
-    pulse_sum(ax, 24); strip(ax)
+    pulse_sum(ax, 24); ax.set_title('Sum of the waves at all frequencies')
     fig.savefig(os.path.join(OUT, 'pulse_waves_sum.png'), dpi=600, bbox_inches='tight'); plt.close(fig)
     fig, a2 = plt.subplots(1, 2, figsize=(22, 10))
     fig.subplots_adjust(wspace=0.28)
