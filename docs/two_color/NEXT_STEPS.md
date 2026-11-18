@@ -63,7 +63,9 @@ Done and checked:
 - Review against the four papers, with one correction to the code (E_z factor, see review_07, Section 4).
 - Figures (`scripts/cambaliza2000_pulses_delay_plot.py`) and the backup deck (`scripts/make_pulse_delay_deck.py`).
 - Documents: `docs/review/07_two_color_pulses/review_07.pdf`, `docs/two_color/pulse_derivations.pdf`,
-  `docs/progress/work_to_date.pdf` (Section 7 has the results by lens angle). Build each with `tectonic <name>.tex` in its folder.
+  `docs/progress/work_to_date.pdf` (Section 7 has the results by lens angle), and the derivations in three parts,
+  `docs/two_color/derivations/{1_scalar_focal_field,2_vector_focal_field,3_two_beams}.pdf` (shared `preamble.tex`;
+  numbers from `scripts/derivation_checks.py`). Build each with `tectonic <name>.tex` in its folder.
 
 ## 3. Steps
 

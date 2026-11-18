@@ -1,0 +1,246 @@
+\documentclass[11pt]{article}
+\input{preamble}
+\title{Derivations, part 1 of 3:\\ the scalar focal field of one lens}
+\date{18 November 2026}
+\author{}
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+This is the first of three documents that derive, step by step, the fields that the current work computes. Part 1
+derives the scalar field of one lens, which is the model of Cambaliza \& Saloma (2000) [CS00], Lim \& Saloma (2002)
+[LS02] and Lim \& Saloma (2003) [LS03]. Part 2 derives the vector (Richards--Wolf) field of Romallosa, Bantang \&
+Saloma (2003) [Rom03]. Part 3 derives the signals of two beams: two-color excitation (2CE), two-photon excitation
+(2PE), the displacement of [LS02], the aberration of [LS03] and Linfoot's criteria. Optical pulses and the delay are
+in \texttt{pulse\_derivations.pdf}.
+
+Each result ends with a check. The script \texttt{scripts/derivation\_checks.py} prints the numbers of each check
+and compares them with the engine (\texttt{mcdo/twobeam.py}) and with the stored results; its output is
+\texttt{output/08\_two\_color/}\allowbreak\texttt{derivation\_checks.txt}.
+
+\section*{Symbols}
+\begin{center}\small\begin{tabular}{ll}\toprule
+$\lambda$ & wavelength in vacuum; 750 and 656 nm for 2CE, 700 nm for 2PE\\
+$n$ & refractive index of the medium; $k = 2\pi n/\lambda$\\
+$\alpha$ & half-angle of the focusing cone; $\mathrm{NA} = n\sin\alpha$\\
+$(r, \psi, z)$ & cylindrical coordinates of the point $P$, with the focus at the origin and the lens axis along $z$\\
+$(\vartheta, \varphi)$ & polar and azimuthal angles of a ray converging on the focus\\
+$t$ & $\cos\vartheta$\\
+$\rho$ & radius in the pupil divided by the pupil radius, from 0 to 1\\
+$u, v$ & optical coordinates along and across the axis (Section 2)\\
+$\varepsilon$ & obstruction ratio of an annular pupil\\
+$\alpha_t$ & truncation parameter of a Gaussian input (written $\alpha$ on the slides)\\\bottomrule
+\end{tabular}\end{center}
+
+\section{The Debye integral}
+\step{1} Debye showed that when the aperture is many wavelengths wide and the Fresnel number is large, the field near
+the focus is a sum of plane waves, one for each direction inside the cone that the aperture subtends at the focus
+(the condition is stated in [LS02] p.~122; Wolf (1959) wrote the sum as an integral). The plane wave of direction $(\vartheta, \varphi)$ has the wave vector
+\begin{equation}\mathbf k = k\,(\sin\vartheta\cos\varphi,\ \sin\vartheta\sin\varphi,\ \cos\vartheta) .\end{equation}
+
+\step{2} Its phase at the point $P = (r\cos\psi,\ r\sin\psi,\ z)$ is
+\begin{align}\mathbf k\cdot P &= k\,(r\sin\vartheta\cos\varphi\cos\psi + r\sin\vartheta\sin\varphi\sin\psi
++ z\cos\vartheta)\\
+&= k\,\big(r\sin\vartheta\cos(\varphi - \psi) + z\cos\vartheta\big),\end{align}
+where the second line uses $\cos\varphi\cos\psi + \sin\varphi\sin\psi = \cos(\varphi - \psi)$.
+
+\step{3} The field is the sum over the directions, each weighted by the amplitude $a(\vartheta)$ that the lens gives
+it, over the element of solid angle $\sin\vartheta\,d\vartheta\,d\varphi$:
+\begin{equation}U(r,\psi,z) = \int_0^\alpha\!\!\int_0^{2\pi} a(\vartheta)\,
+e^{ik(r\sin\vartheta\cos(\varphi-\psi) + z\cos\vartheta)}\,\sin\vartheta\,d\varphi\,d\vartheta .
+\label{eq:debye2}\end{equation}
+
+\step{4} The integral over $\varphi$ is Bessel's integral,
+\begin{equation}\int_0^{2\pi} e^{iv\cos(\varphi-\psi)}\,d\varphi = 2\pi J_0(v) ,\end{equation}
+in which $\psi$ drops out because the integrand has period $2\pi$ in $\varphi$. With $v = kr\sin\vartheta$,
+\begin{equation}U(r,z) = 2\pi\int_0^\alpha a(\vartheta)\,J_0(kr\sin\vartheta)\,e^{ikz\cos\vartheta}\,
+\sin\vartheta\,d\vartheta .\label{eq:debye}\end{equation}
+The field does not depend on $\psi$: a scalar focus is circularly symmetric about the axis.
+
+\step{5} For an aplanatic lens, $a(\vartheta) = A(\vartheta)\sqrt{\cos\vartheta}$, where $A$ is the profile of the
+input beam (Part 2, Section 1, derives the factor $\sqrt{\cos\vartheta}$ from the conservation of energy).
+Uniform input is $A = 1$; the Gaussian input of the current work is
+$A = \exp(-\alpha_t\sin^2\vartheta/\sin^2\alpha)$. Eq.~(\ref{eq:debye}) with this $a(\vartheta)$ is the model
+\texttt{'debye'} of the engine.
+
+\section{The paraxial field: Eq.~1 of [CS00]}
+\step{1} For a narrow cone I keep the lowest order of each factor in $\vartheta$:
+\begin{equation}\sin\vartheta \approx \vartheta,\qquad \cos\vartheta \approx 1 - \frac{\vartheta^2}{2},\qquad
+\sqrt{\cos\vartheta} \approx 1,\qquad A = 1 .\end{equation}
+
+\step{2} The phase along the axis becomes
+\begin{equation}kz\cos\vartheta \approx kz - \frac{kz\vartheta^2}{2} .\end{equation}
+The first term is the same for all rays and comes out of the integral as the carrier $e^{ikz}$.
+
+\step{3} I measure the angle in units of the edge of the cone, $\vartheta = \alpha\rho$, so that $\rho$ runs from 0
+to 1 across the pupil (with $h = f\sin\vartheta \approx f\vartheta$, $\rho$ is the radius in the pupil over the pupil
+radius). Then $\sin\vartheta\,d\vartheta \approx \alpha^2\rho\,d\rho$, and Eq.~(\ref{eq:debye}) becomes
+\begin{equation}U \approx 2\pi\alpha^2\,e^{ikz}\int_0^1 J_0(k\alpha r\rho)\,
+e^{-ik\alpha^2z\rho^2/2}\,\rho\,d\rho .\end{equation}
+
+\step{4} I define the optical coordinates with $\sin\alpha$ in place of $\alpha$, as [CS00], [LS02] and [Rom03] do:
+\begin{equation}u = k\sin^2\!\alpha\;z = \frac{2\pi}{\lambda}\,\frac{\mathrm{NA}^2}{n}\,z,\qquad
+v = k\sin\alpha\;r = \frac{2\pi}{\lambda}\,\mathrm{NA}\;r .\end{equation}
+In air ($n = 1$) these are the $u = (2\pi\mathrm{NA}^2/\lambda)z$ and $v = (2\pi\mathrm{NA}/\lambda)x$ of [CS00] and
+[LS02].
+
+\step{5} Dividing by the value at the focus, $2\pi\alpha^2\int_0^1\rho\,d\rho = \pi\alpha^2$, gives the field
+normalized to 1 at the focus:
+\begin{equation}U(u,v) = e^{ikz}\;2\int_0^1 J_0(v\rho)\,e^{-iu\rho^2/2}\,\rho\,d\rho .\label{eq:parax}\end{equation}
+This is Eq.~1 of [CS00] and Eq.~2 of [LS02], which write the integral with Lommel functions, $C - iS$, and
+Eq.~1 of [LS03] with no aberration. Their prefactor $\exp[i(f/a)^2u]$ is the carrier: in air $(a/f)^2 = \mathrm{NA}^2$,
+so $(f/a)^2u = u/\mathrm{NA}^2 = kz$. [CS00] states that the model holds for NA below about 0.7, [LS02] for NA up
+to 0.5; the current work shows the paraxial model at NA 0.5 and below.
+
+\section{The field along the axis}
+\step{1} On the axis $v = 0$ and $J_0(0) = 1$:
+\begin{equation}U(u,0) = e^{ikz}\;2\int_0^1 e^{-iu\rho^2/2}\,\rho\,d\rho .\end{equation}
+
+\step{2} I substitute $s = \rho^2$, so $ds = 2\rho\,d\rho$ and the factor 2 is absorbed:
+\begin{equation}U(u,0) = e^{ikz}\int_0^1 e^{-ius/2}\,ds .\end{equation}
+
+\step{3} The integral of an exponential:
+\begin{equation}\int_0^1 e^{-ius/2}\,ds = \left[\frac{e^{-ius/2}}{-iu/2}\right]_0^1
+= \frac{1 - e^{-iu/2}}{iu/2} .\end{equation}
+
+\step{4} I take out the phase of the midpoint, $e^{-iu/4}$:
+\begin{equation}1 - e^{-iu/2} = e^{-iu/4}\left(e^{iu/4} - e^{-iu/4}\right) = e^{-iu/4}\;2i\sin\frac u4 .\end{equation}
+
+\step{5} Putting Steps 3 and 4 together, the $i$ cancels and $2/(u/2) = 1/(u/4)$:
+\begin{equation}U(u,0) = e^{i(kz - u/4)}\;\frac{\sin(u/4)}{u/4} .\label{eq:axis}\end{equation}
+
+\step{6} The intensity along the axis is
+\begin{equation}|U(u,0)|^2 = \left[\frac{\sin(u/4)}{u/4}\right]^2 ,\end{equation}
+the result of Born \& Wolf §8.8. The phase $kz - u/4 = kz\,[1 - (\mathrm{NA}/n)^2/4]$ advances more slowly than the
+carrier; Part 3 uses it for the fringes of 2PE with facing lenses.
+
+\section{The field in the focal plane}
+\step{1} In the focal plane $u = 0$:
+\begin{equation}U(0,v) = 2\int_0^1 J_0(v\rho)\,\rho\,d\rho .\end{equation}
+
+\step{2} I substitute $x = v\rho$, so $\rho\,d\rho = x\,dx/v^2$, and use $\frac{d}{dx}[xJ_1(x)] = xJ_0(x)$:
+\begin{equation}\int_0^1 J_0(v\rho)\,\rho\,d\rho = \frac{1}{v^2}\int_0^v xJ_0(x)\,dx
+= \frac{1}{v^2}\Big[xJ_1(x)\Big]_0^v = \frac{J_1(v)}{v} .\end{equation}
+
+\step{3} The field and the intensity are the Airy pattern:
+\begin{equation}U(0,v) = \frac{2J_1(v)}{v},\qquad |U(0,v)|^2 = \left[\frac{2J_1(v)}{v}\right]^2 .\end{equation}
+
+\section{The central spot and the depth of focus}
+The central spot and the depth of focus are the FWHM of the point spread function across and along the axis.
+
+\step{1, one beam across the axis} $[2J_1(v)/v]^2 = 1/2$ at $v_h = 1.6163$. With $v = (2\pi\mathrm{NA}/\lambda)r$,
+the half-width is $r_h = v_h\lambda/(2\pi\mathrm{NA})$, and
+\begin{equation}\text{FWHM}_\perp = 2r_h = \frac{v_h}{\pi}\,\frac{\lambda}{\mathrm{NA}} = 0.5145\,\frac{\lambda}{\mathrm{NA}} .\end{equation}
+
+\step{2, one beam along the axis} $[\sin y/y]^2 = 1/2$ at $y_h = 1.3916$, with $y = u/4$. With
+$u = (2\pi/\lambda)(\mathrm{NA}^2/n)z$, the half-width is $z_h = 4y_h\,n\lambda/(2\pi\mathrm{NA}^2)$, and
+\begin{equation}\text{FWHM}_\parallel = 2z_h = \frac{4y_h}{\pi}\,\frac{n\lambda}{\mathrm{NA}^2}
+= 1.7718\,\frac{n\lambda}{\mathrm{NA}^2} .\end{equation}
+
+\step{3, 2PE with collinear lenses} $F_{2p} = \kappa'|U_1 + U_2|^4$ ([CS00] Eq.~3). At $\theta = 0$ the two beams
+are the same field, so $|U_1 + U_2|^4 = 16|U|^4$, and the half points are those of the fourth powers:
+$[2J_1(v)/v]^4 = 1/2$ at $v = 1.1603$ and $[\sin y/y]^4 = 1/2$ at $y = 1.0019$, which give
+\begin{equation}\text{FWHM}_\perp = 0.3693\,\frac{\lambda}{\mathrm{NA}},\qquad
+\text{FWHM}_\parallel = 1.2757\,\frac{n\lambda}{\mathrm{NA}^2} .\end{equation}
+
+\step{4, 2CE with collinear lenses} $F_{2c} = \kappa I_1I_2$ ([CS00] Eq.~2), the product of two Airy patterns and
+of two $[\sin y/y]^2$ with different scales, $v_j = (2\pi\mathrm{NA}/\lambda_j)r$ and $y_j = u_j/4$. The half points
+have no closed form; I solve $I_1I_2 = 1/2$ numerically.
+
+\chk{NA 0.5, air. The engine computes Eq.~(\ref{eq:parax}) by quadrature; the closed forms use Steps 1 to 4.
+\begin{center}\small\begin{tabular}{lccc}\toprule
+& closed form ($\mu$m) & engine ($\mu$m) & stored, \texttt{replication\_numbers.txt}\\\midrule
+one beam, 750 nm & 0.7717 / 5.3154 & 0.7717 / 5.3154 & \\
+one beam, 656 nm & 0.6750 / 4.6492 & 0.6750 / 4.6492 & \\
+2PE, 700 nm, $\theta = 0$ & 0.5171 / 3.5719 & 0.5171 / 3.5719 & 0.517 / 3.572\\
+2CE, 750 and 656 nm, $\theta = 0$ & 0.5157 / 3.5620 & 0.5157 / 3.5620 & 0.516 / 3.562\\\bottomrule
+\end{tabular}\end{center}
+Each pair is the central spot / the depth of focus.}
+
+\step{5, why 2CE at $\theta = 0$ has nearly the spot of 2PE} Near its peak each profile is quadratic,
+$[2J_1(v)/v]^2 \approx 1 - v^2/4$. The product of the two 2CE profiles is then
+\begin{equation}I_1I_2 \approx 1 - \frac{v_1^2 + v_2^2}{4} = 1 - 2\,\frac{v_m^2}{4},\qquad
+\frac{1}{\lambda_m^2} = \frac12\left(\frac{1}{\lambda_1^2} + \frac{1}{\lambda_2^2}\right) ,\end{equation}
+which is the 2PE profile $[2J_1(v_m)/v_m]^4 \approx 1 - 2v_m^2/4$ at the wavelength $\lambda_m$. For 750 and 656 nm,
+$\lambda_m = 698.3$~nm. The level fixes the mean of $1/\lambda_1$ and $1/\lambda_2$ at $1/700$~nm$^{-1}$; their quadratic
+mean is larger, so the 2CE spot is narrower than the 2PE spot by $\lambda_m/700\ \mathrm{nm} = 0.9976$. The same argument
+holds along the axis.
+
+\chk{2PE at $\lambda_m$: 0.5158 / 3.5632~$\mu$m, against 0.5157 / 3.5620~$\mu$m for 2CE.}
+
+\section{The annular pupil: Eq.~4 of [CS00]}
+\step{1} An annular pupil blocks the centre of the pupil out to $\rho = \varepsilon$. The pupil integral of
+Eq.~(\ref{eq:parax}) then runs from $\varepsilon$ to 1, which I write as the full pupil minus a small one:
+\begin{equation}\int_\varepsilon^1 = \int_0^1 - \int_0^\varepsilon .\end{equation}
+
+\step{2} In the small pupil I substitute $\rho = \varepsilon\rho'$:
+\begin{equation}2\int_0^\varepsilon J_0(v\rho)\,e^{-iu\rho^2/2}\rho\,d\rho
+= \varepsilon^2\;2\int_0^1 J_0(\varepsilon v\rho')\,e^{-i\varepsilon^2u\rho'^2/2}\rho'\,d\rho' .\end{equation}
+It is $\varepsilon^2$ times the field of a lens with the cone $\varepsilon$ times narrower, at $(\varepsilon^2u,
+\varepsilon v)$. This is Babinet's principle, Eq.~4 of [CS00]: $U_a = U_R - U_{\varepsilon R}$.
+
+\step{3, focal plane} With Section 4, Step 2, for the small pupil as well,
+\begin{equation}U_a(0,v) = \frac{2}{v}\Big[J_1(v) - \varepsilon J_1(\varepsilon v)\Big] ,\end{equation}
+which is $1 - \varepsilon^2$ at $v = 0$.
+
+\step{4, the limit of a thin ring} As $\varepsilon \to 1$ the bracket vanishes, so I divide by $1 - \varepsilon$
+and take the limit. With $\frac{d}{d\varepsilon}[\varepsilon J_1(\varepsilon v)] = \varepsilon vJ_0(\varepsilon v)$
+(from $\frac{d}{dx}[xJ_1(x)] = xJ_0(x)$),
+\begin{equation}\frac{J_1(v) - \varepsilon J_1(\varepsilon v)}{1 - \varepsilon} \to vJ_0(v),\qquad
+\frac{U_a(0,v)}{1 - \varepsilon^2} \to \frac{2}{v}\,\frac{vJ_0(v)}{2} = J_0(v) .\end{equation}
+The focal spot of a thin ring is the Bessel beam $J_0(v)^2$, narrower than the Airy pattern.
+
+\step{5, along the axis} On the axis the integral of Section 3, Step 2, runs over $s$ from $\varepsilon^2$ to 1, a
+range of length $1 - \varepsilon^2$ in place of 1. The profile is again $[\sin y/y]^2$ with
+$y = (1 - \varepsilon^2)u/4$, so the depth of focus grows as $1/(1 - \varepsilon^2)$: 50.3\ times at
+$\varepsilon = 0.99$. This is the long depth of focus of annular pupils in [CS00].
+
+\chk{NA 0.5, $\varepsilon = 0.99$: the closed form of Step 3 gives 0.3648~$\mu$m for 2PE and 0.3638~$\mu$m for 2CE, as the engine does; the stored values are 0.365 and 0.364~$\mu$m (\texttt{cambaliza\_numbers.txt}). In the limit of a thin ring the spots are 0.3630 and 0.3619~$\mu$m. The stored depth of focus at $\varepsilon = 0.99$ is not defined, because it is 50 times that of the full pupil and longer than the computed window.}
+
+\section{Beyond the paraxial phase: why the paraxial depth of focus is too long}
+\step{1} On the axis $J_0(0) = 1$, and Eq.~(\ref{eq:debye}) needs no approximation. I substitute $t = \cos\vartheta$,
+$dt = -\sin\vartheta\,d\vartheta$:
+\begin{equation}U(0,z) = 2\pi\int_{\cos\alpha}^1 w(t)\,e^{ikzt}\,dt,\qquad w(t) = a(\vartheta(t)) .\end{equation}
+The field along the axis is the Fourier transform of the weight $w$ over the interval $[\cos\alpha, 1]$.
+
+\step{2} The width of a Fourier transform is inversely proportional to the length of the interval. In the paraxial
+model the phase is $kz(1 - \vartheta^2/2)$ with $\vartheta = \rho\sin\alpha$, and the measure $2\rho\,d\rho$ is
+uniform in $\rho^2$, so the paraxial weight is uniform over $t$ from $1 - \sin^2\!\alpha/2$ to 1: an interval of
+length $\sin^2\!\alpha/2$. The exact interval has length $1 - \cos\alpha$.
+
+\step{3} For a uniform weight over an interval of length $L$, Section 3 gives $|U|^2 = [\sin y/y]^2$ with
+$y = kzL/2$, so the depth of focus is proportional to $1/L$. The paraxial depth of focus over the exact one is then
+\begin{equation}\frac{1 - \cos\alpha}{\sin^2\!\alpha/2} = \frac{2(1 - \cos\alpha)}{(1 - \cos\alpha)(1 + \cos\alpha)}
+= \frac{2}{1 + \cos\alpha} = \frac{1}{\cos^2(\alpha/2)} = 1 + \tan^2\frac\alpha2 ,\end{equation}
+using $\sin^2\alpha = (1 - \cos\alpha)(1 + \cos\alpha)$ and $1 + \cos\alpha = 2\cos^2(\alpha/2)$. In air this is
+1.072 at NA 0.5, 1.167 at NA 0.7 and 1.393 at NA 0.9.
+
+\step{4} The aplanatic factor makes the weight $\sqrt t$, and the vector field along the axis (Part 2) has the weight
+$\sqrt t\,(1 + t)$. Both grow toward $t = 1$, so the rays near the axis count more, the interval is effectively
+shorter, and the depth of focus is slightly longer than with a uniform weight.
+
+\chk{One beam, 750 nm, air; depth of focus from the Fourier transform of each weight.
+\begin{center}\small\begin{tabular}{lccc}\toprule
+ & NA 0.5 & NA 0.7 & NA 0.9\\\midrule
+paraxial, $1.7718\,\lambda/\mathrm{NA}^2$ ($\mu$m) & 5.315 & 2.712 & 1.641\\
+uniform weight ($\mu$m); paraxial over it & 4.959; 1.072 & 2.324; 1.167 & 1.178; 1.393\\
+Debye, $\sqrt t$; ratio & 4.961; 1.071 & 2.329; 1.165 & 1.190; 1.378\\
+vector, $\sqrt t\,(1 + t)$; ratio & 4.964; 1.071 & 2.335; 1.161 & 1.206; 1.360\\
+engine, Richards--Wolf ($\mu$m) & 4.964 & 2.335 & 1.206\\\bottomrule
+\end{tabular}\end{center}
+For 2CE with collinear lenses the vector weights give 3.326~$\mu$m at NA 0.5 and 0.807~$\mu$m at NA 0.9, the stored
+widths (\texttt{high\_na/widths.csv}); the paraxial model gives 3.562 and 1.099~$\mu$m, also as stored. The paraxial
+depth of focus is 7\% too long at NA 0.5 and 36\% too long at NA 0.9.}
+
+\step{5} Across the axis the two models differ much less, because $v = kr\sin\alpha$ uses the exact edge angle. Part 2
+gives the vector spot across and along the polarization.
+
+\section*{References}
+\small
+[CS00] M. O. Cambaliza and C. Saloma, Opt.\ Commun.\ 184, 25--35 (2000).\\
+\relax[LS02] M. Lim and C. Saloma, Opt.\ Commun.\ 207, 121--130 (2002).\\
+\relax[LS03] M. Lim and C. Saloma, Appl.\ Opt.\ 42(17), 3398--3406 (2003).\\
+\relax[Rom03] K. M. Romallosa, J. Bantang and C. Saloma, Phys.\ Rev.\ A 68, 033812 (2003).\\
+E. Wolf, Proc.\ R.\ Soc.\ London Ser.\ A 253, 349--357 (1959).\\
+M. Born and E. Wolf, \emph{Principles of Optics}, 7th ed., Cambridge University Press (1999), §8.8.
+\end{document}

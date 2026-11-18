@@ -6,8 +6,9 @@ Read this file first. Then read, in this order:
 1. `docs/progress/work_to_date.pdf` (6 pages): what has been done and the results, by lens angle.
 2. `docs/two_color/REVIEW_LOG.md`: what is open right now, in order, and what each review pass found.
    `docs/two_color/NEXT_STEPS.md`: the checks (H1 to H6) with commands and pass numbers, and the build commands.
-3. `docs/two_color/pulse_derivations.pdf` and `docs/review/07_two_color_pulses/review_07.pdf` when a physics question
-   comes up.
+3. When a physics question comes up: the derivations, step by step, in `docs/two_color/derivations/`
+   (`1_scalar_focal_field.pdf`, `2_vector_focal_field.pdf`, `3_two_beams.pdf`) and `docs/two_color/pulse_derivations.pdf`
+   (pulses and delay); then `docs/review/07_two_color_pulses/review_07.pdf`.
 4. The user's rules: `/Users/raaromero/.claude/projects/-Users-raaromero/memory/MEMORY.md` and the files it links,
    above all `deck-rules.md` and `feedback-approved-summary-language.md`.
 
@@ -61,6 +62,7 @@ Work in `/Users/raaromero/mcdo_2ce` (git worktree, branch `two-color`; the remot
 | **The two current decks** (2026-11-18) | `DECK=high_na` or `DECK=pulses python scripts/make_2ce_decks.py` → `output/08_two_color/decks/2ce_high_na.pptx`, `2ce_pulses.pptx`; `MAIN=1` for the concise decks `*_main.pptx` |
 | Text of slides already reviewed by the user | `scripts/approved_slides_2ce_meeting.py` (word for word from the meeting of 2026-10-29) |
 | Consistency of the whole framework | `tests/test_unified_framework.py` (one engine from Romallosa to 2CE; verified numbers pinned) |
+| Closed forms behind the derivations | `scripts/derivation_checks.py` → `output/08_two_color/derivation_checks.txt` (about one minute of computing); the numbers quoted in `docs/two_color/derivations/*.pdf` |
 | Dashboard (Vite + TypeScript) | `dashboard/cambaliza/`; data from `scripts/dashboard_cambaliza_*.py`, `scripts/export_pulse_*_dashboard.py` |
 | Guides paired with the dashboard | `docs/two_color/walkthrough/` (`build.py`, `steps*.json`, `shoot.mjs`) |
 | Data of every 2CE study | `output/08_two_color/` (numbers in the `*.txt` and `*.csv` files beside the figures) |

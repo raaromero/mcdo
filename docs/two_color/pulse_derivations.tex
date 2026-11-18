@@ -340,52 +340,11 @@ With crossed lenses the fringes run along the diagonal of the $x$--$z$ plane. Ov
 5 fs is 0.278 at NA 0.5 and 0.478 at NA 0.7, about two thirds of the values along $x$.
 
 \section{The longitudinal component of the vector field}
-This section derives the factor of $E_z$, which the two-beam code had with an extra $i$ until 2026-11-10.
-
-\textbf{Step 1.} For input polarized along $x$, the ray at polar angle $\vartheta$ and azimuth $\varphi$ carries
-the unit field (Section 5 of \texttt{two\_color\_plan.pdf})
-\begin{equation}\hat{\mathbf e} = \big(\tfrac12(1+\cos\vartheta) - \tfrac12(1-\cos\vartheta)\cos 2\varphi,\;
--\tfrac12(1-\cos\vartheta)\sin 2\varphi,\; -\sin\vartheta\cos\varphi\big) .\end{equation}
-
-\textbf{Step 2.} The focal field at the point with cylindrical coordinates $(r, \psi, z)$ is the sum over rays,
-\begin{equation}\mathbf{E} = C\int_0^\alpha\!\!\int_0^{2\pi}\hat{\mathbf e}\;\sqrt{\cos\vartheta}\,\sin\vartheta\;
-e^{ikz\cos\vartheta}\,e^{ikr\sin\vartheta\cos(\varphi-\psi)}\,d\varphi\,d\vartheta ,\end{equation}
-with one constant $C$ for the three components.
-
-\textbf{Step 3.} The integral over $\varphi$ uses
-$\int_0^{2\pi}\cos(m\varphi)\,e^{iv\cos(\varphi-\psi)}d\varphi = 2\pi\,i^m J_m(v)\cos(m\psi)$, with
-$v = kr\sin\vartheta$:
-\begin{align}m = 0:&\quad 2\pi J_0(v)\\ m = 1:&\quad 2\pi\,i\,J_1(v)\cos\psi\\
-m = 2:&\quad 2\pi\,i^2J_2(v)\cos 2\psi = -2\pi J_2(v)\cos 2\psi .\end{align}
-
-\textbf{Step 4, the $x$ component.} The term $\tfrac12(1+\cos\vartheta)$ has $m = 0$ and the term
-$-\tfrac12(1-\cos\vartheta)\cos 2\varphi$ has $m = 2$, whose $-1$ from $i^2$ cancels its own minus sign:
-\begin{equation}E_x = C\pi\left[I_0 + I_2\cos 2\psi\right],\end{equation}
-with $I_0$, $I_1$, $I_2$ the integrals over $\vartheta$ of [Rom03] Eqs.~5--7.
-
-\textbf{Step 5, the $z$ component.} The term $-\sin\vartheta\cos\varphi$ has $m = 1$:
-\begin{equation}E_z = C\,(-1)\,(2\pi i)\,I_1\cos\psi = -2i\,C\pi\,I_1\cos\psi .\end{equation}
-
-\textbf{Step 6.} Richards \& Wolf fix the constant so that $E_x = -i(I_0 + I_2\cos 2\psi)$, that is $C\pi = -i$.
-The same constant multiplies $E_z$:
-\begin{equation}E_z = -2i\,(-i)\,I_1\cos\psi = 2i^2\,I_1\cos\psi = -2\,I_1\cos\psi .\end{equation}
-This is Eq.~4 of [Rom03]. The factor is real: $E_z$ is a quarter period out of phase with $E_x$. Writing
-$-2i$ here uses the $i$ of Step 5 and leaves out the $-i$ of the constant.
-
-\textbf{Step 7, a check with Gauss's law.} In a region without charges $\nabla\cdot\mathbf{E} = 0$. Near the axis
-at low NA, $E_x \approx -iI_0$, and $E_y$ is of second order in the angle, so
-$\partial E_z/\partial z = -\partial E_x/\partial x$. With $E_z \approx ikE_z$ under $\partial/\partial z$,
-\begin{equation}ik\,E_z = i\,\frac{\partial I_0}{\partial x}\quad\Longrightarrow\quad
-E_z = \frac{1}{k}\frac{\partial I_0}{\partial x} ,\end{equation}
-which is real where $I_0$ is real, as in the focal plane. Numerically, at NA 0.9,
-$|\nabla\cdot\mathbf{E}| = 1.9\times10^{-8}\,k|E|$ with the factor $-2$ and $0.77\,k|E|$ with $-2i$.
-
-\textbf{Step 8, what the factor changes.} $|E_z|^2$ is the same with either factor, so the intensity of one beam
-and the 2CE product $I_1I_2$ do not change, and neither does the Romallosa replication, which uses $|I_1|^2$.
-The factor matters where $E_z$ of one beam is added to another component before squaring. That happens in 2PE
-with crossed lenses when the polarization lies in the plane of the two beams: the $E_z$ of beam 2 points along
-the lab $x$ axis and adds to the $E_x$ of beam 1. With the polarization perpendicular to that plane, which the
-pulse and delay runs use, $\cos\psi = 0$ on the points computed and $E_z = 0$.
+The factor of $E_z$, which the two-beam code had with an extra $i$ until 2026-11-10, is derived step by step in
+Part 2 of the derivations, \texttt{derivations/2\_vector\_focal\_field.pdf}: Section 3 derives the three components
+and the constant, Section 4 checks the factor with Gauss's law, and Section 7 states what the factor changes. In short,
+$E_z = -2I_1\cos\psi$ is real; $|E_z|^2$, the intensity of one beam and the 2CE signal are the same with either factor;
+the factor enters only 2PE with the polarization in the plane of the two beams, which the pulse and delay runs do not use.
 
 \section*{References}
 \small

@@ -5,63 +5,44 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Open items (do these, in this order)
 
-1. **Wording of the deck `2ce_high_na_pulses.pptx`: done 2026-11-17, keep it that way.** The user rejected its
-   language three times ("The focus at X", "scientific presentation", "no telegraphed phrases or sentences"): titles
-   and bullets had been shortened to fit one line and had lost their subject, verb or reason. All titles and bullets
-   were rewritten (commit 36ed3a8). The rules for any later change:
-   - Never shorten a sentence to fit a line. A bullet may take two lines. One or two bullets per slide.
-   - A slide carried over keeps the approved wording word for word: Part 3 (pulses) from `pulse_results.pptx` (read
-     the file with python-pptx; do not import its script); Part 2 from the `title` and `items` of
-     `output/08_two_color/decks/2ce_meeting_manifest.json`.
-   - New slides use the vocabulary of the paper they extend (Romallosa et al. (2003): "intensity distribution near
-     focus", "zero points", "spectral bandwidth"; Lim & Saloma: "misalignment", "peak 2CE fluorescence").
-   - No title starts with "The". The deck script sizes each title from its measured width so that it stays on one
-     line (19 to 24 pt).
-   - After any change: rebuild, run `scripts/pptx_resave_pdf.py` on the deck (it opens PowerPoint on the user's
-     screen, re-saves the file so that Keynote loads it, and writes the PDF beside it), then LOOK at the PDF pages
-     (`pdftoppm -r 100 -png`) before telling the user anything.
-   Still open in this deck: the figures of Part 1 (slides 4 to 11) are in the older style, with small fonts and
-   titles inside the figure; redraw them at the figure standards with the scripts that made them
-   (`scripts/validate_romallosa.py`, `scripts/visual_na_checks.py`, `scripts/verify_*.py`), as new files.
-2. **Guides of that deck: done 2026-11-17, midday.** The two guides of `2ce_high_na_pulses.pptx` and the two of
-   `pulse_delay.pptx` now have one card per slide, with the slide number (position in the deck), the title and the
-   bullets word for word from the decks (checked by script against the text read with python-pptx), Part 4 (slides 46
-   to 54) added from the delay guides, and every other sentence rewritten as a full sentence. Steps b46 to b54b of
-   `steps_high_na_pulses.json` reuse the screenshots of `img_delay/` (copied). All four are rebuilt
-   (`high_na_pulses_guide`, 49 pages; `presenter_guide_high_na_pulses`, 37; `delay_guide`, 13;
-   `presenter_guide_delay`, 9). Remains: the user's reading of them. If the wording of a slide changes again, copy
-   the new title and bullets into the cards and rebuild; the number printed in the corner of a slide is smaller than
-   its position, because it skips the title and the dividers.
-3. **Presenter guides: numbers and answers checked 2026-11-17, midday**, against the speaker notes,
-   `work_to_date.tex`, `pulse_derivations.tex`, `review_07.tex`, `KEY_RESULTS.md`, `widths.csv`, `tau_cw.txt` and the
-   numbers files. Corrected in the guides: the 2CE spot at θ = 0 and π is 0.516 µm (was 0.517, the 2PE value); the
-   facing-lens pulse width at NA 0.3 is 264 fs (was 260); at 10 fs the 375-nm pairs are 18% and the 328-nm pairs 14%
-   of the 350-nm pairs in amplitude (was "18%" for both); with crossed lenses the focus of L2 moves along, not across,
-   the axis of L1 for a misalignment z_c; the scalar Debye spot in optical units is not constant (3.23 at NA 0.3,
-   3.19 at NA 0.9); the E_z error was in the two-beam calculation, not in the one-beam focus of Part 1. Remains, in
-   the deck notes (not changed, the decks are not mine to edit): slide 14 notes give 0.517 µm for 2CE at θ = 0 and π
-   (stored 0.516); slides 2 and 38 notes give "about 60%" at 10 fs next to 1.92 µm, which is 54% of 3.56 µm (60% is
-   the value with all pairs, 2.14 µm); slides 2 and 40 notes give "18%" for the 375- and 328-nm pairs together;
-   slide 50 notes give 0.95 for the collinear fringe at 5 fs where slide 53 and the derivations give 0.92 (different
-   normalization). Answers without a written source are listed in the pass below.
-4. **Derivations, piece by piece, in LaTeX** (asked 2026-11-16: "review everything including derivations (have latex
-   docs piece by piece)"). Existing: `docs/two_color/two_color_plan.tex` (background from Maxwell's equations, brief),
-   `docs/two_color/pulse_derivations.tex` (pulses, delay, the E_z factor; slow steps). Wanted: one document per piece,
-   each with slow steps and a check against stored numbers: (1) the scalar focal field (Debye integral, paraxial form,
-   sinc² on the axis and Airy in the focal plane, the widths at NA 0.5); (2) the vector field (aplanatic factor,
-   I₀, I₁, I₂, the components, E_z = −2 I₁ cos φ, ∇·E = 0); (3) two beams (rotation in real space, 2CE = I₁I₂,
-   2PE = |U₁+U₂|⁴, the fringe of 2PE at θ = π and π/2, the crossed-lens limit NA = n sin 45°, displacement,
-   aberration, Linfoot's criteria); (4) pulses; (5) delay. Pieces 4 and 5 are the sections of
-   `pulse_derivations.tex`. Keep each topic in one place.
-5. **Delay slides: done 2026-11-17.** The user asked for the delay results in the same deck, as their own slides.
-   They are Part 4 of `2ce_high_na_pulses.pptx` (slides 45 to 54) and also the deck `pulse_delay.pptx`; both take
-   them from `scripts/pulse_delay_slides.py`, so edit the wording there and rebuild both decks. They are written
-   in the framework of Lim & Saloma (2002): the peak 2CE fluorescence against a misalignment, here in time
-   ("a delay of 0.40 τ reduces the peak by 20%"). The user, 2026-11-17: "we write and look for results in the
-   same framework as the original papers; this time we just extended it to high NA and optical pulses."
-6. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
-7. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
+1. **Waiting for the user (proposed 2026-11-19).** Two small corrections to the decks `2ce_high_na` and `2ce_pulses`.
+   Neither is made yet, because each changes text the user approved and needs a rebuild and a re-save through
+   PowerPoint (which opens on the user's screen):
+   - The glossary uses α for the half-angle of the cone (slide 1/2, "NA: n sin α") and for the truncation parameter of
+     the Gaussian input (slide 2/2). Proposed: α_t for the truncation parameter, as the code and the derivations write it.
+   - "C ≥ 0.97" on the slide "Linfoot’s criteria against NA: 2CE, θ = π/2" (approved 2026-10-29): the lowest stored C
+     is 0.967 (air, NA 0.7, across the axis; `high_na/metrics.txt`). Proposed: "C ≥ 0.96", through `fix=` in
+     `scripts/make_2ce_decks.py`, which states the change in the notes.
+2. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
+3. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
+
+## Done, and the rules that keep it so
+
+- **Decks** `2ce_high_na(.pptx|_main.pptx)` and `2ce_pulses(.pptx|_main.pptx)` (2026-11-18), built by
+  `scripts/make_2ce_decks.py`; they replace `2ce_high_na_pulses.pptx` and its guides. The user rejected deck language
+  three times ("The focus at X", "scientific presentation", "no telegraphed phrases or sentences"). For any change:
+  - Never shorten a sentence to fit a line. A bullet may take two lines. One or two bullets per slide.
+  - A slide carried over keeps the approved wording word for word: from `scripts/approved_slides_2ce_meeting.py`
+    (meeting of 2026-10-29), changed only through `fix=`, which states the change in the notes; pulse slides from
+    `pulse_results.pptx` (read with python-pptx; do not import its script).
+  - New slides use the vocabulary of the paper they extend (Romallosa et al. (2003): "intensity distribution near
+    focus", "spectral bandwidth"; Lim & Saloma: "misalignment", "peak 2CE fluorescence"). No title starts with "The";
+    the script sizes each title to one line.
+  - After any change: rebuild, run `scripts/pptx_resave_pdf.py` on the deck, then LOOK at the PDF pages
+    (`pdftoppm -r 100 -png`) before telling the user anything.
+- **Guides** of the two decks (2026-11-18): `2ce_high_na_guide.pdf`, `2ce_pulses_guide.pdf` and the two presenter
+  guides. If the wording of a slide changes, copy the new title and bullets into the cards (`steps_2ce_*.json`,
+  `presenter_guide_2ce_*.md`) and rebuild (`build.py` modes `2ce_high_na`, `2ce_pulses`).
+- **Delay slides** (2026-11-17): written once in `scripts/pulse_delay_slides.py` for the pulse deck and
+  `pulse_delay.pptx`, in the framework of Lim & Saloma (2002): the peak 2CE fluorescence against a misalignment in time.
+- **Derivations, piece by piece** (asked 2026-11-16, done 2026-11-19): `docs/two_color/derivations/`
+  `1_scalar_focal_field.pdf` (Debye integral, paraxial field, sinc² and Airy, widths, annular pupil, why the paraxial
+  depth of focus is too long), `2_vector_focal_field.pdf` (aplanatic factor, the ray field, I₀, I₁, I₂, E_z = −2I₁ cos ψ,
+  Gauss's law, the spot across and along the polarization), `3_two_beams.pdf` (rotation, 2CE and 2PE, facing and
+  crossed lenses, displacement, aberration, Linfoot's criteria); pulses and delay in `pulse_derivations.pdf`. Every
+  number in a Check is printed by `scripts/derivation_checks.py`. Each topic is in one place: the E_z factor is in
+  Part 2, and Section 9 of `pulse_derivations` points there.
 
 ## Standing facts for whoever continues
 
@@ -77,6 +58,31 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
   20 fs), plus polarization p at three NAs.
 
 ## Passes
+
+### 2026-11-19
+- No stored result changed. Full suite 1113 pass.
+- Wrote the derivations in three parts with a closed form for each result, checked against the engine and the stored
+  numbers (`scripts/derivation_checks.py`). They reproduce: the replication widths at NA 0.5 (2PE 0.5171 / 3.5719 µm,
+  2CE 0.5157 / 3.5620 µm; stored 0.517 / 3.572 and 0.516 / 3.562); the vector depth of focus of 2CE from the weight
+  √t (1 + t) of the axial integral (3.326 and 0.807 µm at NA 0.5 and 0.9, as stored); the ratio of the paraxial to
+  the exact depth of focus, 1 + tan²(α/2) for a uniform weight; the annular spots at ε = 0.99 (0.3648 and 0.3638 µm;
+  stored 0.365 and 0.364); the crossed-lens widths (2CE 0.7626 / 0.6703 µm, 2PE 0.2558 µm; stored 0.763 / 0.670 and
+  0.256); the 2PE fringes with facing lenses (0.37 µm at NA 0.5, 0.44 µm at NA 0.9).
+- Lim & Saloma (2002): the peak 2CE fluorescence against a displacement d falls as exp(−κ_r d²), with κ_r = κ₁κ₂/(κ₁ +
+  κ₂) the reduced curvature of the two profiles along the displacement. It gives the stored values within 0.01 at the
+  paper's offsets in seven of eight cases (0.084 against 0.061 at 1.33 λ₁ across both axes, where the Airy pattern is
+  not Gaussian), and the paper's coefficients 0.027, 0.06 and 0.045 from 0.029, 0.065 and 0.051.
+- Lim & Saloma (2003): the focus of an aberrated beam moves by 2Aλ/NA² (A = φ/100), and Maréchal's approximation gives
+  the peak: 0.845 and 0.081 at |φ| = 60 for equal and opposite aberrations (engine 0.844 and 0.066; stored 0.84, 0.07),
+  and the peak position at φ = 16, 0.89 µm (stored 0.90).
+- Romallosa et al. (2003): Eqs. 2 and 3 as printed read I₀ + 2I₂ cos φ and I₂ sin φ, where Richards and Wolf have
+  cos 2φ and sin 2φ. Their 472.8 nm is the width with cos 2φ (|I₀ − I₂|²); the printed form gives 482.1 nm. The paper's
+  numbers therefore come from the correct field, which the engine uses; the printed equations are a typesetting slip.
+- Linfoot's criteria: F = 2Q − C holds on all 216 stored rows (to 0.0013, the rounding of the printed values).
+- Found on the glossary slides of both decks that α stands for two quantities, and kept "C ≥ 0.97" against the stored
+  0.967; both proposed to the user (open item 1).
+- `pulse_derivations.tex`: Section 9 (the E_z factor) now points to Part 2, where the derivation is complete and its
+  Gauss's-law step is written out; rebuilt.
 
 ### 2026-11-18
 - FLAG (wording, not a stored result): two slides of the meeting of 2026-10-29 (annular comparisons of pp. 31 and 32)

@@ -1,0 +1,261 @@
+\documentclass[11pt]{article}
+\input{preamble}
+\title{Derivations, part 3 of 3:\\ two beams, their misalignment and aberration, and Linfoot's criteria}
+\date{19 November 2026}
+\author{}
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+Part 3 combines the fields of Parts 1 and 2 for two lenses whose axes make the angle $\theta$, as in Cambaliza \&
+Saloma (2000) [CS00] and Lim \& Saloma (2002, 2003) [LS02, LS03]. It derives the 2CE and 2PE signals, the shape of
+their point spread functions (PSFs) at $\theta = 0$, $\pi/2$ and $\pi$, the loss of peak 2CE fluorescence when the
+two foci are displaced [LS02] or aberrated [LS03], and Linfoot's criteria. The numbers of each check are printed by
+\texttt{scripts/derivation\_checks.py}; all are at NA 0.5 in air with the paraxial model unless stated.
+
+\section*{Symbols}
+\begin{center}\small\begin{tabular}{ll}\toprule
+$\theta$ & angle between the two lens axes: 0 collinear, $\pi/2$ crossed, $\pi$ facing\\
+$O' = (x_c, 0, z_c)$ & focus of lens L2; the focus of L1 is the origin\\
+$(x_b, y_b, z_b)$ & coordinates of a point in the frame of beam 2\\
+$U_j$, $\mathbf E_j$, $I_j$ & field and intensity of beam $j$ at the point $P$\\
+$\kappa_j$ & curvature of the intensity of beam $j$ at its peak: $I_j \approx 1 - \kappa_js^2$ along a direction $s$\\
+$\phi_j$ & coefficient of primary spherical aberration of beam $j$ [LS03]; $A_j = \phi_j/100$\\
+$a$, $r$ & PSF under test and reference PSF in Linfoot's criteria\\\bottomrule
+\end{tabular}\end{center}
+
+\section{The second beam: a rotation of real space}
+\step{1} Beam 2 travels along $\hat{\mathbf d}_2 = (\sin\theta, 0, \cos\theta)$, the $z$ axis turned by $\theta$ about the
+$y$ axis, toward its focus $O'$ [CS00, LS02]. Its own axes are
+\begin{equation}\hat{\mathbf x}_b = (\cos\theta, 0, -\sin\theta),\qquad \hat{\mathbf y}_b = \hat{\mathbf y},\qquad
+\hat{\mathbf z}_b = (\sin\theta, 0, \cos\theta) .\end{equation}
+
+\step{2} The coordinates of $P = (x, y, z)$ in that frame are the projections of $P - O'$ on these axes:
+\begin{equation}x_b = \cos\theta\,(x - x_c) - \sin\theta\,(z - z_c),\qquad y_b = y,\qquad
+z_b = \sin\theta\,(x - x_c) + \cos\theta\,(z - z_c) .\end{equation}
+
+\step{3} Beam 2 is computed in its frame from Part 1 or Part 2 at $(x_b, y_b, z_b)$, with $\lambda_2$. A vector field is
+then turned back into the lab frame:
+\begin{equation}\mathbf E_2 = E_{x_b}\hat{\mathbf x}_b + E_{y_b}\hat{\mathbf y} + E_{z_b}\hat{\mathbf z}_b
+= \big(\cos\theta\,E_{x_b} + \sin\theta\,E_{z_b},\ E_{y_b},\ -\sin\theta\,E_{x_b} + \cos\theta\,E_{z_b}\big) .\end{equation}
+These are \texttt{\_beam\_frame} and \texttt{\_to\_lab} of \texttt{mcdo/twobeam.py}.
+
+\chk{At $\theta = \pi$ Step 2 gives $(x_b, z_b) = (-x, -z)$ and Step 3 turns $(E_x, E_y, E_z)$ into $(-E_x, E_y, -E_z)$.
+The engine's beam 2 at $\theta = \pi$ equals beam 1 evaluated at $(-x, -z)$ to $6.7\times10^{-16}$ for the paraxial
+intensity and, after that change of signs, to $3.5\times10^{-16}$ for the vector field at NA 0.8.}
+
+\step{4, the rotation written in [CS00] and [LS02]} [CS00] and [LS02] rotate the optical coordinates themselves,
+$u_r = u\cos\theta - v\sin\theta$ and $v_r = v\cos\theta + u\sin\theta$, with $u = (2\pi\mathrm{NA}^2/\lambda)z$ and
+$v = (2\pi\mathrm{NA}/\lambda)x$. At $\theta = 0$ and $\pi$ this is the rotation of Step 2. At $\theta = \pi/2$ it gives
+$u_r = -v$ and $v_r = u$, that is
+\begin{equation}z_b = \frac{u_r}{2\pi\mathrm{NA}^2/\lambda} = -\frac{x}{\mathrm{NA}},\qquad
+r_b = \frac{|v_r|}{2\pi\mathrm{NA}/\lambda} = \mathrm{NA}\,|z| ,\end{equation}
+where a rotation of real space gives $z_b = x$ and $r_b = |z|$. Because $u$ scales as $\mathrm{NA}^2$ and $v$ as
+NA, the rotation of optical coordinates stretches beam 2 along its axis by $1/\mathrm{NA}$ and across it by NA: a
+factor of 2 each way at NA 0.5. The current work uses the rotation of real space; the engine keeps the other
+(\texttt{rotation='optical'}) to reproduce the figures of [CS00] and [LS02].
+
+\section{The two signals}
+\step{1} With both beams present the field is $E(t) = E_1e^{-i\omega_1t} + E_2e^{-i\omega_2t}$. A molecule absorbs two
+photons together through the square of the field,
+\begin{equation}E(t)^2 = E_1^2e^{-2i\omega_1t} + 2E_1E_2\,e^{-i(\omega_1+\omega_2)t} + E_2^2e^{-2i\omega_2t} .\end{equation}
+
+\step{2, two colors} The level is at $\omega_e = \omega_1 + \omega_2$ ($1/\lambda_e = 1/\lambda_1 + 1/\lambda_2$,
+350 nm). The terms at $2\omega_1$ and $2\omega_2$ correspond to 375 and 328 nm; with continuous beams they are off
+resonance and do not excite. The amplitude is that of the middle term, $2E_1E_2$, and the rate is its squared modulus:
+\begin{equation}F_{2c} = \kappa\,|E_1|^2|E_2|^2 = \kappa\,I_1I_2 ,\end{equation}
+Eq.~2 of [CS00]. No interference term remains: the two colors add as intensities. With optical pulses the spectra
+widen until the terms at $2\omega_1$ and $2\omega_2$ also reach the level; these are the 375- and 328-nm pairs
+of the pulse derivations.
+
+\step{3, one color} With $\omega_1 = \omega_2 = \omega_e/2$ all three terms are at the level and add as amplitudes,
+$E_1^2 + 2E_1E_2 + E_2^2 = (E_1 + E_2)^2$:
+\begin{equation}F_{2p} = \kappa'\,|E_1 + E_2|^4 ,\end{equation}
+Eq.~3 of [CS00]. The two beams interfere.
+
+\step{4, vector fields} A molecule couples the two field vectors through its two-photon tensor $S$, with amplitude
+$\mathbf E_1\cdot S\,\mathbf E_2$. Averaged over random orientations, the rate depends on the fields through
+$|\mathbf E_1|^2|\mathbf E_2|^2$, $|\mathbf E_1\cdot\mathbf E_2|^2$ and $|\mathbf E_1\cdot\mathbf E_2^*|^2$ (Monson
+\& McClain 1970). In the plane of the lens axes both fields point along $y$ (Part 2, Section 7), so all three equal
+$I_1I_2$: there $F_{2c} = \kappa I_1I_2$ holds for any molecule, and $F_{2p} = \kappa'(|\mathbf E_1 + \mathbf E_2|^2)^2$
+with full interference. The engine uses these two forms (\texttt{two\_color}, \texttt{two\_photon}).
+
+\section{Collinear and facing lenses}
+\step{1, 2CE} The intensity of one focus is symmetric under $z \to -z$: in Part 1 $|U(-u, v)| = |U(u, v)|$, and in
+Part 2 each $I_m(-z)$ is the complex conjugate of $I_m(z)$. At $\theta = \pi$ beam 2 is beam 1 at $(-x, -z)$ (Section
+1), so $I_2(P; \pi) = I_2(P; 0)$ and the 2CE PSF of facing lenses equals that of collinear lenses: 0.516~$\mu$m and
+3.562~$\mu$m (stored, both angles). At $\theta = 0$ it is the product of Part 1, Section 5, Step 4.
+
+\step{2, 2PE at $\theta = 0$} The two beams are the same field, $|U_1 + U_2|^4 = 16|U|^4$: the PSF of one beam to the
+fourth power, 0.517 / 3.572~$\mu$m (Part 1).
+
+\step{3, 2PE at $\theta = \pi$: the field on the axis} From Part 1, Section 3, Step 5, beam 1 on the
+axis is $U_1 = e^{i(kz - u/4)}\,\mathrm{sinc}(u/4)$, with $\mathrm{sinc}\,y = \sin y/y$. Beam 2 is the same field at
+$-z$, and sinc is even:
+\begin{equation}U_2 = e^{-i(kz - u/4)}\,\mathrm{sinc}(u/4) .\end{equation}
+
+\step{4} Their sum is a standing wave under the envelope of one focus:
+\begin{equation}U_1 + U_2 = 2\cos(k_ez)\,\mathrm{sinc}(u/4),\qquad k_e = k\left[1 - \frac{(\mathrm{NA}/n)^2}{4}\right] ,\end{equation}
+since $kz - u/4 = kz[1 - (\mathrm{NA}/n)^2/4]$. The PSF along the axis is
+$F_{2p} \propto \cos^4(k_ez)\,\mathrm{sinc}^4(u/4)$.
+
+\step{5} The fringes are $\pi/k_e = \lambda/\{2n[1 - (\mathrm{NA}/n)^2/4]\}$ apart, slightly more than $\lambda/2n$.
+Near the focus the envelope is flat, and the central fringe falls to one half where $\cos^4(k_ez) = 1/2$:
+\begin{equation}\text{FWHM} = \frac{2\arccos(2^{-1/4})}{k_e} .\end{equation}
+
+\step{6, the vector field} On the axis the vector field is $-iI_0$ (Part 2, Section 7), whose phase advances as
+$k\langle t\rangle z$ near the focus, with $\langle t\rangle$ the mean of $t = \cos\vartheta$ under the weight
+$\sqrt t\,(1 + t)$. The same steps give fringes $\lambda/(2n\langle t\rangle)$ apart. At high NA the envelope falls
+within one fringe and pulls the side maxima inward, so this estimate is too long there.
+
+\chk{2PE, 700 nm, $\theta = \pi$, air.
+\begin{center}\small\begin{tabular}{lcc}\toprule
+ & NA 0.5 & NA 0.9\\\midrule
+paraxial: spacing $\lambda/(2[1 - \mathrm{NA}^2/4])$; engine & 0.3733; 0.3728 & \\
+paraxial: central FWHM, Step 5; engine & 0.1359; 0.1358 & \\
+vector: $\langle t\rangle$ & 0.9346 & 0.7517\\
+vector: spacing $\lambda/(2\langle t\rangle)$; engine & 0.3745; 0.3738 & 0.4656; 0.4426\\
+vector: central FWHM $2\arccos(2^{-1/4})/(k\langle t\rangle)$; engine & 0.1363; 0.1362 & 0.1695; 0.1662\\\bottomrule
+\end{tabular}\end{center}
+All in $\mu$m. The stored central widths are 0.136~$\mu$m (paraxial, NA 0.5) and 0.166~$\mu$m (vector, NA 0.9).
+The fringes widen from 0.37~$\mu$m at NA 0.5 to 0.44~$\mu$m at NA 0.9, as the slides state.}
+
+\section{Crossed lenses}
+\step{1, 2CE across the axis of L1} At $\theta = \pi/2$ a point $(x, 0, 0)$ has $z_b = x$ and $r_b = 0$: it lies on the
+axis of beam 2. So along $x$ the PSF is the Airy pattern of beam 1 times the axial profile of beam 2,
+\begin{equation}F_{2c}(x, 0, 0) \propto \left[\frac{2J_1(v_1)}{v_1}\right]^2\mathrm{sinc}^2\frac{u_2}{4},\qquad
+v_1 = \frac{2\pi\mathrm{NA}}{\lambda_1}x,\quad u_2 = \frac{2\pi\mathrm{NA}^2}{\lambda_2}x .\end{equation}
+
+\step{2, 2CE along the axis of L1} A point $(0, 0, z)$ has $z_b = 0$ and $r_b = |z|$: it lies in the focal plane of
+beam 2. So along $z$ the PSF is the axial profile of beam 1 times the Airy pattern of beam 2.
+
+\step{3} The axial profiles are about seven times longer than the Airy patterns, so each width is close to the spot of
+one beam: the crossed 2CE PSF is about as long as it is wide.
+
+\step{4, 2PE} On the $x$ axis, beam 1 is $2J_1(v)/v$ (real, in its focal plane) and beam 2 is
+$e^{i(kx - u/4)}\mathrm{sinc}(u/4)$ (on its axis). Their sum interferes with the phase $k_ex$, and the PSF
+$|2J_1(v)/v + e^{i(kx - u/4)}\mathrm{sinc}(u/4)|^4$ has a central lobe of about half a fringe, narrowed by the Airy
+envelope of beam 1. By symmetry the width along $z$ is the same.
+
+\chk{2CE: Steps 1 and 2 give 0.7626 and 0.6703~$\mu$m; stored 0.763 and 0.670~$\mu$m; the spots of one beam are 0.7717
+(750 nm) and 0.6750~$\mu$m (656 nm). 2PE: Step 4 gives 0.2558~$\mu$m, stored 0.256~$\mu$m in both directions; without
+the Airy envelope the lobe would be $4\arccos(2^{-1/4})/k_e = 0.2718~\mu$m.}
+
+\step{5, the crossed-lens limit} The two cones of half-angle $\alpha$ around axes $90^\circ$ apart do not overlap if
+$2\alpha \le 90^\circ$, that is $\mathrm{NA} \le n\sin45^\circ = n/\sqrt2$: 0.707 in air, 0.940 in water ($n = 1.33$)
+and 1.071 in oil ($n = 1.515$). [CS00] (p.~34) gives the value in air.
+
+\section{Displacement of the focus of L2 [LS02]}
+\step{1} Near its peak, along a direction $s$, each intensity is quadratic, $I_j \approx 1 - \kappa_js^2$. Across the
+axis $[2J_1(v)/v]^2 \approx 1 - v^2/4$, and along it $\mathrm{sinc}^2y \approx 1 - y^2/3$ with $y = u/4$, so
+\begin{equation}\kappa_\perp = \frac14\left(\frac{2\pi\mathrm{NA}}{\lambda}\right)^2,\qquad
+\kappa_\parallel = \frac{1}{48}\left(\frac{2\pi\mathrm{NA}^2}{n\lambda}\right)^2 .\end{equation}
+
+\step{2} With the focus of L2 displaced by $d$ along $s$, the 2CE signal along that line is, to second order,
+\begin{equation}F_{2c}(s) \approx (1 - \kappa_1s^2)(1 - \kappa_2(s - d)^2) \approx 1 - \kappa_1s^2 - \kappa_2(s - d)^2 .\end{equation}
+
+\step{3} Its maximum is where the derivative vanishes, $-2\kappa_1s - 2\kappa_2(s - d) = 0$:
+\begin{equation}s^* = \frac{\kappa_2}{\kappa_1 + \kappa_2}\,d .\end{equation}
+
+\step{4} Putting $s^*$ back, with $s^* - d = -\kappa_1d/(\kappa_1 + \kappa_2)$,
+\begin{equation}F_{2c}(s^*) \approx 1 - \frac{\kappa_1\kappa_2^2 + \kappa_2\kappa_1^2}{(\kappa_1 + \kappa_2)^2}\,d^2
+= 1 - \kappa_r\,d^2,\qquad \kappa_r = \frac{\kappa_1\kappa_2}{\kappa_1 + \kappa_2} .\end{equation}
+The peak 2CE fluorescence falls with the reduced curvature, which is smaller than either curvature: the beam that is
+longer along the displacement sets the tolerance. Since both profiles are close to Gaussian near their peaks,
+$F_{2c} \approx \exp(-\kappa_rd^2)$ holds beyond the quadratic range.
+
+\step{5} The four cases of [LS02] use the profile of each beam along the displacement: at $\theta = \pi$ a displacement
+$x_c$ is across both axes and $z_c$ along both; at $\theta = \pi/2$, $x_c$ is across the axis of L1 and along that of
+L2, and $z_c$ the reverse.
+
+\chk{Peak 2CE fluorescence, NA 0.5, displacement in units of $\lambda_1 = 750$ nm.
+\begin{center}\footnotesize\begin{tabular}{lcccc}\toprule
+case & $\kappa_r\lambda_1^2$ & [LS02] & stored fit & $e^{-\kappa_rd^2}$ (stored value) at $d$\\\midrule
+$\theta = \pi$, $x_c$ & 1.398 & 20\% lower at 0.37 & $-0.588x_c^2 + 0.883$ & 0.826 (0.823) at 0.37; 0.084 (0.061) at 1.33\\
+$\theta = \pi$, $z_c$ & 0.0291 & $-0.027z_c^2 + 0.996$ & $-0.027z_c^2 + 0.999$ & 0.910 (0.909) at 1.8; 0.809 (0.807) at 2.7\\
+$\theta = \pi/2$, $x_c$ & 0.0654 & $-0.06x_c^2 + 1$ & $-0.063x_c^2 + 0.999$ & 0.991 (0.991) at 0.37; 0.891 (0.889) at 1.33\\
+$\theta = \pi/2$, $z_c$ & 0.0506 & $-0.045z_c^2 + 0.986$ & $-0.045z_c^2 + 0.996$ & 0.849 (0.845) at 1.8; 0.692 (0.682) at 2.7\\\bottomrule
+\end{tabular}\end{center}
+[LS02] also gives a drop of 20\% at 2.7 for $\theta = \pi$, $z_c$, of 11\% at 1.33 for $\theta = \pi/2$, $x_c$, and of
+30\% at 2.7 for $\theta = \pi/2$, $z_c$; the estimates give 19\%, 11\% and 31\%.
+The fits are least-squares fits over a wide range of offsets, so their coefficients are smaller than $\kappa_r$ where
+the profile departs from a quadratic within that range ($\theta = \pi$, $x_c$). At 1.33 $\lambda_1$ across both axes the
+Airy pattern falls faster than a Gaussian, so the estimate 0.084 is above the stored 0.061. With crossed lenses the
+same loss of peak needs an in-plane displacement $(1.398/0.0654)^{1/2} = 4.6$ times larger than with facing lenses,
+because the displacement then runs along the axis of L2.}
+
+\section{Primary spherical aberration [LS03]}
+\step{1} [LS03] (Eq.~1) adds to the pupil the aberration function $\Phi = (\phi/100)\lambda\rho^4$, so the pupil phase is
+$k\Phi = 2\pi A\rho^4$ with $A = \phi/100$. On the axis, with $s = \rho^2$ as in Part 1, Section 3,
+\begin{equation}U(u, 0) = e^{ikz}\int_0^1 e^{i(2\pi As^2 - us/2)}\,ds .\end{equation}
+
+\step{2} I split $s^2$ into its best straight line on $[0, 1]$ and a remainder,
+\begin{equation}s^2 = \left(s - \tfrac16\right) + \left(s^2 - s + \tfrac16\right),\end{equation}
+where the remainder is orthogonal to 1 and to $s$: $\int_0^1(s^2 - s + \frac16)ds = \frac13 - \frac12 + \frac16 = 0$ and
+$\int_0^1s(s^2 - s + \frac16)ds = \frac14 - \frac13 + \frac1{12} = 0$.
+
+\step{3, the focal shift} The term $2\pi As$ is a defocus and cancels $-us/2$ at $u = 4\pi A$. With
+$u = (2\pi/\lambda)(\mathrm{NA}^2/n)z$ the focus moves to
+\begin{equation}z_f = \frac{2An\lambda}{\mathrm{NA}^2} .\end{equation}
+
+\step{4, the loss of peak} What remains is the phase $2\pi A(s^2 - s + \frac16)$, whose root-mean-square over the pupil
+is $2\pi A\,\sigma$ with $\sigma^2 = \int_0^1(s^2 - s + \frac16)^2ds = \frac15 - \frac12 + \frac13 - \frac1{36} = \frac1{180}$.
+By Maréchal's approximation the peak falls to
+\begin{equation}S \approx \exp[-(2\pi A\sigma)^2] .\end{equation}
+Because $\Phi$ is written in units of each beam's own wavelength, $S$ is the same for both beams.
+
+\step{5, two beams} With collinear lenses and equal $\phi$ both foci move the same way, to $z_1 = 2A\lambda_1/\mathrm{NA}^2$
+and $z_2 = 2A\lambda_2/\mathrm{NA}^2$ in air, and differ through the wavelength alone. With opposite $\phi$ they move apart
+by $z_1 + z_2$. By Section 5 the peak 2CE fluorescence is about
+\begin{equation}F_{2c} \approx S^2\exp\!\left[-\kappa_r\,(z_1 \mp z_2)^2\right] ,\end{equation}
+with the reduced axial curvature $\kappa_r$, at $z^* = (\kappa_1z_1 \pm \kappa_2z_2)/(\kappa_1 + \kappa_2)$; the upper
+signs are for equal and the lower for opposite aberrations. With facing
+lenses beam 2 points the other way, so its focus moves to $-z_2$ and the two cases swap: opposite aberrations compensate.
+With crossed lenses the focus of L1 moves along $z$ and that of L2 along $x$: each along its own axis, in the
+direction in which the other beam is narrow. The peak then stays near the origin, where each beam is $z_j$ from its
+focus along its axis, and both signs give about $S^2\exp(-\kappa_{\parallel,1}z_1^2 - \kappa_{\parallel,2}z_2^2)$.
+
+\chk{Collinear lenses, NA 0.5.
+\begin{center}\small\begin{tabular}{lccc}\toprule
+& $\phi_1 = \phi_2 = 16$ & $\phi_1 = \phi_2 = 60$ & $\phi_1 = -\phi_2 = 60$\\\midrule
+$z_1$; $z_2$ ($\mu$m) & 0.960; 0.840 & 3.600; 3.149 & 3.600; $-3.149$\\
+$S$ & 0.994 & 0.924 & 0.924\\
+estimate: peak; $z^*$ ($\mu$m) & 0.988; 0.89 & 0.845; 3.34 & 0.081; $-0.22$\\
+engine: peak; position ($\mu$m) & 0.988; 0.90 & 0.844; 3.30 & 0.066; $-0.20$\\
+stored (\texttt{aberration\_numbers.txt}) & position 0.90 & 0.84 & 0.07\\\bottomrule
+\end{tabular}\end{center}
+The engine positions are on a grid of 0.1~$\mu$m. With facing lenses the stored values swap (0.07 for equal and 0.84 for
+opposite aberrations), as [LS03] reports. With crossed lenses the estimate is 0.080 for both signs; stored 0.07 for both.}
+
+\section{Linfoot's criteria}
+\step{1} In the current work the PSF under test $a$ and the reference $r$ are each scaled to unit energy over the same
+window. Then
+\begin{equation}F = 1 - \frac{\sum(a - r)^2}{\sum r^2},\qquad C = \frac{\sum a^2}{\sum r^2},\qquad
+Q = \frac{\sum ar}{\sum r^2}\end{equation}
+are the fidelity, the structural content and the correlation quality. [Rom03] uses them with the continuous-beam focus
+as the reference and [LS02] with the aligned PSF; in the current work $r$ is the vector PSF and $a$ the paraxial one.
+
+\step{2} Expanding the square, $\sum(a - r)^2 = \sum a^2 - 2\sum ar + \sum r^2$, so
+\begin{equation}F = 1 - C + 2Q - 1 = 2Q - C .\end{equation}
+Two of the three criteria are independent.
+
+\step{3} I write $a = r + \delta$. Unit energy for both gives $\sum\delta = 0$. Then
+\begin{equation}F = 1 - \frac{\sum\delta^2}{\sum r^2},\qquad Q = 1 + \frac{\sum r\delta}{\sum r^2},\qquad
+C = 1 + \frac{2\sum r\delta + \sum\delta^2}{\sum r^2} .\end{equation}
+$F$ departs from 1 at second order in the difference, $C$ and $Q$ at first order. A longer paraxial focus has, at
+unit energy, a lower peak, so $\sum r\delta < 0$ and $C$ and $Q$ fall below 1 first, as the slides state.
+$F$ is negative when $\sum\delta^2 > \sum r^2$, which happens when the two PSFs barely overlap, and $C$ and $Q$ exceed 1
+when $a$ is more concentrated than $r$.
+
+\chk{$F = 2Q - C$ holds on all 216 stored rows to within 0.0013, the rounding of the printed values. The rows are in
+the files \texttt{metrics.txt} and \texttt{linfoot\_all.txt} of the high-NA study and in \texttt{linfoot\_numbers.txt}.}
+
+\section*{References}
+\small
+[CS00] M. O. Cambaliza and C. Saloma, Opt.\ Commun.\ 184, 25--35 (2000).\\
+\relax[LS02] M. Lim and C. Saloma, Opt.\ Commun.\ 207, 121--130 (2002).\\
+\relax[LS03] M. Lim and C. Saloma, Appl.\ Opt.\ 42(17), 3398--3406 (2003).\\
+\relax[Rom03] K. M. Romallosa, J. Bantang and C. Saloma, Phys.\ Rev.\ A 68, 033812 (2003).\\
+P. R. Monson and W. M. McClain, J.\ Chem.\ Phys.\ 53, 29--37 (1970).\\
+M. Born and E. Wolf, \emph{Principles of Optics}, 7th ed., Cambridge University Press (1999), §9.1 (Maréchal).
+\end{document}

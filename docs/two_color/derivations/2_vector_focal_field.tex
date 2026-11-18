@@ -1,0 +1,227 @@
+\documentclass[11pt]{article}
+\input{preamble}
+\title{Derivations, part 2 of 3:\\ the vector (Richards--Wolf) focal field of one lens}
+\date{18 November 2026}
+\author{}
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+Part 2 derives the field of an aplanatic lens with its polarization, the model of Romallosa, Bantang \& Saloma
+(2003) [Rom03], which the current work uses at high NA. Part 1 derived the scalar field; Part 3 combines two beams.
+The numbers of each check are printed by \texttt{scripts/derivation\_checks.py}.
+
+\section*{Symbols}
+\begin{center}\small\begin{tabular}{ll}\toprule
+$(r, \psi, z)$ & cylindrical coordinates of the point $P$; $\psi$ is measured from the input polarization\\
+$(\vartheta, \varphi)$ & polar and azimuthal angles of the direction of a ray converging on the focus\\
+$\hat{\mathbf k}$ & direction of that ray, $(\sin\vartheta\cos\varphi,\ \sin\vartheta\sin\varphi,\ \cos\vartheta)$\\
+$\hat{\mathbf e}$ & unit field of that ray after the lens\\
+$h$, $f$ & height of the ray in the pupil; focal length\\
+$A(\vartheta)$ & profile of the input beam (1 for uniform input)\\
+$I_0, I_1, I_2$ & the three integrals of the field, Section 3\\
+$t$ & $\cos\vartheta$\\\bottomrule
+\end{tabular}\end{center}
+
+\section{The aplanatic factor}
+\step{1} An aplanatic lens obeys the sine condition: the ray that enters the pupil at height $h$ leaves toward the
+focus at the angle $\vartheta$ with
+\begin{equation}h = f\sin\vartheta .\end{equation}
+
+\step{2} The power that enters through the ring of the pupil between $h$ and $h + dh$ is
+$|E_{\rm in}|^2\,2\pi h\,dh$.
+
+\step{3} The same power crosses the band of the reference sphere (radius $f$, centred on the focus) between
+$\vartheta$ and $\vartheta + d\vartheta$, whose area is $2\pi f^2\sin\vartheta\,d\vartheta$. With $E_{\rm s}$ the
+field on the sphere,
+\begin{equation}|E_{\rm in}|^2\,2\pi h\,dh = |E_{\rm s}|^2\,2\pi f^2\sin\vartheta\,d\vartheta .\end{equation}
+
+\step{4} From Step 1, $dh = f\cos\vartheta\,d\vartheta$. Substituting $h$ and $dh$ on the left,
+\begin{equation}|E_{\rm in}|^2\,2\pi f\sin\vartheta\,f\cos\vartheta\,d\vartheta
+= |E_{\rm s}|^2\,2\pi f^2\sin\vartheta\,d\vartheta .\end{equation}
+
+\step{5} The factor $2\pi f^2\sin\vartheta\,d\vartheta$ appears on both sides and cancels:
+\begin{equation}|E_{\rm s}|^2 = |E_{\rm in}|^2\cos\vartheta,\qquad |E_{\rm s}| = A(\vartheta)\sqrt{\cos\vartheta} .\end{equation}
+The rays at large $\vartheta$ come from a wider ring of the pupil but spread over a still wider band of the sphere,
+so their amplitude falls as $\sqrt{\cos\vartheta}$.
+
+\section{The field of one ray after the lens}
+\step{1} The input is polarized along $x$: $\mathbf E_{\rm in} = \hat{\mathbf x}$. At the azimuth $\varphi$ I split
+it into the radial and the azimuthal unit vectors of the pupil,
+$\hat{\mathbf e}_\rho = (\cos\varphi, \sin\varphi, 0)$ and $\hat{\mathbf e}_\varphi = (-\sin\varphi, \cos\varphi, 0)$:
+\begin{equation}\hat{\mathbf x} = \cos\varphi\,\hat{\mathbf e}_\rho - \sin\varphi\,\hat{\mathbf e}_\varphi .\end{equation}
+(Check: $\cos\varphi(\cos\varphi, \sin\varphi) - \sin\varphi(-\sin\varphi, \cos\varphi) = (1, 0)$.)
+
+\step{2} The lens bends the ray within its meridional plane, the plane that holds the axis and the ray. The azimuthal
+component is perpendicular to that plane and does not change. The radial component turns with the ray and becomes the
+meridional unit vector
+\begin{equation}\hat{\mathbf e}_\vartheta = (\cos\vartheta\cos\varphi,\ \cos\vartheta\sin\varphi,\ -\sin\vartheta) ,\end{equation}
+which is perpendicular to $\hat{\mathbf k}$ and equals $\hat{\mathbf e}_\rho$ when $\vartheta = 0$. The ray that arrives
+with the direction $(\vartheta, \varphi)$ leaves the pupil on the opposite side, at the azimuth $\varphi + \pi$; there
+both unit vectors of the pupil and both coefficients of Step 1 change sign, so the result below is the same.
+
+\step{3} The field of the ray on the reference sphere is then
+\begin{equation}\hat{\mathbf e} = \cos\varphi\,\hat{\mathbf e}_\vartheta - \sin\varphi\,\hat{\mathbf e}_\varphi
+= \big(\cos\vartheta\cos^2\!\varphi + \sin^2\!\varphi,\ \ (\cos\vartheta - 1)\sin\varphi\cos\varphi,\ \
+-\sin\vartheta\cos\varphi\big) .\end{equation}
+
+\step{4} With $\cos^2\!\varphi = \frac12(1 + \cos2\varphi)$, $\sin^2\!\varphi = \frac12(1 - \cos2\varphi)$ and
+$\sin\varphi\cos\varphi = \frac12\sin2\varphi$:
+\begin{align}
+e_x &= \tfrac12(1 + \cos\vartheta) - \tfrac12(1 - \cos\vartheta)\cos2\varphi ,\\
+e_y &= -\tfrac12(1 - \cos\vartheta)\sin2\varphi ,\\
+e_z &= -\sin\vartheta\cos\varphi .
+\end{align}
+Each component is now a sum of terms $\cos m\varphi$ or $\sin m\varphi$ with $m = 0$, 1 or 2.
+
+\chk{$\hat{\mathbf k}\cdot\hat{\mathbf e} = \sin\vartheta\cos\varphi\,[\cos\vartheta(\cos^2\!\varphi + \sin^2\!\varphi) +
+\sin^2\!\varphi - \sin^2\!\varphi - \cos\vartheta] = 0$: the field of each ray is transverse, as a plane wave must
+be. On a grid of 141 by 181 directions the largest $|\hat{\mathbf k}\cdot\hat{\mathbf e}|$ is $1.7\times10^{-16}$ and
+$|\hat{\mathbf e}|$ differs from 1 by at most $3.3\times10^{-16}$.}
+
+\section{The field near the focus}
+\step{1} As in Part 1, Section 1, the field is the sum of the plane waves, now each with its vector
+$\hat{\mathbf e}$ and the amplitude of Section 1:
+\begin{equation}\mathbf E(r,\psi,z) = C\int_0^\alpha\!\!\int_0^{2\pi}\hat{\mathbf e}(\vartheta,\varphi)\,
+A(\vartheta)\sqrt{\cos\vartheta}\;e^{ik(r\sin\vartheta\cos(\varphi-\psi) + z\cos\vartheta)}\,
+\sin\vartheta\,d\varphi\,d\vartheta ,\end{equation}
+with one constant $C$ for the three components.
+
+\step{2, the integrals over $\varphi$} I write $\varphi = \psi + \chi$. Then
+$\cos m\varphi = \cos m\psi\cos m\chi - \sin m\psi\sin m\chi$. The term with $\sin m\chi$ integrates to zero over a
+period, because $\sin m\chi$ is odd in $\chi$ and $e^{iv\cos\chi}$ is even. The other term is Bessel's integral,
+$\int_0^{2\pi}\cos m\chi\,e^{iv\cos\chi}\,d\chi = 2\pi\,i^mJ_m(v)$. In the same way for $\sin m\varphi$:
+\begin{equation}\int_0^{2\pi}\!\cos m\varphi\;e^{iv\cos(\varphi-\psi)}d\varphi = 2\pi\,i^mJ_m(v)\cos m\psi,\qquad
+\int_0^{2\pi}\!\sin m\varphi\;e^{iv\cos(\varphi-\psi)}d\varphi = 2\pi\,i^mJ_m(v)\sin m\psi ,\end{equation}
+with $v = kr\sin\vartheta$, $i^0 = 1$, $i^1 = i$ and $i^2 = -1$.
+
+\step{3, the integrals over $\vartheta$} What remains of each term is one of three integrals over $\vartheta$:
+\begin{align}
+I_0 &= \int_0^\alpha A\sqrt{\cos\vartheta}\,\sin\vartheta\,(1 + \cos\vartheta)\,J_0(kr\sin\vartheta)\,e^{ikz\cos\vartheta}\,d\vartheta ,\\
+I_1 &= \int_0^\alpha A\sqrt{\cos\vartheta}\,\sin^2\!\vartheta\,J_1(kr\sin\vartheta)\,e^{ikz\cos\vartheta}\,d\vartheta ,\\
+I_2 &= \int_0^\alpha A\sqrt{\cos\vartheta}\,\sin\vartheta\,(1 - \cos\vartheta)\,J_2(kr\sin\vartheta)\,e^{ikz\cos\vartheta}\,d\vartheta .
+\end{align}
+These are Eqs.~5 to 7 of [Rom03], written there with $u = k\sin^2\!\alpha\,z$ and $v = k\sin\alpha\,r$.
+
+\step{4, $E_x$} The term $\frac12(1 + \cos\vartheta)$ has $m = 0$ and gives $C\cdot\frac12\cdot2\pi I_0 = C\pi I_0$.
+The term $-\frac12(1 - \cos\vartheta)\cos2\varphi$ has $m = 2$; its minus sign and the $i^2 = -1$ cancel, and it
+gives $C\pi I_2\cos2\psi$:
+\begin{equation}E_x = C\pi\,(I_0 + I_2\cos2\psi) .\end{equation}
+
+\step{5, $E_y$} The term $-\frac12(1 - \cos\vartheta)\sin2\varphi$ has $m = 2$ and gives, in the same way,
+\begin{equation}E_y = C\pi\,I_2\sin2\psi .\end{equation}
+
+\step{6, $E_z$} The term $-\sin\vartheta\cos\varphi$ has $m = 1$. Its $\sin\vartheta$ and the $\sin\vartheta$ of the
+solid angle make the $\sin^2\!\vartheta$ of $I_1$, and $i^1 = i$:
+\begin{equation}E_z = C\,(-1)\,(2\pi i)\,I_1\cos\psi = -2i\,C\pi\,I_1\cos\psi .\end{equation}
+
+\step{7, the constant} Richards \& Wolf, and [Rom03], fix the constant so that $E_x = -i(I_0 + I_2\cos2\psi)$, that is
+$C\pi = -i$. The same constant multiplies $E_y$ and $E_z$:
+\begin{equation}E_x = -i\,(I_0 + I_2\cos2\psi),\qquad E_y = -i\,I_2\sin2\psi,\qquad
+E_z = -2i\,(-i)\,I_1\cos\psi = -2\,I_1\cos\psi ,\label{eq:rw}\end{equation}
+since $-2i\cdot(-i) = 2i^2 = -2$. The factor of $E_z$ is real: $E_z$ is a quarter period out of phase with $E_x$. The
+two-beam code had $-2i$ until 2026-11-10, which used the $i$ of Step 6 and left out the $-i$ of the constant.
+
+\chk{Eqs.~2 to 4 of [Rom03] as printed read $E_x = -j(I_0 + 2I_2\cos\phi)$ and $E_y = -jI_2\sin\phi$, where
+Eq.~(\ref{eq:rw}) has $\cos2\psi$ and $\sin2\psi$; $E_z = -2I_1\cos\phi$ is as above. The width that [Rom03] reports
+decides which form their computations used. At NA 0.8, $n = 1.3$ and 750 nm, the FWHM across the polarization is
+472.8 nm with Eq.~(\ref{eq:rw}), $|I_0 - I_2|^2$, which is the value of [Rom03]; the printed form gives 482.1 nm there.
+Along the polarization Eq.~(\ref{eq:rw}) gives 525.1 nm and the printed form 536.8 nm. The printed $\cos\phi$ and
+$\sin\phi$ are therefore a slip of typesetting, and the engine uses Eq.~(\ref{eq:rw}). A term $\cos\phi$ would also make
+$E_x$ change under $r \to -r$ in the focal plane, which the symmetric lens does not allow.}
+
+\section{Gauss's law}
+\step{1} In a region without charges $\nabla\cdot\mathbf E = 0$. Near the focus at low NA, $E_x \approx -iI_0$, and
+$E_y$ is of second order in the angle. Each plane wave in the sum varies along $z$ as
+$e^{ikz\cos\vartheta} \approx e^{ikz}$, so $\partial E_z/\partial z \approx ikE_z$. Gauss's law then reads
+\begin{equation}ik\,E_z \approx -\frac{\partial E_x}{\partial x} = i\,\frac{\partial I_0}{\partial x} ,\qquad
+E_z \approx \frac1k\,\frac{\partial I_0}{\partial x} .\end{equation}
+
+\step{2} With $J_0' = -J_1$ and $\partial r/\partial x = \cos\psi$,
+$\partial J_0(kr\sin\vartheta)/\partial x = -k\sin\vartheta\,J_1(kr\sin\vartheta)\cos\psi$, so
+\begin{equation}\frac{\partial I_0}{\partial x} = -k\cos\psi\int_0^\alpha A\sqrt{\cos\vartheta}\,\sin^2\!\vartheta\,
+(1 + \cos\vartheta)\,J_1\,e^{ikz\cos\vartheta}\,d\vartheta \approx -2k\cos\psi\,I_1 ,\end{equation}
+where $1 + \cos\vartheta \approx 2$ at low NA.
+
+\step{3} Putting Step 2 into Step 1, $E_z \approx -2I_1\cos\psi$: the real factor $-2$ of Eq.~(\ref{eq:rw}).
+With $-2i$ the field would not satisfy Gauss's law.
+
+\chk{NA 0.9, air, 750 nm, on a grid of $5\times5\times5$ points within 0.6~$\mu$m of the focus, by central differences
+with a step of 1 nm: the largest $|\nabla\cdot\mathbf E|$ is $1.1\times10^{-6}$ of $k|\mathbf E(0)|$ with the factor
+$-2$ and 0.37 of it with $-2i$.}
+
+\section{The low-NA limit}
+\step{1} For a narrow cone, $1 + \cos\vartheta \to 2$, while $\sin^2\!\vartheta$ and $\sin\vartheta(1 - \cos\vartheta)$
+are smaller than $\sin\vartheta$ by factors of order $\vartheta$ and $\vartheta^2/2$. So $I_1$ and $I_2$ vanish
+against $I_0$, and $I_0$ becomes twice the scalar Debye integral of Part 1 (Section 1, Step 4) without its factor $2\pi$.
+
+\step{2} The field becomes $\mathbf E \approx -iI_0\,\hat{\mathbf x}$: the scalar field, polarized along $x$. This
+is the limit of the two-color models of [CS00], [LS02] and [LS03].
+
+\chk{Largest share of the peak intensity $|I_0(0)|^2$ in the focal plane, 750 nm, air:
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+& NA 0.1 & NA 0.5 & NA 0.7 & NA 0.9\\\midrule
+$|E_z|^2 = 4|I_1|^2$ (along the polarization) & 0.13\% & 3.52\% & 7.62\% & 15.19\%\\
+$|I_2|^2$ & 0.000\% & 0.023\% & 0.111\% & 0.467\%\\\bottomrule
+\end{tabular}\end{center}
+At NA 0.1 the paraxial, scalar Debye and vector profiles agree to within $3\times10^{-3}$ across and along the axis
+(\texttt{tests/test\_unified\_framework.py}).}
+
+\section{The spot across the axis depends on the direction}
+\step{1, along the polarization} At $\psi = 0$: $\cos2\psi = 1$, $\sin2\psi = 0$, $\cos\psi = 1$, and
+\begin{equation}|\mathbf E|^2 = |I_0 + I_2|^2 + 4|I_1|^2 .\end{equation}
+
+\step{2, across the polarization} At $\psi = \pi/2$: $\cos2\psi = -1$, $\sin2\psi = 0$, $\cos\psi = 0$, and
+\begin{equation}|\mathbf E|^2 = |I_0 - I_2|^2 ,\end{equation}
+with no longitudinal field.
+
+\step{3} In the focal plane near the axis $I_0$ is positive and falls with $r$, and $I_2$ is positive and grows as
+$r^2$, because $J_2(v) \approx v^2/8$. Adding $I_2$ makes the intensity fall more slowly and subtracting it more
+quickly; $4|I_1|^2$ is zero on the axis and largest beside it. The spot is therefore wider along the polarization and
+narrower across it.
+
+\chk{FWHM in the focal plane, one beam, 750 nm, air ($\mu$m):
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+& NA 0.1 & NA 0.5 & NA 0.7 & NA 0.9\\\midrule
+along the polarization & 3.8659 & 0.8131 & 0.6199 & 0.5481\\
+paraxial, $0.5145\,\lambda/\mathrm{NA}$ & 3.8587 & 0.7717 & 0.5512 & 0.4287\\
+across the polarization & 3.8570 & 0.7623 & 0.5363 & 0.4042\\\bottomrule
+\end{tabular}\end{center}
+The paraxial spot lies between the two at each NA. Across the polarization the vector spot is 1.2\% narrower than
+the paraxial one at NA 0.5 and 5.7\% narrower at NA 0.9; along it, 5.4\% and 28\% wider. The depth of focus changes
+more: the paraxial model makes it 7\% too long at NA 0.5 and 36\% too long at NA 0.9 (Part 1, Section 7).}
+
+\section{The plane that the current work computes}
+\step{1} Both beams are polarized along the lab $y$ axis, perpendicular to the plane of the two lens axes (the
+$xz$-plane). In the frame of either beam, a point of that plane lies at $\pm\pi/2$ from the polarization, so all
+points of the plane are across the polarization.
+
+\step{2} On that plane each beam therefore has $|\mathbf E|^2 = |I_0 - I_2|^2$, its field points along $y$, and
+$E_z = 0$. The stored maps and widths in the plane of the lens axes are across the polarization. This is why the 2CE
+spot of the vector model is 1.2\% narrower than the paraxial one at NA 0.5 (0.510 against 0.516~$\mu$m) and 5.6\%
+narrower at NA 0.9 (0.270 against 0.286~$\mu$m).
+
+\step{3} On the axis $J_1(0) = J_2(0) = 0$, so $I_1 = I_2 = 0$ and $|\mathbf E|^2 = |I_0|^2$. The depth of focus is
+the Fourier transform of the weight $\sqrt t\,(1 + t)$ of Part 1, Section 7, and does not depend on the polarization.
+
+\chk{The two-beam engine gives the FWHM of [Rom03], 472.8 nm (NA 0.8, $n = 1.3$, 750 nm, across the polarization), and
+its vector field equals that of the Romallosa replication (\texttt{mcdo/rw\_integrals.py}) to $10^{-9}$ for both
+polarizations and along the axis (\texttt{tests/test\_unified\_framework.py}).}
+
+\step{4, what the factor of $E_z$ changes} $|E_z|^2$ is the same with $-2$ and with $-2i$, so the intensity of one
+beam, the 2CE signal $I_1I_2$ and the Romallosa replication do not depend on it. The factor matters where the $E_z$ of
+one beam adds to a component of another beam before the square is taken. That happens in 2PE with crossed lenses when
+the polarization lies in the plane of the two beams: the $E_z$ of beam 2 then points along the lab $x$ axis and adds to
+the $E_x$ of beam 1. In the stored high-NA pupil study 208 rows of that case changed when the factor was corrected;
+none of them is on a slide. With the polarization perpendicular to the plane, as in all the stored maps and in the
+pulse and delay runs, $E_z = 0$ on the plane (Step 2).
+
+\section*{References}
+\small
+[CS00] M. O. Cambaliza and C. Saloma, Opt.\ Commun.\ 184, 25--35 (2000).\\
+\relax[LS02] M. Lim and C. Saloma, Opt.\ Commun.\ 207, 121--130 (2002).\\
+\relax[LS03] M. Lim and C. Saloma, Appl.\ Opt.\ 42(17), 3398--3406 (2003).\\
+\relax[Rom03] K. M. Romallosa, J. Bantang and C. Saloma, Phys.\ Rev.\ A 68, 033812 (2003).\\
+B. Richards and E. Wolf, Proc.\ R.\ Soc.\ London Ser.\ A 253, 358--379 (1959).\\
+L. Novotny and B. Hecht, \emph{Principles of Nano-Optics}, Cambridge University Press (2006), Ch.~3.
+\end{document}
