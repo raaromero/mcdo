@@ -136,14 +136,16 @@ sweep (NEXT_STEPS.md, H3). A result without its check is not reported as a resul
 Done and checked: the replications; the high-NA extension; pulses against NA; the delay sweep (16 sets) and its
 checks; polarization p for crossed lenses; the review against the four papers (one error found and corrected).
 
-Done on 2026-11-16 (asked by the user that day; see NEXT_STEPS.md, "Decks", "Dashboard highlights" and "Guides"):
-1. A deck covering the Richards–Wolf work, then 2CE at high NA, then pulses, with at most two panels
-   across: `scripts/make_2ce_high_na_pulses_deck.py` → `output/08_two_color/decks/2ce_high_na_pulses.pptx` (55 slides).
-2. The delay results as their own deck, with the closed formula and the two polarizations: `pulse_delay.pptx` (11 slides).
-3. A presenter guide and a dashboard guide for each of the two decks: `docs/two_color/presenter_guide_{high_na_pulses,delay}.md`
-   and `docs/two_color/walkthrough/walkthrough_{high_na_pulses,delay}.src.md`, built beside the decks.
-4. A "Highlights" tab in the dashboard (19 cards), and a section "Delay between the pulses, against NA" in Pulse
-   results with the delay sweep (`scripts/export_pulse_delay_sweep_dashboard.py`).
+Current decks (decided with the user on 2026-11-18; both start after the replication of Cambaliza & Saloma (2000)):
+1. `2ce_high_na.pptx`: the extension to high NA, every lens angle and signal, with the PSF maps of the paraxial and
+   vector models at NA 0.5 and at high NA, the widths against NA, Linfoot, side lobes, annular pupils, Δλ.
+2. `2ce_pulses.pptx`: optical pulses at high NA (vector model), then the delay between the pulses.
+   Each has a concise `*_main.pptx` (MAIN=1). Script: `scripts/make_2ce_decks.py`. The earlier combined deck
+   `2ce_high_na_pulses.pptx` and its guides are superseded.
+3. `pulse_delay.pptx`: the delay alone, from the same slides (`scripts/pulse_delay_slides.py`).
+4. Presenter and dashboard guides for each deck (`NEXT_STEPS.md`, "Guides").
+5. A "Highlights" tab in the dashboard and a section "Delay between the pulses, against NA" in Pulse results;
+   the slides link to the highlight cards ("Open in the dashboard").
 
 Still open: the commit and push of the branch, which waits on three answers from the user (NEXT_STEPS.md, Step 3);
 the user's review of the decks and guides.
