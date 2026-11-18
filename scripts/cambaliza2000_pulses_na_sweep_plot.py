@@ -17,6 +17,8 @@ continuous-beam values, the side lobe within 1 point and F, S and Q within 0.01 
     -> output/08_two_color/cambaliza2000/pulses/na_sweep/{diff_vs_tau_<set>.png, metrics_vs_tau_<set>_<sig>.png,
        tau_cw_vs_na.png, tau_cw_vs_na_<sig>.png, tau_cw.txt}
        and dashboard/cambaliza/public/data/pulse_na.json (the same numbers, for the pulse results tab)
+    KEY=rw_air KEYPANELS=1 python scripts/cambaliza2000_pulses_na_sweep_plot.py
+    -> …/na_sweep/key_dof_vs_{tau,na}_<sig>_rw_air_{pi,0_pi2}.png, profiles_pi_rw_air_na0.5_na0.9.png (vector model, air)
     PANELS=1 python scripts/cambaliza2000_pulses_na_sweep_plot.py
     -> …/na_sweep/tau_cw_vs_na[_pupils]_<sig>_{pi,0_pi2}.png: the two τ-against-NA figures, at most two panels across
 """
@@ -307,6 +309,68 @@ if KEY in data:
     json.dump({f'{sig}|{tk}|{na:g}|{t:g}': round(float(v), 4) for na in nas for sig in ('2ce', '2pe') for tk, _ in THETAS
                if (sig, tk) in d[na] for t, v in zip(d[na][(sig, tk)]['taus'], d[na][(sig, tk)]['dof'])},
               open(os.path.join(D, 'key_dof.json' if KEY == 'paraxial_air' else f'key_dof_{KEY}.json'), 'w'))
+
+    if os.environ.get('KEYPANELS'):
+        # KEYPANELS=1 (with KEY=rw_air): the same depth-of-focus figures with at most two panels across (facing lenses alone; collinear and
+        # crossed lenses together), at the figure standards (fonts 32, 28, 24; about 11 × 10 in per panel; 600 DPI); and
+        # the 2CE profiles along the axis with facing lenses at NA 0.5 and 0.9 for continuous beams and 100, 20, 10 fs.
+        from matplotlib.colors import BoundaryNorm, ListedColormap
+        with matplotlib.rc_context({'font.size': 34, 'axes.titlesize': 38, 'axes.labelsize': 36, 'xtick.labelsize': 30,
+                                    'ytick.labelsize': 30, 'legend.fontsize': 30}):   # legible at a third of the slide
+            for sig in ('2ce', '2pe'):
+                taus = sorted(set.intersection(*[set(d[na][(sig, 'pi')]['taus']) for na in nas]))
+                for kind in ('tau', 'na'):
+                    for part, tks in (('pi', ('pi',)), ('0_pi2', ('0', 'pi2'))):
+                        fig, axes = plt.subplots(1, len(tks), figsize=(11 * len(tks), 10), sharey=True, squeeze=False)
+                        for ax, tk in zip(axes[0], tks):
+                            ttl = dict(THETAS)[tk]
+                            ok = [na for na in nas if (sig, tk) in d[na]]
+                            if kind == 'tau':
+                                for i, na in enumerate(nas):
+                                    if na in ok:
+                                        v = d[na][(sig, tk)]
+                                        ax.plot(v['taus'], v['dof'], 'o-', color=colour(i, len(nas)), lw=3, ms=7,
+                                                label=f'NA {na:g}')
+                                ax.set_xscale('log'); ax.set_xlabel('Pulse width τ (fs)')
+                            else:
+                                tcol = plt.get_cmap('plasma')
+                                for j, t in enumerate(taus):
+                                    ax.plot(ok, [d[na][(sig, tk)]['dof'][list(d[na][(sig, tk)]['taus']).index(t)] for na in ok],
+                                            'o-', color=tcol(0.9 * j / max(len(taus) - 1, 1)), lw=3, ms=7, label=f'{t:g} fs')
+                                ax.set_xlim(0.05, 1.0); ax.set_xlabel('NA')
+                            ax.axhline(1, color='k', ls=':', lw=2.5)
+                            ax.set_ylim(0, 1.25); ax.set_title(ttl)
+                        axes[0, 0].set_ylabel(f'{sig.upper()} depth of focus, pulsed\nover continuous beams')
+                        fig.tight_layout(rect=(0, 0, 0.9 if len(tks) == 2 else 0.84, 1))
+                        cax = fig.add_axes([0.915 if len(tks) == 2 else 0.86, 0.17, 0.018 if len(tks) == 2 else 0.035, 0.7])
+                        if kind == 'tau':                      # one line per NA: a colour bar of NA in place of a legend
+                            cols, ticks, lab = [colour(i, len(nas)) for i in range(len(nas))], list(nas), 'NA'
+                        else:                                  # one line per pulse width: a colour bar of τ
+                            cols = [plt.get_cmap('plasma')(0.9 * j / max(len(taus) - 1, 1)) for j in range(len(taus))]
+                            ticks, lab = list(taus), 'Pulse width τ (fs)'
+                        bnd = np.arange(len(ticks) + 1) - 0.5
+                        cb = fig.colorbar(plt.cm.ScalarMappable(BoundaryNorm(bnd, len(ticks)), ListedColormap(cols)), cax=cax)
+                        pick = range(0, len(ticks), 2 if len(ticks) > 10 else 1)
+                        cb.set_ticks(list(pick)); cb.set_ticklabels([f'{ticks[i]:g}' for i in pick]); cb.set_label(lab)
+                        fig.savefig(os.path.join(D, f'key_dof_vs_{kind}_{sig}_{KEY}_{part}.png'), dpi=600, bbox_inches='tight')
+                        plt.close(fig)
+            fig, axes = plt.subplots(1, 2, figsize=(22, 10), sharey=True)
+            for ax in axes:
+                ax.locator_params(axis='x', nbins=5)
+            for ax, na in zip(axes, (0.5, 0.9)):
+                f = np.load(os.path.join(D, KEY, f'na{na:g}.npz'))
+                z = f['2ce_pi_z_s']
+                ax.plot(z, f['2ce_pi_z_cw'], 'k--', lw=3, label='continuous beams')
+                for t, c in ((100, '#4e79a7'), (20, '#f28e2b'), (10, '#e15759')):
+                    ax.plot(z, f[f'2ce_pi_z_{t}'], color=c, lw=3, label=f'{t} fs, all photon pairs')
+                ax.set(xlabel='z (µm), at x = 0', title=f'NA {na:g}', xlim=(z.min(), z.max()))
+            axes[0].set_ylabel('2CE, normalized to its peak')
+            fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center', bbox_to_anchor=(0.5, 0.99), ncol=2,
+                       frameon=False)
+            fig.tight_layout()
+            fig.savefig(os.path.join(D, f'profiles_pi_{KEY}_na0.5_na0.9.png'), dpi=600, bbox_inches='tight')
+            plt.close(fig)
+        print('Saved -> key_dof_vs_{tau,na}_<sig>_' + KEY + '_{pi,0_pi2}.png, profiles_pi_' + KEY + '_na0.5_na0.9.png')
 
 # 6. Pupil and input, Richards–Wolf model in air: pulse width within tolerance against NA for each pupil and input
 if len(PUP) > 1:

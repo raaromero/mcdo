@@ -1,5 +1,5 @@
 r"""Slides of the delay between the two pulses, shared by make_pulse_delay_deck.py (the delay alone) and
-make_2ce_high_na_pulses_deck.py (Part 4), so that the two decks carry the same titles, bullets and notes.
+make_2ce_decks.py (DECK=pulses, Part 2), so that the two decks carry the same titles, bullets and notes.
 
 The results are written in the framework of Lim & Saloma (2002), who report the peak 2CE fluorescence against the
 misalignment of the two foci at θ = 0, π/2 and π; here the misalignment is in time. Figures are those of
@@ -67,6 +67,15 @@ LINKS = {
     'Peak 2CE fluorescence against the delay, τ = 5 fs, NA 0.5': '#hl=delay-fringes',
     'Peak 2CE fluorescence against the delay, τ = 10 fs, NA 0.5': '#hl=delay-fringes',
     'Peak 2CE fluorescence against the delay for two polarizations': '#hl=delay-polarization',
+    '2CE PSF in the x–z plane at NA 0.5 and NA 0.9, θ = 0 and π': '#hl=cw-scalar-dof',
+    '2CE PSF in the x–z plane at NA 0.5 and NA 0.7, θ = π/2': '#hl=cw-dof-crossed',
+    '2PE PSF in the x–z plane at NA 0.5 and NA 0.7, θ = π/2': '#hl=cw-2pe-crossed',
+    '2PE PSF in the x–z plane at NA 0.5 and NA 0.9, θ = π': '#hl=cw-2pe-facing',
+    'Central spot and depth of focus against NA: 2PE, θ = π': '#hl=cw-2pe-facing',
+    '2CE depth of focus against pulse width, facing lenses': '#hl=pulse-facing-na',
+    '2CE depth of focus against NA, facing lenses': '#hl=pulse-facing-na',
+    '2CE depth of focus against pulse width, collinear and crossed lenses': '#hl=pulse-crossed',
+    '2CE along the axis with pulses at NA 0.5 and NA 0.9, facing lenses': '#hl=pulse-facing-dof',
 }
 
 

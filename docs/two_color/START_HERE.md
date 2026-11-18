@@ -57,7 +57,10 @@ Work in `/Users/raaromero/mcdo_2ce` (git worktree, branch `two-color`; the remot
 | Checks of the delay runs | `scripts/cambaliza2000_delay_sample_check.py`, `…_delay_allpairs_check.py` |
 | Main 2CE deck (77 slides, FROZEN) | `scripts/make_lim2002_progress_deck.py` → `output/08_two_color/decks/2ce_meeting_cambaliza.pptx` |
 | Pulse deck (20 slides, FROZEN) | `scripts/make_pulse_results_deck.py` → `output/08_two_color/cambaliza2000/deck/pulse_results.pptx` |
-| Delay deck (backup, may change) | `scripts/make_pulse_delay_deck.py` → `…/deck/pulse_delay.pptx` |
+| Delay deck (the delay alone) | `scripts/make_pulse_delay_deck.py` → `…/deck/pulse_delay.pptx` |
+| **The two current decks** (2026-11-18) | `DECK=high_na` or `DECK=pulses python scripts/make_2ce_decks.py` → `output/08_two_color/decks/2ce_high_na.pptx`, `2ce_pulses.pptx`; `MAIN=1` for the concise decks `*_main.pptx` |
+| Text of slides already reviewed by the user | `scripts/approved_slides_2ce_meeting.py` (word for word from the meeting of 2026-10-29) |
+| Consistency of the whole framework | `tests/test_unified_framework.py` (one engine from Romallosa to 2CE; verified numbers pinned) |
 | Dashboard (Vite + TypeScript) | `dashboard/cambaliza/`; data from `scripts/dashboard_cambaliza_*.py`, `scripts/export_pulse_*_dashboard.py` |
 | Guides paired with the dashboard | `docs/two_color/walkthrough/` (`build.py`, `steps*.json`, `shoot.mjs`) |
 | Data of every 2CE study | `output/08_two_color/` (numbers in the `*.txt` and `*.csv` files beside the figures) |
@@ -104,7 +107,10 @@ sweep (NEXT_STEPS.md, H3). A result without its check is not reported as a resul
 
 ## 4. How to work so that nothing stalls
 
-1. Before changing code, run H1 (`$P -m pytest tests -q -x`, about 2 min; 1076 pass on 2026-11-13).
+1. Before and after changing any field, pulse or signal code, run `$P -m pytest tests/test_unified_framework.py -q`
+   (about one minute). It pins the verified numbers from Romallosa et al. (2003) through Cambaliza & Saloma (2000) and
+   Lim & Saloma (2002, 2003) to the pulses and the delay; if one moves, find the cause before changing the number.
+   Then run H1 (`$P -m pytest tests -q -x`, about 2 min; 1076 pass on 2026-11-13).
 2. Long runs go in the background with a log file and a last line that says done; write the queue as a script in
    the output folder so it can be restarted (examples: `output/…/delay_sweep/run_delay_*.sh`).
 3. After a run: the sample check, then the plot script, then the deck script. Never edit a `.pptx` by hand.
