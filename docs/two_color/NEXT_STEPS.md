@@ -124,10 +124,13 @@ the card's `scroll` is brought into view.
   `c-xpos`, `c-xpu`, `c-xfi`, …) and the section of the delay against NA is `sec-delay-na`; in Scalar vs vector at high
   NA the profiles are `c-nax` and `c-naz`. Check that the view shows the quantity of the sentence and that each value
   is an option of its control.
-- 19 cards (2026-11-16): six for continuous beams at high NA (the scalar against vector card now reads "At NA 0.9 the
+- 21 cards (2026-11-18): eight for continuous beams at high NA (the scalar against vector card reads "At NA 0.9 the
   paraxial 2CE depth of focus is 36% longer than the vector one (1.10 against 0.81 µm); at NA 0.5 it is 7% longer."),
   five for pulses without delay and eight for the delay, five of which open the section "Delay between the pulses,
   against NA" (facing lenses at low NA, facing lenses at NA 0.5 and above, pupils, fringes, the two polarizations).
+  Two were added on 2026-11-18 for the maps of the PSF in the x–z plane: `cw-2pe-collinear` (2PE, θ = 0, NA 0.9) and
+  `cw-2ce-crossed` (2CE, θ = π/2, NA 0.7). The maps of Scalar vs vector at high NA are drawn for the first angle of
+  `ths`, so a highlight of the maps of one angle sets that angle alone.
 - The section "Delay between the pulses, against NA" of Pulse results reads `public/data/pulse_delay_sweep.json`
   (0.82 MB), written by `$P scripts/export_pulse_delay_sweep_dashboard.py` from the stored delay tables: rw_air, the
   Gaussian input α = 4 and the annular pupils ε = 0.5 and 0.9 on the coarse grid (all NAs and τ), and rw_air and
@@ -153,48 +156,57 @@ others. Add two or more samples of each new set to `SAMPLES` in `scripts/cambali
 and run H3. Annular pupils with ε = 0.99 take hours; the others take minutes.
 
 ### Decks
-Each deck is rebuilt by its script; never edit a `.pptx` by hand.
+Each deck is rebuilt by its script; never edit a `.pptx` by hand. The two 2CE decks and their concise versions come from
+one script, `scripts/make_2ce_decks.py`. Slides carried over from the meeting of 2026-10-29 take their text word for word
+from `scripts/approved_slides_2ce_meeting.py`, and the delay slides come from `scripts/pulse_delay_slides.py`, which
+`scripts/make_pulse_delay_deck.py` shares.
 
 ```bash
-$P scripts/make_2ce_high_na_pulses_deck.py         # -> output/08_two_color/decks/2ce_high_na_pulses.pptx (65 slides; Part 4 is the delay)
-$P scripts/make_pulse_delay_deck.py     # -> output/08_two_color/cambaliza2000/deck/pulse_delay.pptx (11 slides)
-$P scripts/pptx_resave_pdf.py <deck.pptx> …   # re-save through PowerPoint (so Keynote loads it) and write the PDF beside it
-# the delay slides of both decks are defined once, in scripts/pulse_delay_slides.py
+DECK=high_na $P scripts/make_2ce_decks.py          # -> output/08_two_color/decks/2ce_high_na.pptx (38 slides)
+DECK=high_na MAIN=1 $P scripts/make_2ce_decks.py   # -> output/08_two_color/decks/2ce_high_na_main.pptx (16 slides)
+DECK=pulses $P scripts/make_2ce_decks.py           # -> output/08_two_color/decks/2ce_pulses.pptx (39 slides; Part 2 is the delay)
+DECK=pulses MAIN=1 $P scripts/make_2ce_decks.py    # -> output/08_two_color/decks/2ce_pulses_main.pptx (16 slides)
+D=output/08_two_color/decks
+$P scripts/pptx_resave_pdf.py $D/2ce_high_na.pptx $D/2ce_high_na_main.pptx $D/2ce_pulses.pptx $D/2ce_pulses_main.pptx
+# re-saves each deck through PowerPoint, which opens on the user's screen, so that Keynote loads it, and writes the PDF
+# beside it; look at the PDF pages (pdftoppm -r 100 -png) before telling the user anything
 ```
 
-The polarization figure of the delay deck (`delay_sweep/delay_polarization_pi2.png`) is drawn by the function
-`polarization()` in `scripts/cambaliza2000_pulses_delay_plot.py`.
-
-The high-NA and pulses deck has at most two panels across. Its figures of at most two panels were added to the plotting scripts
-as an option that writes new files and leaves the files of the frozen decks as they are:
+The figures of at most two panels are drawn by the plotting scripts with an option that writes new files and leaves the
+files of the frozen decks as they are; the maps of the PSF in the x–z plane have their own script:
 
 ```bash
 PANELS=1 $P scripts/cambaliza2000_pulse_time_frequency.py   # pulse_waves_{spectrum,sum}.png, pulse_gaussian_{time_frequency,wavelength}.png
 PANELS=1 $P scripts/cambaliza2000_pulses_gate_plot.py       # sweep/profiles_100fs_2ce_{0_pi,pi2}.png
 PANELS=1 $P scripts/cambaliza2000_pulses_na_sweep_plot.py   # na_sweep/tau_cw_vs_na[_pupils]_<sig>_{pi,0_pi2}.png (scalar to NA 0.5)
-PANELS=1 $P scripts/visual_na_checks.py                     # 02_na_apodization/check2_na0.3_na0.9.png (focal spot, scalar and vector)
 PANELS=1 $P scripts/fig_lim2002_slides.py                   # lim2002/slides/axial_2ce_paraxial_vector_na0.5_na0.9.png
+$P scripts/cambaliza2000_high_na_maps.py                    # high_na/maps/psf_<2ce|2pe>_<0|pi2|pi>.png and widths.txt
 ```
 
-Two slides still have a small schematic beside two plots (`dof_na_pi.png`, `gate_pi.png`); they were not split.
-
 ### Guides
-Each deck has a dashboard guide (one card per slide, with a link, the settings as a sentence and a screenshot) and a
-presenter guide (per slide, the main point, what to say and the likely questions). The dashboard guides link to the
-local dashboard on port 4317 (`npm run dev` in `dashboard/cambaliza`).
+Each of the two decks has a dashboard guide (one card per slide of the full deck, with the title and the bullets of the
+slide word for word, the link, the settings as a sentence and a screenshot) and a presenter guide (per slide, the main
+point, what to say, the likely questions, and whether the slide is also in the concise deck). The concise decks have
+the same titles and bullets, so the same guides serve them. The dashboard guides link to the local dashboard on port
+4317 (`npm run dev` in `dashboard/cambaliza`).
 
 ```bash
 cd docs/two_color/walkthrough
-# screenshots: vite preview on 4173 and headless Chromium with --remote-debugging-port=9333, then
-node shoot.mjs steps_high_na_pulses.json img_high_na_pulses
-node shoot.mjs steps_delay.json img_delay
-$P build.py high_na_pulses     # walkthrough_high_na_pulses.src.md + steps_high_na_pulses.json -> output/08_two_color/decks/high_na_pulses_guide.{html,pdf}
-$P build.py delay       # walkthrough_delay.src.md + steps_delay.json -> output/08_two_color/cambaliza2000/deck/delay_guide.{html,pdf}
+# screenshots: npm run build and npx vite preview --port 4173 in dashboard/cambaliza, headless Chromium with
+# --remote-debugging-port=9333, then (ONLY=<id>,<id> limits the screenshots to those steps)
+node shoot.mjs steps_2ce_high_na.json img_2ce_high_na
+node shoot.mjs steps_2ce_pulses.json img_2ce_pulses
+$P build.py 2ce_high_na   # walkthrough_2ce_high_na.src.md + steps_2ce_high_na.json -> $OUT/decks/2ce_high_na_guide.{html,pdf}
+$P build.py 2ce_pulses    # walkthrough_2ce_pulses.src.md + steps_2ce_pulses.json -> $OUT/decks/2ce_pulses_guide.{html,pdf}
 cd ..
-# presenter guides (pandoc, then headless Chromium --print-to-pdf), as in the header of each file
-pandoc presenter_guide_high_na_pulses.md -s --embed-resources --css presenter_guide.css -o $OUT/decks/presenter_guide_high_na_pulses.html
-pandoc presenter_guide_delay.md -s --embed-resources --css presenter_guide.css -o $OUT/cambaliza2000/deck/presenter_guide_delay.html
+# presenter guides: pandoc, then headless Chromium --print-to-pdf, as in the header of each file
+CHR="$HOME/Library/Caches/ms-playwright/chromium-1140/chrome-mac/Chromium.app/Contents/MacOS/Chromium"
+for d in 2ce_high_na 2ce_pulses; do
+  pandoc presenter_guide_$d.md -s --embed-resources --css presenter_guide.css -o $OUT/decks/presenter_guide_$d.html
+  "$CHR" --headless=new --no-pdf-header-footer --print-to-pdf=$OUT/decks/presenter_guide_$d.pdf file://$OUT/decks/presenter_guide_$d.html
+done
 ```
 
-`$OUT` is `/Users/raaromero/mcdo_dev/output/08_two_color`. The two `.src.md` files and the presenter guides state no
-password.
+`$OUT` is `/Users/raaromero/mcdo_dev/output/08_two_color`. If the wording of a slide changes, read the deck with
+python-pptx, copy the new title and bullets into the card of both guides (the bullets go in the blue box of the
+dashboard guide) and rebuild. The `.src.md` files and the presenter guides state no password.

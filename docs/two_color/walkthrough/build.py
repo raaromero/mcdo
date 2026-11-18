@@ -12,7 +12,13 @@ Run: python build.py          (needs pandoc; Chromium for the PDF) -> the meetin
                                  screenshots in img_high_na_pulses/ -> output/08_two_color/decks/high_na_pulses_guide.{html,pdf}
      python build.py delay    -> the guide of pulse_delay.pptx: walkthrough_delay.src.md + steps_delay.json,
                                  screenshots in img_delay/ -> output/08_two_color/cambaliza2000/deck/delay_guide.{html,pdf}
-     (the last three link to the local dashboard, port 4317, and write the settings of each step as a sentence;
+     python build.py 2ce_high_na  -> the guide of 2ce_high_na.pptx and 2ce_high_na_main.pptx: walkthrough_2ce_high_na.src.md
+                                 + steps_2ce_high_na.json, screenshots in img_2ce_high_na/
+                                 -> output/08_two_color/decks/2ce_high_na_guide.{html,pdf}
+     python build.py 2ce_pulses   -> the guide of 2ce_pulses.pptx and 2ce_pulses_main.pptx: walkthrough_2ce_pulses.src.md
+                                 + steps_2ce_pulses.json, screenshots in img_2ce_pulses/
+                                 -> output/08_two_color/decks/2ce_pulses_guide.{html,pdf}
+     (all but the first link to the local dashboard, port 4317, and write the settings of each step as a sentence;
      screenshots: node shoot.mjs steps_<name>.json img_<name>)
 """
 import os
@@ -24,11 +30,13 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 MODE = sys.argv[1] if sys.argv[1:] else ""
-PULSES = MODE in ("pulses", "high_na_pulses", "delay")           # local links, the settings of each step as a sentence
+PULSES = MODE in ("pulses", "high_na_pulses", "delay", "2ce_high_na", "2ce_pulses")   # local links, settings as a sentence
 URL = os.environ.get("URL", "http://localhost:4317/#" if PULSES else "https://2color-excitation.vercel.app/#")
-OUT = Path("/Users/raaromero/mcdo_dev/output/08_two_color/" + ("decks" if MODE in ("", "high_na_pulses") else "cambaliza2000/deck"))
+OUT = Path("/Users/raaromero/mcdo_dev/output/08_two_color/" + ("decks" if MODE in ("", "high_na_pulses", "2ce_high_na", "2ce_pulses")
+                                                                else "cambaliza2000/deck"))
 TAG = f"_{MODE}" if MODE else ""
-NAME = {"": "dashboard_walkthrough", "pulses": "pulse_walkthrough", "high_na_pulses": "high_na_pulses_guide", "delay": "delay_guide"}[MODE]
+NAME = {"": "dashboard_walkthrough", "pulses": "pulse_walkthrough", "high_na_pulses": "high_na_pulses_guide", "delay": "delay_guide",
+        "2ce_high_na": "2ce_high_na_guide", "2ce_pulses": "2ce_pulses_guide"}[MODE]
 CSS = "walkthrough.css" if not MODE else "walkthrough_pulses.css"
 CHROMIUM = next(Path.home().glob("Library/Caches/ms-playwright/chromium-*/chrome-mac*/Chromium.app/Contents/MacOS/Chromium"))
 
@@ -73,7 +81,10 @@ SAY = {   # Pulses in time and Pulse results: each setting as part of a sentence
     "xpol": lambda v: "set the polarization of the chart of all pairs to " + (
         "in the plane of the lens axes" if v == "p" else "perpendicular to the plane of the lens axes"),
     # Scalar vs vector at high NA, Lens angle θ, Focal spot
-    "metric": lambda v: f"set the plot to {METRIC[v]}", "sig": lambda v: f"set the signal to {v}",
+    "metric": lambda v: "set the plot to “paper's comparisons”" if v == "cmp" else f"set the plot to {METRIC[v]}",
+    "cmp": lambda v: f"set the comparison to “{CMPD[v]}”",
+    "how": lambda v: "set “How it is measured” to “show, with equations”" if v == "1" else "hide “How it is measured”",
+    "sig": lambda v: f"set the signal to {v}",
     "ths": lambda v: "set the angles to " + " and ".join(", ".join(TH[t] for t in v.split(".")).rsplit(", ", 1)),
     "axis": lambda v: "set the direction to " + ("across" if v == "x" else "along"),
     "model": lambda v: f"set the model to {v}", "pupil": lambda v: "set the pupil to " + ("annular" if v == "ann" else "circular"),
@@ -81,6 +92,12 @@ SAY = {   # Pulses in time and Pulse results: each setting as part of a sentence
     "na": lambda v: f"click NA {v} on the left chart", "th": lambda v: f"set the angle θ to {v}°",
     "wdir": lambda v: f"set the width to {WDIR[v]}", "pk": lambda v: f"click θ = {v}° on the left chart",
 }
+CMPD = {   # the comparisons as the buttons of Scalar vs vector at high NA name them (CMP in src/main.ts)
+    "r1": "2PE spot, θ = π/2 over θ = 0 (p. 28)", "r2": "2CE spot over 2PE spot, θ = π/2 (p. 29)",
+    "r3": "2CE DOF over 2PE DOF, θ = π/2", "a1": "Annular 2CE spot, θ = 0 over θ = π/2 (Fig. 6b, p. 31)",
+    "a2": "Annular, θ = π/2: 2PE spot narrower than 2CE, 1 − ratio (p. 31)",
+    "a3": "θ = π/2: 2CE DOF shorter, annular than circular, 1 − ratio (p. 32)",
+    "a4": "θ = π/2: annular 2CE DOF longer than circular 2PE, ratio − 1 (p. 32)"}
 NM = {"diff": "largest difference", "dof": "depth of focus", "wx": "width across", "side": "side lobe", "F": "Linfoot F",
       "S": "Linfoot S", "Q": "Linfoot Q"}
 NX = {"tau": "pulse width τ", "na": "NA"}

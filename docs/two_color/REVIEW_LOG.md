@@ -78,6 +78,19 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Passes
 
+### 2026-11-18
+- FLAG (wording, not a stored result): two slides of the meeting of 2026-10-29 (annular comparisons of pp. 31 and 32)
+  quoted the paraxial values at NA 0.5 and 0.7 (53%, 34%, 85%); the vector values are 52%, 31% and 81%. The new
+  high-NA deck gives the vector values and says so in the notes. No stored result changed.
+- Corrected on the new slides: the 2PE standing-wave fringes widen with NA (0.37 µm at NA 0.5, 0.44 µm at NA 0.9);
+  with crossed lenses the pulsed 2CE depth of focus is within 1% from 20 fs at NA ≥ 0.3 and from 26 to 54 fs at NA
+  0.2 to 0.1.
+- Dashboard: added highlights pulse-facing-dof-tau, pulse-facing-dof-na and delay-fringes-10fs and pointed the slides
+  at them; slides with no matching view (profiles at NA 0.5 and 0.9; pulse width against NA for the pupils) carry no
+  link. Checked the new links in a headless browser.
+- tests/test_unified_framework.py added (23 tests); full suite 1111 pass.
+- Wrote the dashboard guide and the presenter guide of each of the two new decks, one card per slide of the full deck with the title and bullets word for word (checked by script against the decks read with python-pptx after their rebuild of 15:00) and, in the presenter guides, whether the slide is in the concise deck: `2ce_high_na_guide.pdf` (41 pages, 39 steps), `2ce_pulses_guide.pdf` (39 pages, 36 steps), `presenter_guide_2ce_high_na.pdf` (28) and `presenter_guide_2ce_pulses.pdf` (28), with the modes `2ce_high_na` and `2ce_pulses` in `build.py`; added the highlights `cw-2pe-collinear` and `cw-2ce-crossed` for the maps of slides 9 and 7 of the high-NA deck; loaded the 39 dashboard links of the four decks (16 distinct) in headless Chromium, where all open and show their banner, and found that slide 7 of the high-NA deck (`cw-dof-crossed`) draws the maps of θ = 0, slide 27 of the pulses deck (`delay-fringes`) opens 5 fs instead of 10 fs, and the links of pulse slides 11, 13, 14 and 19 open a related measure rather than the plotted one; found that the annular numbers on high-NA slides 24 (53%, 34%) and 25 (85%) are those of the paraxial model (vector 52%, 31% and 81%, `high_na/pupils/widths.csv`) and that slide 19 rounds C = 0.967 to 0.97; updated the Decks and Guides subsections of `NEXT_STEPS.md`.
+
 ### 2026-11-17, midday
 - Brought the four guides in line with the rewritten decks (items 2 and 3): one card per slide, titles and bullets
   word for word, Part 4 added, numbers checked; rebuilt all four. Answers in the presenter guides without a written

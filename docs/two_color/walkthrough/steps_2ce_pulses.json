@@ -1,0 +1,227 @@
+[
+ {
+  "id": "p04",
+  "h": "mode=ptime",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "p05",
+  "h": "mode=ptime",
+  "wait": 2000,
+  "find": "I₁, I₂ along the axis, now"
+ },
+ {
+  "id": "p06",
+  "h": "mode=ptime&qtau=20",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "p07",
+  "h": "mode=ptime&qtau=5",
+  "wait": 2000,
+  "find": "Spectrum arriving"
+ },
+ {
+  "id": "p08",
+  "h": "mode=ptime&qtau=10",
+  "wait": 2000,
+  "find": "Pair sums at the focus"
+ },
+ {
+  "id": "p09",
+  "h": "mode=psum&rk=100",
+  "wait": 9000,
+  "find": "2CE along the axis, τ = 100 fs"
+ },
+ {
+  "id": "p10",
+  "h": "mode=psum&rcut=x&rpth=90&rk=100",
+  "wait": 9000,
+  "find": "2CE across, τ = 100 fs"
+ },
+ {
+  "id": "p11",
+  "h": "mode=psum&nth=180&nset=rw_air&nx=tau&ny=dof",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p12a",
+  "h": "mode=psum&nth=0&nset=rw_air&nx=tau&ny=dof",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p12b",
+  "h": "mode=psum&rpth=90&rk=10&nth=90&nm=diff&nset=rw_air&nx=tau&ny=dof&hl=pulse-crossed",
+  "wait": 6000,
+  "card": "With crossed lenses and pulses, the 2CE",
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "p13",
+  "h": "mode=psum&nth=180&nset=rw_air&nx=na&ny=dof",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p14",
+  "h": "mode=psum&nth=180&nset=rw_air&nx=tau&ny=diff",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p15",
+  "h": "mode=psum&rk=20",
+  "wait": 9000,
+  "find": "2CE along the axis, τ = 20 fs"
+ },
+ {
+  "id": "p16",
+  "h": "mode=psum",
+  "wait": 6000,
+  "find": "Signal added by"
+ },
+ {
+  "id": "p17",
+  "h": "mode=psum&rpth=180&nth=180&nm=diff&nset=rw_air&nx=tau&ny=diff&hl=pulse-facing-na",
+  "wait": 6000,
+  "card": "With facing lenses, the pulse width from",
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "p18",
+  "h": "mode=psum&rpth=90&rk=10&nth=90&nm=diff&nset=rw_air&nx=tau&ny=dof&hl=pulse-crossed",
+  "wait": 6000,
+  "card": "With crossed lenses and pulses, the 2CE",
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "p19",
+  "h": "mode=psum&rpth=180&nth=180&nm=diff&nset=rw_air_eps0.9&nx=tau&ny=diff&hl=pulse-facing-pupil",
+  "wait": 6000,
+  "card": "With facing lenses, a longer depth of",
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p20",
+  "h": "mode=psum&nth=90&nm=dof&nset=rw_air_eps0.9&ny=dof",
+  "wait": 6000,
+  "find": "Depth of focus of 2CE against the pulse width"
+ },
+ {
+  "id": "p22",
+  "h": "mode=psum&xth=0&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "p23",
+  "h": "mode=psum&xth=180&xtau=100",
+  "wait": 6000,
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "p24a",
+  "h": "mode=psum&xth=180&xtau=100&xnas=10.20.30.50.70.90&hl=delay-facing-lowna",
+  "wait": 6000,
+  "card": "With facing lenses at low NA, the",
+  "scroll": "#c-xpos"
+ },
+ {
+  "id": "p24b",
+  "h": "mode=psum&xth=180&xtau=100&xnas=50.70.90&hl=delay-facing-highna",
+  "wait": 6000,
+  "card": "With facing lenses at NA 0.5 and",
+  "scroll": "#c-xpk"
+ },
+ {
+  "id": "p25a",
+  "h": "mode=psum&xth=180&xtau=100&hl=delay-pupils",
+  "wait": 6000,
+  "card": "With facing lenses, pupils with a longer",
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "p25b",
+  "h": "mode=psum&xth=180&xtau=30",
+  "wait": 6000,
+  "scroll": "#c-xpu"
+ },
+ {
+  "id": "p26a",
+  "h": "mode=psum&xth=0&xtau=5&xna=0.5&xpol=s&hl=delay-fringes",
+  "wait": 6000,
+  "card": "Below 20 fs, phase-locked pulses with all",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p26b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p27",
+  "h": "mode=psum&xth=0&xtau=10&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p28",
+  "h": "mode=psum&xth=0&xtau=20&xna=0.5",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p29a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.3",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p29b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.7",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p30a",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=p&hl=delay-polarization",
+  "wait": 6000,
+  "card": "With crossed lenses and the polarization in",
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p30b",
+  "h": "mode=psum&xth=90&xtau=5&xna=0.5&xpol=s",
+  "wait": 6000,
+  "scroll": "#c-xfi"
+ },
+ {
+  "id": "p36",
+  "h": "mode=psum&rsig=2PE&nth=180",
+  "wait": 6000,
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "p37",
+  "h": "mode=psum&rsig=2PE&nth=90",
+  "wait": 6000,
+  "scroll": "#c-ntw"
+ },
+ {
+  "id": "p38",
+  "h": "mode=psum&rsig=2PE&nth=180&nm=dof&nset=rw_air_eps0.9&ny=dof",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ },
+ {
+  "id": "p39",
+  "h": "mode=psum&rsig=2PE&nth=90&nm=dof&nset=rw_air_eps0.9&ny=dof",
+  "wait": 6000,
+  "scroll": "#c-ndv"
+ }
+]

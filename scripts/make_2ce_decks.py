@@ -139,11 +139,15 @@ NS = os.path.join(PU, 'na_sweep')
 LO = os.path.join(TC, 'lim2002')
 
 
-def approved(title, n=None, fig=None, new_title=None):
-    """A slide of the meeting of 2026-10-29, with its title, bullets and notes word for word."""
+def approved(title, n=None, fig=None, new_title=None, fix=(), add_note=''):
+    """A slide of the meeting of 2026-10-29, with its title, bullets and notes word for word, except the corrections in
+    `fix` (pairs of old and new text), which the notes then state."""
     a = APPROVED[title]
     items = a['items'] if n is None else a['items'][:n]
-    return big(new_title or title, items, path(O, fig or a['figs'][0]), a['main'], a['notes'])
+    for old, new in fix:
+        assert sum(old in it for it in items) == 1, old
+        items = [it.replace(old, new) for it in items]
+    return big(new_title or title, items, path(O, fig or a['figs'][0]), a['main'], (a['notes'] + ' ' + add_note).strip())
 
 
 def maps(sig, tk, title, items, main, script):
@@ -296,8 +300,14 @@ if DECK == 'high_na':
     approved('2CE and 2PE depth of focus against NA, θ = π/2')
     approved('Side lobes of 2PE against NA: distance from the peak and height')
     approved('Annular pupils: depth of focus against NA, air')
-    approved('Annular central spots against NA: the comparisons of p. 31')
-    approved('Annular depth of focus against NA: the comparisons of p. 32')
+    approved('Annular central spots against NA: the comparisons of p. 31',
+             fix=[('53% narrower at NA 0.5, 34% at NA 0.7 in air', '52% narrower at NA 0.5, 31% at NA 0.7 in air')],
+             add_note='The values in the first bullet are those of the vector focus; on 2026-10-29 the slide gave the paraxial '
+                      'values, 53% and 34%. The 53% of Eq. (6) in the second bullet is the replication at NA 0.5.')
+    approved('Annular depth of focus against NA: the comparisons of p. 32',
+             fix=[('85% longer at NA 0.5.', '81% longer at NA 0.5.')],
+             add_note='The value in the first bullet is that of the vector focus; on 2026-10-29 the slide gave the paraxial '
+                      'value, 85%, which the second bullet keeps for the comparison with the published curves at NA 0.5.')
     approved('2CE response to the wavelength gap Δλ against NA, θ = π/2')
     big('Largest NA of two crossed lenses', [
         'Two lenses with crossed axes (θ = π/2) fit side by side while the half-angle of each focusing cone is at most 45°, so NA ≤ n sin 45°: 0.71 in air and 0.94 in water.',
@@ -469,8 +479,9 @@ else:
     big('2CE depth of focus against pulse width, collinear and crossed lenses', [
         'With collinear lenses, pulsed 2CE keeps the continuous-beam depth of focus to within 0.5% down to 4 fs, because '
         'the two pulses travel together and overlap over the whole focus.',
-        'With crossed lenses, it stays within 1% from 20 fs at NA 0.3 and above (2% at NA 0.2); below 15 fs it grows by up '
-        'to 7% at high NA, because the 375-nm pairs of L1 alone extend along its axis.'],
+        'With crossed lenses, it is within 1% of the continuous-beam value from 20 fs at NA 0.3 and above, and from 26 to '
+        '54 fs at NA 0.2 to 0.1; below 15 fs it grows by up to 7% at high NA, because the 375-nm pairs of L1 alone extend '
+        'along its axis.'],
         path(NS, 'key_dof_vs_tau_2ce_rw_air_0_pi2.png'),
         'Collinear and crossed lenses keep the continuous-beam depth of focus.',
         'Vector model in air. With crossed lenses the ratio is 1.07 at 5 fs and NA 0.7, and 0.88 at 4 fs and NA 0.2. '

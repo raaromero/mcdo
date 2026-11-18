@@ -1,0 +1,192 @@
+[
+ {
+  "id": "h03",
+  "h": "mode=live",
+  "wait": 2000
+ },
+ {
+  "id": "h05a",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&na=0.5",
+  "wait": 3000
+ },
+ {
+  "id": "h05b",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h06",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&na=0.9&hl=cw-dof-collinear",
+  "wait": 3000,
+  "card": "With collinear lenses, as NA increases, the"
+ },
+ {
+  "id": "h07a",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=x&na=0.5",
+  "wait": 3000
+ },
+ {
+  "id": "h07b",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=x&na=0.7&hl=cw-2ce-crossed",
+  "wait": 3000,
+  "card": "With crossed lenses, as NA increases, both"
+ },
+ {
+  "id": "h08",
+  "h": "mode=na&metric=width&sig=2CE&ths=0.pi2&axis=z&na=0.7&hl=cw-dof-crossed",
+  "wait": 3000,
+  "card": "With crossed lenses the depth of focus"
+ },
+ {
+  "id": "h09a",
+  "h": "mode=na&metric=width&sig=2PE&ths=0&axis=z&na=0.5",
+  "wait": 3000
+ },
+ {
+  "id": "h09b",
+  "h": "mode=na&metric=width&sig=2PE&ths=0&axis=z&na=0.9&hl=cw-2pe-collinear",
+  "wait": 3000,
+  "card": "With collinear lenses 2CE and 2PE have"
+ },
+ {
+  "id": "h11a",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi2&axis=x&na=0.5",
+  "wait": 3000
+ },
+ {
+  "id": "h11b",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi2&axis=x&na=0.7&hl=cw-2pe-crossed",
+  "wait": 3000,
+  "card": "With crossed lenses, the 2PE central spot"
+ },
+ {
+  "id": "h13a",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi&axis=z&na=0.5",
+  "wait": 3000
+ },
+ {
+  "id": "h13b",
+  "h": "mode=na&metric=width&sig=2PE&ths=pi&axis=z&na=0.9&hl=cw-2pe-facing",
+  "wait": 3000,
+  "card": "With facing lenses and continuous beams, 2CE"
+ },
+ {
+  "id": "h15a",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h15b",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0&axis=x&na=0.85&hl=cw-scalar-5pct",
+  "wait": 3000,
+  "card": "The 2CE and 2PE profiles of the scalar"
+ },
+ {
+  "id": "h16",
+  "h": "mode=na&metric=gap&sig=2PE&ths=0.pi2.pi&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h17",
+  "h": "mode=na&metric=nrmse&sig=2CE&ths=0.pi2.pi&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h18",
+  "h": "mode=na&metric=C&sig=2CE&ths=0.pi&axis=z&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h19",
+  "h": "mode=na&metric=F&sig=2CE&ths=pi2&axis=x&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h20a",
+  "h": "mode=na&metric=cmp&cmp=r1&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h20b",
+  "h": "mode=na&metric=cmp&cmp=r2&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h21",
+  "h": "mode=na&metric=cmp&cmp=r3&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h22a",
+  "h": "mode=na&metric=lobe&sig=2PE&ths=pi&axis=z&na=0.9&how=1",
+  "wait": 3000
+ },
+ {
+  "id": "h22b",
+  "h": "mode=na&metric=lobeh&sig=2PE&ths=pi2&axis=x&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h23",
+  "h": "mode=na&metric=width&sig=2CE&ths=0&axis=z&pupil=ann&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h24a",
+  "h": "mode=na&metric=cmp&cmp=a1&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h24b",
+  "h": "mode=na&metric=cmp&cmp=a2&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h25a",
+  "h": "mode=na&metric=cmp&cmp=a3&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h25b",
+  "h": "mode=na&metric=cmp&cmp=a4&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h26",
+  "h": "mode=dl&wdir=xz",
+  "wait": 3000,
+  "find": "2CE width at θ = π/2 and higher NA"
+ },
+ {
+  "id": "h27",
+  "h": "mode=na&metric=width&sig=2CE&ths=pi2&axis=x&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h32",
+  "h": "mode=na&metric=nrmse&sig=2PE&ths=0.pi2.pi&axis=z&na=0.9",
+  "wait": 3000
+ },
+ {
+  "id": "h33",
+  "h": "mode=na&metric=C&sig=2PE&ths=0&axis=z&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h34",
+  "h": "mode=na&metric=C&sig=2PE&ths=pi2&axis=z&na=0.7",
+  "wait": 3000
+ },
+ {
+  "id": "h35",
+  "h": "mode=na&metric=F&sig=2PE&ths=pi&axis=z&na=0.95",
+  "wait": 3000
+ },
+ {
+  "id": "h36",
+  "h": "mode=na&metric=gap&sig=2CE&ths=0&axis=z&model=both&na=0.9&hl=cw-scalar-dof",
+  "wait": 3000,
+  "card": "At NA 0.9 the paraxial 2CE depth",
+  "scroll": "#c-naz"
+ }
+]
