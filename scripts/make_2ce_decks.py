@@ -277,14 +277,15 @@ if DECK == 'high_na':
         'differ by 0.1% at NA 0.5 and 0.4% at NA 0.7. The side lobe falls from 0.11 of the peak at NA 0.5 to 0.04 at NA 0.7.')
     approved('Central spot and depth of focus against NA: 2PE, θ = π/2')
     maps('2pe', 'pi', '2PE PSF in the x–z plane at NA 0.5 and NA 0.9, θ = π', [
-        'With facing lenses the 2PE PSF is a standing wave along the axis, with fringes λ_{2p}/2 = 350 nm apart in both '
-        'models.',
+        'With facing lenses the 2PE PSF is a standing wave along the axis, with fringes about λ_{2p}/2 = 350 nm apart in '
+        'both models; the spacing widens slightly as NA increases, because the converging waves cross the axis at an angle.',
         'At NA 0.9, the paraxial envelope is longer than the vector one, so the paraxial PSF has side fringes above 10% of '
         'the peak (dashed) where the vector PSF has none.'],
         'With facing lenses the 2PE standing wave keeps its fringes; the paraxial envelope is too long at high NA.',
         'Heat map: vector PSF; solid: vector; dashed: paraxial scalar; contours at 10, 50 and 90% of the peak. The central '
         'fringe is 0.136 µm long at NA 0.5 in both models and 0.166 µm (vector) against 0.158 µm (paraxial) at NA 0.9; '
-        'across the axis the paraxial spot is 1.2% wider at NA 0.5 and 5.9% wider at NA 0.9.')
+        'across the axis the paraxial spot is 1.2% wider at NA 0.5 and 5.9% wider at NA 0.9. The fringe spacing is about '
+        '0.37 µm at NA 0.5 and 0.44 µm at NA 0.9, compared to λ_{2p}/2 = 0.35 µm.')
     approved('Central spot and depth of focus against NA: 2PE, θ = π')
     approved('Paraxial over vector widths of 2CE against NA')
     approved('Paraxial over vector widths of 2PE against NA')
@@ -468,8 +469,8 @@ else:
     big('2CE depth of focus against pulse width, collinear and crossed lenses', [
         'With collinear lenses, pulsed 2CE keeps the continuous-beam depth of focus to within 0.5% down to 4 fs, because '
         'the two pulses travel together and overlap over the whole focus.',
-        'With crossed lenses, it stays within 1% from 20 fs; below 15 fs it grows by up to 7% at high NA, because the '
-        '375-nm pairs of L1 alone extend along its axis.'],
+        'With crossed lenses, it stays within 1% from 20 fs at NA 0.3 and above (2% at NA 0.2); below 15 fs it grows by up '
+        'to 7% at high NA, because the 375-nm pairs of L1 alone extend along its axis.'],
         path(NS, 'key_dof_vs_tau_2ce_rw_air_0_pi2.png'),
         'Collinear and crossed lenses keep the continuous-beam depth of focus.',
         'Vector model in air. With crossed lenses the ratio is 1.07 at 5 fs and NA 0.7, and 0.88 at 4 fs and NA 0.2. '
