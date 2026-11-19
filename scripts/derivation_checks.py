@@ -23,7 +23,7 @@ import sys
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import brentq
+from scipy.optimize import brentq, minimize_scalar
 from scipy.special import j1, jv
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -124,15 +124,26 @@ def stored_widths(nodes=150):
         step = 0.2 * LP * r.n / r.NA ** 2 / (1 - r.eps ** 2) if long_ else 0.05 * LP / r.NA
         if r.signal == '2PE' and r.theta != 0:
             step = min(step, 0.004)                        # the central fringe
-        lo = 0.0
+        S, V = [0.0], [f0]                                 # outward from the centre until below half the running maximum
         for _ in range(1000):
-            s = lo + step * np.arange(1, 51)
-            j = np.nonzero(f(s) / f0 < 0.5)[0]
-            if j.size:
-                a = s[j[0] - 1] if j[0] else lo
-                return 2 * brentq(lambda q: f(np.array([q]))[0] / f0 - 0.5, a, s[j[0]], xtol=1e-10)
-            lo = s[-1]
-        return np.nan
+            s = S[-1] + step * np.arange(1, 51)
+            v = f(s)
+            below = np.nonzero(v < 0.5 * np.maximum.accumulate(np.maximum(v, max(V))))[0]
+            S, V = S + list(s[:below[0] + 1] if below.size else s), V + list(v[:below[0] + 1] if below.size else v)
+            if below.size:
+                break
+        else:
+            return np.nan
+        i = int(np.argmax(V))
+        M = V[i] if i == 0 else -minimize_scalar(lambda q: -f(np.array([q]))[0], bounds=(S[i - 1], S[i + 1]),
+                                                 method='bounded', options={'xatol': 1e-10}).fun
+        M = max(M, V[i])
+        if f0 < 0.5 * M:
+            return np.nan                                  # the centre lies below half of the maximum
+        j = len(S) - 1                                     # first point below half of M, and the last one above it
+        while j > i + 1 and V[j - 1] < 0.5 * M:
+            j -= 1
+        return 2 * brentq(lambda q: f(np.array([q]))[0] - 0.5 * M, S[j - 1], S[j], xtol=1e-10)
 
     D = pd.read_csv(os.path.join(OUT, 'cambaliza2000', 'high_na', 'pupils', 'widths.csv'))
     D['check'] = [width(r) for r in D.itertuples()]
@@ -150,7 +161,7 @@ def stored_widths(nodes=150):
     if top.th == 'pi/2':                                   # the transverse window of the stored run, 2001 points
         s = np.linspace(-2.5 * LP / top.NA, 2.5 * LP / top.NA, 2001)
         y = signal(top, s if top.axis == 'x' else 0 * s, s if top.axis == 'z' else 0 * s)
-        y, r = y / y[1000], 1000                           # the stored width: half of the value at the centre
+        y, r = y / y.max(), 1000                           # the stored width: half of the maximum, about the centre
         while y[r] >= 0.5:
             r += 1
         l = 1000

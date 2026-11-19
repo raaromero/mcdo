@@ -6,8 +6,10 @@ Polarization of the vector focus (the choice open for Lim & Saloma 2002, so the 
   s      both beams along y, perpendicular to the plane of the two axes (cambaliza2000_high_na.py)
   p      both beams in that plane (beam 1 along x)
   unpol  2CE only: each beam's intensity averaged over s and p, as in the Lim & Saloma runs (2PE stays s there)
-Width: FWHM of the central peak, transverse F(x, 0, 0; θ) and axial F(0, 0, z; θ) (DOF). The window grows until the
-profile falls to half (an annular pupil stretches the DOF by up to 1/(1 − ε²) = 50).
+Width: FWHM of the central lobe, transverse F(x, 0, 0; θ) and axial F(0, 0, z; θ) (DOF): the width, about the
+centre, of the region where the profile is at least half of its maximum. The window grows until the profile falls to
+half (an annular pupil stretches the DOF by up to 1/(1 − ε²) = 50). For 2PE with crossed lenses in polarization p the
+centre is a shallow minimum between two equal maxima, so half of the maximum is not half of the centre value.
 θ = π/2 needs both lenses to fit at 90°: NA ≤ n sin 45° (air 0.71, water 0.94).
 
     [WORKERS=6] python scripts/cambaliza2000_high_na_pupils.py [--rerun]
@@ -45,9 +47,13 @@ LADDER = (1, 8, 64)                                    # window growth until the
 
 
 def fwhm(s, y):
-    """FWHM of the central peak (at s = 0), normalized to its value at s = 0; nan if it never falls to half."""
+    """FWHM of the central lobe: the width, about s = 0, of the region where y is at least half of its maximum; nan if
+    the centre lies below half of the maximum (the dark centre of 2PE in polarization p with facing lenses) or if the
+    profile never falls to half."""
     i0 = int(np.argmin(np.abs(s)))
-    y = y / y[i0]
+    y = y / np.max(y)
+    if not y[i0] >= 0.5:
+        return np.nan
     r = i0
     while r < len(y) - 1 and y[r] >= 0.5:
         r += 1

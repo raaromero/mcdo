@@ -77,6 +77,9 @@ The pupil study was regenerated. In `widths.csv` (5712 rows) the 208 rows with `
 0.802 to 0.781 µm at NA 0.5 and from 0.721 to 0.729 µm at NA 0.7. No figure, slide or dashboard table shows that
 case: the polarization figures draw 2CE, and the dashboard takes the models s and scalar. `dlambda.csv` moved by up
 to 3e-6 in all models, the scalar one included, which is the script having changed since it was last run, not E_z.
+On 2026-11-19 these 208 widths, and 12 widths of the annular pupil in polarization p at the highest NA, were measured
+again at half the maximum, because their centre is not the maximum: 0.764 µm at NA 0.5 and 0.699 µm at NA 0.7 in air
+(`REVIEW_LOG.md`, fourth pass).
 What is left: run H1 and H2 before the commit of Step 3.
 
 ### Step 2. Polarization with pulses and a delay (done 2026-11-12)
