@@ -168,7 +168,7 @@ GLOSS_MODEL = [
     'of the lens axes.',
     "F, C, Q: Linfoot's criteria: fidelity, structural content and correlation quality.",
     'ε: obstruction ratio of an annular pupil, inner radius over outer radius.',
-    'α: truncation parameter of the Gaussian input; 0 is uniform input.']
+    'α_t: truncation parameter of the Gaussian input; 0 is uniform input.']
 GLOSS_PULSE = [
     'τ: pulse width: full width at half maximum of the intensity; Δν = 0.441/τ for a transform-limited pulse.',
     '350-nm, 375-nm and 328-nm pairs: photon pairs of 750 + 656 nm, 750 + 750 nm and 656 + 656 nm.',
@@ -295,7 +295,9 @@ if DECK == 'high_na':
     approved('Paraxial over vector widths of 2PE against NA')
     approved('Whole-profile difference of 2CE, paraxial against vector')
     approved("Linfoot’s criteria against NA: 2CE, θ = 0 and π")
-    approved("Linfoot’s criteria against NA: 2CE, θ = π/2")
+    approved("Linfoot’s criteria against NA: 2CE, θ = π/2", fix=[('C ≥ 0.97', 'C ≥ 0.96')],
+             add_note='The lowest structural content is C = 0.967, across the axis at NA 0.7 in air, so the first bullet '
+                      'gives C ≥ 0.96; on 2026-10-29 the slide gave C ≥ 0.97.')
     approved('2PE and 2CE central spots against NA, circular pupils')
     approved('2CE and 2PE depth of focus against NA, θ = π/2')
     approved('Side lobes of 2PE against NA: distance from the peak and height')
@@ -350,7 +352,7 @@ if DECK == 'high_na':
         'Facing lenses. The displacement of the focus of L2 that lowers the 2CE peak by 20%, across the axis (left) and '
         'along it (right). The fitted exponent is −0.99 across the axis and −2.04 along it (fits from NA 0.1 to 0.5), so the displacement along the axis falls as about 1/NA². Blue: vector; red: paraxial scalar; '
         'filled: air; open: water; star: Lim & Saloma (2002) at NA 0.5. The paraxial model gives a larger tolerance along '
-        'the axis than the vector model, by 7% at NA 0.5 and 47% near NA 0.95. A Gaussian input (α = 4) makes the '
+        'the axis than the vector model, by 7% at NA 0.5 and 47% near NA 0.95. A Gaussian input (α_t = 4) makes the '
         'tolerances about 1.4 times larger.')
 
     big('Misalignment for a 20% loss of the 2CE peak against NA, θ = π/2', [
@@ -550,12 +552,12 @@ else:
         'NA 0.71 in air and 0.94 in water.')
 
     big('Pulse width that matches continuous beams: pupils, θ = π', [
-        'With facing lenses, a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α = 4) and 466 fs for the annular pupil with ε = 0.9.'],
+        'With facing lenses, a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α_t = 4) and 466 fs for the annular pupil with ε = 0.9.'],
         os.path.join(PU, 'na_sweep', 'tau_cw_vs_na_pupils_2ce_pi.png'),
         'Annular pupils and Gaussian input need longer pulses with facing lenses.',
         'Vector model in air. The figure gives the pulse width from which the 2CE depth of focus stays within 1% of its '
         'continuous-beam value: at NA 0.5 with facing lenses, 100 fs for the circular pupil, 162 fs for the Gaussian input '
-        '(α = 4) and 466 fs for the annular pupil with ε = 0.9. By the largest difference between the profiles, the measure '
+        '(α_t = 4) and 466 fs for the annular pupil with ε = 0.9. By the largest difference between the profiles, the measure '
         'of the slides before, the same three are 87, 139 and 405 fs. The annular pupil with ε = 0.99 stays outside the '
         'tolerance at the longest pulse computed below NA 0.8.')
 
@@ -566,7 +568,7 @@ else:
         'With collinear and crossed lenses the pupil changes the pulse width needed by little.',
         'Vector model in air, pulse width from which the 2CE depth of focus stays within 1% of its continuous-beam value. '
         'With crossed lenses it is 13 to 15 fs for the circular pupil from NA 0.4 to 0.7, 14 to 16 fs for the annular '
-        'pupils and 11 to 14 fs for the Gaussian input (α = 4). Below NA 0.4 it rises to 82 fs for the Gaussian input at '
+        'pupils and 11 to 14 fs for the Gaussian input (α_t = 4). Below NA 0.4 it rises to 82 fs for the Gaussian input at '
         'NA 0.1 and 54 fs for the circular pupil.')
 
 

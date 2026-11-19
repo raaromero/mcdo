@@ -5,24 +5,16 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Open items (do these, in this order)
 
-1. **Waiting for the user (proposed 2026-11-19).** Two small corrections to the decks `2ce_high_na` and `2ce_pulses`.
-   Neither is made yet, because each changes text the user approved and needs a rebuild and a re-save through
-   PowerPoint (which opens on the user's screen):
-   - The glossary uses α for the half-angle of the cone (slide 1/2, "NA: n sin α") and for the truncation parameter of
-     the Gaussian input (slide 2/2). Proposed: α_t for the truncation parameter, as the code and the derivations write it.
-   - "C ≥ 0.97" on the slide "Linfoot’s criteria against NA: 2CE, θ = π/2" (approved 2026-10-29): the lowest stored C
-     is 0.967 (air, NA 0.7, across the axis; `high_na/metrics.txt`). Proposed: "C ≥ 0.96", through `fix=` in
-     `scripts/make_2ce_decks.py`, which states the change in the notes.
-   - Optional, no change needed (found 2026-11-19): the slide "Facing lenses: position where the delayed pulses meet"
-     (`scripts/pulse_delay_slides.py`) writes z_m = cΔt/2n and G = cτ/(√2 n), for pulses at c/n. Near a focus a pulse
-     travels at c/(n⟨cos ϑ⟩) (pulse_derivations.pdf, Section 3), so both are longer by 1/⟨cos ϑ⟩: 0.25% at NA 0.1, 1% at
-     NA 0.2, 7% at NA 0.5. The slide uses the formula where the focus is longer than G (NA ≤ 0.3), so its statements
-     hold, and its notes cite the numbers of the c/n form, which Section 7, Step 9 still gives (the notes have 0.518
-     at NA 0.2 from D rounded to 22.3 µm; unrounded it is 0.517). If the user wants it, one sentence in the notes can
-     state the speed. The dashboard draws the same reference line ("meeting point of the pulses, cΔt/2", chart of the
-     peak position at θ = π in `main.ts`), and so does `cambaliza2000_pulses_delay_plot.py` (label cΔt/2); the same
-     holds for both, and a change there would need a deploy.
-2. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
+1. **Optional, for the user to decide** (found 2026-11-19, no change needed): the slide "Facing lenses: position where the delayed pulses meet"
+   (`scripts/pulse_delay_slides.py`) writes z_m = cΔt/2n and G = cτ/(√2 n), for pulses at c/n. Near a focus a pulse
+   travels at c/(n⟨cos ϑ⟩) (pulse_derivations.pdf, Section 3), so both are longer by 1/⟨cos ϑ⟩: 0.25% at NA 0.1, 1% at
+   NA 0.2, 7% at NA 0.5. The slide uses the formula where the focus is longer than G (NA ≤ 0.3), so its statements
+   hold, and its notes cite the numbers of the c/n form, which Section 7, Step 9 still gives (the notes have 0.518
+   at NA 0.2 from D rounded to 22.3 µm; unrounded it is 0.517). If the user wants it, one sentence in the notes can
+   state the speed. The dashboard draws the same reference line ("meeting point of the pulses, cΔt/2", chart of the
+   peak position at θ = π in `main.ts`), and so does `cambaliza2000_pulses_delay_plot.py` (label cΔt/2); the same
+   holds for both, and a change there would need a deploy.
+2. **Push**: `two-color` was pushed on 2026-11-19 at the user's go-ahead. Push later commits only when the user says so.
 3. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
 
@@ -69,6 +61,24 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
   20 fs), plus polarization p at three NAs.
 
 ## Passes
+
+### 2026-11-19, deck corrections (approved by the user)
+- No stored result changed. The two corrections proposed in the first pass are made, as the user approved them.
+- α_t for the truncation parameter of the Gaussian input, wherever the decks used α for it: the glossary (2/2) of
+  `2ce_high_na` and `2ce_pulses` (and of their concise decks), the bullet of the pulse slide "Pulse width that matches
+  continuous beams: pupils, θ = π", the notes of five slides (one in `2ce_high_na`, three in `2ce_pulses`, one in
+  `pulse_delay.pptx`, written once in `pulse_delay_slides.py`), and the legends of the figures on those slides:
+  `tau_cw_vs_na_pupils_<2ce|2pe>_<pi|0_pi2>.png` (`PANELS=1 cambaliza2000_pulses_na_sweep_plot.py`) and
+  `delay_retained_vs_na.png` (its function `retained_vs_na` in `cambaliza2000_pulses_delay_plot.py`). α keeps its one
+  meaning, the half-angle of the cone (glossary 1/2). The redrawn figures differ from the old ones inside the legend
+  box alone; the other four figures of the same run are identical to the pixel. The dashboard still writes
+  "Gaussian input α = 4" (`main.ts`); changing it needs a deploy.
+- "C ≥ 0.96" on "Linfoot’s criteria against NA: 2CE, θ = π/2", through `fix=`; its notes state the change (the lowest
+  C is 0.967, air, NA 0.7, across the axis; F ≥ 0.999 and Q ≥ 0.98 hold as written, lowest 0.9990 and 0.9828).
+- Rebuilt the five decks (38, 16, 39, 16 and 11 slides, as before), re-saved them through PowerPoint, and looked at the
+  twelve changed pages; compared the text, notes and pictures of each slide with the decks before the change: the
+  differences are the ones above. Brought the cards of the four guides and of the delay presenter guide in line and
+  rebuilt them (same page counts).
 
 ### 2026-11-19, fifth pass
 - No stored result changed. The output of `derivation_checks.py` is the same line for line, with three lines added to

@@ -373,7 +373,7 @@ The measure is the same as on the previous slide. With collinear lenses the two 
 With facing lenses a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams.
 :::
 
-The figure gives the pulse width from which the 2CE depth of focus stays within 1% of its continuous-beam value: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α = 4) and 466 fs for the annular pupil with ε = 0.9. By the largest difference between the profiles, the measure of the slides before, the same three are 87, 139 and 405 fs.
+The figure gives the pulse width from which the 2CE depth of focus stays within 1% of its continuous-beam value: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α~t~ = 4) and 466 fs for the annular pupil with ε = 0.9. By the largest difference between the profiles, the measure of the slides before, the same three are 87, 139 and 405 fs.
 
 ::: qa
 - **Why two sets of numbers?** This slide uses the depth of focus and the slides before use the largest difference between the profiles; both give the same order of the pupils.
@@ -393,7 +393,7 @@ The figure gives the pulse width from which the 2CE depth of focus stays within 
 With collinear lenses the 2CE depth of focus matches continuous beams at all pulse widths computed, and with crossed lenses it matches from about 11 to 16 fs at NA 0.4 and above, for all pupils and inputs.
 :::
 
-With crossed lenses the pulse width is 13 to 15 fs for the circular pupil from NA 0.4 to 0.7, 14 to 16 fs for the annular pupils and 11 to 14 fs for the Gaussian input (α = 4). Below NA 0.4 it rises, to 82 fs for the Gaussian input and 54 fs for the circular pupil at NA 0.1.
+With crossed lenses the pulse width is 13 to 15 fs for the circular pupil from NA 0.4 to 0.7, 14 to 16 fs for the annular pupils and 11 to 14 fs for the Gaussian input (α~t~ = 4). Below NA 0.4 it rises, to 82 fs for the Gaussian input and 54 fs for the circular pupil at NA 0.1.
 
 ::: qa
 - **Does the pupil matter with crossed lenses?** Little: from NA 0.4 up the pulse width needed lies between 11 and 16 fs for all pupils and inputs.
@@ -480,7 +480,7 @@ With 100-fs pulses and a delay of one pulse width, the peak is 0.93 of its value
 As NA increases the peak 2CE fluorescence that remains at a delay of one pulse width decreases to one quarter, and shorter pulses and pupils with a longer depth of focus retain more of it.
 :::
 
-At NA 0.5 the peak that remains at a delay of one pulse width is 0.26 at 100 fs, 0.41 at 20 fs and 0.87 at 5 fs, because the position where the pulses meet moves by a shorter distance. At NA 0.3 and 100 fs it is 0.32 for the circular pupil, 0.38 for the Gaussian input (α = 4) and 0.80 for the annular pupil with ε = 0.9.
+At NA 0.5 the peak that remains at a delay of one pulse width is 0.26 at 100 fs, 0.41 at 20 fs and 0.87 at 5 fs, because the position where the pulses meet moves by a shorter distance. At NA 0.3 and 100 fs it is 0.32 for the circular pupil, 0.38 for the Gaussian input (α~t~ = 4) and 0.80 for the annular pupil with ε = 0.9.
 
 ::: qa
 - **What is the use of this?** Cambaliza & Saloma (2000) propose annular lenses, with their long depth of field, to keep the two beams aligned in space; the same holds here for their alignment in time.

@@ -141,7 +141,7 @@ shorter pulses and pupils with a longer depth of focus retain more of it.
 
 At NA 0.5 the peak that remains at a delay of one pulse width is 0.26 at 100 fs, 0.41 at 20 fs and 0.87 at 5 fs,
 because the position where the pulses meet moves by a shorter distance. At NA 0.3 and 100 fs it is 0.32 for the
-circular pupil, 0.38 for the Gaussian input (α = 4) and 0.80 for the annular pupil with ε = 0.9.
+circular pupil, 0.38 for the Gaussian input (α~t~ = 4) and 0.80 for the annular pupil with ε = 0.9.
 
 ::: qa
 - **What is the use of this?** Cambaliza & Saloma (2000) propose annular lenses, with their long depth of field, to keep

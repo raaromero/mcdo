@@ -176,7 +176,7 @@ if os.environ.get('PANELS'):
                  list(MEDCOL) + ['Richards–Wolf', 'scalar']),
             '_pupils': ([L(color=pcol(i), marker='o', ms=8) for i in range(len(PUP))],
                         ['circular pupil' if n == 'rw_air' else f'ε = {n.split("eps")[1]}' if 'eps' in n else
-                         f'Gaussian input α = {n.split("gauss")[1]}' for n in PUP])}
+                         f'Gaussian input α$_t$ = {n.split("gauss")[1]}' for n in PUP])}
     ylab = {'': 'Pulse width that matches\ncontinuous beams within 1% (fs)',
             '_pupils': 'Pulse width with the depth of focus\nwithin 1% of continuous beams (fs)'}
     TT = dict(THETAS)

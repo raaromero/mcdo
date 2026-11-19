@@ -647,7 +647,7 @@ Point at the curve of F against NA, which ends at NA 0.7 in air, below the NA 0.
 
 These are the bullets of slide 19.
 
-- As NA increases the paraxial and vector F2c at θ = π/2 stay alike: F ≥ 0.999, C ≥ 0.97 and Q ≥ 0.98 wherever crossed lenses fit (NA 0.71 in air, 0.94 in water).
+- As NA increases the paraxial and vector F2c at θ = π/2 stay alike: F ≥ 0.999, C ≥ 0.96 and Q ≥ 0.98 wherever crossed lenses fit (NA 0.71 in air, 0.94 in water).
 - With crossed lenses, Eq. (1) gives the profiles of the vector focus.
 
 :::
@@ -1139,7 +1139,7 @@ These are the bullets of slide 36.
 As NA increases, the misalignment that reduces the peak 2CE fluorescence by 20% decreases as about 1/NA across the axis and 1/NA² along it, because it follows the width and the length of the focus.
 :::
 
-The dashboard has no view of this slide. Say that the fitted exponents from NA 0.1 to 0.5 are −0.99 across the axis and −2.04 along it. The paraxial model gives a larger tolerated misalignment along the axis than the vector model, by 7% at NA 0.5 and 47% near NA 0.95, and a Gaussian input (α = 4) makes the tolerances about 1.4 times larger.
+The dashboard has no view of this slide. Say that the fitted exponents from NA 0.1 to 0.5 are −0.99 across the axis and −2.04 along it. The paraxial model gives a larger tolerated misalignment along the axis than the vector model, by 7% at NA 0.5 and 47% near NA 0.95, and a Gaussian input (α~t~ = 4) makes the tolerances about 1.4 times larger.
 
 ::: deck
 

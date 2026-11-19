@@ -36,7 +36,7 @@ to 0.95 in air, 1.25 in water, 1.45 in oil. (b) Gaussian input and annular pupil
 (FWHM of the intensity) in place of continuous beams. (d) A delay Δt between the two pulses.
 
 **Terms that are fixed** (never invent another word for these): depth of focus (FWHM along the axis); obstruction
-ratio ε (annular pupil); truncation parameter α (Gaussian input); 350-nm pairs (750 + 656 nm), 375-nm pairs
+ratio ε (annular pupil); truncation parameter α_t (Gaussian input; α alone is the half-angle of the cone); 350-nm pairs (750 + 656 nm), 375-nm pairs
 (750 + 750), 328-nm pairs (656 + 656); collinear, crossed, facing lenses; "Current work" for own results.
 
 ## 2. Map of the repository

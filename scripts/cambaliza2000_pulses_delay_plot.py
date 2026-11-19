@@ -37,7 +37,7 @@ matplotlib.rcParams.update({'font.size': 28, 'axes.titlesize': 32, 'axes.labelsi
 D = P.ROOT
 C = 0.299792458                                                     # µm/fs
 DPI = 600
-PUPILS = (('rw_air', 'circular pupil, uniform input'), ('rw_air_gauss4', 'Gaussian input, α = 4'),
+PUPILS = (('rw_air', 'circular pupil, uniform input'), ('rw_air_gauss4', 'Gaussian input, α$_t$ = 4'),
           ('rw_air_eps0.5', 'annular pupil, ε = 0.5'), ('rw_air_eps0.9', 'annular pupil, ε = 0.9'),
           ('rw_air_eps0.99', 'annular pupil, ε = 0.99'))
 THETAS = (('0', 'θ = 0, collinear lenses'), ('pi2', 'θ = π/2, crossed lenses'), ('pi', 'θ = π, facing lenses'))

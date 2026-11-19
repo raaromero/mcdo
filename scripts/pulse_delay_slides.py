@@ -193,7 +193,7 @@ def delay_slides(slide, big, notes):
         'The peak that remains depends on the depth of focus compared with the distance cτ/2.',
         'Facing lenses, along the axis, 350-nm pairs, delay Δt = τ. The dashed line is the temporal overlap, 0.25. Left: '
         'circular pupil and uniform input at 30, 50 and 100 fs. Right: pupils and inputs at 100 fs; at NA 0.3 the peak '
-        'that remains is 0.32 for the circular pupil, 0.38 for the Gaussian input (α = 4) and 0.80 for the annular pupil '
+        'that remains is 0.32 for the circular pupil, 0.38 for the Gaussian input (α_t = 4) and 0.80 for the annular pupil '
         'with ε = 0.9. Cambaliza & Saloma (2000) propose annular lenses, with their long depth of field, to keep the two '
         'beams aligned in space; the same holds here for their alignment in time.')
 

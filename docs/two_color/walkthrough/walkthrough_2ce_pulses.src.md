@@ -562,7 +562,7 @@ Point at the largest difference against τ for the annular pupil, with one curve
 
 These are the bullets of slide 19.
 
-- With facing lenses, a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α = 4) and 466 fs for the annular pupil with ε = 0.9.
+- With facing lenses, a pupil or an input that gives a longer depth of focus needs a longer pulse to match continuous beams: at NA 0.5, 100 fs for the circular pupil, 162 fs for the Gaussian input (α~t~ = 4) and 466 fs for the annular pupil with ε = 0.9.
 
 :::
 :::

@@ -398,7 +398,7 @@ Along the axis C is below 0.95 from NA 0.44 in air and 0.58 in water, where the 
 With crossed lenses the paraxial and vector 2CE stay alike wherever the lenses fit, with the fidelity F at 0.999 or above.
 :::
 
-These bounds hold at the computed NAs up to NA 0.7 in air and 0.9 in water, below the NAs 0.71 and 0.94 at which crossed lenses stop fitting, so with crossed lenses the paraxial model gives the profiles of the vector focus. The lowest structural content is C = 0.967, across the axis at NA 0.7 in air, which the slide gives as 0.97.
+These bounds hold at the computed NAs up to NA 0.7 in air and 0.9 in water, below the NAs 0.71 and 0.94 at which crossed lenses stop fitting, so with crossed lenses the paraxial model gives the profiles of the vector focus. The lowest structural content is C = 0.967, across the axis at NA 0.7 in air, so the slide gives C ≥ 0.96.
 
 ::: qa
 - **Why are the crossed-lens profiles alike?** Each width is set by the narrow transverse spot of the other beam, which the paraxial model reproduces (slide 8).
@@ -707,7 +707,7 @@ As NA increases, the misalignment that reduces the peak 2CE fluorescence by 20% 
 With facing lenses the fitted exponents from NA 0.1 to 0.5 are −0.99 across the axis and −2.04 along it. The paraxial scalar model gives a larger tolerated misalignment along the axis than the vector model, by 7% at NA 0.5 and by 47% near NA 0.95.
 
 ::: qa
-- **What does a Gaussian input do?** A Gaussian input with α = 4 makes the tolerated misalignments about 1.4 times larger.
+- **What does a Gaussian input do?** A Gaussian input with α~t~ = 4 makes the tolerated misalignments about 1.4 times larger.
 :::
 :::
 
