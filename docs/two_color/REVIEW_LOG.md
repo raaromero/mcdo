@@ -19,7 +19,9 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
      NA 0.2, 7% at NA 0.5. The slide uses the formula where the focus is longer than G (NA ≤ 0.3), so its statements
      hold, and its notes cite the numbers of the c/n form, which Section 7, Step 9 still gives (the notes have 0.518
      at NA 0.2 from D rounded to 22.3 µm; unrounded it is 0.517). If the user wants it, one sentence in the notes can
-     state the speed.
+     state the speed. The dashboard draws the same reference line ("meeting point of the pulses, cΔt/2", chart of the
+     peak position at θ = π in `main.ts`), and so does `cambaliza2000_pulses_delay_plot.py` (label cΔt/2); the same
+     holds for both, and a change there would need a deploy.
 2. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
 3. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
@@ -44,8 +46,9 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 - **Delay slides** (2026-11-17): written once in `scripts/pulse_delay_slides.py` for the pulse deck and
   `pulse_delay.pptx`, in the framework of Lim & Saloma (2002): the peak 2CE fluorescence against a misalignment in time.
 - **Derivations, piece by piece** (asked 2026-11-16, done 2026-11-19): `docs/two_color/derivations/`
-  `1_scalar_focal_field.pdf` (Debye integral, paraxial field, sinc² and Airy, widths, annular pupil, why the paraxial
-  depth of focus is too long), `2_vector_focal_field.pdf` (aplanatic factor, the ray field, I₀, I₁, I₂, E_z = −2I₁ cos ψ,
+  `1_scalar_focal_field.pdf` (Debye integral, the same integral of the intensity in all planes, paraxial field, sinc²
+  and Airy, widths, annular pupil, why the paraxial depth of focus is too long), `2_vector_focal_field.pdf` (aplanatic
+  factor, the ray field, I₀, I₁, I₂, E_z = −2I₁ cos ψ, the same integral for the vector field,
   Gauss's law, the spot across and along the polarization), `3_two_beams.pdf` (rotation, 2CE and 2PE, facing and
   crossed lenses, displacement, aberration, Linfoot's criteria); pulses and delay in `pulse_derivations.pdf`. Every
   number in a Check of the three parts, and in Sections 3 and 7 of `pulse_derivations`, is printed by
@@ -67,7 +70,23 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Passes
 
-### 2026-11-19, later pass
+### 2026-11-19, third pass
+- No stored result changed. The output of `derivation_checks.py` is the same line for line, with two checks added.
+- Added a physics check that no earlier pass had: the integral of the intensity over a plane z is the same in all
+  planes, since the plane waves of the Debye integral keep their amplitudes and change their phases (Parseval's theorem
+  for the Hankel transform). With the aplanatic factor it is 4π²(1 − cos α)/k² for the scalar field (Part 1, Section
+  1, Step 6), proportional to the solid angle of the cone; 2 for the paraxial field in the variable v (Section 2,
+  Step 6); and 4(1 − cos α)/k² for the mean of |E|² over ψ (Part 2, Section 3, Step 8), where (1 + cos ϑ)² +
+  2 sin²ϑ + (1 − cos ϑ)² = 4 shows that E_x, E_y and E_z share the integral of the scalar field. The engine gives
+  all three to 2.3e-4 at NA 0.5 and 0.9, in the focal plane and 2 µm from it (checks 1f and 2e; 3e-5 with a grid
+  twice as fine). The check tests the aplanatic factor and the weights of I₀, I₁ and I₂ against a law the field must
+  obey, apart from the stored widths that the tests pin.
+- Lim & Saloma (2002), Sections 3.2 and 4, read again against the stored values: the drops of 11%, 20% and 30%, the
+  ranges |z_c| < 1.8 λ₁ and 2.7 λ₁, and the 2PE statements (between 1 and 0.7 with a period of about λ₁; 30% at
+  0.5 λ₁) agree with Part 3, Section 5, and `lim2002_numbers.txt` (0.72 to 1.00; 0.732 at 0.5 λ₁). Nothing to
+  correct.
+- Open item 1 now also names the reference line cΔt/2 of the dashboard and of the stored delay figure.
+
 - No stored result changed. Full suite passes (count in the commit message).
 - Physics corrected in `pulse_derivations` (Sections 3, 7 and 8) and in the docstrings of `mcdo/pulsed2ce.py`: a
   pulse does not cross a focus at c/n. The focal phase of a lens of fixed NA (−u/4 in the paraxial field) grows in

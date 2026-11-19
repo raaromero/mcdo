@@ -63,6 +63,20 @@ Uniform input is $A = 1$; the Gaussian input of the current work is
 $A = \exp(-\alpha_t\sin^2\vartheta/\sin^2\alpha)$. Eq.~(\ref{eq:debye}) with this $a(\vartheta)$ is the model
 \texttt{'debye'} of the engine.
 
+\step{6, the same integral in all planes} The plane waves of Eq.~(\ref{eq:debye2}) keep their amplitudes as $z$
+changes, and their phases $kz\cos\vartheta$ change. The integral of $|U|^2$ over a plane $z$ is therefore the same in
+all planes. To show it, I write Eq.~(\ref{eq:debye}) with $\kappa = k\sin\vartheta$, so that
+$d\kappa = k\cos\vartheta\,d\vartheta$ and $\sin\vartheta\,d\vartheta = \kappa\,d\kappa/(k^2\cos\vartheta)$:
+\begin{equation}U(r,z) = \int_0^{k\sin\alpha} g(\kappa)\,J_0(\kappa r)\,\kappa\,d\kappa,\qquad
+g = \frac{2\pi a(\vartheta)\,e^{ikz\cos\vartheta}}{k^2\cos\vartheta} .\end{equation}
+This is a Hankel transform of order 0. Parseval's theorem for it, $\int_0^\infty|U|^2r\,dr = \int_0^\infty|g|^2\kappa\,d\kappa$,
+removes the phase $e^{ikz\cos\vartheta}$. Going back to $\vartheta$ with $\kappa\,d\kappa = k^2\sin\vartheta\cos\vartheta\,d\vartheta$
+and $|a|^2 = |A|^2\cos\vartheta$,
+\begin{equation}\int_0^\infty|U|^2\,r\,dr = \frac{4\pi^2}{k^2}\int_0^\alpha\frac{|a|^2}{\cos\vartheta}\,\sin\vartheta\,d\vartheta
+= \frac{4\pi^2}{k^2}\int_0^\alpha|A|^2\sin\vartheta\,d\vartheta ,\label{eq:plane}\end{equation}
+which is $4\pi^2(1 - \cos\alpha)/k^2$ for uniform input. The aplanatic factor gives all elements of solid angle
+the same weight, so the integral is proportional to the solid angle of the cone, $2\pi(1 - \cos\alpha)$.
+
 \section{The paraxial field: Eq.~1 of [CS00]}
 \step{1} For a narrow cone I keep the lowest order of each factor in $\vartheta$:
 \begin{equation}\sin\vartheta \approx \vartheta,\qquad \cos\vartheta \approx 1 - \frac{\vartheta^2}{2},\qquad
@@ -91,6 +105,16 @@ This is Eq.~1 of [CS00] and Eq.~2 of [LS02], which write the integral with Lomme
 Eq.~1 of [LS03] with no aberration. Their prefactor $\exp[i(f/a)^2u]$ is the carrier: in air $(a/f)^2 = \mathrm{NA}^2$,
 so $(f/a)^2u = u/\mathrm{NA}^2 = kz$. [CS00] states that the model holds for NA below about 0.7, [LS02] for NA up
 to 0.5; the current work shows the paraxial model at NA 0.5 and below.
+
+\step{6} Eq.~(\ref{eq:parax}) is a Hankel transform in $v$ of the pupil function $e^{-iu\rho^2/2}$, and Parseval's
+theorem gives, in each plane $u$,
+\begin{equation}\int_0^\infty|U(u,v)|^2\,v\,dv = 4\int_0^1|e^{-iu\rho^2/2}|^2\,\rho\,d\rho = 2 .\end{equation}
+In the focal plane it is the known integral of the Airy pattern of Section 4, $\int_0^\infty[2J_1(v)/v]^2\,v\,dv = 2$.
+
+\chk{The engine at 750 nm in air, integrated out to $r = 40~\mu$m with the tail beyond extrapolated as $1/r$.
+The model \texttt{'debye'} leaves out the factor $2\pi$ of Eq.~(\ref{eq:debye}), so Eq.~(\ref{eq:plane}) becomes
+$(1 - \cos\alpha)/k^2$; the engine gives it to $3\times10^{-4}$ at NA 0.5 and 0.9, in the focal plane and 2~$\mu$m
+from it. The paraxial model gives 2 to $3\times10^{-5}$ at NA 0.5, in the same two planes.}
 
 \section{The field along the axis}
 \step{1} On the axis $v = 0$ and $J_0(0) = 1$:

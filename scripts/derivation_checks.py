@@ -1,12 +1,13 @@
 r"""Numbers of the derivation documents docs/two_color/derivations/*.tex: each closed form against the engine
 (mcdo.twobeam) and against the stored results it explains.
 
-    python scripts/derivation_checks.py > output/08_two_color/derivation_checks.txt      (about one minute)
+    python scripts/derivation_checks.py > output/08_two_color/derivation_checks.txt      (about two minutes)
 
 Part 1, scalar focal field: half-width points of the Airy and sinc^2 profiles and of their powers; the widths at NA 0.5;
-the depth of focus of the paraxial model against the non-paraxial weights of the axial integral.
+the depth of focus of the paraxial model against the non-paraxial weights of the axial integral; the integral of the
+intensity over a plane z, which is the same in all planes.
 Part 2, vector field: transversality of the ray field, the share of I1 and I2, the Romallosa width, Gauss's law, the
-widths across and along the polarization.
+same integral over a plane for the vector field, the widths across and along the polarization.
 Part 3, two beams: the rotation, the 2PE standing-wave fringe, crossed lenses, the displacement of Lim & Saloma (2002),
 the spherical aberration of Lim & Saloma (2003), and the identity F = 2Q - C of Linfoot's criteria on every stored row.
 Pulses (docs/two_color/pulse_derivations.tex, Sections 3, 6 and 7): when a focused pulse arrives on the axis, the
@@ -25,7 +26,7 @@ from scipy.special import j1, jv
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(__file__))
 from mcdo.rw_integrals import compute_integrals  # noqa: E402
-from mcdo.twobeam import beam_field, intensity, two_color, two_photon  # noqa: E402
+from mcdo.twobeam import _paraxial, beam_field, intensity, two_color, two_photon  # noqa: E402
 from mcdo.pulsed2ce import C_UM_FS, _fields, two_color_cw  # noqa: E402
 from cambaliza2000_pulses_sweep import fwhm  # noqa: E402
 
@@ -52,6 +53,17 @@ def mean_t(w, na, n=1.0):
     c = np.sqrt(1 - (na / n) ** 2)
     t = 0.5 * (1 - c) * gl_t + 0.5 * (1 + c)
     return np.sum(w(t) * t * gl_w) / np.sum(w(t) * gl_w)
+
+
+def plane_integral(f, R=40.0, nr=2001):
+    """Integral of f(r) r dr from 0 to infinity: Simpson out to R and to R/2, the tail beyond extrapolated as 1/r."""
+    def simpson(rmax, m):
+        r = np.linspace(0, rmax, m)
+        vals = np.concatenate([f(r[i:i + 500]) for i in range(0, m, 500)])
+        w = np.ones(m)
+        w[1:-1:2], w[2:-1:2] = 4, 2
+        return np.sum(w * vals * r) * (r[1] - r[0]) / 3
+    return 2 * simpson(R, nr) - simpson(R / 2, nr // 2 + 1)
 
 
 # ══ Part 1 ══════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -136,6 +148,18 @@ for na, st_par, st_vec in ((0.5, 3.562, 3.326), (0.9, 1.099, 0.807)):
     print(f'2CE θ = 0, NA {na}: paraxial {p2:.3f} (stored {st_par}), vector from the weights {v2:.3f} (stored {st_vec}),'
           f' ratio {p2 / v2:.3f}')
 
+head('1f. Integral of |U|^2 r dr over a plane z (Section 1, Step 6, and Section 2, Step 6), 750 nm, air')
+print('ratio to the closed form: Debye (1 - cos alpha) / k^2 (the engine leaves out the 2 pi of Eq. 6); '
+      'paraxial 2 / (2 pi NA / lam)^2')
+kk = 2 * np.pi / L1
+for na in (0.5, 0.9):
+    out = [f'z = {z0:g} µm: {plane_integral(lambda r, z0=z0: np.abs(beam_field(r, 0 * r + z0, L1, na, model="debye", n_theta=1501)) ** 2) / ((1 - np.sqrt(1 - na ** 2)) / kk ** 2):.6f}'
+           for z0 in (0.0, 2.0)]
+    print(f'Debye, NA {na}: ' + '; '.join(out))
+out = [f'z = {z0:g} µm: {plane_integral(lambda r, z0=z0: np.abs(_paraxial(r, 0 * r + z0, kk, 0.5, 1.0, n_rho=1501)) ** 2) / (2 / (kk * 0.5) ** 2):.6f}'
+       for z0 in (0.0, 2.0)]
+print('paraxial, NA 0.5 (1501 pupil points): ' + '; '.join(out))
+
 # ══ Part 2 ══════════════════════════════════════════════════════════════════════════════════════════════════════════
 head('2a. The ray field is transverse: k_hat . e_hat over a grid of (theta, phi)')
 th, ph = np.meshgrid(np.linspace(0, 1.4, 141), np.linspace(0, 2 * np.pi, 181))
@@ -197,6 +221,13 @@ for fz, name in ((-2.0, '-2'), (-2.0j, '-2i')):
            + (field(px, py, pz + h, fz)[2] - field(px, py, pz - h, fz)[2])) / (2 * h)
     emax = np.abs(field(np.zeros(1), np.zeros(1), np.zeros(1), fz)[0]).max()
     print(f'factor {name:4s}: max |div E| / (k |E(0)|) = {np.abs(div).max() / (k * emax):.1e}')
+
+head('2e. Integral of the mean of |E|^2 over psi, r dr, over a plane z (Section 3, Step 8), 750 nm, air')
+print('ratio to 4 (1 - cos alpha) / k^2; |E|^2 at 45 degrees to the polarization is |I0|^2 + |I2|^2 + 2 |I1|^2, its mean')
+for na in (0.5, 0.9):
+    out = [f'z = {z0:g} µm: {plane_integral(lambda r, z0=z0: intensity(beam_field(r, 0 * r + z0, L1, na, model="rw", psi=np.pi / 4, n_theta=1501))) / (4 * (1 - np.sqrt(1 - na ** 2)) / kk ** 2):.6f}'
+           for z0 in (0.0, 2.0)]
+    print(f'vector, NA {na}: ' + '; '.join(out))
 
 # ══ Part 3 ══════════════════════════════════════════════════════════════════════════════════════════════════════════
 head('3a. Rotation: beam at θ = π is beam 1 at (-x, -z); vector field turns with the beam')

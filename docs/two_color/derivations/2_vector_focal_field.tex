@@ -130,6 +130,26 @@ Along the polarization Eq.~(\ref{eq:rw}) gives 525.1 nm and the printed form 536
 $\sin\phi$ are therefore a slip of typesetting, and the engine uses Eq.~(\ref{eq:rw}). A term $\cos\phi$ would also make
 $E_x$ change under $r \to -r$ in the focal plane, which the symmetric lens does not allow.}
 
+\step{8, the same integral in all planes} From Eq.~(\ref{eq:rw}), the mean of $|\mathbf E|^2$ over the azimuth
+$\psi$ is
+\begin{equation}\langle|\mathbf E|^2\rangle_\psi = |I_0|^2 + |I_2|^2 + 2|I_1|^2 ,\end{equation}
+since the mean of $\cos2\psi$ is 0 and the means of $\cos^2 2\psi$, $\sin^2 2\psi$ and $\cos^2\psi$ are $\frac12$.
+Each $I_m$ is a Hankel transform of order $m$, and Parseval's theorem applies to each as in Part 1, Section 1,
+Step 6: with $c_m(\vartheta)$ the factor in front of $J_m$ in Step 3,
+$\int_0^\infty|I_m|^2r\,dr = k^{-2}\int_0^\alpha|c_m|^2(\sin\vartheta\cos\vartheta)^{-1}d\vartheta$. The three terms
+add to
+\begin{equation}\int_0^\infty\langle|\mathbf E|^2\rangle_\psi\,r\,dr = \frac{1}{k^2}\int_0^\alpha|A|^2\sin\vartheta\,
+\big[(1 + \cos\vartheta)^2 + 2\sin^2\!\vartheta + (1 - \cos\vartheta)^2\big]\,d\vartheta
+= \frac{4}{k^2}\int_0^\alpha|A|^2\sin\vartheta\,d\vartheta ,\end{equation}
+since the bracket equals 4 at all $\vartheta$. This is $|C|^2 = 1/\pi^2$ times the integral of the scalar field with
+the same $A$ (Part 1, Section 1, Step 6), in all planes $z$ and at all NA. The lens turns the polarization of each
+ray and keeps its amplitude ($|\hat{\mathbf e}| = 1$, Section 2), so $E_x$, $E_y$ and $E_z$ share among them the
+integral of the scalar field.
+
+\chk{The engine (model \texttt{'rw'}, 750 nm, air) at $45^\circ$ to the polarization, where $|\mathbf E|^2$ equals
+its mean over $\psi$, integrated as in Part 1: the integral is $4(1 - \cos\alpha)/k^2$ to $3\times10^{-4}$ at NA 0.5
+and 0.9, in the focal plane and 2~$\mu$m from it.}
+
 \section{Gauss's law}
 \step{1} In a region without charges $\nabla\cdot\mathbf E = 0$. Near the focus at low NA, $E_x \approx -iI_0$, and
 $E_y$ is of second order in the angle. Each plane wave in the sum varies along $z$ as
