@@ -13,6 +13,13 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
    - "C ≥ 0.97" on the slide "Linfoot’s criteria against NA: 2CE, θ = π/2" (approved 2026-10-29): the lowest stored C
      is 0.967 (air, NA 0.7, across the axis; `high_na/metrics.txt`). Proposed: "C ≥ 0.96", through `fix=` in
      `scripts/make_2ce_decks.py`, which states the change in the notes.
+   - Optional, no change needed (found 2026-11-19): the slide "Facing lenses: position where the delayed pulses meet"
+     (`scripts/pulse_delay_slides.py`) writes z_m = cΔt/2n and G = cτ/(√2 n), for pulses at c/n. Near a focus a pulse
+     travels at c/(n⟨cos ϑ⟩) (pulse_derivations.pdf, Section 3), so both are longer by 1/⟨cos ϑ⟩: 0.25% at NA 0.1, 1% at
+     NA 0.2, 7% at NA 0.5. The slide uses the formula where the focus is longer than G (NA ≤ 0.3), so its statements
+     hold, and its notes cite the numbers of the c/n form, which Section 7, Step 9 still gives (the notes have 0.518
+     at NA 0.2 from D rounded to 22.3 µm; unrounded it is 0.517). If the user wants it, one sentence in the notes can
+     state the speed.
 2. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
 3. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
@@ -41,7 +48,8 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
   depth of focus is too long), `2_vector_focal_field.pdf` (aplanatic factor, the ray field, I₀, I₁, I₂, E_z = −2I₁ cos ψ,
   Gauss's law, the spot across and along the polarization), `3_two_beams.pdf` (rotation, 2CE and 2PE, facing and
   crossed lenses, displacement, aberration, Linfoot's criteria); pulses and delay in `pulse_derivations.pdf`. Every
-  number in a Check is printed by `scripts/derivation_checks.py`. Each topic is in one place: the E_z factor is in
+  number in a Check of the three parts, and in Sections 3 and 7 of `pulse_derivations`, is printed by
+  `scripts/derivation_checks.py`. Each topic is in one place: the E_z factor is in
   Part 2, and Section 9 of `pulse_derivations` points there.
 
 ## Standing facts for whoever continues
@@ -58,6 +66,36 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
   20 fs), plus polarization p at three NAs.
 
 ## Passes
+
+### 2026-11-19, later pass
+- No stored result changed. Full suite passes (count in the commit message).
+- Physics corrected in `pulse_derivations` (Sections 3, 7 and 8) and in the docstrings of `mcdo/pulsed2ce.py`: a
+  pulse does not cross a focus at c/n. The focal phase of a lens of fixed NA (−u/4 in the paraxial field) grows in
+  proportion to ω, so near the focus the pulse travels along the axis at v = c/(n⟨cos ϑ⟩), with ⟨cos ϑ⟩ the mean
+  cosine of the rays weighted by their amplitudes (1 − NA²/4 paraxial; weight √t (1 + t) in the vector model): 0.25%
+  faster than c/n at NA 0.1, 7% at NA 0.5, 33% at NA 0.9. It is the factor k_e of the 2PE standing wave in Part 3.
+  The engine always had it, since it adds the frequencies with their focal fields: the centroid in time of the pulse
+  at 0.25 µm from the focus is n z ⟨cos ϑ⟩/c to 0.003 at NA 0.9 and to 1e-4 at NA 0.7 and below.
+- With this speed, the closed form I₁I₂ exp[−2 ln2 (2z/v − Δt)²/τ²] matches the stored facing-lens profiles of the
+  delay sweep to 0.002 of the peak at NA 0.1 to 0.9, 10 to 100 fs, both models; with c/n the differences were 0.004
+  (100 fs), 0.019 (20 fs) and 0.039 (10 fs), the numbers the document quoted. The table of Section 7, Step 9 now
+  uses the depth of focus of the vector model (the stored values are vector) and ⟨cos ϑ⟩: position 0.34 µm at NA 0.5
+  as stored (0.41 before), FWHM 3.29 µm as stored (3.51 before). The old numbers stay in one sentence, because the
+  notes of the pulse deck cite them.
+- The fringes of Section 8, Step 4 are λ_e/(n⟨cos ϑ⟩) apart near the focus, slightly more than 350 nm, as Part 3
+  has for the 2PE standing wave.
+- Section 6, Step 5 said the factor ω/ω₀ makes the spectrum wider. It narrows the product of the two spectra (term
+  −x²/ω₁ω₂) and adds an imaginary part (term bx), and both make the overlap fall more slowly with the delay. Written
+  out, it gives 0.710944, 0.255448 and 0.004252 at 5 fs and Δt = 0.5τ, τ, 2τ; stored 0.710947, 0.255451, 0.004252
+  (check 4d), the same in both models, all media and NAs.
+- Section 4, Step 2 now states the condition for the equal weight of the three kinds of pairs: the intermediate
+  states are far from both carriers (by more than ω₂ − ω₁ = 0.36 rad/fs) as well as outside each bandwidth. It is the
+  assumption behind |U₁ + U₂|⁴ in [CS00] Eq. 3. The fringe-depth table of Section 8 matches the stored delay sweep.
+- Added Part 4 to `scripts/derivation_checks.py` (pulse arrival, the gate against the stored profiles, the table of
+  Step 9, the overlap at 5 fs) and the test `test_pulses_cross_a_high_na_focus_faster_than_c_over_n` (NA 0.9, 10 fs: 0.002 with v, 0.03
+  with c/n; stored peak 0.280). The other pulse tests were at NA 0.1, where the two speeds differ by 0.25%.
+- `pulse_derivations.tex`: emergencystretch and hidden link boxes, as in the three parts; the two overfull lines it
+  had are gone.
 
 ### 2026-11-19
 - No stored result changed. Full suite 1113 pass.

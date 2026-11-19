@@ -50,8 +50,10 @@ EOF
 ```
 
 The formulas behind H4 are Eqs. for the temporal overlap, F(Δt)/F(0) = exp(−2 ln2 Δt²/τ²), and for facing lenses,
-peak = exp[−4 ln2 z_m²/(D² + G²)] with z_m = cΔt/2n, G = cτ/(√2 n) and D the continuous-beam depth of focus of 2CE
-(3.56 µm at NA 0.5, growing as 1/NA²). They are derived in `pulse_derivations.pdf`, Sections 6 and 7.
+peak = exp[−4 ln2 z_m²/(D² + G²)] with z_m = cΔt/(2n⟨cos ϑ⟩), G = cτ/(√2 n⟨cos ϑ⟩) and D the continuous-beam depth of
+focus of 2CE (3.33 µm at NA 0.5 in the vector model). Near a focus a pulse travels along the axis at c/(n⟨cos ϑ⟩), with
+⟨cos ϑ⟩ the mean cosine of the rays (1 − NA²/4 in the paraxial model; 0.99 at NA 0.2, 0.93 at NA 0.5); the slides use
+c/n, which differs by 1% at NA 0.2. They are derived in `pulse_derivations.pdf`, Sections 3, 6 and 7.
 
 ## 2. Where things stand (2026-11-12)
 

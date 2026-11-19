@@ -197,3 +197,34 @@ def test_delay_moves_the_peak_with_facing_lenses_at_low_na(monkeypatch):
     s = np.linspace(-30, 40, 701)
     p0, p1 = P.pulsed(0.1, 100.0, np.pi, s, 'z', '2ce', 0.0)[2], P.pulsed(0.1, 100.0, np.pi, s, 'z', '2ce', 100.0)[2]
     assert abs(p1.max() / p0.max() - 0.930) < 0.003 and abs(s[np.argmax(p1)] - 14.2) < 0.2
+
+
+def test_pulses_cross_a_high_na_focus_faster_than_c_over_n(monkeypatch):
+    """Vector model in air, NA 0.9, facing lenses, 10 fs. Near the focus each pulse travels along the axis at
+    v = c/(n⟨cos ϑ⟩), with ⟨cos ϑ⟩ = 0.7517 the mean cosine of the rays weighted by their amplitudes, because the focal
+    phase grows in proportion to ω (pulse_derivations.pdf, Sections 3 and 7). At a delay of one pulse width the 350-nm
+    pairs follow I1 I2 exp[−2 ln2 (2z/v − Δt)²/τ²] to 0.002 of the peak, and differ from it by 0.03 with v = c/n; the
+    delay sweep stores a peak of 0.280 (rw_air, NA 0.9)."""
+    import cambaliza2000_pulses_delay as P
+    import cambaliza2000_pulses_na_sweep as S
+    import cambaliza2000_pulses_na_sweep_fast as SF
+    from mcdo.pulsed2ce import C_UM_FS, two_color_cw
+    monkeypatch.setattr(S, 'MODEL', 'rw')
+    monkeypatch.setattr(SF, 'FOCUS', {})
+    na, tau = 0.9, 10.0
+    s = np.linspace(-3, 3, 241)
+    p0, p1 = (P.pulsed(na, tau, np.pi, s, 'z', '2ce', d)[2] for d in (0.0, tau))
+    x, w = np.polynomial.legendre.leggauss(400)
+    c = np.sqrt(1 - na ** 2)
+    t = 0.5 * (1 - c) * x + 0.5 * (1 + c)
+    mean_cos = np.sum(w * np.sqrt(t) * (1 + t) * t) / np.sum(w * np.sqrt(t) * (1 + t))
+    cw = two_color_cw(0 * s, s, na, theta=np.pi, model='rw')
+
+    def miss(m):
+        g = [cw * np.exp(-2 * np.log(2) * (2 * s * m / C_UM_FS - d) ** 2 / tau ** 2) for d in (0.0, tau)]
+        return np.abs(p1 / p0.max() - g[1] / g[0].max()).max()
+
+    assert abs(mean_cos - 0.7517) < 1e-4
+    assert miss(mean_cos) < 0.004, f'{miss(mean_cos):.4f} of the peak with v = c/(n<cos>)'
+    assert miss(1.0) > 0.02
+    assert abs(p1.max() / p0.max() - 0.280) < 0.002, f'peak {p1.max() / p0.max():.4f}, stored 0.280'

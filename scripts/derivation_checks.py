@@ -9,12 +9,16 @@ Part 2, vector field: transversality of the ray field, the share of I1 and I2, t
 widths across and along the polarization.
 Part 3, two beams: the rotation, the 2PE standing-wave fringe, crossed lenses, the displacement of Lim & Saloma (2002),
 the spherical aberration of Lim & Saloma (2003), and the identity F = 2Q - C of Linfoot's criteria on every stored row.
+Pulses (docs/two_color/pulse_derivations.tex, Sections 3, 6 and 7): when a focused pulse arrives on the axis, the
+temporal overlap at 5 fs with the factor omega/omega_0, and the 2CE of facing lenses with a delay against the stored
+profiles of the delay sweep.
 """
 import os
 import re
 import sys
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import brentq
 from scipy.special import j1, jv
 
@@ -22,6 +26,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.dirname(__file__))
 from mcdo.rw_integrals import compute_integrals  # noqa: E402
 from mcdo.twobeam import beam_field, intensity, two_color, two_photon  # noqa: E402
+from mcdo.pulsed2ce import C_UM_FS, _fields, two_color_cw  # noqa: E402
 from cambaliza2000_pulses_sweep import fwhm  # noqa: E402
 
 L1, L2, LP = 0.750, 0.656, 0.700
@@ -299,3 +304,73 @@ for sig in ('2CE θ = π', '2CE θ = π/2', '2PE θ = π', '2PE θ = π/2'):
         for f_, c_, q_ in zip(vals['F'], vals['C'], vals['Q']):
             worst, rows = max(worst, abs(f_ - (2 * q_ - c_))), rows + 1
 print(f'{rows} rows; largest |F - (2Q - C)| = {worst:.4f} (rounding of the printed values)')
+
+# ══ Pulses (pulse_derivations.tex) ══════════════════════════════════════════════════════════════════════════════════
+DS = os.path.join(OUT, 'cambaliza2000', 'pulses', 'delay_sweep')
+vec_w = lambda t: np.sqrt(t) * (1 + t)                       # weight of the vector field on the axis (Part 1, Section 7)
+mcos = lambda na, model: 1 - na ** 2 / 4 if model == 'paraxial' else mean_t(vec_w, na)
+
+head('4a. When a focused pulse arrives on the axis (Section 3, Step 2): centroid in time of |E(z_b, t)|^2 over n z_b / c')
+print('engine spectral sum, 750 nm, 20 fs, air; <cos theta> is the mean over the cone with the weight of the model')
+zb = np.array([0.25, 2.0, 5.0, 15.0])
+tc = np.arange(-120.0, 120.0, 20.0 / 60)
+for model in ('paraxial', 'rw'):
+    for na in (0.1, 0.3, 0.5, 0.7, 0.9):
+        dw, cc, E = _fields(0 * zb, zb, L1, 20.0, 240.0, na, 1.0, 0.0, 0.0, 0.0, model, 0.0, None)
+        Ft = np.tensordot(cc[:, None] * np.exp(-1j * np.outer(dw, tc)), E, axes=(0, 0))
+        It = (np.abs(Ft) ** 2).sum(axis=1) if Ft.ndim == 3 else np.abs(Ft) ** 2
+        r = (tc[:, None] * It).sum(0) / It.sum(0) / (zb / C_UM_FS)
+        print(f'{model:8s} NA {na:.1f}: <cos theta> = {mcos(na, model):.4f};  centroid at z_b = 0.25, 2, 5, 15 µm: '
+              + ', '.join(f'{x:.4f}' for x in r))
+
+head('4b. Facing lenses, 2CE (350-nm pairs) on the axis: stored profiles against I1 I2 exp[-2 ln2 (2z/v - dt)^2 / tau^2]')
+print('largest difference over z and the delays 0, 0.5, 1, 1.5, 2 tau, as a fraction of the peak without delay;')
+print('v = c / (n <cos theta>) (Section 7), and in brackets v = c / n')
+for st, model in (('rw_air', 'rw'), ('paraxial_air', 'paraxial')):
+    for na in (0.1, 0.2, 0.3, 0.5, 0.7, 0.9):
+        f = np.load(os.path.join(DS, st, f'na{na:g}_coarse.npz'))
+        s_ = f['2ce_pi_z_s']
+        cw = two_color_cw(0 * s_, s_, na, theta=np.pi, model=model)
+        out = []
+        for tau in (10, 20, 100):
+            P, d = f[f'2ce_pi_z_{tau}_p'][2], f[f'2ce_pi_z_{tau}_d']
+            e = []
+            for m in (mcos(na, model), 1.0):
+                C = np.array([cw * np.exp(-2 * np.log(2) * (2 * s_ * m / C_UM_FS - dl) ** 2 / tau ** 2) for dl in d])
+                e.append(np.abs(C / C[0].max() - P).max())
+            out.append(f'{tau} fs {e[0]:.3f} ({e[1]:.3f})')
+        print(f'{st:13s} NA {na:.1f}: ' + ';  '.join(out))
+
+head('4c. Facing lenses, 100 fs, vector model in air: the focus as a Gaussian of FWHM D (Section 7, Steps 5 to 9)')
+for na in (0.1, 0.2, 0.3, 0.5):
+    z = np.linspace(-1, 1, 40001) * 9 * L1 / na ** 2
+    D = fwhm(z, two_color_cw(0 * z, z, na, theta=np.pi, model='rw'))
+    out = []
+    for DD, m in ((D, mcos(na, 'rw')), (3.562 * (0.5 / na) ** 2, 1.0)):
+        G, zm = C_UM_FS * 100 / (np.sqrt(2) * m), C_UM_FS * 100 / (2 * m)
+        out.append((np.exp(-4 * np.log(2) * zm ** 2 / (DD ** 2 + G ** 2)), zm * DD ** 2 / (DD ** 2 + G ** 2),
+                    DD * G / np.hypot(DD, G), zm, G))
+    t = pd.read_parquet(os.path.join(DS, 'rw_air', f'na{na:g}_coarse.parquet')).query(
+        "sig == '2ce' and theta == 'pi' and cut == 'z' and tau == 100")
+    r1, r0 = t[np.isclose(t.delay_tau, 1.0)].iloc[0], t[np.isclose(t.delay_tau, 0.0)].iloc[0]
+    a, b = out
+    print(f'NA {na:.1f}: D = {D:.3f} µm, <cos theta> = {mcos(na, "rw"):.4f}, z_m = {a[3]:.2f}, G = {a[4]:.2f} µm | peak at '
+          f'dt = tau {a[0]:.3f} (stored {r1.rel_cross:.3f}) | position {a[1]:.2f} ({r1.pos_cross:.2f}) µm | FWHM without '
+          f'delay {a[2]:.2f} ({r0.fwhm_cross:.2f}) µm')
+    print(f'        with c/n and the scalar D = {3.562 * (0.5 / na) ** 2:.2f} µm: peak {b[0]:.3f}, position {b[1]:.2f}, '
+          f'FWHM {b[2]:.2f} µm')
+
+head('4d. Temporal overlap at a fixed point with the factor omega/omega_0 of each photon (Section 6, Step 5), collinear')
+w1, w2 = 2 * np.pi * C_UM_FS / L1, 2 * np.pi * C_UM_FS / L2
+bb, P12 = 1 / w1 - 1 / w2, w1 * w2
+for tau in (5.0, 10.0, 100.0):
+    s2 = 4 * np.log(2) / tau ** 2
+    t = pd.read_parquet(os.path.join(DS, 'rw_air', 'na0.5_coarse.parquet')).query(
+        f"sig == '2ce' and theta == '0' and cut == 'z' and tau == {tau:g}").set_index('delay_tau').rel_cross
+    out = []
+    for fct in (0.5, 1.0, 2.0):
+        dt = fct * tau
+        corr = ((1 - s2 / (2 * P12) + s2 ** 2 * dt ** 2 / (4 * P12)) ** 2 + (bb * s2 * dt / 2) ** 2) / (1 - s2 / (2 * P12)) ** 2
+        out.append(f'dt = {fct:g} tau: Gaussian {np.exp(-s2 * dt ** 2 / 2):.6f} x {corr:.4f} = '
+                   f'{np.exp(-s2 * dt ** 2 / 2) * corr:.6f} (stored {t.loc[fct]:.6f})')
+    print(f'{tau:5.0f} fs: ' + ';  '.join(out))

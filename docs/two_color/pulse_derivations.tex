@@ -4,11 +4,11 @@
 \setmainfont{STIX Two Text}
 \usepackage{unicode-math}
 \setmathfont{STIX Two Math}
-\usepackage{graphicx,booktabs,enumitem,hyperref,float,amsmath}
+\usepackage{graphicx,booktabs,enumitem,hyperref,float,amsmath}\hypersetup{hidelinks}
 \setlist{nosep,leftmargin=1.4em}
-\setlength{\parskip}{5pt}\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}\setlength{\parindent}{0pt}\setlength{\emergencystretch}{2em}
 \title{Two-color excitation with optical pulses and a delay:\\ derivations, step by step}
-\date{12 November 2026}
+\date{12 November 2026, revised 19 November 2026}
 \author{}
 \begin{document}
 \maketitle
@@ -30,6 +30,8 @@ $\Delta t$ & delay of pulse 2 after pulse 1\\
 $\theta$ & angle between the two lens axes: 0 collinear, $\pi/2$ crossed, $\pi$ facing\\
 $n$ & refractive index of the medium; $k = n\omega/c$\\
 $z_b$ & distance of a point from the focus of a beam, measured along that beam\\
+$\langle\cos\vartheta\rangle$ & mean of $\cos\vartheta$ over the cone of rays, each ray weighted by its amplitude\\
+$v$ & speed of a pulse along the axis near the focus, $c/(n\langle\cos\vartheta\rangle)$\\
 $\mathbf{E}_\omega(P)$ & focal field of a continuous wave of frequency $\omega$ at the point $P$\\
 $c$ & speed of light, 0.29979 $\mu$m/fs\\\bottomrule\end{tabular}\end{center}
 
@@ -86,12 +88,29 @@ $\mathbf{E}_\omega(P)$ of the papers ([CS00] Eq.~1 for the scalar model, [Rom03]
 The diffraction integral has the prefactor $1/\lambda \propto \omega$. The pulse at the point $P$ is the sum
 \begin{equation}\mathbf{E}(P,t) = \int a(\omega)\,\frac{\omega}{\omega_0}\,\mathbf{E}_\omega(P)\,e^{-i\omega t}\,d\omega .\label{eq:field}\end{equation}
 
-\textbf{Step 2, when the pulse arrives.} On the axis of a beam, $\mathbf{E}_\omega$ carries the propagation phase
-$e^{ikz_b}$ with $k = n\omega/c$. Keeping this factor and treating the rest as slowly varying in $\omega$,
-\begin{equation}e^{ikz_b}\,e^{-i\omega t} = e^{i\omega nz_b/c}\,e^{-i\omega t} = e^{-i\omega(t - nz_b/c)} .\end{equation}
-The sum over $\omega$ is then the same function of $t - nz_b/c$ that it is of $t$ at the focus. So the pulse is at
-the focus at $t = 0$ and at the point $z_b$ at
-\begin{equation}t_{\text{arrival}} = \frac{n z_b}{c} .\label{eq:arr}\end{equation}
+\textbf{Step 2, when the pulse arrives.} On the axis of a beam the focal field is a sum over the rays of the cone,
+and the ray at the angle $\vartheta$ to the axis carries the phase $kz_b\cos\vartheta$, with $k = n\omega/c$ (Part~1 of
+the derivations, Section~7). Near the focus the sum has the phase of the mean,
+\begin{equation}\mathbf{E}_\omega(z_b) \propto e^{ikz_b\langle\cos\vartheta\rangle} ,\end{equation}
+where $\langle\cos\vartheta\rangle$ is the mean of $\cos\vartheta$ over the cone, each ray weighted by its amplitude. In
+the paraxial model it is $1 - (\mathrm{NA}/n)^2/4$, which is the phase $kz - u/4$ of Part~1, Section~3; in the vector
+model the weight is $\sqrt t\,(1 + t)$, with $t = \cos\vartheta$ (Part~1, Section~7). Then
+\begin{equation}e^{ikz_b\langle\cos\vartheta\rangle}\,e^{-i\omega t} = e^{-i\omega(t - nz_b\langle\cos\vartheta\rangle/c)} ,\end{equation}
+and the sum over $\omega$ is the same function of $t - nz_b\langle\cos\vartheta\rangle/c$ that it is of $t$ at the
+focus. So the pulse is at the focus at $t = 0$ and at the point $z_b$ at
+\begin{equation}t_{\text{arrival}} = \frac{n z_b\langle\cos\vartheta\rangle}{c} = \frac{z_b}{v},\qquad
+v = \frac{c}{n\langle\cos\vartheta\rangle} .\label{eq:arr}\end{equation}
+The focal phase $-u/4$ grows in proportion to $\omega$, so it moves the pulse as well as the carrier: near the focus
+the pulse travels along the axis at $v$, faster than $c/n$, by 0.25\% at NA 0.1, 7\% at NA 0.5 and 33\% at NA 0.9 in
+air (vector model).
+
+\textbf{A check with the engine.} The engine adds the frequencies with their focal fields, so it contains this speed.
+For 20-fs pulses at 750 nm in air, the centroid in time of $|\mathbf{E}(z_b,t)|^2$ at $z_b = 0.25\ \mu$m is $nz_b/c$
+times 0.9975, 0.9771, 0.9346, 0.8648 and 0.7541 at NA 0.1, 0.3, 0.5, 0.7 and 0.9 (vector model), where
+$\langle\cos\vartheta\rangle$ is 0.9975, 0.9771, 0.9346, 0.8647 and 0.7517. In the paraxial model the centroid is
+$nz_b(1 - \mathrm{NA}^2/4)/c$ at all $z_b$, since the rest of the field, $\mathrm{sinc}(u/4)$, is real. Farther from a
+focus at NA 0.9 the centroid lies between $\langle\cos\vartheta\rangle$ and 1 (0.81 to 0.90 of $nz_b/c$ from 2 to
+15~$\mu$m), where the 2CE signal is small.
 
 \textbf{Step 3, the delay.} A delay line makes the whole field of beam 2 arrive later by $\Delta t$:
 \begin{equation}\mathbf{E}_2(P,t) \longrightarrow \mathbf{E}_2(P,t-\Delta t)
@@ -106,10 +125,11 @@ second-order perturbation theory gives the amplitude
 \int_{-\infty}^{\infty}dt\,E(t)\,e^{i\omega_{fm}t}\int_{-\infty}^{t}dt'\,E(t')\,e^{i\omega_{mg}t'} .\end{equation}
 
 \textbf{Step 2.} The intermediate states are not resonant with the light: $\omega_{mg}$ differs from all frequencies
-of the pulses by much more than their bandwidth. For a component $E(t') \propto e^{-i\omega t'}$ the inner integral
+of the pulses by much more than their bandwidth and than the distance between the two carriers,
+$\omega_2 - \omega_1 = 0.36$ rad/fs. For a component $E(t') \propto e^{-i\omega t'}$ the inner integral
 is then
 \begin{equation}\int_{-\infty}^{t}e^{i(\omega_{mg}-\omega)t'}dt' = \frac{e^{i(\omega_{mg}-\omega)t}}{i(\omega_{mg}-\omega)} ,\end{equation}
-and since $\omega_{mg} - \omega$ is nearly the same for all $\omega$ in the pulse, the inner integral is
+and since $\omega_{mg} - \omega$ is nearly the same for all $\omega$ of the two pulses, the inner integral is
 proportional to $E(t)\,e^{i\omega_{mg}t}$.
 
 \textbf{Step 3.} The two exponentials combine, $e^{i\omega_{fm}t}e^{i\omega_{mg}t} = e^{i\omega_{fg}t}$, and
@@ -217,8 +237,23 @@ $\Delta t$ & $0.5\tau$ & $\tau/\sqrt2 = 0.71\tau$ & $\tau$ & $2\tau$\\\midrule
 $F(\Delta t)/F(0)$ & $2^{-1/2} = 0.707$ & $2^{-1} = 0.5$ & $2^{-2} = 0.25$ & $2^{-8} = 0.0039$\\
 stored, collinear lenses, 100 fs & 0.70712 & & 0.25001 & 0.00391\\
 stored, collinear lenses, 5 fs & 0.71095 & & 0.25545 & 0.00425\\\bottomrule\end{tabular}\end{center}
-Each value is a power of 2, since $\exp(-2\ln 2\,x^2) = 2^{-2x^2}$. The difference of 2\% at 5 fs is the factor
-$\omega/\omega_0$ of Eq.~\ref{eq:field}, which makes the spectrum slightly wider than Eq.~\ref{eq:spec}.
+Each value is a power of 2, since $\exp(-2\ln 2\,x^2) = 2^{-2x^2}$. The difference of 2\% at 5 fs comes from the
+factor $\omega/\omega_0$ of Eq.~\ref{eq:field}, once for each photon. With $x = \omega - \omega_1$ for the photon of
+beam 1, the photon of beam 2 has $\omega_e - \omega = \omega_2 - x$, and the two Gaussian spectra multiply to
+$e^{-x^2/s^2}$. The amplitude of the 350-nm pairs at a delay is then
+\begin{equation}|2A^{12}| \propto \left|\int e^{-x^2/s^2}\left(1 + \frac{x}{\omega_1}\right)\left(1 - \frac{x}{\omega_2}\right)
+e^{-ix\Delta t}\,dx\right| ,\end{equation}
+where the product of the two factors is
+\begin{equation}\left(1 + \frac{x}{\omega_1}\right)\left(1 - \frac{x}{\omega_2}\right) = 1 + bx - \frac{x^2}{\omega_1\omega_2},\qquad
+b = \frac{1}{\omega_1} - \frac{1}{\omega_2} .\end{equation}
+With $G_0 = \int e^{-x^2/s^2}e^{-ix\Delta t}dx = s\sqrt\pi\,e^{-s^2\Delta t^2/4}$, the factors $x$ and $x^2$ become
+$i\,\partial/\partial\Delta t$ applied once and twice, $-is^2\Delta t\,G_0/2$ and $(s^2/2 - s^4\Delta t^2/4)\,G_0$, so
+\begin{equation}\int e^{-x^2/s^2}\left(1 + bx - \frac{x^2}{\omega_1\omega_2}\right)e^{-ix\Delta t}dx
+= G_0\left[1 - \frac{s^2}{2\omega_1\omega_2} + \frac{s^4\Delta t^2}{4\omega_1\omega_2} - \frac{ibs^2\Delta t}{2}\right] .\end{equation}
+The term in $x^2$ narrows the product of the spectra and the term in $x$ adds an imaginary part; both raise the
+overlap at a delay, so the signal falls more slowly than Eq.~\ref{eq:overlap}. At 5 fs the square of the bracket,
+over its value at $\Delta t = 0$, is 1.0054, 1.0218 and 1.0886 at $\Delta t = 0.5\tau$, $\tau$ and $2\tau$, which gives
+0.71094, 0.25545 and 0.00425; the stored values are 0.71095, 0.25545 and 0.00425.
 
 \textbf{Step 6.} The overlap of the two intensities gives the same function:
 $\int I_1(t)I_2(t-\Delta t)\,dt \propto \exp(-2\ln 2\,\Delta t^2/\tau^2)$, by Steps 2 to 4 with the intensities
@@ -227,26 +262,28 @@ of Eq.~\ref{eq:pulse} in place of the envelopes. This is the sense in which [CS0
 
 \section{Facing lenses: where the pulses meet}
 \textbf{Step 1, arrival times.} With facing lenses, beam 1 travels along $+z$ and beam 2 along $-z$. From Eq.~\ref{eq:arr},
-pulse 1 reaches the point $z$ at $t_1 = nz/c$. For beam 2, $z_b = -z$, and it is delayed, so
-$t_2 = -nz/c + \Delta t$.
+pulse 1 reaches the point $z$ at $t_1 = z/v$. For beam 2, $z_b = -z$, and it is delayed, so
+$t_2 = -z/v + \Delta t$.
 
 \textbf{Step 2.} At the point $z$ the two pulses are apart in time by
-\begin{equation}t_1 - t_2 = \frac{2nz}{c} - \Delta t .\end{equation}
+\begin{equation}t_1 - t_2 = \frac{2z}{v} - \Delta t .\end{equation}
 Eq.~\ref{eq:overlap} holds at each point with this difference in place of $\Delta t$, and the continuous-beam intensities give
 the strength of each pulse there:
 \begin{equation}F_{2c}(z,\Delta t) = I_1(z)\,I_2(z)\,
-\exp\!\left[-\frac{2\ln 2}{\tau^2}\left(\frac{2nz}{c} - \Delta t\right)^2\right] .\label{eq:gate}\end{equation}
+\exp\!\left[-\frac{2\ln 2}{\tau^2}\left(\frac{2z}{v} - \Delta t\right)^2\right] .\label{eq:gate}\end{equation}
 
-\textbf{Step 3, the meeting point.} The exponential is 1 where $2nz/c = \Delta t$:
-\begin{equation}z_m = \frac{c\,\Delta t}{2n} .\end{equation}
-For $\Delta t = 100$ fs in air, $z_m = 0.29979\times100/2 = 15.0\ \mu$m.
+\textbf{Step 3, the meeting point.} The exponential is 1 where $2z/v = \Delta t$:
+\begin{equation}z_m = \frac{v\,\Delta t}{2} = \frac{c\,\Delta t}{2n\langle\cos\vartheta\rangle} .\end{equation}
+For $\Delta t = 100$ fs in air, $z_m = 0.29979\times100/(2\langle\cos\vartheta\rangle) = 15.0\ \mu\mathrm{m}/\langle\cos\vartheta\rangle$:
+15.0~$\mu$m at NA 0.1 and 16.0~$\mu$m at NA 0.5.
 
-\textbf{Step 4, the length of the stretch where the pulses meet.} With $2nz/c - \Delta t = (2n/c)(z - z_m)$, the
+\textbf{Step 4, the length of the stretch where the pulses meet.} With $2z/v - \Delta t = (2/v)(z - z_m)$, the
 exponential is
-\begin{equation}\exp\!\left[-\frac{8\ln 2\,n^2}{c^2\tau^2}(z - z_m)^2\right]
-= \exp\!\left[-4\ln 2\,\frac{(z-z_m)^2}{G^2}\right],\qquad G = \frac{c\tau}{\sqrt2\,n} ,\end{equation}
-since $4\ln 2/G^2 = 8\ln 2\,n^2/c^2\tau^2$ gives $G^2 = c^2\tau^2/2n^2$. By Eq.~\ref{eq:pulse} a Gaussian written this way has
-FWHM $G$. In air $G = 21.2\ \mu$m at 100 fs, 4.2 $\mu$m at 20 fs and 2.1 $\mu$m at 10 fs.
+\begin{equation}\exp\!\left[-\frac{8\ln 2}{v^2\tau^2}(z - z_m)^2\right]
+= \exp\!\left[-4\ln 2\,\frac{(z-z_m)^2}{G^2}\right],\qquad G = \frac{v\tau}{\sqrt2} = \frac{c\tau}{\sqrt2\,n\langle\cos\vartheta\rangle} ,\end{equation}
+since $4\ln 2/G^2 = 8\ln 2/v^2\tau^2$ gives $G^2 = v^2\tau^2/2$. By Eq.~\ref{eq:pulse} a Gaussian written this way has
+FWHM $G$. In air at low NA, $G = 21.2\ \mu$m at 100 fs, 4.2 $\mu$m at 20 fs and 2.1 $\mu$m at 10 fs; at NA 0.5 each
+is 7\% longer.
 
 \textbf{Step 5, the peak when the focus is approximated by a Gaussian.} Near the focus I write the
 continuous-beam product as a Gaussian of FWHM $D$, the continuous-beam depth of focus of 2CE:
@@ -270,24 +307,28 @@ profile along the axis has FWHM
 \begin{equation}W = \frac{DG}{\sqrt{D^2 + G^2}} ,\label{eq:W}\end{equation}
 which is $G$ where the focus is long ($D \gg G$) and $D$ where it is short.
 
-\textbf{Step 8, the two limits at $\Delta t = \tau$.} Here $z_m = c\tau/2n = G/\sqrt2$, so $z_m^2 = G^2/2$ and
+\textbf{Step 8, the two limits at $\Delta t = \tau$.} Here $z_m = v\tau/2 = G/\sqrt2$, so $z_m^2 = G^2/2$ and
 \begin{equation}\frac{F_{\text{peak}}(\tau)}{F_{\text{peak}}(0)} = \exp\!\left[-2\ln 2\,\frac{G^2}{D^2 + G^2}\right] .\label{eq:peaktau}\end{equation}
 For a short focus, $D \ll G$, this is $e^{-2\ln 2} = 0.25$ and $z_p \to 0$: the peak stays at the focus and falls
 with the temporal overlap. For a long focus, $D \gg G$, it is 1 and $z_p \to z_m$: the peak moves with the
 meeting point and is kept.
 
-\textbf{Step 9, comparison with the stored results.} For 100 fs in air, $G = 21.2\ \mu$m and $z_m = 15.0\ \mu$m.
-$D$ is 3.56 $\mu$m at NA 0.5 and grows as $1/\mathrm{NA}^2$ in the paraxial model.
-\begin{center}\small\begin{tabular}{lccccccc}\toprule
- & & \multicolumn{2}{c}{peak at $\Delta t = \tau$} & \multicolumn{2}{c}{position ($\mu$m)} &
+\textbf{Step 9, comparison with the stored results.} For 100 fs in air, $G = 21.2\ \mu\mathrm{m}/\langle\cos\vartheta\rangle$
+and $z_m = 15.0\ \mu\mathrm{m}/\langle\cos\vartheta\rangle$. The stored values are from the vector model, so $D$ and
+$\langle\cos\vartheta\rangle$ are those of the vector model too.
+\begin{center}\small\begin{tabular}{lcccccccc}\toprule
+ & & & \multicolumn{2}{c}{peak at $\Delta t = \tau$} & \multicolumn{2}{c}{position ($\mu$m)} &
 \multicolumn{2}{c}{FWHM, no delay ($\mu$m)}\\
-NA & $D$ ($\mu$m) & Eq.~\ref{eq:peaktau} & stored & Eq.~\ref{eq:zp} & stored & Eq.~\ref{eq:W} & stored\\\midrule
-0.1 & 89.1 & 0.928 & 0.930 & 14.2 & 14.2 & 20.6 & 20.7\\
-0.2 & 22.3 & 0.518 & 0.513 & 7.9 & 7.8 & 15.4 & 15.4\\
-0.3 & 9.9 & 0.320 & 0.316 & 2.7 & 2.6 & 9.0 & 8.9\\
-0.5 & 3.56 & 0.260 & 0.258 & 0.41 & 0.34 & 3.5 & 3.3\\\bottomrule\end{tabular}\end{center}
-The stored values are from the vector model. Without the Gaussian approximation, Eq.~\ref{eq:gate} with the computed
-$I_1I_2$ agrees with the stored profiles to 0.004 of the peak at 100 fs, 0.019 at 20 fs and 0.039 at 10 fs.
+NA & $D$ ($\mu$m) & $\langle\cos\vartheta\rangle$ & Eq.~\ref{eq:peaktau} & stored & Eq.~\ref{eq:zp} & stored & Eq.~\ref{eq:W} & stored\\\midrule
+0.1 & 88.8 & 0.9975 & 0.928 & 0.930 & 14.21 & 14.24 & 20.67 & 20.69\\
+0.2 & 22.0 & 0.990 & 0.510 & 0.513 & 7.79 & 7.78 & 15.36 & 15.43\\
+0.3 & 9.67 & 0.977 & 0.315 & 0.316 & 2.54 & 2.58 & 8.83 & 8.85\\
+0.5 & 3.33 & 0.935 & 0.257 & 0.258 & 0.34 & 0.34 & 3.29 & 3.29\\\bottomrule\end{tabular}\end{center}
+With pulses at $c/n$ and the depth of focus of the scalar model, as on the slides, the formula gives a peak of 0.928,
+0.517, 0.320 and 0.260 and, at NA 0.5, a position of 0.41~$\mu$m and an FWHM of 3.51~$\mu$m. Without the Gaussian
+approximation, Eq.~\ref{eq:gate} with the computed $I_1I_2$ agrees with the stored profiles to 0.002 of the peak at
+NA 0.1 to 0.9 and at 10, 20 and 100 fs, in both models. With pulses at $c/n$ the differences are 0.004 at 100~fs,
+0.019 at 20~fs and 0.039 at 10~fs, so the stored profiles contain the speed $v$.
 \begin{center}\includegraphics[width=0.95\textwidth]{../../output/08_two_color/cambaliza2000/pulses/delay_sweep/delay_facing_vs_na.png}\end{center}
 
 \section{Fringes against the delay}
@@ -323,7 +364,10 @@ facing lenses beam 1 has $e^{ik_1z}$ and beam 2 has $e^{-ik_2z}$:
 \begin{equation}A^{11} \propto e^{2ik_1z},\qquad 2A^{12} \propto e^{i(k_1-k_2)z},\qquad A^{22} \propto e^{-2ik_2z} .\end{equation}
 The phase difference between $A^{11}$ and $2A^{12}$ is $(2k_1 - k_1 + k_2)z = (k_1+k_2)z$, and between $2A^{12}$
 and $A^{22}$ it is also $(k_1+k_2)z$. The period along $z$ is
-\begin{equation}\frac{2\pi}{k_1 + k_2} = \frac{1}{1/\lambda_1 + 1/\lambda_2} = \lambda_e = 350\ \text{nm (in air).}\end{equation}
+\begin{equation}\frac{2\pi}{k_1 + k_2} = \frac{1}{n(1/\lambda_1 + 1/\lambda_2)} = \frac{\lambda_e}{n} ,\end{equation}
+350 nm in air. Near the focus each $k$ is multiplied by $\langle\cos\vartheta\rangle$ (Section~3, Step~2), so the fringes
+are $\lambda_e/(n\langle\cos\vartheta\rangle)$ apart, slightly more than 350 nm at high NA, as for the 2PE standing wave
+(Part~3 of the derivations, Section~3, Step~5).
 
 \textbf{Step 5, why the depth depends on NA.} A delay changes the phases of Step 1, which moves the fringes of
 Step 4 along $z$. The peak along the axis is the largest value on the line, so it follows a fringe as it moves.
@@ -344,7 +388,7 @@ The factor of $E_z$, which the two-beam code had with an extra $i$ until 2026-11
 Part 2 of the derivations, \texttt{derivations/2\_vector\_focal\_field.pdf}: Section 3 derives the three components
 and the constant, Section 4 checks the factor with Gauss's law, and Section 7 states what the factor changes. In short,
 $E_z = -2I_1\cos\psi$ is real; $|E_z|^2$, the intensity of one beam and the 2CE signal are the same with either factor;
-the factor enters only 2PE with the polarization in the plane of the two beams, which the pulse and delay runs do not use.
+of the signals, the factor changes 2PE with the polarization in the plane of the two beams, which the pulse and delay runs do not use.
 
 \section*{References}
 \small

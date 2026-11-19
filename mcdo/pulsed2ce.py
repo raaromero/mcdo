@@ -29,9 +29,12 @@ built coherently from its spectrum,
         \mathbf{E}_\omega(P)\, e^{-i(\omega - \omega_0) t}\, d\omega ,
 
 with :math:`\mathbf{E}_\omega` the monochromatic focal field of
-:func:`mcdo.twobeam.beam_field` (which carries the propagation phase, so each
-pulse travels through the focus at c/n and reaches its geometric focus at
-t = 0), :math:`\omega/\omega_0` the frequency prefactor of the Debye integral,
+:func:`mcdo.twobeam.beam_field` (which carries the propagation phase and the
+focal phase, so each pulse reaches its geometric focus at t = 0 and, near the
+focus, travels along the axis at c/(n⟨cos ϑ⟩), with ⟨cos ϑ⟩ the mean cosine of
+the rays of the cone weighted by their amplitudes; the focal phase grows in
+proportion to ω, so the pulse is faster than c/n, by 0.25% at NA 0.1 and 7% at
+NA 0.5 in air), :math:`\omega/\omega_0` the frequency prefactor of the Debye integral,
 and the carrier :math:`e^{-i\omega_0 t}` dropped since only |E|² enters.
 The input pulse is transform-limited with intensity FWHM τ, so
 
@@ -46,7 +49,8 @@ so the discrete sum reproduces the continuous overlap.
 Physics this captures, with the scale to expect:
 
 * θ = π: the pulses meet head on, so the overlap is confined along z to a gate
-  of FWHM √2 c τ / (2n) centred at z = c Δt / (2n) (4.2 µm for τ = 20 fs in air).
+  of FWHM √2 c τ / (2n⟨cos ϑ⟩) centred at z = c Δt / (2n⟨cos ϑ⟩) (4.2 µm for
+  τ = 20 fs in air at low NA).
 * θ = π/2: the gate lies across the diagonal x − z, of width c τ / n (6 µm for
   20 fs), far wider than the crossed spot; pulses barely change it.
 * The spread of spot sizes over the bandwidth (a few percent at 20 fs).
@@ -202,7 +206,11 @@ def two_color_cw(x, z, na, n=1.0, theta=np.pi, xc=0.0, zc=0.0, lam1=0.750, lam2=
 
 
 def gate_fwhm(tau1, tau2=None, n=1.0, theta=np.pi):
-    """Width of the time-overlap gate for Gaussian pulses: along z at θ = π, across x − z at θ = π/2 (µm)."""
+    """Width of the time-overlap gate for Gaussian pulses: along z at θ = π, across x − z at θ = π/2 (µm).
+
+    For pulses at c/n. Near a focus the pulses travel at c/(n⟨cos ϑ⟩), which makes the gate longer by 1/⟨cos ϑ⟩
+    (0.25% at NA 0.1, 7% at NA 0.5 in air; docs/two_color/pulse_derivations.pdf, Section 3).
+    """
     tau2 = tau1 if tau2 is None else tau2
     tc = np.hypot(tau1, tau2)               # FWHM of the cross-correlation of two Gaussian intensities
     return C_UM_FS * tc / (2 * n) if np.isclose(theta, np.pi) else C_UM_FS * tc / (np.sqrt(2) * n)
@@ -212,7 +220,9 @@ def closed_form_2ce(I1, I2, z_b1, z_b2, delay, tau1, tau2=None, n=1.0):
     """Closed form of the pulsed 2CE signal for transform-limited Gaussian pulses (envelope approximation).
 
     Pulse i reaches point P at t_i = n z_bi / c (z_bi = distance along beam i from its focus), pulse 2 a time
-    ``delay`` later. The time overlap of two Gaussian intensities of FWHM τ1, τ2 is a Gaussian of FWHM
+    ``delay`` later. Near a focus the pulse is at n z_b⟨cos ϑ⟩/c, since it travels at c/(n⟨cos ϑ⟩), so at high NA pass
+    z_b⟨cos ϑ⟩ as z_bi: the closed form then follows the engine to 0.002 of the peak (facing lenses, NA 0.9, 10 fs),
+    against 0.03 with z_b. The time overlap of two Gaussian intensities of FWHM τ1, τ2 is a Gaussian of FWHM
     √(τ1² + τ2²) in their arrival-time difference, so
 
         F_2c(P, Δt) ∝ I_1(P) I_2(P) exp[−4 ln2 (n (z_b1 − z_b2)/c − Δt)² / (τ1² + τ2²)]
