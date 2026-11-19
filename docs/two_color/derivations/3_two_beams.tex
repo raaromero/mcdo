@@ -181,7 +181,14 @@ $\theta = \pi/2$, $z_c$ & 0.0506 & $-0.045z_c^2 + 0.986$ & $-0.045z_c^2 + 0.996$
 [LS02] also gives a drop of 20\% at 2.7 for $\theta = \pi$, $z_c$, of 11\% at 1.33 for $\theta = \pi/2$, $x_c$, and of
 30\% at 2.7 for $\theta = \pi/2$, $z_c$; the estimates give 19\%, 11\% and 31\%.
 The fits are least-squares fits over a wide range of offsets, so their coefficients are smaller than $\kappa_r$ where
-the profile departs from a quadratic within that range ($\theta = \pi$, $x_c$). At 1.33 $\lambda_1$ across both axes the
+the profile departs from a quadratic within that range ($\theta = \pi$, $x_c$). For that case [LS02] fits a quartic, printed as
+$-0.37x_c^4 + 0.01x_c^3 - 1.14x_c^2 + 0.98$. The same fit of the engine's peak over the range of their Fig.~4
+($|x_c| \le 4/3$, that is $\pm1~\mu$m) gives $0.360x_c^4 - 1.132x_c^2 + 0.979$, with no odd terms, since the peak is
+even in $x_c$: each coefficient within 0.01 of theirs, with the opposite sign of the quartic term. With the printed sign the polynomial is zero at
+$x_c = 0.84$ and negative beyond, which a peak intensity cannot be, so the sign is a typesetting slip. The two stored
+quadratic fits of this case, $-0.588x_c^2 + 0.883$ (\texttt{replication\_numbers.txt}) and $-0.601x_c^2 + 0.888$
+(\texttt{lim2002\_numbers.txt}), differ because their samples end at 1.30 and at 1.28; on the same samples the
+engine's peak gives both. At 1.33 $\lambda_1$ across both axes the
 Airy pattern falls faster than a Gaussian, so the estimate 0.084 is above the stored 0.061. With crossed lenses the
 same loss of peak needs an in-plane displacement $(1.398/0.0654)^{1/2} = 4.6$ times larger than with facing lenses,
 because the displacement then runs along the axis of L2.}

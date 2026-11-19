@@ -402,6 +402,32 @@ for name, kr, pts, fit in cases:
     est = ', '.join(f'd = {dd} lam1: exp {np.exp(-kl * dd ** 2):.3f} (stored {sv:.3f})' for dd, sv in pts)
     print(f'{name}: kappa_r = {kr:.4f} µm^-2 = {kl:.4f} per lam1^2 (stored fit {fit}); {est}')
 
+
+def peak_pi(d):
+    """Peak of I1 I2 at θ = π with the focus of L2 moved by d (µm) across the axis, maximum refined; it lies in the
+    focal plane, since both intensities are even in z (checked on a line along z through the maximum)."""
+    f = lambda x, z=0.0: -float(two_color(beam_field(np.atleast_1d(x), np.atleast_1d(z), L1, 0.5),
+                                          beam_field(np.atleast_1d(x), np.atleast_1d(z), L2, 0.5, theta=np.pi, xc=d))[0])
+    xs = np.linspace(min(0, d) - 0.05, max(0, d) + 0.05, 61)
+    i = int(np.argmin([f(x) for x in xs]))
+    r = minimize_scalar(f, bounds=(xs[max(i - 1, 0)], xs[min(i + 1, 60)]), method='bounded', options={'xatol': 1e-7})
+    zz = np.linspace(-0.3, 0.3, 61)
+    assert np.argmin([f(r.x, z) for z in zz]) == 30, 'maximum off the focal plane'
+    return -r.fun
+
+
+p0 = peak_pi(0.0)
+xq = np.arange(-100, 101) / 75                                   # |xc| <= 4/3 lam1 = 1 µm, the range of [LS02] Fig. 4
+q4 = np.polyfit(xq, [peak_pi(d * L1) / p0 for d in xq], 4)
+printed = np.poly1d([-0.37, 0.01, -1.14, 0, 0.98])
+print(f'θ = π, xc, quartic: [LS02] prints -0.37 xc^4 + 0.01 xc^3 - 1.14 xc^2 + 0.98, which is zero at xc = '
+      f'{brentq(printed, 0.5, 1.2):.3f}; the engine, same fit over |xc| <= 4/3: {q4[0]:+.3f} xc^4 {q4[1]:+.3f} xc^3 '
+      f'{q4[2]:+.3f} xc^2 {q4[3]:+.3f} xc {q4[4]:+.3f}')
+for lab, xq2, ref in (('0.05 lam1 steps to 1.30', np.arange(-26, 27) * 0.05, 'replication_numbers.txt -0.588 xc^2 +0.883'),
+                      ('0.04 µm steps to 1.28', np.arange(-48, 49, 2) * 0.02 / L1, 'lim2002_numbers.txt -0.601 xc^2 +0.888')):
+    q2 = np.polyfit(xq2, [peak_pi(d * L1) / p0 for d in xq2], 2)
+    print(f'θ = π, xc, quadratic fit on the samples of a stored fit ({lab}): {q2[0]:+.3f} xc^2 {q2[2]:+.3f} (stored {ref})')
+
 head('3f. Lim & Saloma (2003): primary spherical aberration phi, collinear lenses, NA 0.5, paraxial')
 var = 1 / 5 - 2 / 4 + 1 / 3 - (1 / 3 - 1 / 2) ** 2
 print(f'rms of t^2 - t over the pupil (t = rho^2): {np.sqrt(var):.5f} waves per unit A, A = phi / 100')

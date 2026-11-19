@@ -70,6 +70,30 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 
 ## Passes
 
+### 2026-11-19, fifth pass
+- No stored result changed. The output of `derivation_checks.py` is the same line for line, with three lines added to
+  check 3e.
+- Lim & Saloma (2002), p. 126: for facing lenses and a displacement across the axis they fit a quartic, printed as
+  −0.37 x_c⁴ + 0.01 x_c³ − 1.14 x_c² + 0.98 (labelled F2cp(0), though a misalignment needs θ ≠ 0; the next sentence
+  calls the same case F2cp(π)). The same least-squares fit of the engine's peak over the range of their Fig. 4
+  (|x_c| ≤ 4/3 λ₁, that is ±1 µm, read off the figure) gives 0.360 x_c⁴ − 1.132 x_c² + 0.979, with no odd terms since
+  the peak is even in x_c: each coefficient within 0.01 of theirs, with the opposite sign of the quartic term. With
+  the printed sign the polynomial is zero at x_c = 0.84 and negative beyond, which a peak intensity cannot be, so the
+  sign is a typesetting slip, like the cos φ of Romallosa et al. (2003). Their Fig. 4(a) also agrees with the engine:
+  its 80% and 10% contours cross the line z_c = 0 at about 0.4 and 1.2 λ₁, and the engine's peak falls to 0.8 at
+  0.398 λ₁ and to 0.1 at 1.22 λ₁. `docs/lim2002/lim2002_equations.tex` and the older replication slides quote the printed form as a
+  quotation, and no code evaluates it. Part 3, Section 5 now gives the comparison; rebuilt.
+- Found the cause of the two stored quadratic fits of the same case that the pass of 2026-11-17 noted:
+  −0.588 x_c² + 0.883 (`replication_numbers.txt`, from `verify_2ce_replication.py`) and −0.601 x_c² + 0.888
+  (`lim2002_numbers.txt`, from `fig_lim2002.py`, quoted in the older presenter guide). Both are right for their
+  samples, which end at 1.30 and at 1.28 λ₁. Over this range the profile is not quadratic, and the coefficient of a
+  quadratic fit changes by about 0.07 for each 0.1 λ₁ of range. The engine's peak, with its maximum refined, gives
+  −0.588 x_c² + 0.884 and −0.601 x_c² + 0.888 on the same samples (check 3e).
+- Lim & Saloma (2002), 2PE with crossed lenses (between 1 and 0.7 for |x_c| ≤ 1.5 λ, with a period of about λ): the
+  stored range 0.72 to 1.00 holds over the whole stored row (±1.43 λ_2p) as well as over |x_c| ≤ 1, with the minima at
+  ±0.57 λ_2p. On a grid ten times finer along z than the paper's 100 × 100 points, which the stored maps use, the
+  minimum is 0.727 and the value at 0.5 λ_2p is 0.742 (stored 0.732). Nothing to correct.
+
 ### 2026-11-19, fourth pass
 - FLAG, stored results changed (at the user's request, after the first report of this pass): the widths of the high-NA
   pupil study are now measured at half the maximum of the central lobe, not at half the value at the centre
