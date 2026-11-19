@@ -52,8 +52,10 @@ $u_r = -v$ and $v_r = u$, that is
 r_b = \frac{|v_r|}{2\pi\mathrm{NA}/\lambda} = \mathrm{NA}\,|z| ,\end{equation}
 where a rotation of real space gives $z_b = x$ and $r_b = |z|$. Because $u$ scales as $\mathrm{NA}^2$ and $v$ as
 NA, the rotation of optical coordinates stretches beam 2 along its axis by $1/\mathrm{NA}$ and across it by NA: a
-factor of 2 each way at NA 0.5. The current work uses the rotation of real space; the engine keeps the other
-(\texttt{rotation='optical'}) to reproduce the figures of [CS00] and [LS02].
+factor of 2 each way at NA 0.5. The figures of [CS00] follow the rotation of real space: their Fig.~3b shows a 2CE
+depth of focus at $\theta = \pi/2$ of about 0.67~$\mu$m, which Step 2 gives (0.670~$\mu$m) and the rotation of optical
+coordinates does not (1.313~$\mu$m). The current work therefore uses the rotation of real space; the engine keeps the
+other (\texttt{rotation='optical'}) to show what Eq.~1 as printed would give.
 
 \section{The two signals}
 \step{1} With both beams present the field is $E(t) = E_1e^{-i\omega_1t} + E_2e^{-i\omega_2t}$. A molecule absorbs two

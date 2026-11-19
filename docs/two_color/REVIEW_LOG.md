@@ -81,6 +81,11 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
 - Linfoot's criteria: F = 2Q − C holds on all 216 stored rows (to 0.0013, the rounding of the printed values).
 - Found on the glossary slides of both decks that α stands for two quantities, and kept "C ≥ 0.97" against the stored
   0.967; both proposed to the user (open item 1).
+- Corrected in Part 3 and in the docstring of `mcdo/twobeam.py`: the rotation of optical coordinates does not reproduce
+  the figures of Cambaliza & Saloma (2000). Their Fig. 3b follows the rotation of real space (2CE depth of focus at
+  θ = π/2 about 0.67 µm; 0.670 µm with it, 1.313 µm with the optical rotation), as `answers.md` had found. The four
+  ratios stated in their text at θ = π/2 (0.67, 0.75, 1.58, about 2) match neither rotation (real space 0.49, 0.68,
+  2.98, 2.62; optical 0.26, 0.70, 5.51, 4.91), which confirms that those ratios disagree with their own curves.
 - `pulse_derivations.tex`: Section 9 (the E_z factor) now points to Part 2, where the derivation is complete and its
   Gauss's-law step is written out; rebuilt.
 

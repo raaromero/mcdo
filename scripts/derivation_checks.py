@@ -202,6 +202,12 @@ Eb = beam_field(-xg, -zg, L1, 0.8, model='rw', psi=0.0)
 d_vec = np.abs(np.stack([-Eb[0], Eb[1], -Eb[2]]) - Ea).max() / np.abs(Eb).max()
 print(f'paraxial intensity: max difference {d_par:.1e};  vector field, (Ex, Ey, Ez) -> (-Ex, Ey, -Ez): {d_vec:.1e}')
 
+zz = np.linspace(-3, 3, 6001)
+for rot in ('geometric', 'optical'):
+    F = two_color(beam_field(0 * zz, zz, L1, 0.5), beam_field(0 * zz, zz, L2, 0.5, theta=np.pi / 2, rotation=rot))
+    print(f'2CE, θ = π/2, NA 0.5, depth of focus with the {rot} rotation: {fwhm(zz, F):.3f} µm (Fig. 3b of Cambaliza & '
+          f'Saloma: about 0.67 µm)')
+
 head('3b. 2PE with facing lenses: the standing-wave fringe on the axis')
 ac = np.arccos(2 ** -0.25)
 for na in (0.5, 0.9):

@@ -50,7 +50,10 @@ the beam frame by a true rotation. ``'optical'`` reproduces the rotation written
 in [LS02]_ and [CS00]_, applied to the optical coordinates themselves,
 :math:`u_r = u\cos\theta - v\sin\theta`, :math:`v_r = v\cos\theta + u\sin\theta`.
 The two agree at ``theta = 0`` and ``pi``; at ``pi/2`` they differ because u and v
-scale differently with NA. The optical convention exists only for replication.
+scale differently with NA. The optical convention shows what the printed
+equations give; the figures of [CS00] follow the geometric rotation (their Fig. 3b,
+depth of focus of 2CE at ``theta = pi/2``: about 0.67 µm, against 1.31 µm with the
+optical rotation).
 
 References
 ----------
