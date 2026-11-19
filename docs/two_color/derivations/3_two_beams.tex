@@ -199,6 +199,8 @@ $\int_0^1s(s^2 - s + \frac16)ds = \frac14 - \frac13 + \frac1{12} = 0$.
 \step{3, the focal shift} The term $2\pi As$ is a defocus and cancels $-us/2$ at $u = 4\pi A$. With
 $u = (2\pi/\lambda)(\mathrm{NA}^2/n)z$ the focus moves to
 \begin{equation}z_f = \frac{2An\lambda}{\mathrm{NA}^2} .\end{equation}
+For $\phi > 0$ the focus moves to positive $z$, beyond the geometrical focus: beam 1 travels along $+z$, so L1 lies on the
+side of negative $z$.
 
 \step{4, the loss of peak} What remains is the phase $2\pi A(s^2 - s + \frac16)$, whose root-mean-square over the pupil
 is $2\pi A\,\sigma$ with $\sigma^2 = \int_0^1(s^2 - s + \frac16)^2ds = \frac15 - \frac12 + \frac13 - \frac1{36} = \frac1{180}$.
@@ -226,7 +228,10 @@ estimate: peak; $z^*$ ($\mu$m) & 0.988; 0.89 & 0.845; 3.34 & 0.081; $-0.22$\\
 engine: peak; position ($\mu$m) & 0.988; 0.90 & 0.844; 3.30 & 0.066; $-0.20$\\
 stored (\texttt{aberration\_numbers.txt}) & position 0.90 & 0.84 & 0.07\\\bottomrule
 \end{tabular}\end{center}
-The engine positions are on a grid of 0.1~$\mu$m. With facing lenses the stored values swap (0.07 for equal and 0.84 for
+The engine positions are on a grid of 0.1~$\mu$m. [LS03] Fig.~3(a) and (d) ($\phi_1 = \phi_2 = 16$) also place the
+peak at about $+0.9~\mu$m, and their Fig.~3(b) shows the 2PE spot at $\theta = \pi/2$ spread toward $+z$, as the stored
+map \texttt{aberration\_psf16.png} does. Their text calls both changes ``toward L1'', while their Fig.~1 draws L1 on the
+side of negative $z$. Their Eq.~1 and their figures agree with the engine; the words do not. With facing lenses the stored values swap (0.07 for equal and 0.84 for
 opposite aberrations), as [LS03] reports. With crossed lenses the estimate is 0.080 for both signs; stored 0.07 for both.}
 
 \section{Linfoot's criteria}

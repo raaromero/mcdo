@@ -2,6 +2,8 @@ r"""Numbers of the derivation documents docs/two_color/derivations/*.tex: each c
 (mcdo.twobeam) and against the stored results it explains.
 
     python scripts/derivation_checks.py > output/08_two_color/derivation_checks.txt      (about two minutes)
+    python scripts/derivation_checks.py --widths > output/08_two_color/derivation_checks_widths.txt      (Part 5 alone,
+        about two minutes)
 
 Part 1, scalar focal field: half-width points of the Airy and sinc^2 profiles and of their powers; the widths at NA 0.5;
 the depth of focus of the paraxial model against the non-paraxial weights of the axial integral; the integral of the
@@ -13,6 +15,7 @@ the spherical aberration of Lim & Saloma (2003), and the identity F = 2Q - C of 
 Pulses (docs/two_color/pulse_derivations.tex, Sections 3, 6 and 7): when a focused pulse arrives on the axis, the
 temporal overlap at 5 fs with the factor omega/omega_0, and the 2CE of facing lenses with a delay against the stored
 profiles of the delay sweep.
+Part 5 (--widths): every width of the high-NA pupil study against the fields of Parts 1 to 3 written out again.
 """
 import os
 import re
@@ -64,6 +67,102 @@ def plane_integral(f, R=40.0, nr=2001):
         w[1:-1:2], w[2:-1:2] = 4, 2
         return np.sum(w * vals * r) * (r[1] - r[0]) / 3
     return 2 * simpson(R, nr) - simpson(R / 2, nr // 2 + 1)
+
+
+def stored_widths(nodes=150):
+    """Part 5 (option --widths): every width of the high-NA pupil study (cambaliza2000/high_na/pupils/widths.csv)
+    against the fields written out again from Parts 1 to 3, with Gauss-Legendre integrals in the angle (vector) or in
+    the pupil radius (paraxial) in place of the engine's Simpson grids, and the half-maximum point found as a root."""
+    gt, gw = np.polynomial.legendre.leggauss(nodes)
+    gl = lambda a, b: (0.5 * (b - a) * gt + 0.5 * (b + a), 0.5 * (b - a) * gw)
+
+    def frame(th, x, z):                                  # Part 3, Section 1, Step 2, focus at the origin
+        xb, zb = x * np.cos(th) - z * np.sin(th), x * np.sin(th) + z * np.cos(th)
+        return np.abs(xb), np.where(xb >= 0, 0.0, np.pi), zb
+
+    def vec(lam, na, n, eps, at, th, psi, x, z):          # Part 2: I0, I1, I2, the components, then the lab frame
+        k, al = 2 * np.pi * n / lam, np.arcsin(na / n)
+        t, w = gl(np.arcsin(eps * np.sin(al)), al)
+        a = np.sqrt(np.cos(t)) * np.exp(-at * np.sin(t) ** 2 / np.sin(al) ** 2) * np.sin(t) * w
+        rb, pb, zb = frame(th, x, z)
+        ph, arg = np.exp(1j * k * np.outer(zb, np.cos(t))), k * np.outer(rb, np.sin(t))
+        I0, I1, I2 = [(ph * jv(m, arg)) @ (a * c) for m, c in ((0, 1 + np.cos(t)), (1, np.sin(t)), (2, 1 - np.cos(t)))]
+        f = pb - psi
+        ex, ey, ez = -1j * (I0 + I2 * np.cos(2 * f)), -1j * I2 * np.sin(2 * f), -2 * I1 * np.cos(f)
+        ex, ey = np.cos(psi) * ex - np.sin(psi) * ey, np.sin(psi) * ex + np.cos(psi) * ey
+        return np.stack([np.cos(th) * ex + np.sin(th) * ez, ey, -np.sin(th) * ex + np.cos(th) * ez])
+
+    def par(lam, na, n, eps, at, th, x, z):               # Part 1, Section 2, with the carrier, pupil eps to 1, exp(-at rho^2)
+        k = 2 * np.pi * n / lam
+        rb, _, zb = frame(th, x, z)
+        rho, w = gl(eps, 1.0)
+        U = (np.exp(-0.5j * np.outer(k * (na / n) ** 2 * zb, rho ** 2)) * jv(0, np.outer(k * na / n * rb, rho))) @ (
+            2 * w * np.exp(-at * rho ** 2) * rho)
+        return np.exp(1j * k * zb) * U
+
+    I = lambda E: np.sum(np.abs(E) ** 2, axis=0) if E.ndim == 2 else np.abs(E) ** 2
+    PSI = {'s': np.pi / 2, 'p': 0.0}
+
+    def signal(r, x, z):
+        args = (r.NA, r.n, r.eps, r.alpha_t)
+        if r.model == 'scalar':
+            F = lambda lam, th: par(lam, *args, th, x, z)
+            return I(F(L1, 0.0)) * I(F(L2, r.theta)) if r.signal == '2CE' else I(F(LP, 0.0) + F(LP, r.theta)) ** 2
+        F = lambda lam, th, pol: vec(lam, *args, th, PSI[pol], x, z)
+        if r.model == 'unpol':
+            return 0.25 * (I(F(L1, 0.0, 's')) + I(F(L1, 0.0, 'p'))) * (I(F(L2, r.theta, 's')) + I(F(L2, r.theta, 'p')))
+        if r.signal == '2CE':
+            return I(F(L1, 0.0, r.model)) * I(F(L2, r.theta, r.model))
+        return I(F(LP, 0.0, r.model) + F(LP, r.theta, r.model)) ** 2
+
+    def width(r):
+        f = lambda s: signal(r, s if r.axis == 'x' else 0 * s, s if r.axis == 'z' else 0 * s)
+        f0 = f(np.zeros(1))[0]
+        if not f0 > 1e-12 * f(np.linspace(-1, 1, 41)).max():
+            return np.nan                                  # dark centre (2PE, p, facing lenses)
+        long_ = r.axis == 'z' and not np.isclose(r.theta, np.pi / 2)
+        step = 0.2 * LP * r.n / r.NA ** 2 / (1 - r.eps ** 2) if long_ else 0.05 * LP / r.NA
+        if r.signal == '2PE' and r.theta != 0:
+            step = min(step, 0.004)                        # the central fringe
+        lo = 0.0
+        for _ in range(1000):
+            s = lo + step * np.arange(1, 51)
+            j = np.nonzero(f(s) / f0 < 0.5)[0]
+            if j.size:
+                a = s[j[0] - 1] if j[0] else lo
+                return 2 * brentq(lambda q: f(np.array([q]))[0] / f0 - 0.5, a, s[j[0]], xtol=1e-10)
+            lo = s[-1]
+        return np.nan
+
+    D = pd.read_csv(os.path.join(OUT, 'cambaliza2000', 'high_na', 'pupils', 'widths.csv'))
+    D['check'] = [width(r) for r in D.itertuples()]
+    D['rel'] = D.fwhm / D.check - 1
+    head('5. All stored widths of the high-NA pupil study against the fields of Parts 1-3 written out again')
+    print(f'{len(D)} widths (air and water; circular and annular pupils; uniform and Gaussian input; paraxial and vector '
+          f's, p, unpolarized; 2CE and 2PE; theta = 0, pi/2, pi; across and along the axis); no width in both: '
+          f'{int((D.fwhm.isna() & D.check.isna()).sum())}, in one of the two: {int((D.fwhm.isna() ^ D.check.isna()).sum())}')
+    D['th'] = D.theta.map(lambda v: ('0', 'pi/2', 'pi')[int(round(2 * v / np.pi))])
+    g = D.groupby(['signal', 'th']).rel.agg(lambda v: np.nanmax(np.abs(v)) if v.notna().any() else np.nan)
+    print('largest |stored / check - 1|: ' + '; '.join(f'{s} theta = {th}: {v:.1e}' for (s, th), v in g.items()))
+    top = D.loc[D.rel.abs().idxmax()]
+    print(f'largest: n {top.n:g}, NA {top.NA:g}, eps {top.eps:g}, alpha_t {top.alpha_t:g}, {top.signal} {top.axis} '
+          f'theta = {top.th} {top.model}: stored {top.fwhm:.6f}, root {top.check:.6f} µm')
+    if top.th == 'pi/2':                                   # the transverse window of the stored run, 2001 points
+        s = np.linspace(-2.5 * LP / top.NA, 2.5 * LP / top.NA, 2001)
+        y = signal(top, s if top.axis == 'x' else 0 * s, s if top.axis == 'z' else 0 * s)
+        y, r = y / y[1000], 1000                           # the stored width: half of the value at the centre
+        while y[r] >= 0.5:
+            r += 1
+        l = 1000
+        while y[l] >= 0.5:
+            l -= 1
+        grid = np.interp(0.5, [y[r], y[r - 1]], [s[r], s[r - 1]]) - np.interp(0.5, [y[l], y[l + 1]], [s[l], s[l + 1]])
+        print(f'the same fields on the stored grid, with its linear interpolation between points: {grid:.6f} µm')
+
+
+if '--widths' in sys.argv:
+    stored_widths()
+    sys.exit(0)
 
 
 # ══ Part 1 ══════════════════════════════════════════════════════════════════════════════════════════════════════════

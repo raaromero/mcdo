@@ -22,8 +22,18 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
      state the speed. The dashboard draws the same reference line ("meeting point of the pulses, cΔt/2", chart of the
      peak position at θ = π in `main.ts`), and so does `cambaliza2000_pulses_delay_plot.py` (label cΔt/2); the same
      holds for both, and a change there would need a deploy.
-2. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
-3. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
+2. **Waiting for the user (found 2026-11-19, fourth pass).** The 208 stored widths of 2PE with crossed lenses in
+   polarization p (`high_na/pupils/widths.csv`, `numbers.txt`) are measured at half the value at the centre, as all
+   widths of that study are. For these profiles the centre is a shallow minimum between two equal maxima 0.11 to
+   0.22 µm from it (6% higher at NA 0.5 in air, 14% at NA 0.7): at the focus the two fields are orthogonal (x and z),
+   and off the centre the longitudinal field of each beam interferes with the main field of the other. At half the
+   maximum the widths are 0.1% to 4.5% smaller with the circular pupil and up to 10.5% smaller with the annular one.
+   No slide and no dashboard view uses them (the dashboard reads s and the scalar model, the polarization figures
+   show 2CE, and the peak losses of the 2002 study take the maximum over the grid). Proposed: state the definition in
+   the docstring of `cambaliza2000_high_na_pupils.py`, or recompute these rows at half the maximum, which changes
+   stored results.
+3. **Push**: nothing has been pushed since the annular slides. Push only when the user says so.
+4. **Lint**: `ruff check` reports 15 unused imports or variables in older scripts (list: run it on `scripts/`). They
    change no result. `scripts/make_lim2002_progress_deck.py` is frozen: leave its six findings as they are.
 
 ## Done, and the rules that keep it so
@@ -69,6 +79,28 @@ working pass. Newest pass first. Read `START_HERE.md` before this file.
   20 fs), plus polarization p at three NAs.
 
 ## Passes
+
+### 2026-11-19, fourth pass
+- No stored result changed. The output of `derivation_checks.py` is the same line for line.
+- Checked all 5712 widths of the high-NA pupil study (`high_na/pupils/widths.csv`) against the fields written out
+  again from Parts 1 to 3, with Gauss–Legendre integrals in the angle or the pupil radius in place of the engine's
+  Simpson grids and the half-maximum point found as a root (Part 5 of `derivation_checks.py`, option `--widths`,
+  output in `derivation_checks_widths.txt`). They agree to 1.3e-5 for 2CE and for 2PE at θ = 0, to 4.5e-5 for the 2PE
+  fringe at θ = π, and to 1.6e-4 for 2PE at θ = π/2, where the same fields on the stored grid of 2001 points give the
+  stored values to six digits; both find no width for the same 304 rows. The rows cover air and water, NA 0.2 to
+  1.25, circular and annular (ε = 0.99) pupils, uniform and Gaussian (α_t = 4) input, and the paraxial field and the
+  vector field in polarizations s, p and unpolarized, across and along the axis. The check therefore tests the medium,
+  the Gaussian apodization, the annular limits, the rotation of beam 2 and the window search together.
+- FLAG (definition, no change made): the same check showed that the widths of 2PE with crossed lenses in polarization
+  p are measured at half a central minimum (open item 2).
+- Lim & Saloma (2003): resolved note (v) of `two_color_plan.tex`. For φ₁ = φ₂ = 16 their Fig. 3(a) and (d) place the
+  peak at about +0.9 µm, as stored (0.90 µm), and their Fig. 3(b) shows the 2PE spot at θ = π/2 spread toward +z, as
+  the stored map `aberration_psf16.png` does. Their text calls both changes "toward L1", while their Fig. 1 draws L1
+  on the side of negative z. Their Eq. 1, with the sign convention of Born & Wolf that the engine uses, and their
+  figures agree with the engine. Part 3, Section 6 now states the direction (Step 3) and the comparison (Check);
+  rebuilt Part 3 and the plan.
+- Romallosa et al. (2003), Section II: the band of a 1-fs pulse (4.4 × 10¹⁴ Hz, 483 nm to 1.67 µm) and the coherence
+  length 359.7 nm at 1.2 fs follow from Δν τ = 0.44 and ν_c = 3.997 × 10¹⁴ Hz.
 
 ### 2026-11-19, third pass
 - No stored result changed. The output of `derivation_checks.py` is the same line for line, with two checks added.
